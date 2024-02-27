@@ -1,0 +1,9 @@
+# Created by .ignore support plugin (hsz.mobi)
+.idea
+*.iml
+./admin/target
+/admin/target/
+./admin_generator/target
+/admin_generator/target/
+
+/logs/
