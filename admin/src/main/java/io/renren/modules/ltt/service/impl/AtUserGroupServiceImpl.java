@@ -1,6 +1,8 @@
 package io.renren.modules.ltt.service.impl;
 
+import cn.hutool.core.date.DateUtil;
 import io.renren.datasources.annotation.Game;
+import io.renren.modules.ltt.enums.DeleteFlag;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -39,6 +41,8 @@ public class AtUserGroupServiceImpl extends ServiceImpl<AtUserGroupDao, AtUserGr
 
     @Override
     public boolean save(AtUserGroupDTO atUserGroup) {
+        atUserGroup.setCreateTime(DateUtil.date());
+        atUserGroup.setDeleteFlag(DeleteFlag.NO.getKey());
         AtUserGroupEntity atUserGroupEntity = AtUserGroupConver.MAPPER.converDTO(atUserGroup);
         return this.save(atUserGroupEntity);
     }

@@ -7,12 +7,6 @@
     <el-form-item label="分组名称" prop="name">
       <el-input v-model="dataForm.name" placeholder="分组名称"></el-input>
     </el-form-item>
-    <el-form-item label="删除标志" prop="deleteFlag">
-      <el-input v-model="dataForm.deleteFlag" placeholder="删除标志"></el-input>
-    </el-form-item>
-    <el-form-item label="创建时间" prop="createTime">
-      <el-input v-model="dataForm.createTime" placeholder="创建时间"></el-input>
-    </el-form-item>
     </el-form>
     <span slot="footer" class="dialog-footer">
       <el-button @click="visible = false">取消</el-button>
@@ -58,9 +52,9 @@
               params: this.$http.adornParams()
             }).then(({data}) => {
               if (data && data.code === 0) {
-                this.dataForm.name = data.atusergroup.name
-                this.dataForm.deleteFlag = data.atusergroup.deleteFlag
-                this.dataForm.createTime = data.atusergroup.createTime
+                this.dataForm.name = data.atUserGroup.name
+                this.dataForm.deleteFlag = data.atUserGroup.deleteFlag
+                this.dataForm.createTime = data.atUserGroup.createTime
               }
             })
           }
