@@ -6,8 +6,8 @@
       </el-form-item>
       <el-form-item>
         <el-button @click="getDataList()">查询</el-button>
-        <el-button v-if="isAuth('ltt:atusernamegroup:save')" type="primary" @click="addOrUpdateHandle()">新增</el-button>
-        <el-button v-if="isAuth('ltt:atusernamegroup:delete')" type="danger" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>
+        <el-button v-if="isAuth('ltt:atusername:save')" type="primary" @click="addOrUpdateHandle()">新增</el-button>
+        <el-button v-if="isAuth('ltt:atusername:delete')" type="danger" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>
       </el-form-item>
     </el-form>
     <el-table
@@ -23,10 +23,22 @@
         width="50">
       </el-table-column>
       <el-table-column
-        prop="name"
+        prop="usernameGroupId"
         header-align="center"
         align="center"
-        label="分组名称">
+        label="昵称分组id">
+      </el-table-column>
+      <el-table-column
+        prop="username"
+        header-align="center"
+        align="center"
+        label="昵称">
+      </el-table-column>
+      <el-table-column
+        prop="useFlag"
+        header-align="center"
+        align="center"
+        label="使用标识">
       </el-table-column>
       <el-table-column
         prop="deleteFlag"
@@ -47,7 +59,6 @@
         width="150"
         label="操作">
         <template slot-scope="scope">
-          <el-button type="text" size="small" @click="dataUploadHandle(scope.row.id)">数据上传</el-button>
           <el-button type="text" size="small" @click="addOrUpdateHandle(scope.row.id)">修改</el-button>
           <el-button type="text" size="small" @click="deleteHandle(scope.row.id)">删除</el-button>
         </template>
@@ -64,13 +75,11 @@
     </el-pagination>
     <!-- 弹窗, 新增 / 修改 -->
     <add-or-update v-if="addOrUpdateVisible" ref="addOrUpdate" @refreshDataList="getDataList"></add-or-update>
-    <data-upload v-if="dataUploadVisible" ref="dataUpload" @refreshDataList="getDataList"></data-upload>
   </div>
 </template>
 
 <script>
-  import AddOrUpdate from './atusernamegroup-add-or-update'
-  import DataUpload from './atusernamegroup-data-upload'
+  import AddOrUpdate from './atusername-add-or-update'
   export default {
     data () {
       return {
@@ -83,13 +92,11 @@
         totalPage: 0,
         dataListLoading: false,
         dataListSelections: [],
-        addOrUpdateVisible: false,
-        dataUploadVisible: false
+        addOrUpdateVisible: false
       }
     },
     components: {
-      AddOrUpdate,
-      DataUpload
+      AddOrUpdate
     },
     activated () {
       this.getDataList()
@@ -99,7 +106,7 @@
       getDataList () {
         this.dataListLoading = true
         this.$http({
-          url: this.$http.adornUrl('/ltt/atusernamegroup/list'),
+          url: this.$http.adornUrl('/ltt/atusername/list'),
           method: 'get',
           params: this.$http.adornParams({
             'page': this.pageIndex,
@@ -139,13 +146,6 @@
           this.$refs.addOrUpdate.init(id)
         })
       },
-      // 数据上传
-      dataUploadHandle (id) {
-        this.dataUploadVisible = true
-        this.$nextTick(() => {
-          this.$refs.dataUpload.init(id)
-        })
-      },
       // 删除
       deleteHandle (id) {
         var ids = id ? [id] : this.dataListSelections.map(item => {
@@ -157,7 +157,7 @@
           type: 'warning'
         }).then(() => {
           this.$http({
-            url: this.$http.adornUrl('/ltt/atusernamegroup/delete'),
+            url: this.$http.adornUrl('/ltt/atusername/delete'),
             method: 'post',
             data: this.$http.adornData(ids, false)
           }).then(({data}) => {
