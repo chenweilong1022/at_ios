@@ -7,6 +7,14 @@
     <el-form-item label="分组名称" prop="name">
       <el-input v-model="dataForm.name" placeholder="分组名称" disabled></el-input>
     </el-form-item>
+      <el-form-item label="数据上传" prop="groupName">
+        <el-upload
+            class="upload-demo"
+            action="http://localhost:8880/app/file/upload"
+            :on-success="handleAvatarSuccess">
+          <el-button size="small" type="primary">点击上传</el-button>
+        </el-upload>
+      </el-form-item>
     </el-form>
     <span slot="footer" class="dialog-footer">
       <el-button @click="visible = false">取消</el-button>
@@ -23,6 +31,7 @@
         dataForm: {
           id: 0,
           name: '',
+          txtUrl: '',
           deleteFlag: '',
           createTime: ''
         },
@@ -40,6 +49,9 @@
       }
     },
     methods: {
+      handleAvatarSuccess (res, file) {
+        this.dataForm.txtUrl = res.data
+      },
       init (id) {
         this.dataForm.id = id || 0
         this.visible = true
@@ -70,6 +82,7 @@
               data: this.$http.adornData({
                 'id': this.dataForm.id || undefined,
                 'name': this.dataForm.name,
+                'txtUrl': this.dataForm.txtUrl,
                 'deleteFlag': this.dataForm.deleteFlag,
                 'createTime': this.dataForm.createTime
               })

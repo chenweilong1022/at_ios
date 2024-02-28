@@ -1,6 +1,6 @@
 project:
     host:
-        name: ${PROJECT_HOST_NAME:127.0.0.1}
+        name: ${PROJECT_HOST_NAME:127.0.0.1:8880}
     mysql:
         hostname: ${PROJECT_MYSQL_HOSTNAME:127.0.0.1}
         port: ${PROJECT_MYSQL_PORT:3306}

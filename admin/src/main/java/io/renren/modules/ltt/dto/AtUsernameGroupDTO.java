@@ -46,5 +46,10 @@ public class AtUsernameGroupDTO extends PageParam implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="创建时间")
 	private Date createTime;
+	/**
+	 * txturl
+	 */
+	@ApiModelProperty(required=false,value="txturl")
+	private String txtUrl;
 
 }

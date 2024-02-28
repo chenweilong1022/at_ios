@@ -1,9 +1,7 @@
 package io.renren;
 
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.util.HexUtil;
-import cn.hutool.core.util.StrUtil;
-import cn.hutool.core.util.URLUtil;
+import cn.hutool.core.util.*;
 import cn.hutool.crypto.SecureUtil;
 import cn.hutool.crypto.asymmetric.KeyType;
 import cn.hutool.crypto.asymmetric.RSA;
@@ -13,6 +11,7 @@ import java.security.Key;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Date;
+import java.util.Random;
 
 /**
  * @author chenweilong
@@ -36,7 +35,16 @@ public class LogTest {
     +"sYenn3k/dO0H7MZtkbHLQdMj3tNjYLNwhbh1Bv6IhveTFwAY0OEtYa52nRAu95Kw"
             +"KrZw1n9Cxo19XZE=";
 
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args) {
+
+        for (int i = 0; i < 100; i++) {
+            String s = RandomUtil.randomString(10);
+            System.out.println(s);
+        }
+
+    }
+
+    public static void main1(String[] args) throws IOException, InterruptedException {
 
 
         String PRIVATE_KEY = "MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBAJ0m87tfr+m1HvLB"
