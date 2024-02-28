@@ -6,8 +6,8 @@
       </el-form-item>
       <el-form-item>
         <el-button @click="getDataList()">查询</el-button>
-        <el-button v-if="isAuth('ltt:atusergroup:save')" type="primary" @click="addOrUpdateHandle()">新增</el-button>
-        <el-button v-if="isAuth('ltt:atusergroup:delete')" type="danger" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>
+        <el-button v-if="isAuth('ltt:atusernamegroup:save')" type="primary" @click="addOrUpdateHandle()">新增</el-button>
+        <el-button v-if="isAuth('ltt:atusernamegroup:delete')" type="danger" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>
       </el-form-item>
     </el-form>
     <el-table
@@ -21,12 +21,6 @@
         header-align="center"
         align="center"
         width="50">
-      </el-table-column>
-      <el-table-column
-        prop="id"
-        header-align="center"
-        align="center"
-        label="主键;主键">
       </el-table-column>
       <el-table-column
         prop="name"
@@ -73,7 +67,7 @@
 </template>
 
 <script>
-  import AddOrUpdate from './atusergroup-add-or-update'
+  import AddOrUpdate from './atusernamegroup-add-or-update'
   export default {
     data () {
       return {
@@ -100,7 +94,7 @@
       getDataList () {
         this.dataListLoading = true
         this.$http({
-          url: this.$http.adornUrl('/ltt/atusergroup/list'),
+          url: this.$http.adornUrl('/ltt/atusernamegroup/list'),
           method: 'get',
           params: this.$http.adornParams({
             'page': this.pageIndex,
@@ -151,7 +145,7 @@
           type: 'warning'
         }).then(() => {
           this.$http({
-            url: this.$http.adornUrl('/ltt/atusergroup/delete'),
+            url: this.$http.adornUrl('/ltt/atusernamegroup/delete'),
             method: 'post',
             data: this.$http.adornData(ids, false)
           }).then(({data}) => {
