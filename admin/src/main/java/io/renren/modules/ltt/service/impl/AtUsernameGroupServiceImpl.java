@@ -71,22 +71,6 @@ public class AtUsernameGroupServiceImpl extends ServiceImpl<AtUsernameGroupDao, 
         atUsernameGroup.setDeleteFlag(DeleteFlag.NO.getKey());
         AtUsernameGroupEntity atUsernameGroupEntity = AtUsernameGroupConver.MAPPER.converDTO(atUsernameGroup);
         boolean save = this.save(atUsernameGroupEntity);
-        String s = HttpUtil.downloadString(atUsernameGroup.getTxtUrl(), "UTF-8");
-        String[] split = s.split("\n");
-        Assert.isTrue(ArrayUtil.isEmpty(split),"txt不能为空");
-        Assert.isTrue(split.length <= 0,"txt不能为空");
-
-        List<AtUsernameEntity> atUsernameEntities = new ArrayList<>();
-        for (String string : split) {
-            AtUsernameEntity atUsername = new AtUsernameEntity();
-            atUsername.setUsernameGroupId(atUsernameGroupEntity.getId());
-            atUsername.setUsername(string);
-            atUsername.setUseFlag(UseFlag.NO.getKey());
-            atUsername.setDeleteFlag(DeleteFlag.NO.getKey());
-            atUsername.setCreateTime(new Date());
-            atUsernameEntities.add(atUsername);
-        }
-        atUsernameService.saveBatch(atUsernameEntities);
         return save;
     }
 
@@ -123,8 +107,15 @@ public class AtUsernameGroupServiceImpl extends ServiceImpl<AtUsernameGroupDao, 
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean removeByIds(Collection<? extends Serializable> ids) {
-        return super.removeByIds(ids);
+        //删除用户分组
+        boolean flag = super.removeByIds(ids);
+        //删除用户分组下的昵称
+        atUsernameService.remove(new QueryWrapper<AtUsernameEntity>().lambda()
+                .in(AtUsernameEntity::getUsernameGroupId,ids)
+        );
+        return flag;
     }
 
 }
