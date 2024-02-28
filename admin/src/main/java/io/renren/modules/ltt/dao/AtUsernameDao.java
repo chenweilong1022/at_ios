@@ -2,7 +2,10 @@ package io.renren.modules.ltt.dao;
 
 import io.renren.modules.ltt.entity.AtUsernameEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import io.renren.modules.ltt.vo.AtUsernameGroupUsernameCountGroupIdVO;
 import org.apache.ibatis.annotations.Mapper;
+
+import java.util.List;
 
 /**
  * 昵称
@@ -13,5 +16,6 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface AtUsernameDao extends BaseMapper<AtUsernameEntity> {
-	
+
+    List<AtUsernameGroupUsernameCountGroupIdVO> usernameCountGroupId();
 }

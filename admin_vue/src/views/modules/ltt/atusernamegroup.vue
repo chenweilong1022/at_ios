@@ -29,10 +29,10 @@
         label="分组名称">
       </el-table-column>
       <el-table-column
-        prop="deleteFlag"
+        prop="usernameGroupIdCount"
         header-align="center"
         align="center"
-        label="删除标志">
+        label="可用数量">
       </el-table-column>
       <el-table-column
         prop="createTime"

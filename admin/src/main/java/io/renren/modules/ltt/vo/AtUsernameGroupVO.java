@@ -45,5 +45,10 @@ public class AtUsernameGroupVO implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="创建时间")
 	private Date createTime;
+	/**
+	 * 昵称分组数量
+	 */
+	@ApiModelProperty(required=false,value="昵称分组数量")
+	private Integer usernameGroupIdCount;
 
 }

@@ -1,9 +1,9 @@
 package io.renren.modules.ltt.service.impl;
-import java.util.ArrayList;
-import java.util.Date;
+import java.util.*;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.http.HttpUtil;
 import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
@@ -11,6 +11,7 @@ import io.renren.modules.ltt.entity.AtUsernameEntity;
 import io.renren.modules.ltt.enums.DeleteFlag;
 import io.renren.modules.ltt.enums.UseFlag;
 import io.renren.modules.ltt.service.AtUsernameService;
+import io.renren.modules.ltt.vo.AtUsernameGroupUsernameCountGroupIdVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -28,8 +29,7 @@ import io.renren.modules.ltt.conver.AtUsernameGroupConver;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service("atUsernameGroupService")
@@ -42,8 +42,19 @@ public class AtUsernameGroupServiceImpl extends ServiceImpl<AtUsernameGroupDao, 
                 new Query<AtUsernameGroupEntity>(atUsernameGroup).getPage(),
                 new QueryWrapper<AtUsernameGroupEntity>()
         );
-
-        return PageUtils.<AtUsernameGroupVO>page(page).setList(AtUsernameGroupConver.MAPPER.conver(page.getRecords()));
+        //根据分组id转化为map
+        List<AtUsernameGroupUsernameCountGroupIdVO> atUsernameGroupUsernameCountGroupIdVOS = atUsernameService.usernameCountGroupId();
+        Map<Integer, Integer> integerIntegerMap = atUsernameGroupUsernameCountGroupIdVOS.stream().collect(Collectors.toMap(AtUsernameGroupUsernameCountGroupIdVO::getUsernameGroupId, AtUsernameGroupUsernameCountGroupIdVO::getUsernameGroupIdCount));
+        //设置分组数量
+        List<AtUsernameGroupVO> records = AtUsernameGroupConver.MAPPER.conver(page.getRecords());
+        for (AtUsernameGroupVO record : records) {
+            record.setUsernameGroupIdCount(0);
+            Integer count = integerIntegerMap.get(record.getId());
+            if (ObjectUtil.isNotNull(count)) {
+                record.setUsernameGroupIdCount(count);
+            }
+        }
+        return PageUtils.<AtUsernameGroupVO>page(page).setList(records);
     }
     @Override
     public AtUsernameGroupVO getById(Integer id) {

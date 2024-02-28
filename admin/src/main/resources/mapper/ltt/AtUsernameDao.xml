@@ -13,5 +13,18 @@
         <result property="createTime" column="create_time"/>
     </resultMap>
 
+    <select id="usernameCountGroupId"
+            resultType="io.renren.modules.ltt.vo.AtUsernameGroupUsernameCountGroupIdVO">
+        SELECT
+            COUNT( username_group_id ) usernameGroupIdCount,
+            username_group_id usernameGroupId
+        FROM
+            at_username
+        WHERE
+            use_flag = 1
+        GROUP BY
+            username_group_id
+    </select>
+
 
 </mapper>
