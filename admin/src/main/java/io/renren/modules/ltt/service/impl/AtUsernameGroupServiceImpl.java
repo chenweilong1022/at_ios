@@ -75,6 +75,7 @@ public class AtUsernameGroupServiceImpl extends ServiceImpl<AtUsernameGroupDao, 
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean updateById(AtUsernameGroupDTO atUsernameGroup) {
         AtUsernameGroupEntity atUsernameGroupEntity = AtUsernameGroupConver.MAPPER.converDTO(atUsernameGroup);
         boolean flag = this.updateById(atUsernameGroupEntity);

@@ -3,11 +3,13 @@ package io.renren.modules.ltt.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import io.renren.common.utils.PageUtils;
 import io.renren.modules.ltt.dto.AtDataDTO;
+import io.renren.modules.ltt.vo.AtDataGroupVODataCountGroupIdVO;
 import io.renren.modules.ltt.vo.AtDataVO;
 import io.renren.modules.ltt.entity.AtDataEntity;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -58,5 +60,11 @@ public interface AtDataService extends IService<AtDataEntity> {
      */
     @Override
     boolean removeByIds(Collection<? extends Serializable> ids);
+
+    /**
+     * 剩余可用数据分组
+     * @return
+     */
+    List<AtDataGroupVODataCountGroupIdVO> dataCountGroupId();
 }
 

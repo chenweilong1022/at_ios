@@ -1,6 +1,7 @@
 package io.renren.modules.ltt.service.impl;
 
 import io.renren.datasources.annotation.Game;
+import io.renren.modules.ltt.vo.AtDataGroupVODataCountGroupIdVO;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -17,6 +18,7 @@ import io.renren.modules.ltt.conver.AtDataConver;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 
 
 @Service("atDataService")
@@ -57,6 +59,11 @@ public class AtDataServiceImpl extends ServiceImpl<AtDataDao, AtDataEntity> impl
     @Override
     public boolean removeByIds(Collection<? extends Serializable> ids) {
         return super.removeByIds(ids);
+    }
+
+    @Override
+    public List<AtDataGroupVODataCountGroupIdVO> dataCountGroupId() {
+        return baseMapper.dataCountGroupId();
     }
 
 }

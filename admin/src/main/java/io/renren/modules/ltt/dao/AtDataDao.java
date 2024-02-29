@@ -2,7 +2,10 @@ package io.renren.modules.ltt.dao;
 
 import io.renren.modules.ltt.entity.AtDataEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import io.renren.modules.ltt.vo.AtDataGroupVODataCountGroupIdVO;
 import org.apache.ibatis.annotations.Mapper;
+
+import java.util.List;
 
 /**
  * 数据
@@ -13,5 +16,6 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface AtDataDao extends BaseMapper<AtDataEntity> {
-	
+
+    List<AtDataGroupVODataCountGroupIdVO> dataCountGroupId();
 }
