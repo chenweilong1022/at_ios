@@ -1,18 +1,32 @@
 <template>
   <el-dialog
-    :title="!dataForm.id ? '新增' : '修改'"
+    :title="!dataForm.id ? '数据上传' : '数据上传'"
     :close-on-click-modal="false"
     :visible.sync="visible">
     <el-form :model="dataForm" :rules="dataRule" ref="dataForm" @keyup.enter.native="dataFormSubmit()" label-width="80px">
-    <el-form-item label="头像分组id" prop="avatarGroupId">
-      <el-input v-model="dataForm.avatarGroupId" placeholder="头像分组id"></el-input>
+    <el-form-item label="分组名称" prop="name">
+      <el-input v-model="dataForm.name" placeholder="分组名称" disabled=""></el-input>
     </el-form-item>
-    <el-form-item label="头像" prop="avatar">
-      <el-input v-model="dataForm.avatar" placeholder="头像"></el-input>
-    </el-form-item>
-    <el-form-item label="使用标识" prop="useFlag">
-      <el-input v-model="dataForm.useFlag" placeholder="使用标识"></el-input>
-    </el-form-item>
+
+      <el-form-item label="分组名称" prop="name">
+        <el-upload
+          v-model:file-list="fileList"
+          class="upload-demo"
+          :multiple="multiple"
+          action="http://localhost:8880/app/file/upload"
+          :on-preview="handlePreview"
+          :on-remove="handleRemove"
+          :on-success="handleSuccess"
+          list-type="picture"
+        >
+          <el-button type="primary">Click to upload</el-button>
+          <template #tip>
+            <div class="el-upload__tip">
+              jpg/png files with a size less than 500kb
+            </div>
+          </template>
+        </el-upload>
+      </el-form-item>
     </el-form>
     <span slot="footer" class="dialog-footer">
       <el-button @click="visible = false">取消</el-button>
@@ -25,24 +39,19 @@
   export default {
     data () {
       return {
+        multiple: true,
+        fileList: [],
         visible: false,
         dataForm: {
+          avatarList: [],
           id: 0,
-          avatarGroupId: '',
-          avatar: '',
-          useFlag: '',
+          name: '',
           deleteFlag: '',
           createTime: ''
         },
         dataRule: {
-          avatarGroupId: [
-            { required: true, message: '头像分组id不能为空', trigger: 'blur' }
-          ],
-          avatar: [
-            { required: true, message: '头像不能为空', trigger: 'blur' }
-          ],
-          useFlag: [
-            { required: true, message: '使用标识不能为空', trigger: 'blur' }
+          name: [
+            { required: true, message: '分组名称不能为空', trigger: 'blur' }
           ],
           deleteFlag: [
             { required: true, message: '删除标志不能为空', trigger: 'blur' }
@@ -54,6 +63,21 @@
       }
     },
     methods: {
+      handleSuccess (uploadFile,response,uploadFiles) {
+        console.log(uploadFile)
+        console.log(uploadFiles)
+        this.fileList = uploadFiles;
+      },
+      handleRemove (uploadFile,uploadFiles) {
+        this.fileList = uploadFiles;
+        console.log(uploadFile)
+        console.log(uploadFiles)
+      },
+      handlePreview (uploadFile,uploadFiles) {
+        console.log(uploadFile)
+        console.log(uploadFiles)
+        this.fileList = uploadFiles;
+      },
       init (id) {
         this.dataForm.id = id || 0
         this.visible = true
@@ -61,16 +85,14 @@
           this.$refs['dataForm'].resetFields()
           if (this.dataForm.id) {
             this.$http({
-              url: this.$http.adornUrl(`/ltt/atavatar/info/${this.dataForm.id}`),
+              url: this.$http.adornUrl(`/ltt/atavatargroup/info/${this.dataForm.id}`),
               method: 'get',
               params: this.$http.adornParams()
             }).then(({data}) => {
               if (data && data.code === 0) {
-                this.dataForm.avatarGroupId = data.atAvatar.avatarGroupId
-                this.dataForm.avatar = data.atAvatar.avatar
-                this.dataForm.useFlag = data.atAvatar.useFlag
-                this.dataForm.deleteFlag = data.atAvatar.deleteFlag
-                this.dataForm.createTime = data.atAvatar.createTime
+                this.dataForm.name = data.atAvatarGroup.name
+                this.dataForm.deleteFlag = data.atAvatarGroup.deleteFlag
+                this.dataForm.createTime = data.atAvatarGroup.createTime
               }
             })
           }
@@ -78,16 +100,21 @@
       },
       // 表单提交
       dataFormSubmit () {
+        this.dataForm.avatarList = [];
+        for (let i = 0; i < this.fileList.length; i++) {
+          let data = this.fileList[i]
+          this.dataForm.avatarList.push(data.response.data);
+        }
+        console.log(this.dataForm.avatarList)
         this.$refs['dataForm'].validate((valid) => {
           if (valid) {
             this.$http({
-              url: this.$http.adornUrl(`/ltt/atavatar/${!this.dataForm.id ? 'save' : 'update'}`),
+              url: this.$http.adornUrl(`/ltt/atavatargroup/${!this.dataForm.id ? 'save' : 'update'}`),
               method: 'post',
               data: this.$http.adornData({
                 'id': this.dataForm.id || undefined,
-                'avatarGroupId': this.dataForm.avatarGroupId,
-                'avatar': this.dataForm.avatar,
-                'useFlag': this.dataForm.useFlag,
+                'name': this.dataForm.name,
+                'avatarList': this.dataForm.avatarList,
                 'deleteFlag': this.dataForm.deleteFlag,
                 'createTime': this.dataForm.createTime
               })

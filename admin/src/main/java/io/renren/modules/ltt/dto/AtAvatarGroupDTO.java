@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 头像分组
@@ -36,6 +37,11 @@ public class AtAvatarGroupDTO extends PageParam implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="分组名称")
 	private String name;
+	/**
+	 * 头像列表
+	 */
+	@ApiModelProperty(required=false,value="头像列表")
+	private List<String> avatarList;
 	/**
 	 * 删除标志
 	 */
