@@ -15,7 +15,7 @@ import java.util.Collection;
  *
  * @author chenweilong
  * @email chenweilong@qq.com
- * @date 2024-03-01 01:54:42
+ * @date 2024-03-01 02:03:03
  */
 public interface AtUserTokenService extends IService<AtUserTokenEntity> {
 

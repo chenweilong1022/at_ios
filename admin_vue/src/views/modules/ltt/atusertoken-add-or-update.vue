@@ -16,6 +16,12 @@
     <el-form-item label="创建时间" prop="createTime">
       <el-input v-model="dataForm.createTime" placeholder="创建时间"></el-input>
     </el-form-item>
+    <el-form-item label="平台" prop="platform">
+      <el-input v-model="dataForm.platform" placeholder="平台"></el-input>
+    </el-form-item>
+    <el-form-item label="分组id" prop="userGroupId">
+      <el-input v-model="dataForm.userGroupId" placeholder="分组id"></el-input>
+    </el-form-item>
     </el-form>
     <span slot="footer" class="dialog-footer">
       <el-button @click="visible = false">取消</el-button>
@@ -34,7 +40,9 @@
           token: '',
           useFlag: '',
           deleteFlag: '',
-          createTime: ''
+          createTime: '',
+          platform: '',
+          userGroupId: ''
         },
         dataRule: {
           token: [
@@ -48,6 +56,12 @@
           ],
           createTime: [
             { required: true, message: '创建时间不能为空', trigger: 'blur' }
+          ],
+          platform: [
+            { required: true, message: '平台不能为空', trigger: 'blur' }
+          ],
+          userGroupId: [
+            { required: true, message: '分组id不能为空', trigger: 'blur' }
           ]
         }
       }
@@ -69,6 +83,8 @@
                 this.dataForm.useFlag = data.atusertoken.useFlag
                 this.dataForm.deleteFlag = data.atusertoken.deleteFlag
                 this.dataForm.createTime = data.atusertoken.createTime
+                this.dataForm.platform = data.atusertoken.platform
+                this.dataForm.userGroupId = data.atusertoken.userGroupId
               }
             })
           }
@@ -86,7 +102,9 @@
                 'token': this.dataForm.token,
                 'useFlag': this.dataForm.useFlag,
                 'deleteFlag': this.dataForm.deleteFlag,
-                'createTime': this.dataForm.createTime
+                'createTime': this.dataForm.createTime,
+                'platform': this.dataForm.platform,
+                'userGroupId': this.dataForm.userGroupId
               })
             }).then(({data}) => {
               if (data && data.code === 0) {

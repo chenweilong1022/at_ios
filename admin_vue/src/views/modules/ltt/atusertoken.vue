@@ -53,6 +53,18 @@
         label="创建时间">
       </el-table-column>
       <el-table-column
+        prop="platform"
+        header-align="center"
+        align="center"
+        label="平台">
+      </el-table-column>
+      <el-table-column
+        prop="userGroupId"
+        header-align="center"
+        align="center"
+        label="分组id">
+      </el-table-column>
+      <el-table-column
         fixed="right"
         header-align="center"
         align="center"

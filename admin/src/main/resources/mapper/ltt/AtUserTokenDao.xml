@@ -10,6 +10,8 @@
         <result property="useFlag" column="use_flag"/>
         <result property="deleteFlag" column="delete_flag"/>
         <result property="createTime" column="create_time"/>
+        <result property="platform" column="platform"/>
+        <result property="userGroupId" column="user_group_id"/>
     </resultMap>
 
 

@@ -15,7 +15,7 @@ import java.util.Date;
  *
  * @author chenweilong
  * @email chenweilong@qq.com
- * @date 2024-03-01 01:54:42
+ * @date 2024-03-01 02:03:03
  */
 @Data
 @TableName("at_user_token")
@@ -50,5 +50,15 @@ public class AtUserTokenVO implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="创建时间")
 	private Date createTime;
+	/**
+	 * 平台
+	 */
+	@ApiModelProperty(required=false,value="平台")
+	private Integer platform;
+	/**
+	 * 分组id
+	 */
+	@ApiModelProperty(required=false,value="分组id")
+	private Integer userGroupId;
 
 }
