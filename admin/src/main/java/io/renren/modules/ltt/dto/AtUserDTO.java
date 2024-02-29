@@ -16,7 +16,7 @@ import java.util.Date;
  *
  * @author chenweilong
  * @email chenweilong@qq.com
- * @date 2024-03-01 01:44:22
+ * @date 2024-03-01 01:55:49
  */
 @Data
 @TableName("at_user")
@@ -91,5 +91,10 @@ public class AtUserDTO extends PageParam implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="创建时间")
 	private Date createTime;
+	/**
+	 * 用户tokenid
+	 */
+	@ApiModelProperty(required=false,value="用户tokenid")
+	private Integer userTokenId;
 
 }

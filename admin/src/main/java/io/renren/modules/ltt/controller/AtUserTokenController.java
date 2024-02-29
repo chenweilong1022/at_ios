@@ -9,34 +9,34 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.renren.modules.ltt.dto.AtUserDTO;
-import io.renren.modules.ltt.vo.AtUserVO;
-import io.renren.modules.ltt.service.AtUserService;
+import io.renren.modules.ltt.dto.AtUserTokenDTO;
+import io.renren.modules.ltt.vo.AtUserTokenVO;
+import io.renren.modules.ltt.service.AtUserTokenService;
 import io.renren.common.utils.PageUtils;
 import io.renren.common.utils.R;
 
 
 
 /**
- * 账号数据
+ * 用户token数据
  *
  * @author chenweilong
  * @email chenweilong@qq.com
- * @date 2024-03-01 01:55:49
+ * @date 2024-03-01 01:54:42
  */
 @RestController
-@RequestMapping("ltt/atuser")
-public class AtUserController {
+@RequestMapping("ltt/atusertoken")
+public class AtUserTokenController {
     @Autowired
-    private AtUserService atUserService;
+    private AtUserTokenService atUserTokenService;
 
     /**
      * 列表
      */
     @RequestMapping("/list")
-    @RequiresPermissions("ltt:atuser:list")
-    public R list(AtUserDTO atUser){
-        PageUtils page = atUserService.queryPage(atUser);
+    @RequiresPermissions("ltt:atusertoken:list")
+    public R list(AtUserTokenDTO atUserToken){
+        PageUtils page = atUserTokenService.queryPage(atUserToken);
 
         return R.ok().put("page", page);
     }
@@ -46,20 +46,20 @@ public class AtUserController {
      * 信息
      */
     @RequestMapping("/info/{id}")
-    @RequiresPermissions("ltt:atuser:info")
+    @RequiresPermissions("ltt:atusertoken:info")
     public R info(@PathVariable("id") Integer id){
-		AtUserVO atUser = atUserService.getById(id);
+		AtUserTokenVO atUserToken = atUserTokenService.getById(id);
 
-        return R.ok().put("atUser", atUser);
+        return R.ok().put("atUserToken", atUserToken);
     }
 
     /**
      * 保存
      */
     @RequestMapping("/save")
-    @RequiresPermissions("ltt:atuser:save")
-    public R save(@RequestBody AtUserDTO atUser){
-		atUserService.save(atUser);
+    @RequiresPermissions("ltt:atusertoken:save")
+    public R save(@RequestBody AtUserTokenDTO atUserToken){
+		atUserTokenService.save(atUserToken);
 
         return R.ok();
     }
@@ -68,9 +68,9 @@ public class AtUserController {
      * 修改
      */
     @RequestMapping("/update")
-    @RequiresPermissions("ltt:atuser:update")
-    public R update(@RequestBody AtUserDTO atUser){
-		atUserService.updateById(atUser);
+    @RequiresPermissions("ltt:atusertoken:update")
+    public R update(@RequestBody AtUserTokenDTO atUserToken){
+		atUserTokenService.updateById(atUserToken);
 
         return R.ok();
     }
@@ -79,9 +79,9 @@ public class AtUserController {
      * 删除
      */
     @RequestMapping("/delete")
-    @RequiresPermissions("ltt:atuser:delete")
+    @RequiresPermissions("ltt:atusertoken:delete")
     public R delete(@RequestBody Integer[] ids){
-		atUserService.removeByIds(Arrays.asList(ids));
+		atUserTokenService.removeByIds(Arrays.asList(ids));
 
         return R.ok();
     }

@@ -40,6 +40,9 @@
     <el-form-item label="创建时间" prop="createTime">
       <el-input v-model="dataForm.createTime" placeholder="创建时间"></el-input>
     </el-form-item>
+    <el-form-item label="用户tokenid" prop="userTokenId">
+      <el-input v-model="dataForm.userTokenId" placeholder="用户tokenid"></el-input>
+    </el-form-item>
     </el-form>
     <span slot="footer" class="dialog-footer">
       <el-button @click="visible = false">取消</el-button>
@@ -66,7 +69,8 @@
           customerServiceId: '',
           customerService: '',
           deleteFlag: '',
-          createTime: ''
+          createTime: '',
+          userTokenId: ''
         },
         dataRule: {
           avatar: [
@@ -104,6 +108,9 @@
           ],
           createTime: [
             { required: true, message: '创建时间不能为空', trigger: 'blur' }
+          ],
+          userTokenId: [
+            { required: true, message: '用户tokenid不能为空', trigger: 'blur' }
           ]
         }
       }
@@ -133,6 +140,7 @@
                 this.dataForm.customerService = data.atuser.customerService
                 this.dataForm.deleteFlag = data.atuser.deleteFlag
                 this.dataForm.createTime = data.atuser.createTime
+                this.dataForm.userTokenId = data.atuser.userTokenId
               }
             })
           }
@@ -158,7 +166,8 @@
                 'customerServiceId': this.dataForm.customerServiceId,
                 'customerService': this.dataForm.customerService,
                 'deleteFlag': this.dataForm.deleteFlag,
-                'createTime': this.dataForm.createTime
+                'createTime': this.dataForm.createTime,
+                'userTokenId': this.dataForm.userTokenId
               })
             }).then(({data}) => {
               if (data && data.code === 0) {

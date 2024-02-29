@@ -6,8 +6,8 @@
       </el-form-item>
       <el-form-item>
         <el-button @click="getDataList()">查询</el-button>
-        <el-button v-if="isAuth('ltt:atuser:save')" type="primary" @click="addOrUpdateHandle()">新增</el-button>
-        <el-button v-if="isAuth('ltt:atuser:delete')" type="danger" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>
+        <el-button v-if="isAuth('ltt:atusertoken:save')" type="primary" @click="addOrUpdateHandle()">新增</el-button>
+        <el-button v-if="isAuth('ltt:atusertoken:delete')" type="danger" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>
       </el-form-item>
     </el-form>
     <el-table
@@ -29,64 +29,16 @@
         label="主键">
       </el-table-column>
       <el-table-column
-        prop="avatar"
+        prop="token"
         header-align="center"
         align="center"
-        label="头像">
+        label="token">
       </el-table-column>
       <el-table-column
-        prop="nation"
+        prop="useFlag"
         header-align="center"
         align="center"
-        label="国家">
-      </el-table-column>
-      <el-table-column
-        prop="telephone"
-        header-align="center"
-        align="center"
-        label="电话">
-      </el-table-column>
-      <el-table-column
-        prop="nickName"
-        header-align="center"
-        align="center"
-        label="昵称">
-      </el-table-column>
-      <el-table-column
-        prop="numberFriends"
-        header-align="center"
-        align="center"
-        label="好友数量">
-      </el-table-column>
-      <el-table-column
-        prop="password"
-        header-align="center"
-        align="center"
-        label="密码">
-      </el-table-column>
-      <el-table-column
-        prop="userGroupId"
-        header-align="center"
-        align="center"
-        label="分组id">
-      </el-table-column>
-      <el-table-column
-        prop="userGroupName"
-        header-align="center"
-        align="center"
-        label="分组名称">
-      </el-table-column>
-      <el-table-column
-        prop="customerServiceId"
-        header-align="center"
-        align="center"
-        label="所属客服id">
-      </el-table-column>
-      <el-table-column
-        prop="customerService"
-        header-align="center"
-        align="center"
-        label="所属客服">
+        label="使用状态">
       </el-table-column>
       <el-table-column
         prop="deleteFlag"
@@ -99,12 +51,6 @@
         header-align="center"
         align="center"
         label="创建时间">
-      </el-table-column>
-      <el-table-column
-        prop="userTokenId"
-        header-align="center"
-        align="center"
-        label="用户tokenid">
       </el-table-column>
       <el-table-column
         fixed="right"
@@ -133,7 +79,7 @@
 </template>
 
 <script>
-  import AddOrUpdate from './atuser-add-or-update'
+  import AddOrUpdate from './atusertoken-add-or-update'
   export default {
     data () {
       return {
@@ -160,7 +106,7 @@
       getDataList () {
         this.dataListLoading = true
         this.$http({
-          url: this.$http.adornUrl('/ltt/atuser/list'),
+          url: this.$http.adornUrl('/ltt/atusertoken/list'),
           method: 'get',
           params: this.$http.adornParams({
             'page': this.pageIndex,
@@ -211,7 +157,7 @@
           type: 'warning'
         }).then(() => {
           this.$http({
-            url: this.$http.adornUrl('/ltt/atuser/delete'),
+            url: this.$http.adornUrl('/ltt/atusertoken/delete'),
             method: 'post',
             data: this.$http.adornData(ids, false)
           }).then(({data}) => {

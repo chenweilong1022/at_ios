@@ -2,47 +2,47 @@ package io.renren.modules.ltt.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import io.renren.common.utils.PageUtils;
-import io.renren.modules.ltt.dto.AtUserDTO;
-import io.renren.modules.ltt.vo.AtUserVO;
-import io.renren.modules.ltt.entity.AtUserEntity;
+import io.renren.modules.ltt.dto.AtUserTokenDTO;
+import io.renren.modules.ltt.vo.AtUserTokenVO;
+import io.renren.modules.ltt.entity.AtUserTokenEntity;
 
 import java.io.Serializable;
 import java.util.Collection;
 
 
 /**
- * 账号数据
+ * 用户token数据
  *
  * @author chenweilong
  * @email chenweilong@qq.com
- * @date 2024-03-01 01:55:49
+ * @date 2024-03-01 01:54:42
  */
-public interface AtUserService extends IService<AtUserEntity> {
+public interface AtUserTokenService extends IService<AtUserTokenEntity> {
 
     /**
      * 分页查询
-     * @param atUser
+     * @param atUserToken
      * @return
      */
-    PageUtils queryPage(AtUserDTO atUser);
+    PageUtils queryPage(AtUserTokenDTO atUserToken);
     /**
      * 根据id查询
      * @param id
      * @return
      */
-    AtUserVO getById(Integer id);
+    AtUserTokenVO getById(Integer id);
     /**
      * 保存
-     * @param atUser
+     * @param atUserToken
      * @return
      */
-    boolean save(AtUserDTO atUser);
+    boolean save(AtUserTokenDTO atUserToken);
     /**
      * 根据id修改
-     * @param atUser
+     * @param atUserToken
      * @return
      */
-    boolean updateById(AtUserDTO atUser);
+    boolean updateById(AtUserTokenDTO atUserToken);
     /**
      * 根据id删除
      * @param id
