@@ -3,6 +3,8 @@ package io.renren.modules.ltt.vo;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.renren.common.utils.EnumUtil;
+import io.renren.modules.ltt.enums.GroupType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -51,4 +53,7 @@ public class AtDataGroupVO implements Serializable {
 	@ApiModelProperty(required=false,value="创建时间")
 	private Date createTime;
 
+	public String getGroupTypeStr() {
+		return EnumUtil.queryValueByKey(this.groupType, GroupType.values());
+	}
 }

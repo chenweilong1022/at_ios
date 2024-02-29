@@ -7,14 +7,21 @@
     <el-form-item label="分组名称" prop="name">
       <el-input v-model="dataForm.name" placeholder="分组名称"></el-input>
     </el-form-item>
-    <el-form-item label="分组类型" prop="groupType">
-      <el-input v-model="dataForm.groupType" placeholder="分组类型"></el-input>
-    </el-form-item>
-    <el-form-item label="删除标志" prop="deleteFlag">
-      <el-input v-model="dataForm.deleteFlag" placeholder="删除标志"></el-input>
-    </el-form-item>
-    <el-form-item label="创建时间" prop="createTime">
-      <el-input v-model="dataForm.createTime" placeholder="创建时间"></el-input>
+    <el-form-item label="分组类型">
+      <el-select
+        v-model="groupType"
+        class="m-2"
+        placeholder="Select"
+        size="large"
+        style="width: 240px"
+      >
+        <el-option
+          v-for="item in options"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value"
+        />
+      </el-select>
     </el-form-item>
     </el-form>
     <span slot="footer" class="dialog-footer">
@@ -28,6 +35,25 @@
   export default {
     data () {
       return {
+        groupType: null,
+        options: [
+          {
+            value: 1,
+            label: '手机号'
+          },
+          {
+            value: 2,
+            label: '不封控地区普通uid模式'
+          },
+          {
+            value: 3,
+            label: '自定义id'
+          },
+          {
+            value: 4,
+            label: '日本，台湾专用uid模式'
+          }
+        ],
         visible: false,
         dataForm: {
           id: 0,
@@ -65,10 +91,10 @@
               params: this.$http.adornParams()
             }).then(({data}) => {
               if (data && data.code === 0) {
-                this.dataForm.name = data.atdatagroup.name
-                this.dataForm.groupType = data.atdatagroup.groupType
-                this.dataForm.deleteFlag = data.atdatagroup.deleteFlag
-                this.dataForm.createTime = data.atdatagroup.createTime
+                this.dataForm.name = data.atDataGroup.name
+                this.dataForm.groupType = data.atDataGroup.groupType
+                this.dataForm.deleteFlag = data.atDataGroup.deleteFlag
+                this.dataForm.createTime = data.atDataGroup.createTime
               }
             })
           }
@@ -84,7 +110,7 @@
               data: this.$http.adornData({
                 'id': this.dataForm.id || undefined,
                 'name': this.dataForm.name,
-                'groupType': this.dataForm.groupType,
+                'groupType': this.groupType,
                 'deleteFlag': this.dataForm.deleteFlag,
                 'createTime': this.dataForm.createTime
               })

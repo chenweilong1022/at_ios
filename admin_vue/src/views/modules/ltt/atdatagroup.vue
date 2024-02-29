@@ -35,7 +35,7 @@
         label="分组名称">
       </el-table-column>
       <el-table-column
-        prop="groupType"
+        prop="groupTypeStr"
         header-align="center"
         align="center"
         label="分组类型">
