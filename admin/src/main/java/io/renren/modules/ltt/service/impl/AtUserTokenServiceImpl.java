@@ -1,6 +1,12 @@
 package io.renren.modules.ltt.service.impl;
+import java.util.Date;
 
+import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.http.HttpUtil;
+import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
+import io.renren.modules.ltt.enums.DeleteFlag;
+import io.renren.modules.ltt.enums.UseFlag;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -14,9 +20,12 @@ import io.renren.modules.ltt.dto.AtUserTokenDTO;
 import io.renren.modules.ltt.vo.AtUserTokenVO;
 import io.renren.modules.ltt.service.AtUserTokenService;
 import io.renren.modules.ltt.conver.AtUserTokenConver;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 
 @Service("atUserTokenService")
@@ -38,9 +47,24 @@ public class AtUserTokenServiceImpl extends ServiceImpl<AtUserTokenDao, AtUserTo
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean save(AtUserTokenDTO atUserToken) {
-        AtUserTokenEntity atUserTokenEntity = AtUserTokenConver.MAPPER.converDTO(atUserToken);
-        return this.save(atUserTokenEntity);
+        String s = HttpUtil.downloadString(atUserToken.getTxtUrl(), "UTF-8");
+        String[] split = s.split("\n");
+        Assert.isTrue(ArrayUtil.isEmpty(split),"txt不能为空");
+        Assert.isTrue(split.length <= 0,"txt不能为空");
+        List<AtUserTokenEntity> atUserTokenEntities = new ArrayList<>();
+        for (String string : split) {
+            AtUserTokenEntity userTokenEntity = new AtUserTokenEntity();
+            userTokenEntity.setToken(string);
+            userTokenEntity.setUseFlag(UseFlag.NO.getKey());
+            userTokenEntity.setDeleteFlag(DeleteFlag.NO.getKey());
+            userTokenEntity.setCreateTime(new Date());
+            userTokenEntity.setPlatform(atUserToken.getPlatform());
+            userTokenEntity.setUserGroupId(atUserToken.getUserGroupId());
+            atUserTokenEntities.add(userTokenEntity);
+        }
+        return this.saveBatch(atUserTokenEntities);
     }
 
     @Override

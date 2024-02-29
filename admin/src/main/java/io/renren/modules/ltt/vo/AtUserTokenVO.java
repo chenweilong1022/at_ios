@@ -3,6 +3,9 @@ package io.renren.modules.ltt.vo;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.renren.common.utils.EnumUtil;
+import io.renren.modules.ltt.enums.Platform;
+import io.renren.modules.ltt.enums.UseFlag;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -61,4 +64,12 @@ public class AtUserTokenVO implements Serializable {
 	@ApiModelProperty(required=false,value="分组id")
 	private Integer userGroupId;
 
+
+	public String getUseFlag() {
+		return EnumUtil.queryValueByKey(this.useFlag, UseFlag.values());
+	}
+
+	public String getPlatform() {
+		return EnumUtil.queryValueByKey(this.platform, Platform.values());
+	}
 }

@@ -37,6 +37,11 @@ public class AtUserTokenDTO extends PageParam implements Serializable {
 	@ApiModelProperty(required=false,value="token")
 	private String token;
 	/**
+	 * 数据上传url
+	 */
+	@ApiModelProperty(required=false,value="数据上传url")
+	private String txtUrl;
+	/**
 	 * 使用状态
 	 */
 	@ApiModelProperty(required=false,value="使用状态")

@@ -4,24 +4,43 @@
     :close-on-click-modal="false"
     :visible.sync="visible">
     <el-form :model="dataForm" :rules="dataRule" ref="dataForm" @keyup.enter.native="dataFormSubmit()" label-width="80px">
-    <el-form-item label="token" prop="token">
-      <el-input v-model="dataForm.token" placeholder="token"></el-input>
-    </el-form-item>
-    <el-form-item label="使用状态" prop="useFlag">
-      <el-input v-model="dataForm.useFlag" placeholder="使用状态"></el-input>
-    </el-form-item>
-    <el-form-item label="删除标志" prop="deleteFlag">
-      <el-input v-model="dataForm.deleteFlag" placeholder="删除标志"></el-input>
-    </el-form-item>
-    <el-form-item label="创建时间" prop="createTime">
-      <el-input v-model="dataForm.createTime" placeholder="创建时间"></el-input>
-    </el-form-item>
     <el-form-item label="平台" prop="platform">
-      <el-input v-model="dataForm.platform" placeholder="平台"></el-input>
+      <el-select
+        v-model="dataForm.platform"
+        class="m-2"
+        placeholder="Select"
+        size="large"
+        style="width: 240px">
+        <el-option
+          v-for="item in options"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value"/>
+      </el-select>
     </el-form-item>
-    <el-form-item label="分组id" prop="userGroupId">
-      <el-input v-model="dataForm.userGroupId" placeholder="分组id"></el-input>
-    </el-form-item>
+      <el-form-item label="账号分组" prop="userGroupId">
+        <el-select
+          v-model="dataForm.userGroupId"
+          class="m-2"
+          placeholder="Select"
+          size="large"
+          style="width: 240px">
+          <el-option
+            v-for="item in userGroupData"
+            :key="item.id"
+            :label="item.name"
+            :value="item.id"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="数据上传">
+        <el-upload
+          class="upload-demo"
+          action="http://localhost:8880/app/file/upload"
+          :on-success="handleAvatarSuccess">
+          <el-button size="small" type="primary">点击上传</el-button>
+        </el-upload>
+      </el-form-item>
     </el-form>
     <span slot="footer" class="dialog-footer">
       <el-button @click="visible = false">取消</el-button>
@@ -35,15 +54,27 @@
     data () {
       return {
         visible: false,
+        options: [
+          {
+            value: 1,
+            label: '安卓'
+          },
+          {
+            value: 2,
+            label: 'IOS'
+          }
+        ],
         dataForm: {
           id: 0,
           token: '',
           useFlag: '',
+          txtUrl: '',
           deleteFlag: '',
           createTime: '',
           platform: '',
           userGroupId: ''
         },
+        userGroupData: [],
         dataRule: {
           token: [
             { required: true, message: 'token不能为空', trigger: 'blur' }
@@ -67,26 +98,27 @@
       }
     },
     methods: {
-      init (id) {
-        this.dataForm.id = id || 0
+      handleAvatarSuccess (res, file) {
+        this.dataForm.txtUrl = res.data
+      },
+      init () {
         this.visible = true
-        this.$nextTick(() => {
-          this.$refs['dataForm'].resetFields()
-          if (this.dataForm.id) {
-            this.$http({
-              url: this.$http.adornUrl(`/ltt/atusertoken/info/${this.dataForm.id}`),
-              method: 'get',
-              params: this.$http.adornParams()
-            }).then(({data}) => {
-              if (data && data.code === 0) {
-                this.dataForm.token = data.atusertoken.token
-                this.dataForm.useFlag = data.atusertoken.useFlag
-                this.dataForm.deleteFlag = data.atusertoken.deleteFlag
-                this.dataForm.createTime = data.atusertoken.createTime
-                this.dataForm.platform = data.atusertoken.platform
-                this.dataForm.userGroupId = data.atusertoken.userGroupId
-              }
-            })
+        this.getDataList()
+      },
+      // 获取数据列表
+      getDataList () {
+        this.$http({
+          url: this.$http.adornUrl('/ltt/atusergroup/list'),
+          method: 'get',
+          params: this.$http.adornParams({
+            'page': 1,
+            'limit': 111
+          })
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.userGroupData = data.page.list
+          } else {
+            this.userGroupData = []
           }
         })
       },
@@ -101,6 +133,7 @@
                 'id': this.dataForm.id || undefined,
                 'token': this.dataForm.token,
                 'useFlag': this.dataForm.useFlag,
+                'txtUrl': this.dataForm.txtUrl,
                 'deleteFlag': this.dataForm.deleteFlag,
                 'createTime': this.dataForm.createTime,
                 'platform': this.dataForm.platform,

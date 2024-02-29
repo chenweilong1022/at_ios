@@ -5,13 +5,13 @@ import io.renren.common.base.interfaces.BaseEnum;
 import lombok.Getter;
 
 @Getter
-public enum UseFlag implements BaseEnum {
+public enum Platform implements BaseEnum {
 
-    NO(1,"未使用"),
-    YES(0,"已使用"),
+    ANDROID(1,"安卓"),
+    IOS(2,"IOS"),
     ;
 
-    UseFlag(int key, String value) {
+    Platform(int key, String value) {
         this.key = key;
         this.value = value;
     }

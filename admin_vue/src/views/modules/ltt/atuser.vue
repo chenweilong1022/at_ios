@@ -6,7 +6,7 @@
       </el-form-item>
       <el-form-item>
         <el-button @click="getDataList()">查询</el-button>
-        <el-button v-if="isAuth('ltt:atuser:save')" type="primary" @click="addOrUpdateHandle()">新增</el-button>
+        <el-button v-if="isAuth('ltt:atuser:save')" type="primary" @click="userImportHandle()">账户导入</el-button>
         <el-button v-if="isAuth('ltt:atuser:delete')" type="danger" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>
       </el-form-item>
     </el-form>
@@ -129,11 +129,13 @@
     </el-pagination>
     <!-- 弹窗, 新增 / 修改 -->
     <add-or-update v-if="addOrUpdateVisible" ref="addOrUpdate" @refreshDataList="getDataList"></add-or-update>
+    <user-import  v-if="userImportVisible" ref="userImport" @refreshDataList="getDataList"></user-import>
   </div>
 </template>
 
 <script>
   import AddOrUpdate from './atuser-add-or-update'
+  import UserImport from './atusertoken-add-or-update'
   export default {
     data () {
       return {
@@ -146,10 +148,12 @@
         totalPage: 0,
         dataListLoading: false,
         dataListSelections: [],
-        addOrUpdateVisible: false
+        addOrUpdateVisible: false,
+        userImportVisible: false
       }
     },
     components: {
+      UserImport,
       AddOrUpdate
     },
     activated () {
@@ -198,6 +202,13 @@
         this.addOrUpdateVisible = true
         this.$nextTick(() => {
           this.$refs.addOrUpdate.init(id)
+        })
+      },
+      // 新增 / 修改
+      userImportHandle (id) {
+        this.userImportVisible = true
+        this.$nextTick(() => {
+          this.$refs.userImport.init(id)
         })
       },
       // 删除
