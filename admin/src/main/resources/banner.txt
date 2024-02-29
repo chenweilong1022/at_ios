@@ -125,5 +125,13 @@ CREATE TABLE `at_avatar` (
 ) ENGINE=InnoDB AUTO_INCREMENT=501 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='头像';
 
 
+CREATE TABLE `at_data_group` (
+  `id` int NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `name` varchar(255) DEFAULT NULL COMMENT '分组名称',
+  `group_type` int DEFAULT NULL COMMENT '分组类型',
+  `delete_flag` int DEFAULT NULL COMMENT '删除标志',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='数据分组';
 
 

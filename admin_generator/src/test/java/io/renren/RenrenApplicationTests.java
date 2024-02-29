@@ -17,7 +17,7 @@ public class RenrenApplicationTests {
 	@Test
 	public void contextLoads() {
 		sysGeneratorService.generatorCode(new String[]{
-				"at_avatar",
+				"at_data_group",
 		});
 	}
 
