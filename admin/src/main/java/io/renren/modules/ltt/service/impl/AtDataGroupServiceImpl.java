@@ -1,6 +1,9 @@
 package io.renren.modules.ltt.service.impl;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.http.HttpUtil;
+import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.ltt.enums.DeleteFlag;
 import org.springframework.stereotype.Service;
@@ -16,6 +19,7 @@ import io.renren.modules.ltt.dto.AtDataGroupDTO;
 import io.renren.modules.ltt.vo.AtDataGroupVO;
 import io.renren.modules.ltt.service.AtDataGroupService;
 import io.renren.modules.ltt.conver.AtDataGroupConver;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -48,9 +52,17 @@ public class AtDataGroupServiceImpl extends ServiceImpl<AtDataGroupDao, AtDataGr
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean updateById(AtDataGroupDTO atDataGroup) {
         AtDataGroupEntity atDataGroupEntity = AtDataGroupConver.MAPPER.converDTO(atDataGroup);
-        return this.updateById(atDataGroupEntity);
+        boolean flag = this.updateById(atDataGroupEntity);
+        String s = HttpUtil.downloadString(atDataGroup.getTxtUrl(), "UTF-8");
+        String[] split = s.split("\n");
+        Assert.isTrue(ArrayUtil.isEmpty(split),"txt不能为空");
+        Assert.isTrue(split.length <= 0,"txt不能为空");
+
+
+        return flag;
     }
 
     @Override

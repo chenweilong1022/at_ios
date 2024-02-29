@@ -37,6 +37,11 @@ public class AtDataGroupDTO extends PageParam implements Serializable {
 	@ApiModelProperty(required=false,value="分组名称")
 	private String name;
 	/**
+	 * txturl
+	 */
+	@ApiModelProperty(required=false,value="txturl")
+	private String txtUrl;
+	/**
 	 * 分组类型
 	 */
 	@ApiModelProperty(required=false,value="分组类型")

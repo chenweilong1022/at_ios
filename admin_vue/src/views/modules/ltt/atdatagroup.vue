@@ -59,6 +59,7 @@
         width="150"
         label="操作">
         <template slot-scope="scope">
+          <el-button type="text" size="small" @click="dataUploadHandle(scope.row.id)">数据上传</el-button>
           <el-button type="text" size="small" @click="addOrUpdateHandle(scope.row.id)">修改</el-button>
           <el-button type="text" size="small" @click="deleteHandle(scope.row.id)">删除</el-button>
         </template>
@@ -75,11 +76,13 @@
     </el-pagination>
     <!-- 弹窗, 新增 / 修改 -->
     <add-or-update v-if="addOrUpdateVisible" ref="addOrUpdate" @refreshDataList="getDataList"></add-or-update>
+    <data-upload v-if="dataUploadVisible" ref="dataUpload" @refreshDataList="getDataList"></data-upload>
   </div>
 </template>
 
 <script>
   import AddOrUpdate from './atdatagroup-add-or-update'
+  import DataUpload from "./atdatagroup-data-upload";
   export default {
     data () {
       return {
@@ -92,10 +95,12 @@
         totalPage: 0,
         dataListLoading: false,
         dataListSelections: [],
-        addOrUpdateVisible: false
+        addOrUpdateVisible: false,
+        dataUploadVisible: false
       }
     },
     components: {
+      DataUpload,
       AddOrUpdate
     },
     activated () {
@@ -144,6 +149,13 @@
         this.addOrUpdateVisible = true
         this.$nextTick(() => {
           this.$refs.addOrUpdate.init(id)
+        })
+      },
+      // 数据上传
+      dataUploadHandle (id) {
+        this.dataUploadVisible = true
+        this.$nextTick(() => {
+          this.$refs.dataUpload.init(id)
         })
       },
       // 删除
