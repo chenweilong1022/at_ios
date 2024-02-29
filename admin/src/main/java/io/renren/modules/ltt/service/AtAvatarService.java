@@ -3,11 +3,13 @@ package io.renren.modules.ltt.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import io.renren.common.utils.PageUtils;
 import io.renren.modules.ltt.dto.AtAvatarDTO;
+import io.renren.modules.ltt.vo.AtAvatarGroupAvatarGroupIdVO;
 import io.renren.modules.ltt.vo.AtAvatarVO;
 import io.renren.modules.ltt.entity.AtAvatarEntity;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -58,5 +60,12 @@ public interface AtAvatarService extends IService<AtAvatarEntity> {
      */
     @Override
     boolean removeByIds(Collection<? extends Serializable> ids);
+
+    /**
+     * 头像分组
+     * @return
+     */
+    List<AtAvatarGroupAvatarGroupIdVO> avatarGroupId();
+
 }
 

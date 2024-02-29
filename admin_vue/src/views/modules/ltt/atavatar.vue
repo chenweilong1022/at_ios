@@ -23,22 +23,13 @@
         width="50">
       </el-table-column>
       <el-table-column
-        prop="id"
-        header-align="center"
-        align="center"
-        label="主键">
-      </el-table-column>
-      <el-table-column
-        prop="avatarGroupId"
-        header-align="center"
-        align="center"
-        label="头像分组id">
-      </el-table-column>
-      <el-table-column
         prop="avatar"
         header-align="center"
         align="center"
         label="头像">
+        <template slot-scope="scope">
+          <img style="width: 40px;height: 40px" :src="scope.row.avatar">
+        </template>
       </el-table-column>
       <el-table-column
         prop="useFlag"

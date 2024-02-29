@@ -3,6 +3,7 @@ package io.renren.modules.ltt.service.impl;
 import cn.hutool.core.date.DateUtil;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.ltt.enums.DeleteFlag;
+import io.renren.modules.ltt.vo.AtAvatarGroupAvatarGroupIdVO;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -19,6 +20,7 @@ import io.renren.modules.ltt.conver.AtAvatarConver;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 
 
 @Service("atAvatarService")
@@ -61,6 +63,11 @@ public class AtAvatarServiceImpl extends ServiceImpl<AtAvatarDao, AtAvatarEntity
     @Override
     public boolean removeByIds(Collection<? extends Serializable> ids) {
         return super.removeByIds(ids);
+    }
+
+    @Override
+    public List<AtAvatarGroupAvatarGroupIdVO> avatarGroupId() {
+        return baseMapper.avatarGroupId();
     }
 
 }

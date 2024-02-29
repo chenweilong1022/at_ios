@@ -3,13 +3,18 @@ package io.renren.modules.ltt.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.ObjectUtil;
 import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
+import io.renren.modules.ltt.conver.AtUsernameGroupConver;
 import io.renren.modules.ltt.entity.AtAvatarEntity;
 import io.renren.modules.ltt.entity.AtUsernameEntity;
 import io.renren.modules.ltt.enums.DeleteFlag;
 import io.renren.modules.ltt.enums.UseFlag;
 import io.renren.modules.ltt.service.AtAvatarService;
+import io.renren.modules.ltt.vo.AtAvatarGroupAvatarGroupIdVO;
+import io.renren.modules.ltt.vo.AtUsernameGroupUsernameCountGroupIdVO;
+import io.renren.modules.ltt.vo.AtUsernameGroupVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -27,10 +32,8 @@ import io.renren.modules.ltt.conver.AtAvatarGroupConver;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service("atAvatarGroupService")
@@ -44,7 +47,20 @@ public class AtAvatarGroupServiceImpl extends ServiceImpl<AtAvatarGroupDao, AtAv
                 new QueryWrapper<AtAvatarGroupEntity>()
         );
 
-        return PageUtils.<AtAvatarGroupVO>page(page).setList(AtAvatarGroupConver.MAPPER.conver(page.getRecords()));
+        List<AtAvatarGroupAvatarGroupIdVO> atAvatarGroupAvatarGroupIdVOs = atAvatarService.avatarGroupId();
+
+        Map<Integer, Integer> integerIntegerMap = atAvatarGroupAvatarGroupIdVOs.stream().collect(Collectors.toMap(AtAvatarGroupAvatarGroupIdVO::getAvatarGroupId, AtAvatarGroupAvatarGroupIdVO::getAvatarGroupIdCount));
+        //设置分组数量
+        List<AtAvatarGroupVO> records = AtAvatarGroupConver.MAPPER.conver(page.getRecords());
+        for (AtAvatarGroupVO record : records) {
+            record.setAvatarGroupIdCount(0);
+            Integer count = integerIntegerMap.get(record.getId());
+            if (ObjectUtil.isNotNull(count)) {
+                record.setAvatarGroupIdCount(count);
+            }
+        }
+
+        return PageUtils.<AtAvatarGroupVO>page(page).setList(records);
     }
     @Override
     public AtAvatarGroupVO getById(Integer id) {
@@ -91,8 +107,15 @@ public class AtAvatarGroupServiceImpl extends ServiceImpl<AtAvatarGroupDao, AtAv
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean removeByIds(Collection<? extends Serializable> ids) {
-        return super.removeByIds(ids);
+
+        boolean flag = super.removeByIds(ids);
+        //删除用户分组下的昵称
+        atAvatarService.remove(new QueryWrapper<AtAvatarEntity>().lambda()
+                .in(AtAvatarEntity::getAvatarGroupId,ids)
+        );
+        return flag;
     }
 
 }

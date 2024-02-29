@@ -2,7 +2,10 @@ package io.renren.modules.ltt.dao;
 
 import io.renren.modules.ltt.entity.AtAvatarEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import io.renren.modules.ltt.vo.AtAvatarGroupAvatarGroupIdVO;
 import org.apache.ibatis.annotations.Mapper;
+
+import java.util.List;
 
 /**
  * 头像
@@ -13,5 +16,6 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface AtAvatarDao extends BaseMapper<AtAvatarEntity> {
-	
+
+    List<AtAvatarGroupAvatarGroupIdVO> avatarGroupId();
 }
