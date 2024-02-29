@@ -134,4 +134,14 @@ CREATE TABLE `at_data_group` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='数据分组';
 
+CREATE TABLE `at_data` (
+  `id` int NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `data_group_id` int DEFAULT NULL COMMENT '数据分组id',
+  `data` varchar(255) DEFAULT NULL COMMENT '数据',
+  `use_flag` int DEFAULT NULL COMMENT '使用标识',
+  `delete_flag` int DEFAULT NULL COMMENT '删除标志',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=501 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='数据';
+
 
