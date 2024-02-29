@@ -63,20 +63,20 @@
       }
     },
     methods: {
-      handleSuccess (uploadFile,response,uploadFiles) {
+      handleSuccess (uploadFile, response, uploadFiles) {
         console.log(uploadFile)
         console.log(uploadFiles)
-        this.fileList = uploadFiles;
+        this.fileList = uploadFiles
       },
-      handleRemove (uploadFile,uploadFiles) {
-        this.fileList = uploadFiles;
+      handleRemove (uploadFile, uploadFiles) {
+        this.fileList = uploadFiles
         console.log(uploadFile)
         console.log(uploadFiles)
       },
-      handlePreview (uploadFile,uploadFiles) {
+      handlePreview (uploadFile, uploadFiles) {
         console.log(uploadFile)
         console.log(uploadFiles)
-        this.fileList = uploadFiles;
+        this.fileList = uploadFiles
       },
       init (id) {
         this.dataForm.id = id || 0
@@ -100,10 +100,10 @@
       },
       // 表单提交
       dataFormSubmit () {
-        this.dataForm.avatarList = [];
+        this.dataForm.avatarList = []
         for (let i = 0; i < this.fileList.length; i++) {
           let data = this.fileList[i]
-          this.dataForm.avatarList.push(data.response.data);
+          this.dataForm.avatarList.push(data.response.data)
         }
         console.log(this.dataForm.avatarList)
         this.$refs['dataForm'].validate((valid) => {

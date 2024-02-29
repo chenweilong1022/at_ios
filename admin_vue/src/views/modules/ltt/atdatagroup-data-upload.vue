@@ -108,7 +108,7 @@
                 this.dataForm.groupType = data.atDataGroup.groupType
                 this.dataForm.deleteFlag = data.atDataGroup.deleteFlag
                 this.dataForm.createTime = data.atDataGroup.createTime
-                this.groupType = this.dataForm.groupType;
+                this.groupType = this.dataForm.groupType
               }
             })
           }

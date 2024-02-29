@@ -134,14 +134,45 @@ CREATE TABLE `at_data_group` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='数据分组';
 
-CREATE TABLE `at_data` (
+CREATE TABLE `at_user` (
   `id` int NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `data_group_id` int DEFAULT NULL COMMENT '数据分组id',
-  `data` varchar(255) DEFAULT NULL COMMENT '数据',
-  `use_flag` int DEFAULT NULL COMMENT '使用标识',
+  `avatar` varchar(255) DEFAULT NULL COMMENT '头像',
+  `nation` varchar(255) DEFAULT NULL COMMENT '国家',
+  `telephone` varchar(255) DEFAULT NULL COMMENT '电话',
+  `nick_name` varchar(255) DEFAULT NULL COMMENT '昵称',
+  `number_friends` int DEFAULT NULL COMMENT '好友数量',
+  `password` varchar(255) DEFAULT NULL COMMENT '密码',
+  `user_group_id` int DEFAULT NULL COMMENT '分组id',
+  `user_group_name` varchar(255) DEFAULT NULL COMMENT '分组名称',
+  `customer_service_id` int DEFAULT NULL COMMENT '所属客服id',
+  `customer_service` varchar(255) DEFAULT NULL COMMENT '所属客服',
   `delete_flag` int DEFAULT NULL COMMENT '删除标志',
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=501 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='数据';
+) ENGINE=InnoDB AUTO_INCREMENT=501 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='账号数据';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

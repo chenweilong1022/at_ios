@@ -82,7 +82,7 @@
 
 <script>
   import AddOrUpdate from './atdatagroup-add-or-update'
-  import DataUpload from "./atdatagroup-data-upload";
+  import DataUpload from './atdatagroup-data-upload'
   export default {
     data () {
       return {
