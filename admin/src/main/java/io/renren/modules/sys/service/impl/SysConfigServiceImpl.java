@@ -16,13 +16,17 @@
 
 package io.renren.modules.sys.service.impl;
 
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.benmanes.caffeine.cache.Cache;
 import com.google.gson.Gson;
 import io.renren.common.exception.RRException;
+import io.renren.common.utils.ConfigConstant;
 import io.renren.common.utils.PageUtils;
 import io.renren.common.utils.Query;
+import io.renren.modules.client.entity.ProjectWorkEntity;
 import io.renren.modules.sys.dao.SysConfigDao;
 import io.renren.modules.sys.entity.SysConfigEntity;
 import io.renren.modules.sys.redis.SysConfigRedis;
@@ -32,13 +36,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.Arrays;
-import java.util.Map;
 
 @Service("sysConfigService")
 public class SysConfigServiceImpl extends ServiceImpl<SysConfigDao, SysConfigEntity> implements SysConfigService {
 	@Autowired
 	private SysConfigRedis sysConfigRedis;
+
+	@Resource(name = "caffeineCacheProjectWorkEntity")
+	private Cache<String, ProjectWorkEntity> caffeineCacheProjectWorkEntity;
 
 	@Override
 	public PageUtils queryPage(SysConfigEntity sysConfigEntity) {
@@ -53,18 +60,50 @@ public class SysConfigServiceImpl extends ServiceImpl<SysConfigDao, SysConfigEnt
 	}
 	
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public boolean save(SysConfigEntity config) {
+		ProjectWorkEntity projectWorkEntity = new ProjectWorkEntity();
+		projectWorkEntity.setLineBaseHttp(config.getLineBaseHttp());
+		projectWorkEntity.setFirefoxBaseUrl(config.getFirefoxBaseUrl());
+		projectWorkEntity.setFirefoxToken(config.getFirefoxToken());
+		projectWorkEntity.setFirefoxIid(config.getFirefoxIid());
+		projectWorkEntity.setFirefoxCountry(config.getFirefoxCountry());
+		projectWorkEntity.setFirefoxCountry1(config.getFirefoxCountry1());
+		projectWorkEntity.setProxy(config.getProxy());
+		projectWorkEntity.setProxyUseCount(config.getProxyUseCount());
+		projectWorkEntity.setLineAb(config.getLineAb());
+		projectWorkEntity.setLineAppVersion(config.getLineAppVersion());
+		projectWorkEntity.setLineTxtToken(config.getLineTxtToken());
+
+		String jsonStr = JSONUtil.toJsonStr(projectWorkEntity);
+		config.setParamKey(ConfigConstant.PROJECT_WORK_KEY);
+		config.setParamValue(jsonStr);
+		caffeineCacheProjectWorkEntity.put(ConfigConstant.PROJECT_WORK_KEY, projectWorkEntity);
 		baseMapper.insert(config);
-		sysConfigRedis.saveOrUpdate(config);
 		return false;
 	}
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void update(SysConfigEntity config) {
-//		this.updateAllColumnById(config);
+		ProjectWorkEntity projectWorkEntity = new ProjectWorkEntity();
+		projectWorkEntity.setLineBaseHttp(config.getLineBaseHttp());
+		projectWorkEntity.setFirefoxBaseUrl(config.getFirefoxBaseUrl());
+		projectWorkEntity.setFirefoxToken(config.getFirefoxToken());
+		projectWorkEntity.setFirefoxIid(config.getFirefoxIid());
+		projectWorkEntity.setFirefoxCountry(config.getFirefoxCountry());
+		projectWorkEntity.setFirefoxCountry1(config.getFirefoxCountry1());
+		projectWorkEntity.setProxyUseCount(config.getProxyUseCount());
+		projectWorkEntity.setProxy(config.getProxy());
+		projectWorkEntity.setLineAb(config.getLineAb());
+		projectWorkEntity.setLineAppVersion(config.getLineAppVersion());
+		projectWorkEntity.setLineTxtToken(config.getLineTxtToken());
+
+		String jsonStr = JSONUtil.toJsonStr(projectWorkEntity);
+		config.setParamKey(ConfigConstant.PROJECT_WORK_KEY);
+		config.setParamValue(jsonStr);
+		caffeineCacheProjectWorkEntity.put(ConfigConstant.PROJECT_WORK_KEY,projectWorkEntity);
 		this.updateById(config);
-		sysConfigRedis.saveOrUpdate(config);
 	}
 
 	@Override

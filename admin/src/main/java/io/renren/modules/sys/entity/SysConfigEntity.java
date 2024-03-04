@@ -16,10 +16,9 @@
 
 package io.renren.modules.sys.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.*;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
@@ -32,6 +31,7 @@ import java.io.Serializable;
  * @date 2016年12月4日 下午6:43:36
  */
 @TableName("sys_config")
+@Data
 public class SysConfigEntity extends AbstractEntity implements Serializable {
 	@TableId(type = IdType.AUTO)
 	private Long id;
@@ -43,41 +43,27 @@ public class SysConfigEntity extends AbstractEntity implements Serializable {
 	private String remark;
 	private Integer status;
 
-	public Long getId() {
-		return id;
-	}
-	public void setId(Long id) {
-		this.id = id;
-	}
+	@TableField(exist = false)
+	private String lineBaseHttp;
+	@TableField(exist = false)
+	private String firefoxBaseUrl;
+	@TableField(exist = false)
+	private String firefoxToken;
+	@TableField(exist = false)
+	private String firefoxIid;
+	@TableField(exist = false)
+	private String firefoxCountry;
+	@TableField(exist = false)
+	private String firefoxCountry1;
+	@TableField(exist = false)
+	private Integer proxy;
+	@TableField(exist = false)
+	private Integer proxyUseCount;
 
-	public String getParamKey() {
-		return paramKey;
-	}
-
-	public void setParamKey(String paramKey) {
-		this.paramKey = paramKey;
-	}
-
-	public String getParamValue() {
-		return paramValue;
-	}
-
-	public void setParamValue(String paramValue) {
-		this.paramValue = paramValue;
-	}
-
-	public String getRemark() {
-		return remark;
-	}
-	public void setRemark(String remark) {
-		this.remark = remark;
-	}
-
-	public Integer getStatus() {
-		return status;
-	}
-
-	public void setStatus(Integer status) {
-		this.status = status;
-	}
+	@TableField(exist = false)
+	private String lineAb;
+	@TableField(exist = false)
+	private String lineAppVersion;
+	@TableField(exist = false)
+	private String lineTxtToken;
 }
