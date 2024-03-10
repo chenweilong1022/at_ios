@@ -2,6 +2,7 @@ package io.renren.modules.client;
 
 import io.renren.modules.client.dto.*;
 import io.renren.modules.client.vo.*;
+import io.renren.modules.ltt.vo.IssueLiffViewVO;
 
 /**
  * @author liuyuchan
@@ -12,7 +13,7 @@ public interface LineService {
 
     LineRegisterVO lineRegister(LineRegisterDTO lineRegisterDTO);
 
-    LineRegisterVO issueLiffView(IssueLiffViewDTO issueLiffViewDTO);
+    IssueLiffViewVO issueLiffView(IssueLiffViewDTO issueLiffViewDTO);
 
     RefreshAccessTokenVO refreshAccessToken(RefreshAccessTokenDTO issueLiffViewDTO);
 

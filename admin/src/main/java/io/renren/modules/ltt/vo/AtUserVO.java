@@ -86,6 +86,16 @@ public class AtUserVO implements Serializable {
 	@ApiModelProperty(required=false,value="删除标志")
 	private Integer deleteFlag;
 	/**
+	 * 状态
+	 */
+	@ApiModelProperty(required=false,value="状态")
+	private Integer status;
+	/**
+	 * 状态msg
+	 */
+	@ApiModelProperty(required=false,value="状态msg")
+	private String msg;
+	/**
 	 * 创建时间
 	 */
 	@ApiModelProperty(required=false,value="创建时间")

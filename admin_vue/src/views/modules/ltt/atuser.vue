@@ -23,12 +23,6 @@
         width="50">
       </el-table-column>
       <el-table-column
-        prop="id"
-        header-align="center"
-        align="center"
-        label="主键">
-      </el-table-column>
-      <el-table-column
         prop="avatar"
         header-align="center"
         align="center"
@@ -65,46 +59,16 @@
         label="密码">
       </el-table-column>
       <el-table-column
-        prop="userGroupId"
-        header-align="center"
-        align="center"
-        label="分组id">
-      </el-table-column>
-      <el-table-column
         prop="userGroupName"
         header-align="center"
         align="center"
         label="分组名称">
       </el-table-column>
       <el-table-column
-        prop="customerServiceId"
-        header-align="center"
-        align="center"
-        label="所属客服id">
-      </el-table-column>
-      <el-table-column
-        prop="customerService"
-        header-align="center"
-        align="center"
-        label="所属客服">
-      </el-table-column>
-      <el-table-column
-        prop="deleteFlag"
-        header-align="center"
-        align="center"
-        label="删除标志">
-      </el-table-column>
-      <el-table-column
         prop="createTime"
         header-align="center"
         align="center"
         label="创建时间">
-      </el-table-column>
-      <el-table-column
-        prop="userTokenId"
-        header-align="center"
-        align="center"
-        label="用户tokenid">
       </el-table-column>
       <el-table-column
         fixed="right"

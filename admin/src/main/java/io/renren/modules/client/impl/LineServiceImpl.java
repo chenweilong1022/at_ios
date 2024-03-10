@@ -15,6 +15,7 @@ import io.renren.modules.client.entity.ProjectWorkEntity;
 import io.renren.modules.client.vo.*;
 import io.renren.modules.ltt.enums.DeleteFlag;
 import io.renren.modules.ltt.enums.ProxyStatus;
+import io.renren.modules.ltt.vo.IssueLiffViewVO;
 import io.renren.modules.sys.entity.SysConfigEntity;
 import io.renren.modules.sys.service.SysConfigService;
 import lombok.extern.slf4j.Slf4j;
@@ -60,15 +61,16 @@ public class LineServiceImpl implements LineService {
     }
 
     @Override
-    public LineRegisterVO issueLiffView(IssueLiffViewDTO issueLiffViewDTO) {
+    public IssueLiffViewVO issueLiffView(IssueLiffViewDTO issueLiffViewDTO) {
         try {
             ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
             String getPhoneHttp = String.format("%s/api/v1/account/issueLiffView",projectWorkEntity.getLineBaseHttp());
             String jsonStr = JSONUtil.toJsonStr(issueLiffViewDTO);
             String resp = HttpUtil.post(getPhoneHttp, jsonStr);
-            RegisterResultVO registerResultVO = JSON.parseObject(resp, RegisterResultVO.class);
+            log.info("param = {},resp = {}", jsonStr, resp);
+            IssueLiffViewVO issueLiffViewVO = JSON.parseObject(resp, IssueLiffViewVO.class);
             extracted(jsonStr, resp);
-//            return registerResultVO;
+            return issueLiffViewVO;
         }catch (Exception e) {
             log.error("err = {}",e.getMessage());
         }
