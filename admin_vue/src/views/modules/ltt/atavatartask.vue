@@ -35,13 +35,13 @@
         label="任务名称">
       </el-table-column>
       <el-table-column
-        prop="taskStatus"
+        prop="taskStatusStr"
         header-align="center"
         align="center"
         label="任务状态">
       </el-table-column>
       <el-table-column
-        prop="schedule"
+        prop="scheduleFloat"
         header-align="center"
         align="center"
         label="进度">

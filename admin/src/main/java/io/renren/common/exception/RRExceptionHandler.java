@@ -41,11 +41,8 @@ public class RRExceptionHandler {
 	public R handlerRRException(RRException e){
 		R r = new R();
 		r.put("code", e.getCode());
-		String message = messageSource.getMessage(e.getMessage(), null, LocaleContextHolder.getLocale());
-		r.put("msg", message);
-		if (StrUtil.isEmpty(message)) {
-			r.put("msg", e.getMessage());
-		}
+//		String message = messageSource.getMessage(e.getMessage(), null, LocaleContextHolder.getLocale());
+		r.put("msg", e.getMessage());
 		return r;
 	}
 

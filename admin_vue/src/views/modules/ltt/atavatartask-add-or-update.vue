@@ -7,32 +7,25 @@
     <el-form-item label="任务名称" prop="taskName">
       <el-input v-model="dataForm.taskName" placeholder="任务名称"></el-input>
     </el-form-item>
-    <el-form-item label="任务状态" prop="taskStatus">
-      <el-input v-model="dataForm.taskStatus" placeholder="任务状态"></el-input>
-    </el-form-item>
-    <el-form-item label="进度" prop="schedule">
-      <el-input v-model="dataForm.schedule" placeholder="进度"></el-input>
-    </el-form-item>
     <el-form-item label="账户分组" prop="userGroupId">
-      <el-input v-model="dataForm.userGroupId" placeholder="账户分组"></el-input>
+      <el-select v-model="dataForm.userGroupId" placeholder="账户分组">
+        <el-option
+          v-for="item in dataUserGroupList"
+          :key="item.id"
+          :label="item.name"
+          :value="item.id">
+        </el-option>
+      </el-select>
     </el-form-item>
     <el-form-item label="头像分组" prop="avatarGroupId">
-      <el-input v-model="dataForm.avatarGroupId" placeholder="头像分组"></el-input>
-    </el-form-item>
-    <el-form-item label="执行数量" prop="executionQuantity">
-      <el-input v-model="dataForm.executionQuantity" placeholder="执行数量"></el-input>
-    </el-form-item>
-    <el-form-item label="成功数量" prop="successfulQuantity">
-      <el-input v-model="dataForm.successfulQuantity" placeholder="成功数量"></el-input>
-    </el-form-item>
-    <el-form-item label="失败数量" prop="failuresQuantity">
-      <el-input v-model="dataForm.failuresQuantity" placeholder="失败数量"></el-input>
-    </el-form-item>
-    <el-form-item label="删除标志" prop="deleteFlag">
-      <el-input v-model="dataForm.deleteFlag" placeholder="删除标志"></el-input>
-    </el-form-item>
-    <el-form-item label="创建时间" prop="createTime">
-      <el-input v-model="dataForm.createTime" placeholder="创建时间"></el-input>
+      <el-select v-model="dataForm.avatarGroupId" placeholder="头像分组">
+        <el-option
+          v-for="item in dataAvatarGroupList"
+          :key="item.id"
+          :label="item.name"
+          :value="item.id">
+        </el-option>
+      </el-select>
     </el-form-item>
     </el-form>
     <span slot="footer" class="dialog-footer">
@@ -46,6 +39,8 @@
   export default {
     data () {
       return {
+        dataUserGroupList: [],
+        dataAvatarGroupList: [],
         visible: false,
         dataForm: {
           id: 0,
@@ -95,9 +90,45 @@
       }
     },
     methods: {
+      // 获取数据列表
+      getAvatarGroupDataList () {
+        this.$http({
+          url: this.$http.adornUrl('/ltt/atavatargroup/list'),
+          method: 'get',
+          params: this.$http.adornParams({
+            'page': 1,
+            'limit': 100
+          })
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.dataAvatarGroupList = data.page.list
+          } else {
+            this.dataAvatarGroupList = []
+          }
+        })
+      },
+      // 获取数据列表
+      getUserGroupDataList () {
+        this.$http({
+          url: this.$http.adornUrl('/ltt/atusergroup/list'),
+          method: 'get',
+          params: this.$http.adornParams({
+            'page': 1,
+            'limit': 100
+          })
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.dataUserGroupList = data.page.list
+          } else {
+            this.dataUserGroupList = []
+          }
+        })
+      },
       init (id) {
         this.dataForm.id = id || 0
         this.visible = true
+        this.getUserGroupDataList()
+        this.getAvatarGroupDataList()
         this.$nextTick(() => {
           this.$refs['dataForm'].resetFields()
           if (this.dataForm.id) {
