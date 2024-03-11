@@ -162,11 +162,58 @@ CREATE TABLE `at_user_token` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=501 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户token数据';
 
+批量改头像
+
+任务名称
+任务状态
+进度
+账户分组
+头像分组
+执行数量
+成功数量
+失败数量
+
+task_name
+task_status
+schedule
+account_grouping
+avatar_grouping
+execution_quantity
+successful_quantity
+failures_quantity
+
+
+
+CREATE TABLE `at_avatar_task` (
+  `id` int NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `task_name` varchar(255) DEFAULT NULL COMMENT '任务名称',
+  `task_status` int DEFAULT NULL COMMENT  '任务状态',
+  `schedule` int DEFAULT NULL COMMENT  '进度',
+  `account_grouping` int DEFAULT NULL COMMENT  '账户分组',
+  `avatar_grouping` int DEFAULT NULL COMMENT  '头像分组',
+  `execution_quantity` int DEFAULT NULL COMMENT  '执行数量',
+  `successful_quantity` int DEFAULT NULL COMMENT  '成功数量',
+  `failures_quantity` int DEFAULT NULL COMMENT  '失败数量',
+  `delete_flag` int DEFAULT NULL COMMENT '删除标志',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='头像任务';
 
 
 
 
-
+CREATE TABLE `at_avatar_subtask` (
+  `id` int NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `avatar_task_id` int DEFAULT NULL COMMENT  '头像任务id',
+  `user_group_id` int(11) DEFAULT NULL COMMENT '账户分组',
+  `avatar_group_id` int(11) DEFAULT NULL COMMENT '头像分组',
+  `user_id` int(11) DEFAULT NULL COMMENT '账户id',
+  `avatar_id` int(11) DEFAULT NULL COMMENT '头像id',
+  `task_status` int DEFAULT NULL COMMENT  '任务状态',
+  `delete_flag` int DEFAULT NULL COMMENT '删除标志',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='头像任务子任务';
 
 
 
