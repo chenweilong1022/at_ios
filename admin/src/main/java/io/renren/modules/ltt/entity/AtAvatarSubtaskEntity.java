@@ -57,6 +57,16 @@ public class AtAvatarSubtaskEntity implements Serializable {
 	@ApiModelProperty(required=false,value="头像id")
 	private Integer avatarId;
 	/**
+	 * line任务id
+	 */
+	@ApiModelProperty(required=false,value="line任务id")
+	private String lineTaskId;
+	/**
+	 * msg
+	 */
+	@ApiModelProperty(required=false,value="msg")
+	private String msg;
+	/**
 	 * 任务状态
 	 */
 	@ApiModelProperty(required=false,value="任务状态")

@@ -50,4 +50,8 @@ public interface LineService {
     EncryptedAccessTokenVO encryptedAccessToken(EncryptedAccessTokenDTO dto);
 
     ShareImgMsgVO shareImgMsg(ShareImgMsgDTO shareImgMsgDTO);
+
+    UpdateProfileImageVO updateProfileImage(UpdateProfileImageDTO updateProfileImageDTO);
+
+    UpdateProfileImageResultVO updateProfileImageResult(UpdateProfileImageResultDTO updateProfileImageResultDTO);
 }

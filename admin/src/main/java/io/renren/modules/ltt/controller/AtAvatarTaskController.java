@@ -78,6 +78,17 @@ public class AtAvatarTaskController {
     /**
      * 删除
      */
+    @RequestMapping("/errRetry")
+    @RequiresPermissions("ltt:atavatartask:delete")
+    public R errRetry(@RequestBody Integer[] ids){
+        atAvatarTaskService.errRetry(Arrays.asList(ids));
+
+        return R.ok();
+    }
+
+    /**
+     * 删除
+     */
     @RequestMapping("/delete")
     @RequiresPermissions("ltt:atavatartask:delete")
     public R delete(@RequestBody Integer[] ids){

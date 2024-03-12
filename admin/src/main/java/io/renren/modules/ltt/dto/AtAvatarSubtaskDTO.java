@@ -62,6 +62,16 @@ public class AtAvatarSubtaskDTO extends PageParam implements Serializable {
 	@ApiModelProperty(required=false,value="任务状态")
 	private Integer taskStatus;
 	/**
+	 * line任务id
+	 */
+	@ApiModelProperty(required=false,value="line任务id")
+	private String lineTaskId;
+	/**
+	 * msg
+	 */
+	@ApiModelProperty(required=false,value="msg")
+	private String msg;
+	/**
 	 * 删除标志
 	 */
 	@ApiModelProperty(required=false,value="删除标志")

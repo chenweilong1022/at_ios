@@ -84,7 +84,7 @@ public class AtAvatarTaskVO implements Serializable {
 	private Date createTime;
 
 	public double getScheduleFloat() {
-		return (double) (successfulQuantity + failuresQuantity) / executionQuantity;
+		return (double) (successfulQuantity + failuresQuantity) / executionQuantity * 100;
 	}
 
 	public String getTaskStatusStr() {

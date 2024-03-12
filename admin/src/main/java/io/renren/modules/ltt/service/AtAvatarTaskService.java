@@ -8,6 +8,7 @@ import io.renren.modules.ltt.entity.AtAvatarTaskEntity;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -58,5 +59,11 @@ public interface AtAvatarTaskService extends IService<AtAvatarTaskEntity> {
      */
     @Override
     boolean removeByIds(Collection<? extends Serializable> ids);
+
+    /**
+     * 对错误进行重试
+     * @param list
+     */
+    void errRetry(List<Integer> list);
 }
 

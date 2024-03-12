@@ -416,6 +416,38 @@ public class LineServiceImpl implements LineService {
         }
     }
 
+    @Override
+    public UpdateProfileImageVO updateProfileImage(UpdateProfileImageDTO updateProfileImageDTO) {
+        try {
+            ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
+            String getPhoneHttp = String.format("%s/api/v1/account/updateProfileImage",projectWorkEntity.getLineBaseHttp());
+            String jsonStr = JSONUtil.toJsonStr(updateProfileImageDTO);
+            String resp = HttpUtil.post(getPhoneHttp,jsonStr,20000);
+            UpdateProfileImageVO updateProfileImageVO = JSON.parseObject(resp, UpdateProfileImageVO.class);
+            extracted(jsonStr, resp);
+            return updateProfileImageVO;
+        }catch (Exception e) {
+            log.error("err = {}",e.getMessage());
+            return new UpdateProfileImageVO();
+        }
+    }
+
+    @Override
+    public UpdateProfileImageResultVO updateProfileImageResult(UpdateProfileImageResultDTO updateProfileImageResultDTO) {
+        try {
+            ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
+            String getPhoneHttp = String.format("%s/api/v1/account/updateProfileImageResult",projectWorkEntity.getLineBaseHttp());
+            String jsonStr = JSONUtil.toJsonStr(updateProfileImageResultDTO);
+            String resp = HttpUtil.post(getPhoneHttp,jsonStr,20000);
+            UpdateProfileImageResultVO updateProfileImageResultVO = JSON.parseObject(resp, UpdateProfileImageResultVO.class);
+            extracted(jsonStr, resp);
+            return updateProfileImageResultVO;
+        }catch (Exception e) {
+            log.error("err = {}",e.getMessage());
+            return new UpdateProfileImageResultVO();
+        }
+    }
+
     @EventListener
     @Order(value = 9999)//t35323ha-1027-61697		tha-1027-44108
     public void handlerApplicationReadyEvent(ApplicationReadyEvent event) {

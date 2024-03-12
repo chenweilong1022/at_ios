@@ -1,5 +1,6 @@
 package io.renren.modules.ltt.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
@@ -127,6 +128,33 @@ public class AtAvatarTaskServiceImpl extends ServiceImpl<AtAvatarTaskDao, AtAvat
     @Override
     public boolean removeByIds(Collection<? extends Serializable> ids) {
         return super.removeByIds(ids);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void errRetry(List<Integer> ids) {
+        //获取头像任务所有
+        List<AtAvatarTaskEntity> taskEntities = this.listByIds(ids);
+
+        for (AtAvatarTaskEntity taskEntity : taskEntities) {
+            taskEntity.setTaskStatus(TaskStatus.TaskStatus2.getKey());
+            taskEntity.setFailuresQuantity(0);
+            //获取所有子任务
+            List<AtAvatarSubtaskEntity> list = atAvatarSubtaskService.list(new QueryWrapper<AtAvatarSubtaskEntity>().lambda()
+                    .eq(AtAvatarSubtaskEntity::getAvatarTaskId,taskEntity.getId())
+                    .eq(AtAvatarSubtaskEntity::getTaskStatus,TaskStatus.TaskStatus5.getKey())
+            );
+
+            for (AtAvatarSubtaskEntity atAvatarSubtaskEntity : list) {
+                atAvatarSubtaskEntity.setTaskStatus(TaskStatus.TaskStatus2.getKey());
+            }
+            if (CollUtil.isNotEmpty(list)) {
+                atAvatarSubtaskService.updateBatchById(list);
+            }
+        }
+        if (CollUtil.isNotEmpty(taskEntities)) {
+            this.updateBatchById(taskEntities);
+        }
     }
 
 }

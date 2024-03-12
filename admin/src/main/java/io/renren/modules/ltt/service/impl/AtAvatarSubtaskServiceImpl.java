@@ -1,5 +1,6 @@
 package io.renren.modules.ltt.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import io.renren.datasources.annotation.Game;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -27,7 +28,9 @@ public class AtAvatarSubtaskServiceImpl extends ServiceImpl<AtAvatarSubtaskDao, 
     public PageUtils<AtAvatarSubtaskVO> queryPage(AtAvatarSubtaskDTO atAvatarSubtask) {
         IPage<AtAvatarSubtaskEntity> page = baseMapper.selectPage(
                 new Query<AtAvatarSubtaskEntity>(atAvatarSubtask).getPage(),
-                new QueryWrapper<AtAvatarSubtaskEntity>()
+                new QueryWrapper<AtAvatarSubtaskEntity>().lambda()
+                        .eq(ObjectUtil.isNotNull(atAvatarSubtask.getAvatarTaskId()),AtAvatarSubtaskEntity::getAvatarTaskId,atAvatarSubtask.getAvatarTaskId())
+                        .eq(ObjectUtil.isNotNull(atAvatarSubtask.getTaskStatus()),AtAvatarSubtaskEntity::getTaskStatus,atAvatarSubtask.getTaskStatus())
         );
 
         return PageUtils.<AtAvatarSubtaskVO>page(page).setList(AtAvatarSubtaskConver.MAPPER.conver(page.getRecords()));

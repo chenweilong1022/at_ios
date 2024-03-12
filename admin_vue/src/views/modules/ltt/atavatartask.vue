@@ -38,13 +38,22 @@
         prop="taskStatusStr"
         header-align="center"
         align="center"
+        width="150"
         label="任务状态">
+        <template slot-scope="scope">
+          <el-button v-if="scope.row.taskStatus === 3" type="success" plain>{{scope.row.taskStatusStr}}</el-button>
+          <el-button v-if="scope.row.taskStatus === 2" type="warning" plain>{{scope.row.taskStatusStr}}</el-button>
+        </template>
       </el-table-column>
       <el-table-column
         prop="scheduleFloat"
+        width="150"
         header-align="center"
         align="center"
         label="进度">
+        <template slot-scope="scope">
+          <el-progress :stroke-width="10" type="circle" :percentage="scope.row.scheduleFloat"></el-progress>
+        </template>
       </el-table-column>
       <el-table-column
         prop="userGroupId"
@@ -77,12 +86,6 @@
         label="失败数量">
       </el-table-column>
       <el-table-column
-        prop="deleteFlag"
-        header-align="center"
-        align="center"
-        label="删除标志">
-      </el-table-column>
-      <el-table-column
         prop="createTime"
         header-align="center"
         align="center"
@@ -95,8 +98,9 @@
         width="150"
         label="操作">
         <template slot-scope="scope">
-          <el-button type="text" size="small" @click="addOrUpdateHandle(scope.row.id)">修改</el-button>
+          <el-button type="text" size="small" @click="errRetryHandle(scope.row.id)">错误重试</el-button>
           <el-button type="text" size="small" @click="deleteHandle(scope.row.id)">删除</el-button>
+          <el-button type="text" size="small" @click="errLogsHandle(scope.row.id)">错误日志</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -111,11 +115,13 @@
     </el-pagination>
     <!-- 弹窗, 新增 / 修改 -->
     <add-or-update v-if="addOrUpdateVisible" ref="addOrUpdate" @refreshDataList="getDataList"></add-or-update>
+    <err-logs  v-if="errLogsVisible" ref="errLogs" @refreshDataList="getDataList"></err-logs>
   </div>
 </template>
 
 <script>
   import AddOrUpdate from './atavatartask-add-or-update'
+  import ErrLogs from './atavatartask-err-logs'
   export default {
     data () {
       return {
@@ -128,11 +134,13 @@
         totalPage: 0,
         dataListLoading: false,
         dataListSelections: [],
-        addOrUpdateVisible: false
+        addOrUpdateVisible: false,
+        errLogsVisible: false
       }
     },
     components: {
-      AddOrUpdate
+      AddOrUpdate,
+      ErrLogs
     },
     activated () {
       this.getDataList()
@@ -182,7 +190,43 @@
           this.$refs.addOrUpdate.init(id)
         })
       },
-      // 删除
+      // 新增 / 修改
+      errLogsHandle (id) {
+        this.errLogsVisible = true
+        this.$nextTick(() => {
+          this.$refs.errLogs.init(id)
+        })
+      },
+      // 错误重试
+      errRetryHandle (id) {
+        var ids = id ? [id] : this.dataListSelections.map(item => {
+          return item.id
+        })
+        this.$confirm(`确定对[id=${ids.join(',')}]进行[${id ? '错误重试' : '批量错误重试'}]操作?`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$http({
+            url: this.$http.adornUrl('/ltt/atavatartask/errRetry'),
+            method: 'post',
+            data: this.$http.adornData(ids, false)
+          }).then(({data}) => {
+            if (data && data.code === 0) {
+              this.$message({
+                message: '操作成功',
+                type: 'success',
+                duration: 1500,
+                onClose: () => {
+                  this.getDataList()
+                }
+              })
+            } else {
+              this.$message.error(data.msg)
+            }
+          })
+        })
+      },
       deleteHandle (id) {
         var ids = id ? [id] : this.dataListSelections.map(item => {
           return item.id
