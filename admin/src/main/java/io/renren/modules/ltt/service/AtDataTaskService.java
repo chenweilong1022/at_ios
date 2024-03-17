@@ -8,6 +8,7 @@ import io.renren.modules.ltt.entity.AtDataTaskEntity;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -58,5 +59,11 @@ public interface AtDataTaskService extends IService<AtDataTaskEntity> {
      */
     @Override
     boolean removeByIds(Collection<? extends Serializable> ids);
+
+    /**
+     * 启动任务
+     * @param ids
+     */
+    void startUp(Collection<? extends Serializable> ids);
 }
 

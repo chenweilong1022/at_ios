@@ -23,15 +23,10 @@
         width="50">
       </el-table-column>
       <el-table-column
-        prop="id"
-        header-align="center"
-        align="center"
-        label="主键">
-      </el-table-column>
-      <el-table-column
         prop="taskName"
         header-align="center"
         align="center"
+        width="120"
         label="任务名称">
       </el-table-column>
       <el-table-column
@@ -47,7 +42,7 @@
         label="数据分组">
       </el-table-column>
       <el-table-column
-        prop="groupType"
+        prop="groupTypeStr"
         header-align="center"
         align="center"
         label="类型">
@@ -75,6 +70,11 @@
         header-align="center"
         align="center"
         label="状态">
+        <template slot-scope="scope">
+          <el-button v-if="scope.row.taskStatus === 3" type="success" plain>{{scope.row.taskStatusStr}}</el-button>
+          <el-button v-if="scope.row.taskStatus === 2" type="warning" plain>{{scope.row.taskStatusStr}}</el-button>
+          <el-button v-if="scope.row.taskStatus === 0" type="primary" plain>{{scope.row.taskStatusStr}}</el-button>
+        </template>
       </el-table-column>
       <el-table-column
         prop="schedule"
@@ -89,30 +89,13 @@
         label="更新时间">
       </el-table-column>
       <el-table-column
-        prop="addQuantityLimit"
-        header-align="center"
-        align="center"
-        label="加粉数量">
-      </el-table-column>
-      <el-table-column
-        prop="deleteFlag"
-        header-align="center"
-        align="center"
-        label="删除标志">
-      </el-table-column>
-      <el-table-column
-        prop="createTime"
-        header-align="center"
-        align="center"
-        label="创建时间">
-      </el-table-column>
-      <el-table-column
         fixed="right"
         header-align="center"
         align="center"
         width="150"
         label="操作">
         <template slot-scope="scope">
+          <el-button type="text" size="small" @click="startUpHandle(scope.row.id)">启动</el-button>
           <el-button type="text" size="small" @click="addOrUpdateHandle(scope.row.id)">修改</el-button>
           <el-button type="text" size="small" @click="deleteHandle(scope.row.id)">删除</el-button>
         </template>
@@ -156,6 +139,35 @@
       this.getDataList()
     },
     methods: {
+      startUpHandle (id) {
+        var ids = id ? [id] : this.dataListSelections.map(item => {
+          return item.id
+        })
+        this.$confirm(`确定对[id=${ids.join(',')}]进行[${id ? '启动任务' : '批量启动任务'}]操作?`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$http({
+            url: this.$http.adornUrl('/ltt/atdatatask/startUp'),
+            method: 'post',
+            data: this.$http.adornData(ids, false)
+          }).then(({data}) => {
+            if (data && data.code === 0) {
+              this.$message({
+                message: '操作成功',
+                type: 'success',
+                duration: 1500,
+                onClose: () => {
+                  this.getDataList()
+                }
+              })
+            } else {
+              this.$message.error(data.msg)
+            }
+          })
+        })
+      },
       // 获取数据列表
       getDataList () {
         this.dataListLoading = true

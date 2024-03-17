@@ -234,6 +234,47 @@ CREATE TABLE `at_avatar_task` (
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='头像任务';
 
 
+CREATE TABLE `at_data_task` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `task_name` varchar(255) DEFAULT NULL COMMENT '任务名称',
+  `user_group_id` int(11) DEFAULT NULL COMMENT '账户分组',
+  `data_group_id` int(11) DEFAULT NULL COMMENT '数据分组',
+  `group_type` int(11) DEFAULT NULL COMMENT '类型',
+  `add_total_quantity` int(11) DEFAULT NULL COMMENT '加粉总数',
+  `successful_quantity` int(11) DEFAULT NULL COMMENT '成功数',
+  `failures_quantity` int(11) DEFAULT NULL COMMENT  '失败数',
+  `task_status` int(11) DEFAULT NULL COMMENT '状态',
+  `schedule`  int(11) DEFAULT NULL COMMENT  '进度',
+  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  `add_quantity_limit`int(11) DEFAULT NULL COMMENT '加粉数量',
+  `delete_flag` int(11) DEFAULT NULL COMMENT '删除标志',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='加粉任务';
+
+任务名称
+账户分组
+数据分组
+类型
+加粉总数
+成功数
+失败数
+状态
+进度
+更新时间
+加粉数量
+
+task_name
+user_group_id
+data_group_id
+group_type
+add_total_quantity
+successful_quantity
+failures_quantity
+task_status
+schedule
+update_time
+add_quantity_limit
 
 
 
