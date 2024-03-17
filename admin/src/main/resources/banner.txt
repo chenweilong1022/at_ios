@@ -218,6 +218,20 @@ CREATE TABLE `at_avatar_subtask` (
 
 
 
+CREATE TABLE `at_avatar_task` (
+  `id` int NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `task_name` varchar(255) DEFAULT NULL COMMENT '任务名称',
+  `task_status` int DEFAULT NULL COMMENT  '任务状态',
+  `schedule` int DEFAULT NULL COMMENT  '进度',
+  `account_grouping` int DEFAULT NULL COMMENT  '账户分组',
+  `avatar_grouping` int DEFAULT NULL COMMENT  '头像分组',
+  `execution_quantity` int DEFAULT NULL COMMENT  '执行数量',
+  `successful_quantity` int DEFAULT NULL COMMENT  '成功数量',
+  `failures_quantity` int DEFAULT NULL COMMENT  '失败数量',
+  `delete_flag` int DEFAULT NULL COMMENT '删除标志',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='头像任务';
 
 
 
