@@ -64,7 +64,7 @@ public class AtUserPortController extends AbstractController {
     @RequestMapping("/save")
     @RequiresPermissions("ltt:atuserport:save")
     public R save(@RequestBody AtUserPortDTO atUserPort) {
-        atUserPort.setSysUserId(getUserId());
+        atUserPort.setOperationUserId(getUserId());
         atUserPortService.save(atUserPort);
 
         return R.ok();

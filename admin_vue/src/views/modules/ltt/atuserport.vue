@@ -22,12 +22,12 @@
         align="center"
         label="端口数量">
       </el-table-column>
-<!--      <el-table-column-->
-<!--        prop="sysUserId"-->
-<!--        header-align="center"-->
-<!--        align="center"-->
-<!--        label="管理账户id">-->
-<!--      </el-table-column>-->
+      <el-table-column
+        prop="sysUserName"
+        header-align="center"
+        align="center"
+        label="账户名称">
+      </el-table-column>
       <el-table-column
         prop="expireTime"
         header-align="center"

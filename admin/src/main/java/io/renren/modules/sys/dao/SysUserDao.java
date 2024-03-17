@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import io.renren.datasources.annotation.Admin;
 import io.renren.modules.sys.entity.SysUserEntity;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -33,5 +34,15 @@ public interface SysUserDao extends BaseMapper<SysUserEntity> {
 	 * 根据用户名，查询系统用户
 	 */
 	SysUserEntity queryByUserName(String username);
+
+	/**
+	 * 根据搜索词，查询系统用户
+	 */
+	List<SysUserEntity> queryBySearchWord(String searchWord);
+
+	/**
+	 * 根据userID，批量查询系统用户
+	 */
+	List<SysUserEntity> queryByUserIdList(@Param("userIdList") List<Long> userIdList);
 
 }

@@ -18,7 +18,7 @@ import java.util.Date;
  *
  * @author chenweilong
  * @email chenweilong@qq.com
- * @date 2024-03-17 18:25:29
+ * @date 2024-03-17 20:55:14
  */
 @Data
 @TableName("at_user_port")
@@ -44,6 +44,11 @@ public class AtUserPortVO implements Serializable {
 	@ApiModelProperty(required=false,value="管理账户id")
 	private Long sysUserId;
 	/**
+	 * 管理账户名称
+	 */
+	@ApiModelProperty(required=false,value="管理账户名称")
+	private String sysUserName;
+	/**
 	 * 过期时间
 	 */
 	@ApiModelProperty(required=false,value="过期时间")
@@ -57,7 +62,11 @@ public class AtUserPortVO implements Serializable {
 	 * 创建时间
 	 */
 	@ApiModelProperty(required=false,value="创建时间")
-//	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
 	private Date createTime;
+	/**
+	 * 操作人id
+	 */
+	@ApiModelProperty(required=false,value="操作人id")
+	private Long operationUserId;
 
 }

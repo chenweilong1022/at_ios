@@ -21,4 +21,25 @@
 		select * from sys_user where username = #{username}
 	</select>
 
+	<select id="queryByUserIdList" resultType="io.renren.modules.sys.entity.SysUserEntity">
+		select * from sys_user where user_id in(
+		<foreach collection="userIdList" item="item" index="index" separator=",">
+			#{item}
+		</foreach>
+		)
+	</select>
+
+	<select id="queryBySearchWord" resultType="io.renren.modules.sys.entity.SysUserEntity">
+		select user_id, username from sys_user
+		where status=1
+		and user_id!=1
+		<if test="searchWord != null">
+			and (username like CONCAT( '%', #{searchWord}, '%')
+			or mobile like CONCAT('%', #{searchWord}, '%')
+			)
+		</if>
+		order by user_id desc
+		limit 20
+	</select>
+
 </mapper>

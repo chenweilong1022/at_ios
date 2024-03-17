@@ -5,6 +5,22 @@
     :visible.sync="visible">
     <el-form :model="dataForm" :rules="dataRule" ref="dataForm" @keyup.enter.native="dataFormSubmit()"
              label-width="80px">
+      <el-form-item label="选择账户" prop="sysUserId">
+        <el-select
+          v-model="dataForm.sysUserId"
+          filterable
+          remote
+          placeholder="请选择账号"
+          :remote-method="queryBySearchWord"
+          :loading="loading">
+        <el-option
+          v-for="item in sysUserAccountOptions"
+          :key="item.userId"
+          :label="item.username"
+          :value="item.userId">
+        </el-option>
+      </el-select>
+      </el-form-item>
       <el-form-item label="端口数量" prop="portNum">
         <el-input v-model="dataForm.portNum" placeholder="端口数量"></el-input>
       </el-form-item>
@@ -34,15 +50,17 @@
 
 <script>
 export default {
-  data() {
+  data () {
     return {
       visible: false,
+      sysUserAccountOptions: [],
       dataForm: {
         id: 0,
         portNum: '',
         sysUserId: '',
         expireTime: '',
         deleteFlag: '',
+        sysUserName: '',
         createTime: ''
       },
       dataRule: {
@@ -82,8 +100,31 @@ export default {
               this.dataForm.expireTime = data.atUserPort.expireTime
               this.dataForm.deleteFlag = data.atUserPort.deleteFlag
               this.dataForm.createTime = data.atUserPort.createTime
+              this.dataForm.sysUserName = data.atUserPort.sysUserName
+              this.sysUserAccountOptions = [{
+                userId: this.dataForm.sysUserId,
+                username: this.dataForm.sysUserName
+              }]
+              console.log(this.sysUserAccountOptions)
             }
           })
+        }
+      })
+    },
+
+    /*
+    根据搜索词，查询系统用户
+     */
+    queryBySearchWord(serchKey) {
+      serchKey = serchKey == null ? "" : serchKey+"";
+      console.log(serchKey)
+      this.$http({
+        url: this.$http.adornUrl(`/sys/user/queryBySearchWord?searchWord=${serchKey}`),
+        method: 'get',
+        params: this.$http.adornParams()
+      }).then(({data}) => {
+        if (data && data.code === 0) {
+          this.sysUserAccountOptions = data.userList
         }
       })
     },

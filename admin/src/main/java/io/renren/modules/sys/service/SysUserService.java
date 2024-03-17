@@ -3,6 +3,7 @@ package io.renren.modules.sys.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import io.renren.common.utils.PageUtils;
 import io.renren.modules.sys.entity.SysUserEntity;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Map;
@@ -36,6 +37,11 @@ public interface SysUserService extends IService<SysUserEntity> {
 	SysUserEntity queryByUserName(String username);
 
 	/**
+	 * 根据搜索词，查询系统用户
+	 */
+	List<SysUserEntity> queryBySearchWord(String searchWord);
+
+	/**
 	 * 保存用户
 	 */
     @Override
@@ -58,4 +64,11 @@ public interface SysUserService extends IService<SysUserEntity> {
 	 * @param newPassword  新密码
 	 */
 	boolean updatePassword(Long userId, String password, String newPassword);
+
+	/**
+	 * 根据userID，批量查询系统用户
+	 */
+	List<SysUserEntity> queryByUserIdList(List<Long> userIdList);
+
+	Map<Long, String> queryUserNameByUserIdList(List<Long> userIdList);
 }

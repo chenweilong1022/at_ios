@@ -19,7 +19,7 @@ import java.util.Date;
  *
  * @author chenweilong
  * @email chenweilong@qq.com
- * @date 2024-03-17 18:25:29
+ * @date 2024-03-17 20:55:14
  */
 @Data
 @TableName("at_user_port")
@@ -59,5 +59,10 @@ public class AtUserPortDTO extends PageParam implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="创建时间")
 	private Date createTime;
+	/**
+	 * 操作人id
+	 */
+	@ApiModelProperty(required=false,value="操作人id")
+	private Long operationUserId;
 
 }

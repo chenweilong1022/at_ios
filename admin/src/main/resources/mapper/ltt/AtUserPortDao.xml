@@ -11,6 +11,7 @@
         <result property="expireTime" column="expire_time"/>
         <result property="deleteFlag" column="delete_flag"/>
         <result property="createTime" column="create_time"/>
+        <result property="operationUserId" column="operation_user_id"/>
     </resultMap>
 
 

@@ -54,6 +54,16 @@ public class SysUserController extends AbstractController {
 	}
 
 	/**
+	 * 根据搜索词，查询系统用户
+	 */
+	@GetMapping("/queryBySearchWord")
+//	@RequiresPermissions("sys:user:list")
+	public R list(@RequestParam(value = "searchWord", required = false) String searchWord){
+		List<SysUserEntity> list = sysUserService.queryBySearchWord(searchWord);
+		return R.ok().put("userList", list);
+	}
+
+	/**
 	 * 获取登录的用户信息
 	 */
 	@GetMapping("/info")

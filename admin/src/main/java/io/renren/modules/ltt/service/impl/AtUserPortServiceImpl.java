@@ -1,7 +1,9 @@
 package io.renren.modules.ltt.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.ltt.enums.DeleteFlag;
+import io.renren.modules.sys.service.SysUserService;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -16,27 +18,48 @@ import io.renren.modules.ltt.vo.AtUserPortVO;
 import io.renren.modules.ltt.service.AtUserPortService;
 import io.renren.modules.ltt.conver.AtUserPortConver;
 
+import javax.annotation.Resource;
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Date;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service("atUserPortService")
 @Game
 public class AtUserPortServiceImpl extends ServiceImpl<AtUserPortDao, AtUserPortEntity> implements AtUserPortService {
 
+    @Resource
+    private SysUserService sysUserService;
     @Override
     public PageUtils<AtUserPortVO> queryPage(AtUserPortDTO atUserPort) {
         IPage<AtUserPortEntity> page = baseMapper.selectPage(
                 new Query<AtUserPortEntity>(atUserPort).getPage(),
-                new QueryWrapper<AtUserPortEntity>()
+                new QueryWrapper<AtUserPortEntity>().lambda()
+                        .orderByDesc(AtUserPortEntity::getCreateTime)
         );
 
-        return PageUtils.<AtUserPortVO>page(page).setList(AtUserPortConver.MAPPER.conver(page.getRecords()));
+        List<AtUserPortVO> converList = AtUserPortConver.MAPPER.conver(page.getRecords());
+
+        //查询账户名称
+        if (CollectionUtil.isNotEmpty(converList)) {
+            List<Long> sysUserIdList = converList.stream()
+                    .filter(i -> i.getSysUserId() != null)
+                    .map(AtUserPortVO::getSysUserId).collect(Collectors.toList());
+            Map<Long, String> sysUserMap = sysUserService.queryUserNameByUserIdList(sysUserIdList);
+            for (AtUserPortVO atUserPortVO : converList) {
+                atUserPortVO.setSysUserName(sysUserMap.get(atUserPortVO.getSysUserId()));
+            }
+        }
+
+        return PageUtils.<AtUserPortVO>page(page).setList(converList);
     }
     @Override
     public AtUserPortVO getById(Integer id) {
-        return AtUserPortConver.MAPPER.conver(baseMapper.selectById(id));
+        AtUserPortVO atUserPortVO = AtUserPortConver.MAPPER.conver(baseMapper.selectById(id));
+        Map<Long, String> sysUserMap = sysUserService
+                .queryUserNameByUserIdList(Collections.singletonList(atUserPortVO.getSysUserId()));
+        atUserPortVO.setSysUserName(sysUserMap.get(atUserPortVO.getSysUserId()));
+        return atUserPortVO;
     }
 
     @Override

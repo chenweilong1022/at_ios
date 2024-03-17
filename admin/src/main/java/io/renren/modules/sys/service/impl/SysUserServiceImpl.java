@@ -1,5 +1,6 @@
 package io.renren.modules.sys.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -62,6 +64,11 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUserEntity> i
 	@Override
 	public SysUserEntity queryByUserName(String username) {
 		return baseMapper.queryByUserName(username);
+	}
+
+	@Override
+	public List<SysUserEntity> queryBySearchWord(String searchWord) {
+		return baseMapper.queryBySearchWord(searchWord);
 	}
 
 	@Override
@@ -113,7 +120,25 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUserEntity> i
                         .eq(SysUserEntity::getUserId, userId)
                         .eq(SysUserEntity::getPassword, password));
 	}
-	
+
+	@Override
+	public List<SysUserEntity> queryByUserIdList(List<Long> userIdList) {
+		if (CollectionUtil.isEmpty(userIdList)) {
+			return Collections.emptyList();
+		}
+		return baseMapper.queryByUserIdList(userIdList);
+	}
+
+	@Override
+	public Map<Long, String> queryUserNameByUserIdList(List<Long> userIdList) {
+		List<SysUserEntity> sysUserEntityList = this.queryByUserIdList(userIdList);
+		if (CollectionUtil.isEmpty(sysUserEntityList)) {
+			return Collections.emptyMap();
+		}
+		return 	sysUserEntityList.stream().collect(Collectors
+				.toMap(SysUserEntity::getUserId, SysUserEntity::getUsername, (v1, v2) -> v1));
+	}
+
 	/**
 	 * 检查角色是否越权
 	 */
