@@ -74,3 +74,6 @@ spring:
                     username: ${project.game.mysql.username}
                     password: ${project.game.mysql.password}
 
+#客服角色id
+customer:
+    roleId: 2

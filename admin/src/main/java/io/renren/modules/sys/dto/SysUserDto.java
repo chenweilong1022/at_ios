@@ -1,4 +1,4 @@
-package io.renren.modules.sys.entity;
+package io.renren.modules.sys.dto;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.renren.common.validator.group.AddGroup;
 import io.renren.common.validator.group.UpdateGroup;
+import io.renren.modules.sys.entity.AbstractEntity;
 import lombok.Data;
 
 import javax.validation.constraints.Email;
@@ -23,7 +24,7 @@ import java.util.List;
  */
 @TableName("sys_user")
 @Data
-public class SysUserEntity extends AbstractEntity implements Serializable {
+public class SysUserDto extends AbstractEntity implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
 	/**
@@ -69,13 +70,7 @@ public class SysUserEntity extends AbstractEntity implements Serializable {
 	 * 状态  0：禁用   1：正常
 	 */
 	private Integer status;
-
-
-	/**
-	 * 状态  0：离线   1：在线
-	 */
-	private Integer onlineStatus;
-
+	
 	/**
 	 * 角色ID列表
 	 */
