@@ -82,7 +82,7 @@ public class AtDataTaskServiceImpl extends ServiceImpl<AtDataTaskDao, AtDataTask
         for (AtDataTaskEntity atDataTaskEntity : atDataTaskEntities) {
             AtDataTaskEntity update = new AtDataTaskEntity();
             update.setId(atDataTaskEntity.getId());
-            update.setTaskStatus(TaskStatus.TaskStatus2.getKey());
+            update.setTaskStatus(TaskStatus.TaskStatus1.getKey());
             updates.add(update);
         }
         this.updateBatchById(updates);

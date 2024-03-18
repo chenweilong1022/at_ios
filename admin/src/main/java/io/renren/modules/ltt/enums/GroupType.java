@@ -11,6 +11,7 @@ public enum GroupType implements BaseEnum {
     GroupType2(2,"不封控地区普通uid模式"),
     GroupType3(3,"自定义id"),
     GroupType4(4,"日本，台湾专用uid模式"),
+    GroupType5(5,"同步通讯录模式"),
     ;
 
     GroupType(int key, String value) {

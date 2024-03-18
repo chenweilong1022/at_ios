@@ -80,6 +80,10 @@
           {
             value: 4,
             label: '日本，台湾专用uid模式'
+          },
+          {
+            value: 5,
+            label: '同步通讯录模式'
           }
         ],
         dataForm: {
@@ -144,7 +148,11 @@
     methods: {
       groupTypeChangeHandler () {
         this.dataForm.groupType = this.groupType
-        this.getDataGroupDataList()
+        if (this.groupType === 5) {
+          this.getDataGroupDataList(1)
+        } else {
+          this.getDataGroupDataList(this.groupType)
+        }
       },
       // 获取数据列表
       getUserGroupDataList () {
@@ -164,14 +172,14 @@
         })
       },
       // 获取数据列表
-      getDataGroupDataList () {
+      getDataGroupDataList (type) {
         this.$http({
           url: this.$http.adornUrl('/ltt/atdatagroup/list'),
           method: 'get',
           params: this.$http.adornParams({
             'page': 1,
             'limit': 100,
-            'groupType': this.groupType
+            'groupType': type
           })
         }).then(({data}) => {
           if (data && data.code === 0) {
@@ -186,7 +194,7 @@
         this.groupType = null
         this.visible = true
         this.getUserGroupDataList()
-        this.getDataGroupDataList()
+        this.getDataGroupDataList(null)
         this.$nextTick(() => {
           this.$refs['dataForm'].resetFields()
           if (this.dataForm.id) {
