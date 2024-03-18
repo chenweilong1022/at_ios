@@ -10,6 +10,9 @@ public enum UserStatusCode implements BaseEnum {
     UserStatusCode1(1,"E2EE_GROUP_TOO_MANY_MEMBERS"),
     UserStatusCode2(2,"Expected protocol id 82 but got 1f"),
     UserStatusCode3(3,"DB_FAILED"),
+    UserStatusCode4(4,"Access token refresh"),
+    UserStatusCode5(5,"unknown result"),
+    UserStatusCode6(6,"Protocol.LineContact"),
     ;
 
     UserStatusCode(int key, String value) {

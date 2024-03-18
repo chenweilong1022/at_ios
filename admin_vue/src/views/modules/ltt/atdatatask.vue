@@ -82,6 +82,9 @@
         header-align="center"
         align="center"
         label="进度">
+        <template slot-scope="scope">
+          <el-progress :stroke-width="10" type="circle" :percentage="scope.row.scheduleFloat"></el-progress>
+        </template>
       </el-table-column>
       <el-table-column
         prop="updateTime"
