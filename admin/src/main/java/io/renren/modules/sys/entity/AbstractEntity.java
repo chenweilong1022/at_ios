@@ -33,6 +33,9 @@ public abstract class AbstractEntity implements Serializable {
 	@ApiModelProperty(required=false,value="每页条数",hidden = true)
 	private Integer limit;
 	@TableField(exist = false)
+	@ApiModelProperty(required=false,value="分页开始 sql使用",hidden = true)
+	private Integer pageStart;
+	@TableField(exist = false)
 	@ApiModelProperty(required=false,value="暂时无用",hidden = true)
 	private String sidx;
 	@TableField(exist = false)
