@@ -234,11 +234,88 @@ CREATE TABLE `at_avatar_task` (
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='头像任务';
 
 
+CREATE TABLE `at_data_task` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `task_name` varchar(255) DEFAULT NULL COMMENT '任务名称',
+  `user_group_id` int(11) DEFAULT NULL COMMENT '账户分组',
+  `data_group_id` int(11) DEFAULT NULL COMMENT '数据分组',
+  `group_type` int(11) DEFAULT NULL COMMENT '类型',
+  `add_total_quantity` int(11) DEFAULT NULL COMMENT '加粉总数',
+  `successful_quantity` int(11) DEFAULT NULL COMMENT '成功数',
+  `failures_quantity` int(11) DEFAULT NULL COMMENT  '失败数',
+  `task_status` int(11) DEFAULT NULL COMMENT '状态',
+  `schedule`  int(11) DEFAULT NULL COMMENT  '进度',
+  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  `add_quantity_limit`int(11) DEFAULT NULL COMMENT '加粉数量',
+  `delete_flag` int(11) DEFAULT NULL COMMENT '删除标志',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='加粉任务';
+
+任务名称
+账户分组
+数据分组
+类型
+加粉总数
+成功数
+失败数
+状态
+进度
+更新时间
+加粉数量
+
+task_name
+user_group_id
+data_group_id
+group_type
+add_total_quantity
+successful_quantity
+failures_quantity
+task_status
+schedule
+update_time
+add_quantity_limit
 
 
 
 
-
+CREATE TABLE `at_data_subtask` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `data_task_id` int(11) DEFAULT NULL COMMENT '数据任务id',
+  `user_id` int(11) DEFAULT NULL COMMENT '账户id',
+  `task_status` int(11) DEFAULT NULL COMMENT '任务状态',
+  `luid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `contact_type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `contact_key` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `mid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `created_time` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `status` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `relation` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `display_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `phonetic_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `picture_status` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `thumbnail_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `status_message` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+  `display_name_overridden` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `favorite_time` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `capable_voice_call` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `capable_video_call` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `capable_myhome` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `capable_buddy` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `attributes` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `settings` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `picture_path` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `recommendp_arams` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `friend_request_status` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `music_profile` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `video_profile` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `delete_flag` int(11) DEFAULT NULL COMMENT '删除标志',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `line_task_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT 'line协议的任务id',
+  `msg` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT 'line的协议返回信息',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='加粉任务子任务';
 
 
 

@@ -7,6 +7,7 @@ import lombok.Getter;
 @Getter
 public enum TaskStatus implements BaseEnum {
 
+    TaskStatus0(0,"任务未启动"),
     TaskStatus1(1,"初始化任务"),
     TaskStatus2(2,"任务进行中"),
     TaskStatus3(3,"任务完成"),

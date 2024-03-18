@@ -2,48 +2,47 @@ package io.renren.modules.ltt.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import io.renren.common.utils.PageUtils;
-import io.renren.modules.ltt.dto.AtDataTaskDTO;
-import io.renren.modules.ltt.vo.AtDataTaskVO;
-import io.renren.modules.ltt.entity.AtDataTaskEntity;
+import io.renren.modules.ltt.dto.AtDataSubtaskDTO;
+import io.renren.modules.ltt.vo.AtDataSubtaskVO;
+import io.renren.modules.ltt.entity.AtDataSubtaskEntity;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.List;
 
 
 /**
- * 加粉任务
+ * 加粉任务子任务
  *
  * @author chenweilong
  * @email chenweilong@qq.com
- * @date 2024-03-17 18:52:43
+ * @date 2024-03-18 10:53:33
  */
-public interface AtDataTaskService extends IService<AtDataTaskEntity> {
+public interface AtDataSubtaskService extends IService<AtDataSubtaskEntity> {
 
     /**
      * 分页查询
-     * @param atDataTask
+     * @param atDataSubtask
      * @return
      */
-    PageUtils queryPage(AtDataTaskDTO atDataTask);
+    PageUtils queryPage(AtDataSubtaskDTO atDataSubtask);
     /**
      * 根据id查询
      * @param id
      * @return
      */
-    AtDataTaskVO getById(Integer id);
+    AtDataSubtaskVO getById(Integer id);
     /**
      * 保存
-     * @param atDataTask
+     * @param atDataSubtask
      * @return
      */
-    boolean save(AtDataTaskDTO atDataTask);
+    boolean save(AtDataSubtaskDTO atDataSubtask);
     /**
      * 根据id修改
-     * @param atDataTask
+     * @param atDataSubtask
      * @return
      */
-    boolean updateById(AtDataTaskDTO atDataTask);
+    boolean updateById(AtDataSubtaskDTO atDataSubtask);
     /**
      * 根据id删除
      * @param id
@@ -59,11 +58,5 @@ public interface AtDataTaskService extends IService<AtDataTaskEntity> {
      */
     @Override
     boolean removeByIds(Collection<? extends Serializable> ids);
-
-    /**
-     * 启动任务
-     * @param ids
-     */
-    void startUp(Collection<? extends Serializable> ids);
 }
 

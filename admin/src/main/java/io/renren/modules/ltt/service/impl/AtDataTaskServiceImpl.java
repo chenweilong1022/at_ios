@@ -1,6 +1,9 @@
 package io.renren.modules.ltt.service.impl;
 
+import cn.hutool.core.date.DateUtil;
 import io.renren.datasources.annotation.Game;
+import io.renren.modules.ltt.enums.DeleteFlag;
+import io.renren.modules.ltt.enums.TaskStatus;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -14,9 +17,12 @@ import io.renren.modules.ltt.dto.AtDataTaskDTO;
 import io.renren.modules.ltt.vo.AtDataTaskVO;
 import io.renren.modules.ltt.service.AtDataTaskService;
 import io.renren.modules.ltt.conver.AtDataTaskConver;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 
 @Service("atDataTaskService")
@@ -38,7 +44,16 @@ public class AtDataTaskServiceImpl extends ServiceImpl<AtDataTaskDao, AtDataTask
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean save(AtDataTaskDTO atDataTask) {
+        atDataTask.setCreateTime(DateUtil.date());
+        atDataTask.setDeleteFlag(DeleteFlag.NO.getKey());
+        atDataTask.setAddTotalQuantity(0);
+        atDataTask.setSuccessfulQuantity(0);
+        atDataTask.setFailuresQuantity(0);
+        atDataTask.setAddQuantityLimit(0);
+        atDataTask.setUpdateTime(DateUtil.date());
+        atDataTask.setTaskStatus(TaskStatus.TaskStatus0.getKey());
         AtDataTaskEntity atDataTaskEntity = AtDataTaskConver.MAPPER.converDTO(atDataTask);
         return this.save(atDataTaskEntity);
     }
@@ -57,6 +72,20 @@ public class AtDataTaskServiceImpl extends ServiceImpl<AtDataTaskDao, AtDataTask
     @Override
     public boolean removeByIds(Collection<? extends Serializable> ids) {
         return super.removeByIds(ids);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void startUp(Collection<? extends Serializable> ids) {
+        List<AtDataTaskEntity> atDataTaskEntities = this.listByIds(ids);
+        List<AtDataTaskEntity> updates = new ArrayList<>();
+        for (AtDataTaskEntity atDataTaskEntity : atDataTaskEntities) {
+            AtDataTaskEntity update = new AtDataTaskEntity();
+            update.setId(atDataTaskEntity.getId());
+            update.setTaskStatus(TaskStatus.TaskStatus1.getKey());
+            updates.add(update);
+        }
+        this.updateBatchById(updates);
     }
 
 }

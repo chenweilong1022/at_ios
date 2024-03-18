@@ -6,8 +6,8 @@
       </el-form-item>
       <el-form-item>
         <el-button @click="getDataList()">查询</el-button>
-        <el-button v-if="isAuth('ltt:atdatatask:save')" type="primary" @click="addOrUpdateHandle()">新增</el-button>
-        <el-button v-if="isAuth('ltt:atdatatask:delete')" type="danger" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>
+        <el-button v-if="isAuth('ltt:atdatasubtask:save')" type="primary" @click="addOrUpdateHandle()">新增</el-button>
+        <el-button v-if="isAuth('ltt:atdatasubtask:delete')" type="danger" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>
       </el-form-item>
     </el-form>
     <el-table
@@ -23,71 +23,208 @@
         width="50">
       </el-table-column>
       <el-table-column
-        prop="taskName"
+        prop="id"
         header-align="center"
         align="center"
-        width="120"
-        label="任务名称">
+        label="主键">
       </el-table-column>
       <el-table-column
-        prop="userGroupId"
+        prop="dataTaskId"
         header-align="center"
         align="center"
-        label="账户分组">
+        label="数据任务id">
       </el-table-column>
       <el-table-column
-        prop="dataGroupId"
+        prop="userId"
         header-align="center"
         align="center"
-        label="数据分组">
-      </el-table-column>
-      <el-table-column
-        prop="groupTypeStr"
-        header-align="center"
-        align="center"
-        label="类型">
-      </el-table-column>
-      <el-table-column
-        prop="addTotalQuantity"
-        header-align="center"
-        align="center"
-        label="加粉总数">
-      </el-table-column>
-      <el-table-column
-        prop="successfulQuantity"
-        header-align="center"
-        align="center"
-        label="成功数">
-      </el-table-column>
-      <el-table-column
-        prop="failuresQuantity"
-        header-align="center"
-        align="center"
-        label="失败数">
+        label="账户id">
       </el-table-column>
       <el-table-column
         prop="taskStatus"
         header-align="center"
         align="center"
-        label="状态">
-        <template slot-scope="scope">
-          <el-button v-if="scope.row.taskStatus === 3" type="success" plain>{{scope.row.taskStatusStr}}</el-button>
-          <el-button v-if="scope.row.taskStatus === 2" type="warning" plain>{{scope.row.taskStatusStr}}</el-button>
-          <el-button v-if="scope.row.taskStatus === 1" type="primary" plain>{{scope.row.taskStatusStr}}</el-button>
-          <el-button v-if="scope.row.taskStatus === 0" type="primary" plain>{{scope.row.taskStatusStr}}</el-button>
-        </template>
+        label="任务状态">
       </el-table-column>
       <el-table-column
-        prop="schedule"
+        prop="luid"
         header-align="center"
         align="center"
-        label="进度">
+        label="">
       </el-table-column>
       <el-table-column
-        prop="updateTime"
+        prop="contactType"
         header-align="center"
         align="center"
-        label="更新时间">
+        label="">
+      </el-table-column>
+      <el-table-column
+        prop="contactKey"
+        header-align="center"
+        align="center"
+        label="">
+      </el-table-column>
+      <el-table-column
+        prop="mid"
+        header-align="center"
+        align="center"
+        label="">
+      </el-table-column>
+      <el-table-column
+        prop="createdTime"
+        header-align="center"
+        align="center"
+        label="">
+      </el-table-column>
+      <el-table-column
+        prop="type"
+        header-align="center"
+        align="center"
+        label="">
+      </el-table-column>
+      <el-table-column
+        prop="status"
+        header-align="center"
+        align="center"
+        label="">
+      </el-table-column>
+      <el-table-column
+        prop="relation"
+        header-align="center"
+        align="center"
+        label="">
+      </el-table-column>
+      <el-table-column
+        prop="displayName"
+        header-align="center"
+        align="center"
+        label="">
+      </el-table-column>
+      <el-table-column
+        prop="phoneticName"
+        header-align="center"
+        align="center"
+        label="">
+      </el-table-column>
+      <el-table-column
+        prop="pictureStatus"
+        header-align="center"
+        align="center"
+        label="">
+      </el-table-column>
+      <el-table-column
+        prop="thumbnailUrl"
+        header-align="center"
+        align="center"
+        label="">
+      </el-table-column>
+      <el-table-column
+        prop="statusMessage"
+        header-align="center"
+        align="center"
+        label="">
+      </el-table-column>
+      <el-table-column
+        prop="displayNameOverridden"
+        header-align="center"
+        align="center"
+        label="">
+      </el-table-column>
+      <el-table-column
+        prop="favoriteTime"
+        header-align="center"
+        align="center"
+        label="">
+      </el-table-column>
+      <el-table-column
+        prop="capableVoiceCall"
+        header-align="center"
+        align="center"
+        label="">
+      </el-table-column>
+      <el-table-column
+        prop="capableVideoCall"
+        header-align="center"
+        align="center"
+        label="">
+      </el-table-column>
+      <el-table-column
+        prop="capableMyhome"
+        header-align="center"
+        align="center"
+        label="">
+      </el-table-column>
+      <el-table-column
+        prop="capableBuddy"
+        header-align="center"
+        align="center"
+        label="">
+      </el-table-column>
+      <el-table-column
+        prop="attributes"
+        header-align="center"
+        align="center"
+        label="">
+      </el-table-column>
+      <el-table-column
+        prop="settings"
+        header-align="center"
+        align="center"
+        label="">
+      </el-table-column>
+      <el-table-column
+        prop="picturePath"
+        header-align="center"
+        align="center"
+        label="">
+      </el-table-column>
+      <el-table-column
+        prop="recommendpArams"
+        header-align="center"
+        align="center"
+        label="">
+      </el-table-column>
+      <el-table-column
+        prop="friendRequestStatus"
+        header-align="center"
+        align="center"
+        label="">
+      </el-table-column>
+      <el-table-column
+        prop="musicProfile"
+        header-align="center"
+        align="center"
+        label="">
+      </el-table-column>
+      <el-table-column
+        prop="videoProfile"
+        header-align="center"
+        align="center"
+        label="">
+      </el-table-column>
+      <el-table-column
+        prop="deleteFlag"
+        header-align="center"
+        align="center"
+        label="删除标志">
+      </el-table-column>
+      <el-table-column
+        prop="createTime"
+        header-align="center"
+        align="center"
+        label="创建时间">
+      </el-table-column>
+      <el-table-column
+        prop="lineTaskId"
+        header-align="center"
+        align="center"
+        label="line协议的任务id">
+      </el-table-column>
+      <el-table-column
+        prop="msg"
+        header-align="center"
+        align="center"
+        label="line的协议返回信息">
       </el-table-column>
       <el-table-column
         fixed="right"
@@ -96,7 +233,6 @@
         width="150"
         label="操作">
         <template slot-scope="scope">
-          <el-button v-if="scope.row.taskStatus === 0" type="text" size="small" @click="startUpHandle(scope.row.id)">启动</el-button>
           <el-button type="text" size="small" @click="addOrUpdateHandle(scope.row.id)">修改</el-button>
           <el-button type="text" size="small" @click="deleteHandle(scope.row.id)">删除</el-button>
         </template>
@@ -117,7 +253,7 @@
 </template>
 
 <script>
-  import AddOrUpdate from './atdatatask-add-or-update'
+  import AddOrUpdate from './atdatasubtask-add-or-update'
   export default {
     data () {
       return {
@@ -140,40 +276,11 @@
       this.getDataList()
     },
     methods: {
-      startUpHandle (id) {
-        var ids = id ? [id] : this.dataListSelections.map(item => {
-          return item.id
-        })
-        this.$confirm(`确定对[id=${ids.join(',')}]进行[${id ? '启动任务' : '批量启动任务'}]操作?`, '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          this.$http({
-            url: this.$http.adornUrl('/ltt/atdatatask/startUp'),
-            method: 'post',
-            data: this.$http.adornData(ids, false)
-          }).then(({data}) => {
-            if (data && data.code === 0) {
-              this.$message({
-                message: '操作成功',
-                type: 'success',
-                duration: 1500,
-                onClose: () => {
-                  this.getDataList()
-                }
-              })
-            } else {
-              this.$message.error(data.msg)
-            }
-          })
-        })
-      },
       // 获取数据列表
       getDataList () {
         this.dataListLoading = true
         this.$http({
-          url: this.$http.adornUrl('/ltt/atdatatask/list'),
+          url: this.$http.adornUrl('/ltt/atdatasubtask/list'),
           method: 'get',
           params: this.$http.adornParams({
             'page': this.pageIndex,
@@ -224,7 +331,7 @@
           type: 'warning'
         }).then(() => {
           this.$http({
-            url: this.$http.adornUrl('/ltt/atdatatask/delete'),
+            url: this.$http.adornUrl('/ltt/atdatasubtask/delete'),
             method: 'post',
             data: this.$http.adornData(ids, false)
           }).then(({data}) => {

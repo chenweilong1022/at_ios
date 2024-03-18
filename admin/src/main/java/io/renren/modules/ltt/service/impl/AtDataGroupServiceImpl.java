@@ -44,7 +44,8 @@ public class AtDataGroupServiceImpl extends ServiceImpl<AtDataGroupDao, AtDataGr
     public PageUtils<AtDataGroupVO> queryPage(AtDataGroupDTO atDataGroup) {
         IPage<AtDataGroupEntity> page = baseMapper.selectPage(
                 new Query<AtDataGroupEntity>(atDataGroup).getPage(),
-                new QueryWrapper<AtDataGroupEntity>()
+                new QueryWrapper<AtDataGroupEntity>().lambda()
+                        .eq(ObjectUtil.isNotNull(atDataGroup.getGroupType()),AtDataGroupEntity::getGroupType,atDataGroup.getGroupType())
         );
 
         //根据分组id转化为map

@@ -86,4 +86,14 @@ public class AtDataTaskController {
         return R.ok();
     }
 
+    /**
+     * startUp
+     */
+    @RequestMapping("/startUp")
+    @RequiresPermissions("ltt:atdatatask:delete")
+    public R startUp(@RequestBody Integer[] ids){
+		atDataTaskService.startUp(Arrays.asList(ids));
+        return R.ok();
+    }
+
 }

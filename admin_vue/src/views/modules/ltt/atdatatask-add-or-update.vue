@@ -7,41 +7,46 @@
     <el-form-item label="任务名称" prop="taskName">
       <el-input v-model="dataForm.taskName" placeholder="任务名称"></el-input>
     </el-form-item>
+      <el-form-item label="类型" prop="groupType">
+        <el-select
+          v-model="groupType"
+          @change="groupTypeChangeHandler"
+          class="m-2"
+          placeholder="选择类型"
+          size="large"
+          style="width: 240px"
+        >
+          <el-option
+            v-for="item in options"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          />
+        </el-select>
+      </el-form-item>
     <el-form-item label="账户分组" prop="userGroupId">
-      <el-input v-model="dataForm.userGroupId" placeholder="账户分组"></el-input>
+      <el-select v-model="dataForm.userGroupId" placeholder="账户分组">
+        <el-option
+          v-for="item in dataUserGroupList"
+          :key="item.id"
+          :label="item.name"
+          :value="item.id">
+        </el-option>
+      </el-select>
     </el-form-item>
     <el-form-item label="数据分组" prop="dataGroupId">
-      <el-input v-model="dataForm.dataGroupId" placeholder="数据分组"></el-input>
+      <el-select v-model="dataForm.dataGroupId" placeholder="数据分组">
+        <el-option
+          v-for="item in datagroupList"
+          :key="item.id"
+          :label="item.name"
+          :value="item.id">
+        </el-option>
+      </el-select>
     </el-form-item>
-    <el-form-item label="类型" prop="groupType">
-      <el-input v-model="dataForm.groupType" placeholder="类型"></el-input>
-    </el-form-item>
-    <el-form-item label="加粉总数" prop="addTotalQuantity">
-      <el-input v-model="dataForm.addTotalQuantity" placeholder="加粉总数"></el-input>
-    </el-form-item>
-    <el-form-item label="成功数" prop="successfulQuantity">
-      <el-input v-model="dataForm.successfulQuantity" placeholder="成功数"></el-input>
-    </el-form-item>
-    <el-form-item label="失败数" prop="failuresQuantity">
-      <el-input v-model="dataForm.failuresQuantity" placeholder="失败数"></el-input>
-    </el-form-item>
-    <el-form-item label="状态" prop="taskStatus">
-      <el-input v-model="dataForm.taskStatus" placeholder="状态"></el-input>
-    </el-form-item>
-    <el-form-item label="进度" prop="schedule">
-      <el-input v-model="dataForm.schedule" placeholder="进度"></el-input>
-    </el-form-item>
-    <el-form-item label="更新时间" prop="updateTime">
-      <el-input v-model="dataForm.updateTime" placeholder="更新时间"></el-input>
-    </el-form-item>
-    <el-form-item label="加粉数量" prop="addQuantityLimit">
-      <el-input v-model="dataForm.addQuantityLimit" placeholder="加粉数量"></el-input>
-    </el-form-item>
-    <el-form-item label="删除标志" prop="deleteFlag">
-      <el-input v-model="dataForm.deleteFlag" placeholder="删除标志"></el-input>
-    </el-form-item>
-    <el-form-item label="创建时间" prop="createTime">
-      <el-input v-model="dataForm.createTime" placeholder="创建时间"></el-input>
+    <el-form-item label="每个号加粉数量" prop="addQuantityLimit">
+      <el-input-number v-model="dataForm.addQuantityLimit" :min="1" :max="100" label="每个号加粉数量"></el-input-number>
+
     </el-form-item>
     </el-form>
     <span slot="footer" class="dialog-footer">
@@ -55,7 +60,32 @@
   export default {
     data () {
       return {
+        groupType: null,
         visible: false,
+        dataUserGroupList: [],
+        datagroupList: [],
+        options: [
+          {
+            value: 1,
+            label: '手机号'
+          },
+          {
+            value: 2,
+            label: '不封控地区普通uid模式'
+          },
+          {
+            value: 3,
+            label: '自定义id'
+          },
+          {
+            value: 4,
+            label: '日本，台湾专用uid模式'
+          },
+          {
+            value: 5,
+            label: '同步通讯录模式'
+          }
+        ],
         dataForm: {
           id: 0,
           taskName: '',
@@ -116,9 +146,55 @@
       }
     },
     methods: {
+      groupTypeChangeHandler () {
+        this.dataForm.groupType = this.groupType
+        if (this.groupType === 5) {
+          this.getDataGroupDataList(1)
+        } else {
+          this.getDataGroupDataList(this.groupType)
+        }
+      },
+      // 获取数据列表
+      getUserGroupDataList () {
+        this.$http({
+          url: this.$http.adornUrl('/ltt/atusergroup/list'),
+          method: 'get',
+          params: this.$http.adornParams({
+            'page': 1,
+            'limit': 100
+          })
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.dataUserGroupList = data.page.list
+          } else {
+            this.dataUserGroupList = []
+          }
+        })
+      },
+      // 获取数据列表
+      getDataGroupDataList (type) {
+        this.$http({
+          url: this.$http.adornUrl('/ltt/atdatagroup/list'),
+          method: 'get',
+          params: this.$http.adornParams({
+            'page': 1,
+            'limit': 100,
+            'groupType': type
+          })
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.datagroupList = data.page.list
+          } else {
+            this.datagroupList = []
+          }
+        })
+      },
       init (id) {
         this.dataForm.id = id || 0
+        this.groupType = null
         this.visible = true
+        this.getUserGroupDataList()
+        this.getDataGroupDataList(null)
         this.$nextTick(() => {
           this.$refs['dataForm'].resetFields()
           if (this.dataForm.id) {
@@ -150,6 +226,7 @@
       dataFormSubmit () {
         this.$refs['dataForm'].validate((valid) => {
           if (valid) {
+            this.dataForm.groupType = this.groupType
             this.$http({
               url: this.$http.adornUrl(`/ltt/atdatatask/${!this.dataForm.id ? 'save' : 'update'}`),
               method: 'post',

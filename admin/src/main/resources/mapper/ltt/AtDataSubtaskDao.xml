@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.modules.ltt.dao.AtDataSubtaskDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.renren.modules.ltt.entity.AtDataSubtaskEntity" id="atDataSubtaskMap">
+        <result property="id" column="id"/>
+        <result property="dataTaskId" column="data_task_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="taskStatus" column="task_status"/>
+        <result property="luid" column="luid"/>
+        <result property="contactType" column="contact_type"/>
+        <result property="contactKey" column="contact_key"/>
+        <result property="mid" column="mid"/>
+        <result property="createdTime" column="created_time"/>
+        <result property="type" column="type"/>
+        <result property="status" column="status"/>
+        <result property="relation" column="relation"/>
+        <result property="displayName" column="display_name"/>
+        <result property="phoneticName" column="phonetic_name"/>
+        <result property="pictureStatus" column="picture_status"/>
+        <result property="thumbnailUrl" column="thumbnail_url"/>
+        <result property="statusMessage" column="status_message"/>
+        <result property="displayNameOverridden" column="display_name_overridden"/>
+        <result property="favoriteTime" column="favorite_time"/>
+        <result property="capableVoiceCall" column="capable_voice_call"/>
+        <result property="capableVideoCall" column="capable_video_call"/>
+        <result property="capableMyhome" column="capable_myhome"/>
+        <result property="capableBuddy" column="capable_buddy"/>
+        <result property="attributes" column="attributes"/>
+        <result property="settings" column="settings"/>
+        <result property="picturePath" column="picture_path"/>
+        <result property="recommendpArams" column="recommendp_arams"/>
+        <result property="friendRequestStatus" column="friend_request_status"/>
+        <result property="musicProfile" column="music_profile"/>
+        <result property="videoProfile" column="video_profile"/>
+        <result property="deleteFlag" column="delete_flag"/>
+        <result property="createTime" column="create_time"/>
+        <result property="lineTaskId" column="line_task_id"/>
+        <result property="msg" column="msg"/>
+    </resultMap>
+
+
+</mapper>
