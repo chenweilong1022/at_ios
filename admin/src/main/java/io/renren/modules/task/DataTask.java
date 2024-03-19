@@ -139,6 +139,14 @@ public class DataTask {
                         update.setTaskStatus(TaskStatus.TaskStatus3.getKey());
                     }
                     atDataTaskEntityList.add(update);
+                }else if (GroupType.GroupType2.getKey().equals(atDataTaskEntity.getGroupType())) {
+                    update.setSuccessfulQuantity((int) success8);
+                    update.setFailuresQuantity((int) fail);
+                    update.setId(atDataTaskEntity.getId());
+                    if (success8 + fail == atDataTaskEntity.getAddTotalQuantity()) {
+                        update.setTaskStatus(TaskStatus.TaskStatus3.getKey());
+                    }
+                    atDataTaskEntityList.add(update);
                 }
             }
             if (CollUtil.isNotEmpty(atDataTaskEntityList)) {

@@ -1,0 +1,9 @@
+POST http://137.184.112.207:22117/api/v1/work/addFriendsByMid
+Content-Type: application/json
+
+{
+  "proxy": "content",
+  "mid": "content",
+  "friendAddType": "content",
+  "token": "content"
+}
