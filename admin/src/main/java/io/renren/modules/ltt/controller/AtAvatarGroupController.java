@@ -1,13 +1,12 @@
 package io.renren.modules.ltt.controller;
 
 import java.util.Arrays;
+import java.util.List;
 
+import io.renren.modules.ltt.entity.AtAvatarGroupEntity;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import io.renren.modules.ltt.dto.AtAvatarGroupDTO;
 import io.renren.modules.ltt.vo.AtAvatarGroupVO;
@@ -84,6 +83,16 @@ public class AtAvatarGroupController {
 		atAvatarGroupService.removeByIds(Arrays.asList(ids));
 
         return R.ok();
+    }
+
+    /**
+     * 模糊检索根据分组名称
+     */
+    @RequestMapping("/queryByFuzzyName")
+    @RequiresPermissions("ltt:atavatargroup:list")
+    public R queryByFuzzyName(@RequestParam String searchWord){
+        List<AtAvatarGroupEntity> groupList = atAvatarGroupService.queryByFuzzyName(searchWord);
+        return R.ok().put("groupList", groupList);
     }
 
 }

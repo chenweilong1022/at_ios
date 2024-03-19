@@ -6,15 +6,12 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.http.HttpUtil;
 import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
-import io.renren.modules.ltt.conver.AtUsernameGroupConver;
 import io.renren.modules.ltt.entity.AtDataEntity;
-import io.renren.modules.ltt.entity.AtUsernameEntity;
 import io.renren.modules.ltt.enums.DeleteFlag;
 import io.renren.modules.ltt.enums.UseFlag;
 import io.renren.modules.ltt.service.AtDataService;
 import io.renren.modules.ltt.vo.AtDataGroupVODataCountGroupIdVO;
-import io.renren.modules.ltt.vo.AtUsernameGroupUsernameCountGroupIdVO;
-import io.renren.modules.ltt.vo.AtUsernameGroupVO;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -46,6 +43,7 @@ public class AtDataGroupServiceImpl extends ServiceImpl<AtDataGroupDao, AtDataGr
                 new Query<AtDataGroupEntity>(atDataGroup).getPage(),
                 new QueryWrapper<AtDataGroupEntity>().lambda()
                         .eq(ObjectUtil.isNotNull(atDataGroup.getGroupType()),AtDataGroupEntity::getGroupType,atDataGroup.getGroupType())
+                        .orderByDesc(AtDataGroupEntity::getId)
         );
 
         //根据分组id转化为map
@@ -84,7 +82,14 @@ public class AtDataGroupServiceImpl extends ServiceImpl<AtDataGroupDao, AtDataGr
     @Transactional(rollbackFor = Exception.class)
     public boolean updateById(AtDataGroupDTO atDataGroup) {
         AtDataGroupEntity atDataGroupEntity = AtDataGroupConver.MAPPER.converDTO(atDataGroup);
-        boolean flag = this.updateById(atDataGroupEntity);
+        return this.updateById(atDataGroupEntity);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean updateBatchGroup(AtDataGroupDTO atDataGroup) {
+        Assert.isTrue(StringUtils.isEmpty(atDataGroup.getTxtUrl()),"上传内容不能为空");
+
         String s = HttpUtil.downloadString(atDataGroup.getTxtUrl(), "UTF-8");
         String[] split = s.split("\n");
         Assert.isTrue(ArrayUtil.isEmpty(split),"txt不能为空");
@@ -101,8 +106,7 @@ public class AtDataGroupServiceImpl extends ServiceImpl<AtDataGroupDao, AtDataGr
             atDataEntities.add(atDataEntity);
         }
 
-        atDataService.saveBatch(atDataEntities);
-        return flag;
+       return atDataService.saveBatch(atDataEntities);
     }
 
     @Override

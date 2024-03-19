@@ -8,6 +8,8 @@ import io.renren.modules.ltt.entity.AtUserGroupEntity;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -31,6 +33,18 @@ public interface AtUserGroupService extends IService<AtUserGroupEntity> {
      * @return
      */
     AtUserGroupVO getById(Integer id);
+    /**
+     * 根据id查询
+     * @param id
+     * @return
+     */
+    List<AtUserGroupVO> getByIds(List<Integer> id);
+    /**
+     * 根据id查询
+     * @param id
+     * @return
+     */
+    Map<Integer, String> getMapByIds(List<Integer> id);
     /**
      * 保存
      * @param atUserGroup

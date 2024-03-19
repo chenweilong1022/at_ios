@@ -11,5 +11,14 @@
         <result property="createTime" column="create_time"/>
     </resultMap>
 
+    <select id="queryByFuzzyName" resultType="io.renren.modules.ltt.entity.AtAvatarGroupEntity">
+        select id, name from at_avatar_group
+        where deleteFlag = 1
+        <if test="searchWord != null">
+            and name like CONCAT( '%', #{searchWord}, '%')
+        </if>
+        order by id desc
+        limit 20
+    </select>
 
 </mapper>

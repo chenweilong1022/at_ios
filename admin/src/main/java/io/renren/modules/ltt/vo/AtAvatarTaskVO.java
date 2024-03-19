@@ -53,10 +53,20 @@ public class AtAvatarTaskVO implements Serializable {
 	@ApiModelProperty(required=false,value="账户分组")
 	private Integer userGroupId;
 	/**
+	 * 账户分组
+	 */
+	@ApiModelProperty(required=false,value="账户分组名称")
+	private String userGroupName;
+	/**
 	 * 头像分组
 	 */
 	@ApiModelProperty(required=false,value="头像分组")
 	private Integer avatarGroupId;
+	/**
+	 * 头像分组
+	 */
+	@ApiModelProperty(required=false,value="头像分组名称")
+	private String avatarGroupName;
 	/**
 	 * 执行数量
 	 */

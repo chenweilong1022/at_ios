@@ -8,6 +8,8 @@ import io.renren.modules.ltt.entity.AtAvatarGroupEntity;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -31,6 +33,11 @@ public interface AtAvatarGroupService extends IService<AtAvatarGroupEntity> {
      * @return
      */
     AtAvatarGroupVO getById(Integer id);
+
+    List<AtAvatarGroupVO> getByIds(List<Integer> ids);
+
+    Map<Integer, String> getMapByIds(List<Integer> ids);
+
     /**
      * 保存
      * @param atAvatarGroup
@@ -58,5 +65,13 @@ public interface AtAvatarGroupService extends IService<AtAvatarGroupEntity> {
      */
     @Override
     boolean removeByIds(Collection<? extends Serializable> ids);
+
+    /**
+     *
+     * 模糊检索根据分组名称
+     * @param searchWord
+     * @return
+     */
+    List<AtAvatarGroupEntity> queryByFuzzyName(String searchWord);
 }
 

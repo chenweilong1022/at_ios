@@ -22,12 +22,12 @@
         align="center"
         width="50">
       </el-table-column>
-      <el-table-column
-        prop="id"
-        header-align="center"
-        align="center"
-        label="主键">
-      </el-table-column>
+<!--      <el-table-column-->
+<!--        prop="id"-->
+<!--        header-align="center"-->
+<!--        align="center"-->
+<!--        label="主键">-->
+<!--      </el-table-column>-->
       <el-table-column
         prop="taskName"
         header-align="center"
@@ -56,13 +56,13 @@
         </template>
       </el-table-column>
       <el-table-column
-        prop="userGroupId"
+        prop="userGroupName"
         header-align="center"
         align="center"
         label="账户分组">
       </el-table-column>
       <el-table-column
-        prop="avatarGroupId"
+        prop="avatarGroupName"
         header-align="center"
         align="center"
         label="头像分组">

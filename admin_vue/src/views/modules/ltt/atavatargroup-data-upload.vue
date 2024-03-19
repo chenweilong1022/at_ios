@@ -9,7 +9,7 @@
     </el-form-item>
 
       <el-form-item label="分组名称" prop="name">
-        <el-upload
+        <el-upload ref="upload"
           v-model:file-list="fileList"
           class="upload-demo"
           :multiple="multiple"
@@ -81,6 +81,7 @@
       init (id) {
         this.dataForm.id = id || 0
         this.visible = true
+        this.$refs.upload.clearFiles()
         this.$nextTick(() => {
           this.$refs['dataForm'].resetFields()
           if (this.dataForm.id) {
@@ -105,6 +106,7 @@
           let data = this.fileList[i]
           this.dataForm.avatarList.push(data.response.data)
         }
+        this.fileList = []
         console.log(this.dataForm.avatarList)
         this.$refs['dataForm'].validate((valid) => {
           if (valid) {

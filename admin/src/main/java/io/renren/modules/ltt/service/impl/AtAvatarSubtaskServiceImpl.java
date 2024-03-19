@@ -31,6 +31,7 @@ public class AtAvatarSubtaskServiceImpl extends ServiceImpl<AtAvatarSubtaskDao, 
                 new QueryWrapper<AtAvatarSubtaskEntity>().lambda()
                         .eq(ObjectUtil.isNotNull(atAvatarSubtask.getAvatarTaskId()),AtAvatarSubtaskEntity::getAvatarTaskId,atAvatarSubtask.getAvatarTaskId())
                         .eq(ObjectUtil.isNotNull(atAvatarSubtask.getTaskStatus()),AtAvatarSubtaskEntity::getTaskStatus,atAvatarSubtask.getTaskStatus())
+                        .orderByDesc(AtAvatarSubtaskEntity::getId)
         );
 
         return PageUtils.<AtAvatarSubtaskVO>page(page).setList(AtAvatarSubtaskConver.MAPPER.conver(page.getRecords()));

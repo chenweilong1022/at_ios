@@ -46,7 +46,8 @@ public class AtDataTaskServiceImpl extends ServiceImpl<AtDataTaskDao, AtDataTask
     public PageUtils<AtDataTaskVO> queryPage(AtDataTaskDTO atDataTask) {
         IPage<AtDataTaskEntity> page = baseMapper.selectPage(
                 new Query<AtDataTaskEntity>(atDataTask).getPage(),
-                new QueryWrapper<AtDataTaskEntity>()
+                new QueryWrapper<AtDataTaskEntity>().lambda()
+                        .orderByDesc(AtDataTaskEntity::getId)
         );
 
         return PageUtils.<AtDataTaskVO>page(page).setList(AtDataTaskConver.MAPPER.conver(page.getRecords()));
