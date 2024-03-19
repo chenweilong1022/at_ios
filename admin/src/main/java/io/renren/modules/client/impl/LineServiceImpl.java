@@ -162,6 +162,7 @@ public class LineServiceImpl implements LineService {
             String getPhoneHttp = String.format("%s/api/v1/work/searchPhone",projectWorkEntity.getLineBaseHttp());
             String jsonStr = JSONUtil.toJsonStr(searchPhoneDTO);
             String resp = HttpUtil.post(getPhoneHttp, jsonStr);
+            log.info("param = {},resp = {}", jsonStr, resp);
             SearchPhoneVO searchPhoneVO = JSON.parseObject(resp, SearchPhoneVO.class);
 
             extracted(jsonStr, resp);
