@@ -36,7 +36,8 @@ public class AtUserTokenServiceImpl extends ServiceImpl<AtUserTokenDao, AtUserTo
     public PageUtils<AtUserTokenVO> queryPage(AtUserTokenDTO atUserToken) {
         IPage<AtUserTokenEntity> page = baseMapper.selectPage(
                 new Query<AtUserTokenEntity>(atUserToken).getPage(),
-                new QueryWrapper<AtUserTokenEntity>()
+                new QueryWrapper<AtUserTokenEntity>().lambda()
+                        .orderByDesc(AtUserTokenEntity::getId)
         );
 
         return PageUtils.<AtUserTokenVO>page(page).setList(AtUserTokenConver.MAPPER.conver(page.getRecords()));

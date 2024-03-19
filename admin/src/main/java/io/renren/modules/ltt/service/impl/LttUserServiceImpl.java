@@ -27,7 +27,8 @@ public class LttUserServiceImpl extends ServiceImpl<LttUserDao, LttUserEntity> i
     public PageUtils<LttUserVO> queryPage(LttUserDTO lttUser) {
         IPage<LttUserEntity> page = baseMapper.selectPage(
                 new Query<LttUserEntity>(lttUser).getPage(),
-                new QueryWrapper<LttUserEntity>()
+                new QueryWrapper<LttUserEntity>().lambda()
+                        .orderByDesc(LttUserEntity::getId)
         );
 
         return PageUtils.<LttUserVO>page(page).setList(LttUserConver.MAPPER.conver(page.getRecords()));

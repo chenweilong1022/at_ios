@@ -5,6 +5,7 @@ import io.renren.common.utils.PageUtils;
 import io.renren.modules.ltt.dto.AtUsernameGroupDTO;
 import io.renren.modules.ltt.vo.AtUsernameGroupVO;
 import io.renren.modules.ltt.entity.AtUsernameGroupEntity;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -43,6 +44,14 @@ public interface AtUsernameGroupService extends IService<AtUsernameGroupEntity> 
      * @return
      */
     boolean updateById(AtUsernameGroupDTO atUsernameGroup);
+
+    /**
+     * 批量更改昵称
+      * @param atUsernameGroup
+     * @return
+     */
+    boolean updateBatchAtUsername(AtUsernameGroupDTO atUsernameGroup);
+
     /**
      * 根据id删除
      * @param id

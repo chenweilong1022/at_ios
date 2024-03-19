@@ -27,7 +27,8 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
     public PageUtils<AtUserVO> queryPage(AtUserDTO atUser) {
         IPage<AtUserEntity> page = baseMapper.selectPage(
                 new Query<AtUserEntity>(atUser).getPage(),
-                new QueryWrapper<AtUserEntity>()
+                new QueryWrapper<AtUserEntity>().lambda()
+                        .orderByDesc(AtUserEntity::getId)
         );
 
         return PageUtils.<AtUserVO>page(page).setList(AtUserConver.MAPPER.conver(page.getRecords()));

@@ -128,19 +128,19 @@
               params: this.$http.adornParams()
             }).then(({data}) => {
               if (data && data.code === 0) {
-                this.dataForm.avatar = data.atuser.avatar
-                this.dataForm.nation = data.atuser.nation
-                this.dataForm.telephone = data.atuser.telephone
-                this.dataForm.nickName = data.atuser.nickName
-                this.dataForm.numberFriends = data.atuser.numberFriends
-                this.dataForm.password = data.atuser.password
-                this.dataForm.userGroupId = data.atuser.userGroupId
-                this.dataForm.userGroupName = data.atuser.userGroupName
-                this.dataForm.customerServiceId = data.atuser.customerServiceId
-                this.dataForm.customerService = data.atuser.customerService
-                this.dataForm.deleteFlag = data.atuser.deleteFlag
-                this.dataForm.createTime = data.atuser.createTime
-                this.dataForm.userTokenId = data.atuser.userTokenId
+                this.dataForm.avatar = data.atUser.avatar
+                this.dataForm.nation = data.atUser.nation
+                this.dataForm.telephone = data.atUser.telephone
+                this.dataForm.nickName = data.atUser.nickName
+                this.dataForm.numberFriends = data.atUser.numberFriends
+                this.dataForm.password = data.atUser.password
+                this.dataForm.userGroupId = data.atUser.userGroupId
+                this.dataForm.userGroupName = data.atUser.userGroupName
+                this.dataForm.customerServiceId = data.atUser.customerServiceId
+                this.dataForm.customerService = data.atUser.customerService
+                this.dataForm.deleteFlag = data.atUser.deleteFlag
+                this.dataForm.createTime = data.atUser.createTime
+                this.dataForm.userTokenId = data.atUser.userTokenId
               }
             })
           }

@@ -12,6 +12,7 @@
     </el-form-item>
     <el-form-item label="使用标识" prop="useFlag">
       <el-input v-model="dataForm.useFlag" placeholder="使用标识"></el-input>
+
     </el-form-item>
     </el-form>
     <span slot="footer" class="dialog-footer">

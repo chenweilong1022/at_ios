@@ -76,6 +76,17 @@ public class AtUsernameGroupController {
     }
 
     /**
+     * 批量更改昵称
+     */
+    @RequestMapping("/updateBatchAtUsername")
+    @RequiresPermissions("ltt:atusernamegroup:update")
+    public R updateBatchAtUsername(@RequestBody AtUsernameGroupDTO atUsernameGroup){
+		atUsernameGroupService.updateBatchAtUsername(atUsernameGroup);
+
+        return R.ok();
+    }
+
+    /**
      * 删除
      */
     @RequestMapping("/delete")

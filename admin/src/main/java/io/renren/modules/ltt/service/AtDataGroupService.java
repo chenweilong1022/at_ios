@@ -43,6 +43,14 @@ public interface AtDataGroupService extends IService<AtDataGroupEntity> {
      * @return
      */
     boolean updateById(AtDataGroupDTO atDataGroup);
+
+    /**
+     * 批量修改昵称
+      * @param atDataGroup
+     * @return
+     */
+    boolean updateBatchGroup(AtDataGroupDTO atDataGroup);
+
     /**
      * 根据id删除
      * @param id

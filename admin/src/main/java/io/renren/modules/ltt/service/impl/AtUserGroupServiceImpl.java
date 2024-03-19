@@ -1,7 +1,9 @@
 package io.renren.modules.ltt.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import io.renren.datasources.annotation.Game;
+import io.renren.modules.ltt.entity.AtDataTaskEntity;
 import io.renren.modules.ltt.enums.DeleteFlag;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -19,6 +21,10 @@ import io.renren.modules.ltt.conver.AtUserGroupConver;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @Service("atUserGroupService")
@@ -29,7 +35,8 @@ public class AtUserGroupServiceImpl extends ServiceImpl<AtUserGroupDao, AtUserGr
     public PageUtils<AtUserGroupVO> queryPage(AtUserGroupDTO atUserGroup) {
         IPage<AtUserGroupEntity> page = baseMapper.selectPage(
                 new Query<AtUserGroupEntity>(atUserGroup).getPage(),
-                new QueryWrapper<AtUserGroupEntity>()
+                new QueryWrapper<AtUserGroupEntity>().lambda()
+                        .orderByDesc(AtUserGroupEntity::getId)
         );
 
         return PageUtils.<AtUserGroupVO>page(page).setList(AtUserGroupConver.MAPPER.conver(page.getRecords()));
@@ -37,6 +44,24 @@ public class AtUserGroupServiceImpl extends ServiceImpl<AtUserGroupDao, AtUserGr
     @Override
     public AtUserGroupVO getById(Integer id) {
         return AtUserGroupConver.MAPPER.conver(baseMapper.selectById(id));
+    }
+
+    @Override
+    public List<AtUserGroupVO> getByIds(List<Integer> ids) {
+        if (CollectionUtil.isEmpty(ids)) {
+            return Collections.emptyList();
+        }
+        List<AtUserGroupEntity> list = baseMapper.selectBatchIds(ids);
+        return AtUserGroupConver.MAPPER.conver(list);
+    }
+
+    @Override
+    public Map<Integer, String> getMapByIds(List<Integer> ids) {
+        List<AtUserGroupVO> list = getByIds(ids);
+        if (CollectionUtil.isEmpty(list)) {
+            return Collections.emptyMap();
+        }
+        return list.stream().collect(Collectors.toMap(AtUserGroupVO::getId, AtUserGroupVO::getName));
     }
 
     @Override

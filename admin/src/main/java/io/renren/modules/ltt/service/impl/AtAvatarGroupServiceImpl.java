@@ -1,20 +1,14 @@
 package io.renren.modules.ltt.service.impl;
 
-import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
-import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
-import io.renren.modules.ltt.conver.AtUsernameGroupConver;
 import io.renren.modules.ltt.entity.AtAvatarEntity;
-import io.renren.modules.ltt.entity.AtUsernameEntity;
 import io.renren.modules.ltt.enums.DeleteFlag;
 import io.renren.modules.ltt.enums.UseFlag;
 import io.renren.modules.ltt.service.AtAvatarService;
 import io.renren.modules.ltt.vo.AtAvatarGroupAvatarGroupIdVO;
-import io.renren.modules.ltt.vo.AtUsernameGroupUsernameCountGroupIdVO;
-import io.renren.modules.ltt.vo.AtUsernameGroupVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -44,7 +38,8 @@ public class AtAvatarGroupServiceImpl extends ServiceImpl<AtAvatarGroupDao, AtAv
     public PageUtils<AtAvatarGroupVO> queryPage(AtAvatarGroupDTO atAvatarGroup) {
         IPage<AtAvatarGroupEntity> page = baseMapper.selectPage(
                 new Query<AtAvatarGroupEntity>(atAvatarGroup).getPage(),
-                new QueryWrapper<AtAvatarGroupEntity>()
+                new QueryWrapper<AtAvatarGroupEntity>().lambda()
+                        .orderByDesc(AtAvatarGroupEntity::getCreateTime)
         );
 
         List<AtAvatarGroupAvatarGroupIdVO> atAvatarGroupAvatarGroupIdVOs = atAvatarService.avatarGroupId();
@@ -67,6 +62,25 @@ public class AtAvatarGroupServiceImpl extends ServiceImpl<AtAvatarGroupDao, AtAv
         return AtAvatarGroupConver.MAPPER.conver(baseMapper.selectById(id));
     }
 
+
+
+    @Override
+    public List<AtAvatarGroupVO> getByIds(List<Integer> ids) {
+        if (CollectionUtil.isEmpty(ids)) {
+            return Collections.emptyList();
+        }
+        List<AtAvatarGroupEntity> list = baseMapper.selectBatchIds(ids);
+        return AtAvatarGroupConver.MAPPER.conver(list);
+    }
+
+    @Override
+    public Map<Integer, String> getMapByIds(List<Integer> ids) {
+        List<AtAvatarGroupVO> list = getByIds(ids);
+        if (CollectionUtil.isEmpty(list)) {
+            return Collections.emptyMap();
+        }
+        return list.stream().collect(Collectors.toMap(AtAvatarGroupVO::getId, AtAvatarGroupVO::getName));
+    }
     @Override
     public boolean save(AtAvatarGroupDTO atAvatarGroup) {
         atAvatarGroup.setCreateTime(DateUtil.date());
@@ -85,19 +99,20 @@ public class AtAvatarGroupServiceImpl extends ServiceImpl<AtAvatarGroupDao, AtAv
         boolean flag = this.updateById(atAvatarGroupEntity);
 
         List<String> avatarList = atAvatarGroup.getAvatarList();
-        Assert.isTrue(CollUtil.isEmpty(avatarList),"头像不能为空");
-
-        List<AtAvatarEntity> atUsernameEntities = new ArrayList<>();
-        for (String string : avatarList) {
-            AtAvatarEntity atUsername = new AtAvatarEntity();
-            atUsername.setAvatarGroupId(atAvatarGroupEntity.getId());
-            atUsername.setAvatar(string);
-            atUsername.setUseFlag(UseFlag.NO.getKey());
-            atUsername.setDeleteFlag(DeleteFlag.NO.getKey());
-            atUsername.setCreateTime(new Date());
-            atUsernameEntities.add(atUsername);
+        if (CollectionUtil.isNotEmpty(avatarList)) {
+//            Assert.isTrue(CollUtil.isEmpty(avatarList),"头像不能为空");
+            List<AtAvatarEntity> atUsernameEntities = new ArrayList<>();
+            for (String string : avatarList) {
+                AtAvatarEntity atUsername = new AtAvatarEntity();
+                atUsername.setAvatarGroupId(atAvatarGroupEntity.getId());
+                atUsername.setAvatar(string);
+                atUsername.setUseFlag(UseFlag.NO.getKey());
+                atUsername.setDeleteFlag(DeleteFlag.NO.getKey());
+                atUsername.setCreateTime(new Date());
+                atUsernameEntities.add(atUsername);
+            }
+            atAvatarService.saveBatch(atUsernameEntities);
         }
-        atAvatarService.saveBatch(atUsernameEntities);
         return flag;
     }
 
@@ -118,4 +133,8 @@ public class AtAvatarGroupServiceImpl extends ServiceImpl<AtAvatarGroupDao, AtAv
         return flag;
     }
 
+    @Override
+    public List<AtAvatarGroupEntity> queryByFuzzyName(String searchWord) {
+       return baseMapper.queryByFuzzyName(searchWord);
+    }
 }

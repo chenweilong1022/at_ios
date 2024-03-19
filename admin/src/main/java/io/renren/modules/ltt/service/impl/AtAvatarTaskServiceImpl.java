@@ -1,6 +1,7 @@
 package io.renren.modules.ltt.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
@@ -10,9 +11,7 @@ import io.renren.modules.ltt.entity.AtUserEntity;
 import io.renren.modules.ltt.enums.DeleteFlag;
 import io.renren.modules.ltt.enums.TaskStatus;
 import io.renren.modules.ltt.enums.UseFlag;
-import io.renren.modules.ltt.service.AtAvatarService;
-import io.renren.modules.ltt.service.AtAvatarSubtaskService;
-import io.renren.modules.ltt.service.AtUserService;
+import io.renren.modules.ltt.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -25,28 +24,60 @@ import io.renren.modules.ltt.dao.AtAvatarTaskDao;
 import io.renren.modules.ltt.entity.AtAvatarTaskEntity;
 import io.renren.modules.ltt.dto.AtAvatarTaskDTO;
 import io.renren.modules.ltt.vo.AtAvatarTaskVO;
-import io.renren.modules.ltt.service.AtAvatarTaskService;
 import io.renren.modules.ltt.conver.AtAvatarTaskConver;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @Service("atAvatarTaskService")
 @Game
 public class AtAvatarTaskServiceImpl extends ServiceImpl<AtAvatarTaskDao, AtAvatarTaskEntity> implements AtAvatarTaskService {
 
+    @Resource
+    private AtUserGroupService atUserGroupService;
+
+    @Resource
+    private AtAvatarGroupService avatarGroupService;
+
     @Override
     public PageUtils<AtAvatarTaskVO> queryPage(AtAvatarTaskDTO atAvatarTask) {
         IPage<AtAvatarTaskEntity> page = baseMapper.selectPage(
                 new Query<AtAvatarTaskEntity>(atAvatarTask).getPage(),
-                new QueryWrapper<AtAvatarTaskEntity>()
+                new QueryWrapper<AtAvatarTaskEntity>().lambda()
+                        .orderByDesc(AtAvatarTaskEntity::getId)
         );
+        List<AtAvatarTaskVO> resultList = AtAvatarTaskConver.MAPPER.conver(page.getRecords());
+        if (CollectionUtil.isEmpty(resultList)) {
+            return PageUtils.<AtAvatarTaskVO>page(page).setList(resultList);
+        }
 
-        return PageUtils.<AtAvatarTaskVO>page(page).setList(AtAvatarTaskConver.MAPPER.conver(page.getRecords()));
+        //查询账户分组
+        List<Integer> userGroupIdList = resultList.stream().filter(i -> i.getUserGroupId() != null)
+                .map(AtAvatarTaskVO::getUserGroupId).distinct().collect(Collectors.toList());
+        Map<Integer, String> userGroupIdMap = atUserGroupService.getMapByIds(userGroupIdList);
+
+        //查询头像分组
+        List<Integer> avatarGroupIdList = resultList.stream().filter(i -> i.getAvatarGroupId() != null)
+                .map(AtAvatarTaskVO::getAvatarGroupId).distinct().collect(Collectors.toList());
+        Map<Integer, String> avatarGroupIdMap = avatarGroupService.getMapByIds(avatarGroupIdList);
+
+
+        for (AtAvatarTaskVO atAvatarTaskVO : resultList) {
+            if (atAvatarTaskVO.getUserGroupId() != null){
+                atAvatarTaskVO.setUserGroupName(userGroupIdMap.get(atAvatarTaskVO.getUserGroupId()));
+            }
+            if (atAvatarTaskVO.getAvatarGroupId() != null){
+                atAvatarTaskVO.setAvatarGroupName(avatarGroupIdMap.get(atAvatarTaskVO.getAvatarGroupId()));
+            }
+        }
+        return PageUtils.<AtAvatarTaskVO>page(page).setList(resultList);
     }
     @Override
     public AtAvatarTaskVO getById(Integer id) {

@@ -25,7 +25,7 @@
       </el-select>
     </el-form-item>
       <el-form-item label="数据上传" prop="groupName">
-        <el-upload
+        <el-upload ref="upload"
           class="upload-demo"
           action="http://localhost:8880/app/file/upload"
           :on-success="handleAvatarSuccess">
@@ -95,6 +95,7 @@
       init (id) {
         this.dataForm.id = id || 0
         this.visible = true
+        this.$refs.upload.clearFiles()
         this.$nextTick(() => {
           this.$refs['dataForm'].resetFields()
           if (this.dataForm.id) {
@@ -119,7 +120,7 @@
         this.$refs['dataForm'].validate((valid) => {
           if (valid) {
             this.$http({
-              url: this.$http.adornUrl(`/ltt/atdatagroup/${!this.dataForm.id ? 'save' : 'update'}`),
+              url: this.$http.adornUrl(`/ltt/atdatagroup/updateBatchGroup`),
               method: 'post',
               data: this.$http.adornData({
                 'id': this.dataForm.id || undefined,

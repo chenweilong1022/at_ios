@@ -12,6 +12,7 @@ import io.renren.modules.ltt.enums.DeleteFlag;
 import io.renren.modules.ltt.enums.UseFlag;
 import io.renren.modules.ltt.service.AtUsernameService;
 import io.renren.modules.ltt.vo.AtUsernameGroupUsernameCountGroupIdVO;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -40,7 +41,8 @@ public class AtUsernameGroupServiceImpl extends ServiceImpl<AtUsernameGroupDao, 
     public PageUtils<AtUsernameGroupVO> queryPage(AtUsernameGroupDTO atUsernameGroup) {
         IPage<AtUsernameGroupEntity> page = baseMapper.selectPage(
                 new Query<AtUsernameGroupEntity>(atUsernameGroup).getPage(),
-                new QueryWrapper<AtUsernameGroupEntity>()
+                new QueryWrapper<AtUsernameGroupEntity>().lambda()
+                        .orderByDesc(AtUsernameGroupEntity::getId)
         );
         //根据分组id转化为map
         List<AtUsernameGroupUsernameCountGroupIdVO> atUsernameGroupUsernameCountGroupIdVOS = atUsernameService.usernameCountGroupId();
@@ -78,7 +80,14 @@ public class AtUsernameGroupServiceImpl extends ServiceImpl<AtUsernameGroupDao, 
     @Transactional(rollbackFor = Exception.class)
     public boolean updateById(AtUsernameGroupDTO atUsernameGroup) {
         AtUsernameGroupEntity atUsernameGroupEntity = AtUsernameGroupConver.MAPPER.converDTO(atUsernameGroup);
-        boolean flag = this.updateById(atUsernameGroupEntity);
+        return this.updateById(atUsernameGroupEntity);
+    }
+
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean updateBatchAtUsername(AtUsernameGroupDTO atUsernameGroup) {
+        Assert.isTrue(StringUtils.isEmpty(atUsernameGroup.getTxtUrl()),"数据不能为空");
 
         String s = HttpUtil.downloadString(atUsernameGroup.getTxtUrl(), "UTF-8");
 
@@ -89,17 +98,14 @@ public class AtUsernameGroupServiceImpl extends ServiceImpl<AtUsernameGroupDao, 
         List<AtUsernameEntity> atUsernameEntities = new ArrayList<>();
         for (String string : split) {
             AtUsernameEntity atUsername = new AtUsernameEntity();
-            atUsername.setUsernameGroupId(atUsernameGroupEntity.getId());
+            atUsername.setUsernameGroupId(atUsernameGroup.getId());
             atUsername.setUsername(string);
             atUsername.setUseFlag(UseFlag.NO.getKey());
             atUsername.setDeleteFlag(DeleteFlag.NO.getKey());
             atUsername.setCreateTime(new Date());
             atUsernameEntities.add(atUsername);
         }
-
-
-        atUsernameService.saveBatch(atUsernameEntities);
-        return flag;
+        return atUsernameService.saveBatch(atUsernameEntities);
     }
 
     @Override

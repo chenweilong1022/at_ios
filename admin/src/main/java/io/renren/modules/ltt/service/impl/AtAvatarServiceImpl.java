@@ -31,7 +31,8 @@ public class AtAvatarServiceImpl extends ServiceImpl<AtAvatarDao, AtAvatarEntity
     public PageUtils<AtAvatarVO> queryPage(AtAvatarDTO atAvatar) {
         IPage<AtAvatarEntity> page = baseMapper.selectPage(
                 new Query<AtAvatarEntity>(atAvatar).getPage(),
-                new QueryWrapper<AtAvatarEntity>()
+                new QueryWrapper<AtAvatarEntity>().lambda()
+                        .orderByDesc(AtAvatarEntity::getCreateTime)
         );
 
         return PageUtils.<AtAvatarVO>page(page).setList(AtAvatarConver.MAPPER.conver(page.getRecords()));

@@ -76,6 +76,17 @@ public class AtDataGroupController {
     }
 
     /**
+     * 批量修改昵称
+     */
+    @RequestMapping("/updateBatchGroup")
+    @RequiresPermissions("ltt:atdatagroup:update")
+    public R updateBatchGroup(@RequestBody AtDataGroupDTO atDataGroup){
+		atDataGroupService.updateBatchGroup(atDataGroup);
+
+        return R.ok();
+    }
+
+    /**
      * 删除
      */
     @RequestMapping("/delete")

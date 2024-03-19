@@ -2,6 +2,7 @@ package io.renren.modules.ltt.service.impl;
 
 import cn.hutool.core.date.DateUtil;
 import io.renren.datasources.annotation.Game;
+import io.renren.modules.ltt.entity.AtDataSubtaskEntity;
 import io.renren.modules.ltt.enums.DeleteFlag;
 import io.renren.modules.ltt.enums.TaskStatus;
 import org.springframework.stereotype.Service;
@@ -33,7 +34,8 @@ public class AtDataTaskServiceImpl extends ServiceImpl<AtDataTaskDao, AtDataTask
     public PageUtils<AtDataTaskVO> queryPage(AtDataTaskDTO atDataTask) {
         IPage<AtDataTaskEntity> page = baseMapper.selectPage(
                 new Query<AtDataTaskEntity>(atDataTask).getPage(),
-                new QueryWrapper<AtDataTaskEntity>()
+                new QueryWrapper<AtDataTaskEntity>().lambda()
+                        .orderByDesc(AtDataTaskEntity::getId)
         );
 
         return PageUtils.<AtDataTaskVO>page(page).setList(AtDataTaskConver.MAPPER.conver(page.getRecords()));

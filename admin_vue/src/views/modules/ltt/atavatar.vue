@@ -36,13 +36,17 @@
         header-align="center"
         align="center"
         label="使用标识">
+        <template slot-scope="scope">
+          <el-tag v-if="scope.row.useFlag === 0" size="small">已使用</el-tag>
+          <el-tag v-else size="small" type="danger">未使用</el-tag>
+        </template>
       </el-table-column>
-      <el-table-column
-        prop="deleteFlag"
-        header-align="center"
-        align="center"
-        label="删除标志">
-      </el-table-column>
+<!--      <el-table-column-->
+<!--        prop="deleteFlag"-->
+<!--        header-align="center"-->
+<!--        align="center"-->
+<!--        label="删除标志">-->
+<!--      </el-table-column>-->
       <el-table-column
         prop="createTime"
         header-align="center"
