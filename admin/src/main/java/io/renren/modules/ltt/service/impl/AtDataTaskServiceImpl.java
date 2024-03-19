@@ -3,6 +3,8 @@ package io.renren.modules.ltt.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import com.google.common.collect.Lists;
+import io.renren.common.utils.PhoneUtil;
+import io.renren.common.utils.vo.PhoneCountryVO;
 import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.ltt.entity.*;
@@ -13,6 +15,7 @@ import io.renren.modules.ltt.enums.UseFlag;
 import io.renren.modules.ltt.service.AtDataService;
 import io.renren.modules.ltt.service.AtDataSubtaskService;
 import io.renren.modules.ltt.service.AtUserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -36,6 +39,7 @@ import java.util.List;
 
 @Service("atDataTaskService")
 @Game
+@Slf4j
 public class AtDataTaskServiceImpl extends ServiceImpl<AtDataTaskDao, AtDataTaskEntity> implements AtDataTaskService {
 
     @Override
@@ -95,6 +99,7 @@ public class AtDataTaskServiceImpl extends ServiceImpl<AtDataTaskDao, AtDataTask
             //获取用户
             AtUserEntity atUserEntity = atUserEntities.get(i);
             for (AtDataEntity atDataEntity : atDataEntityList) {
+                String data = atDataEntity.getData();
                 //修改data为已经使用
                 AtDataEntity update = new AtDataEntity();
                 update.setId(atDataEntity.getId());
@@ -107,13 +112,14 @@ public class AtDataTaskServiceImpl extends ServiceImpl<AtDataTaskDao, AtDataTask
                 atDataSubtaskEntity.setUserId(atUserEntity.getId());
                 atDataSubtaskEntity.setTaskStatus(TaskStatus.TaskStatus1.getKey());
                 if (GroupType.GroupType1.getKey().equals(atDataTaskEntity.getGroupType())) {
-                    atDataSubtaskEntity.setContactKey(atDataEntity.getData());
+                    atDataSubtaskEntity.setContactKey(data);
                 }else if (GroupType.GroupType2.getKey().equals(atDataTaskEntity.getGroupType())) {
-                    atDataSubtaskEntity.setMid(atDataEntity.getData());
+                    atDataSubtaskEntity.setMid(data);
                 }else if (GroupType.GroupType4.getKey().equals(atDataTaskEntity.getGroupType())) {
-                    atDataSubtaskEntity.setMid(atDataEntity.getData());
+                    atDataSubtaskEntity.setMid(data);
                 }else if (GroupType.GroupType5.getKey().equals(atDataTaskEntity.getGroupType())) {
-                    atDataSubtaskEntity.setContactKey(atDataEntity.getData());
+                    atDataSubtaskEntity.setContactKey(data);
+                    checkCountry(atDataEntity, atUserEntity);
                 }
                 atDataSubtaskEntity.setDeleteFlag(DeleteFlag.NO.getKey());
                 atDataSubtaskEntity.setCreateTime(DateUtil.date());
@@ -123,6 +129,22 @@ public class AtDataTaskServiceImpl extends ServiceImpl<AtDataTaskDao, AtDataTask
         atDataSubtaskService.saveBatch(atDataSubtaskEntities);
         atDataService.updateBatchById(updates);
         return save;
+    }
+
+    private static void checkCountry(AtDataEntity atDataEntity, AtUserEntity atUserEntity) {
+        boolean flag = false;
+        try {
+            String data = atDataEntity.getData();
+            String telephone = atUserEntity.getTelephone();
+            long countryCodeData = PhoneUtil.getPhoneNumberInfo("+" + data.trim()).getCountryCode();
+            PhoneCountryVO phoneNumberInfo = PhoneUtil.getPhoneNumberInfo("+" + telephone.trim());
+            long countryCodeTelephone = phoneNumberInfo.getCountryCode();
+            flag = countryCodeData != countryCodeTelephone;
+            log.info("flag = {}",flag);
+        } catch (Exception e) {
+            log.error("err = {}",e.getMessage());
+        }
+        Assert.isTrue(flag,"通讯录模式，协议号和料子国家必须相同");
     }
 
     @Override
