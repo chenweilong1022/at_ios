@@ -505,6 +505,22 @@ public class LineServiceImpl implements LineService {
         }
     }
 
+    @Override
+    public UpdateProfileNameVO updateProfileName(UpdateProfileNameDTO updateProfileNameDTO) {
+        try {
+            ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
+            String getPhoneHttp = String.format("%s/api/v1/account/updateProfileName",projectWorkEntity.getLineBaseHttp());
+            String jsonStr = JSONUtil.toJsonStr(updateProfileNameDTO);
+            String resp = HttpUtil.post(getPhoneHttp,jsonStr,20000);
+            UpdateProfileNameVO updateProfileImageVO = JSON.parseObject(resp, UpdateProfileNameVO.class);
+            extracted(jsonStr, resp);
+            return updateProfileImageVO;
+        }catch (Exception e) {
+            log.error("err = {}",e.getMessage());
+            return new UpdateProfileNameVO();
+        }
+    }
+
     @EventListener
     @Order(value = 9999)//t35323ha-1027-61697		tha-1027-44108
     public void handlerApplicationReadyEvent(ApplicationReadyEvent event) {

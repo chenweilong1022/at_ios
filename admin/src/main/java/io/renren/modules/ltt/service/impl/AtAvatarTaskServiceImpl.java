@@ -113,6 +113,7 @@ public class AtAvatarTaskServiceImpl extends ServiceImpl<AtAvatarTaskDao, AtAvat
                 .last("limit " + atUserEntities.size())
         );
         Assert.isTrue(atAvatarEntities.size() < atUserEntities.size(),"头像不够用户分配，请补充");
+
         //修改任务数量
         atAvatarTaskEntity.setExecutionQuantity(atUserEntities.size());
         boolean save = this.save(atAvatarTaskEntity);

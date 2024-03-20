@@ -60,4 +60,6 @@ public interface LineService {
     GetAllContactIdsVO getAllContactIds(GetAllContactIdsDTO getAllContactIdsDTO);
 
     GetContactsInfoV3VO getContactsInfoV3(GetContactsInfoV3DTO getContactsInfoV3DTO);
+
+    UpdateProfileNameVO updateProfileName(UpdateProfileNameDTO updateProfileNameDTO);
 }
