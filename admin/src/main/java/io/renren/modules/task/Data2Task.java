@@ -54,8 +54,6 @@ public class Data2Task {
     static ReentrantLock task3Lock = new ReentrantLock();
     static ReentrantLock task4Lock = new ReentrantLock();
 
-    public static final Object atAtDataSubtaskObj = new Object();
-    public static final Object atAtDataTaskEntityObj = new Object();
     @Autowired
     private LineService lineService;
     @Autowired
@@ -182,7 +180,7 @@ public class Data2Task {
             }
             latch.await();
             if (CollUtil.isNotEmpty(updates)) {
-                synchronized (atAtDataSubtaskObj) {
+                synchronized (DataTask.atAtDataSubtaskObj) {
                     atDataSubtaskService.updateBatchById(updates);
                 }
             }

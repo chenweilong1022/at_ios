@@ -200,5 +200,9 @@ public class AtDataSubtaskVO implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="line的协议返回信息")
 	private String msg;
-
+	/**
+	 * 刷新联系人状态
+	 */
+	@ApiModelProperty(required=false,value="刷新联系人状态")
+	private Integer refreshContactStatus;
 }

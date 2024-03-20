@@ -92,6 +92,11 @@ public class AtUserDTO extends PageParam implements Serializable {
 	@ApiModelProperty(required=false,value="状态")
 	private Integer status;
 	/**
+	 * 刷新联系人状态
+	 */
+	@ApiModelProperty(required=false,value="刷新联系人状态")
+	private Integer refreshContactStatus;
+	/**
 	 * 状态msg
 	 */
 	@ApiModelProperty(required=false,value="状态msg")

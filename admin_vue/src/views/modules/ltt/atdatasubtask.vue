@@ -22,17 +22,15 @@
         align="center"
         width="50">
       </el-table-column>
-<!--      <el-table-column-->
-<!--        prop="id"-->
-<!--        header-align="center"-->
-<!--        align="center"-->
-<!--        label="主键">-->
-<!--      </el-table-column>-->
+
       <el-table-column
-        prop="dataTaskId"
+        prop="picturePath"
         header-align="center"
         align="center"
-        label="数据任务id">
+        label="">
+        <template slot-scope="scope">
+          <img style="width: 40px;height: 40px" :src="'https://profile.line-scdn.net' + scope.row.picturePath">
+        </template>
       </el-table-column>
       <el-table-column
         prop="userId"
@@ -40,191 +38,33 @@
         align="center"
         label="账户id">
       </el-table-column>
-      <el-table-column
-        prop="taskStatus"
-        header-align="center"
-        align="center"
-        label="任务状态">
-      </el-table-column>
-      <el-table-column
-        prop="luid"
-        header-align="center"
-        align="center"
-        label="">
-      </el-table-column>
-      <el-table-column
-        prop="contactType"
-        header-align="center"
-        align="center"
-        label="">
-      </el-table-column>
-      <el-table-column
-        prop="contactKey"
-        header-align="center"
-        align="center"
-        label="">
-      </el-table-column>
-      <el-table-column
-        prop="mid"
-        header-align="center"
-        align="center"
-        label="">
-      </el-table-column>
-      <el-table-column
-        prop="createdTime"
-        header-align="center"
-        align="center"
-        label="">
-      </el-table-column>
-      <el-table-column
-        prop="type"
-        header-align="center"
-        align="center"
-        label="">
-      </el-table-column>
-      <el-table-column
-        prop="status"
-        header-align="center"
-        align="center"
-        label="">
-      </el-table-column>
-      <el-table-column
-        prop="relation"
-        header-align="center"
-        align="center"
-        label="">
-      </el-table-column>
+
       <el-table-column
         prop="displayName"
         header-align="center"
         align="center"
-        label="">
+        label="昵称">
       </el-table-column>
+
+
       <el-table-column
-        prop="phoneticName"
+        prop="mid"
         header-align="center"
         align="center"
-        label="">
+        label="好友uid">
       </el-table-column>
+
       <el-table-column
-        prop="pictureStatus"
+        prop="contactKey"
         header-align="center"
         align="center"
-        label="">
-      </el-table-column>
-      <el-table-column
-        prop="thumbnailUrl"
-        header-align="center"
-        align="center"
-        label="">
-      </el-table-column>
-      <el-table-column
-        prop="statusMessage"
-        header-align="center"
-        align="center"
-        label="">
-      </el-table-column>
-      <el-table-column
-        prop="displayNameOverridden"
-        header-align="center"
-        align="center"
-        label="">
-      </el-table-column>
-      <el-table-column
-        prop="favoriteTime"
-        header-align="center"
-        align="center"
-        label="">
-      </el-table-column>
-      <el-table-column
-        prop="capableVoiceCall"
-        header-align="center"
-        align="center"
-        label="">
-      </el-table-column>
-      <el-table-column
-        prop="capableVideoCall"
-        header-align="center"
-        align="center"
-        label="">
-      </el-table-column>
-      <el-table-column
-        prop="capableMyhome"
-        header-align="center"
-        align="center"
-        label="">
-      </el-table-column>
-      <el-table-column
-        prop="capableBuddy"
-        header-align="center"
-        align="center"
-        label="">
-      </el-table-column>
-      <el-table-column
-        prop="attributes"
-        header-align="center"
-        align="center"
-        label="">
-      </el-table-column>
-      <el-table-column
-        prop="settings"
-        header-align="center"
-        align="center"
-        label="">
-      </el-table-column>
-      <el-table-column
-        prop="picturePath"
-        header-align="center"
-        align="center"
-        label="">
-      </el-table-column>
-      <el-table-column
-        prop="recommendpArams"
-        header-align="center"
-        align="center"
-        label="">
-      </el-table-column>
-      <el-table-column
-        prop="friendRequestStatus"
-        header-align="center"
-        align="center"
-        label="">
-      </el-table-column>
-      <el-table-column
-        prop="musicProfile"
-        header-align="center"
-        align="center"
-        label="">
-      </el-table-column>
-      <el-table-column
-        prop="videoProfile"
-        header-align="center"
-        align="center"
-        label="">
-      </el-table-column>
-      <el-table-column
-        prop="deleteFlag"
-        header-align="center"
-        align="center"
-        label="删除标志">
+        label="好友手机号">
       </el-table-column>
       <el-table-column
         prop="createTime"
         header-align="center"
         align="center"
         label="创建时间">
-      </el-table-column>
-      <el-table-column
-        prop="lineTaskId"
-        header-align="center"
-        align="center"
-        label="line协议的任务id">
-      </el-table-column>
-      <el-table-column
-        prop="msg"
-        header-align="center"
-        align="center"
-        label="line的协议返回信息">
       </el-table-column>
       <el-table-column
         fixed="right"
