@@ -17,7 +17,8 @@ public class RenrenApplicationTests {
 	@Test
 	public void contextLoads() {
 		sysGeneratorService.generatorCode(new String[]{
-				"at_data_subtask"
+				"at_username_task",
+				"at_username_subtask",
 		});
 	}
 
