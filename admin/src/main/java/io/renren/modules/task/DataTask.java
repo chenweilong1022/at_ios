@@ -101,7 +101,7 @@ public class DataTask {
             List<Integer> ids = atDataTaskEntities.stream().map(AtDataTaskEntity::getId).collect(Collectors.toList());
             //需要更换头像的任务
             List<AtDataSubtaskEntity> atDataSubtaskEntities = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
-                    .in(AtDataSubtaskEntity::getTaskStatus,TaskStatus.TaskStatus4.getKey(),TaskStatus.TaskStatus5.getKey(),TaskStatus.TaskStatus8.getKey())
+                    .in(AtDataSubtaskEntity::getTaskStatus,TaskStatus.TaskStatus4.getKey(),TaskStatus.TaskStatus5.getKey(),TaskStatus.TaskStatus8.getKey(),TaskStatus.TaskStatus10.getKey())
                     .in(AtDataSubtaskEntity::getDataTaskId,ids)
             );
             if (CollUtil.isEmpty(atDataSubtaskEntities)) {
@@ -120,18 +120,39 @@ public class DataTask {
                 //成功的任务
                 long fail = DataSubtaskEntities.stream().filter(item -> TaskStatus.TaskStatus5.getKey().equals(item.getTaskStatus())).count();
                 //失败的任务
-                long success = DataSubtaskEntities.stream().filter(item -> TaskStatus.TaskStatus8.getKey().equals(item.getTaskStatus())).count();
+                long success8 = DataSubtaskEntities.stream().filter(item -> TaskStatus.TaskStatus8.getKey().equals(item.getTaskStatus())).count();
+                long success10 = DataSubtaskEntities.stream().filter(item -> TaskStatus.TaskStatus10.getKey().equals(item.getTaskStatus())).count();
                 AtDataTaskEntity update = new AtDataTaskEntity();
-                update.setSuccessfulQuantity((int) success);
-                update.setFailuresQuantity((int) fail);
-                update.setId(atDataTaskEntity.getId());
-                if (success + fail == atDataTaskEntity.getAddTotalQuantity()) {
-                    update.setTaskStatus(TaskStatus.TaskStatus3.getKey());
+                if (GroupType.GroupType1.getKey().equals(atDataTaskEntity.getGroupType())) {
+                    update.setSuccessfulQuantity((int) success8);
+                    update.setFailuresQuantity((int) fail);
+                    update.setId(atDataTaskEntity.getId());
+                    if (success8 + fail == atDataTaskEntity.getAddTotalQuantity()) {
+                        update.setTaskStatus(TaskStatus.TaskStatus3.getKey());
+                    }
+                    atDataTaskEntityList.add(update);
+                }else if (GroupType.GroupType5.getKey().equals(atDataTaskEntity.getGroupType())) {
+                    update.setSuccessfulQuantity((int) success10);
+                    update.setFailuresQuantity((int) fail);
+                    update.setId(atDataTaskEntity.getId());
+                    if (success10 + fail == atDataTaskEntity.getAddTotalQuantity()) {
+                        update.setTaskStatus(TaskStatus.TaskStatus3.getKey());
+                    }
+                    atDataTaskEntityList.add(update);
+                }else if (GroupType.GroupType2.getKey().equals(atDataTaskEntity.getGroupType())) {
+                    update.setSuccessfulQuantity((int) success8);
+                    update.setFailuresQuantity((int) fail);
+                    update.setId(atDataTaskEntity.getId());
+                    if (success8 + fail == atDataTaskEntity.getAddTotalQuantity()) {
+                        update.setTaskStatus(TaskStatus.TaskStatus3.getKey());
+                    }
+                    atDataTaskEntityList.add(update);
                 }
-                atDataTaskEntityList.add(update);
             }
-            synchronized (atAtDataTaskEntityObj) {
-                atDataTaskService.updateBatchById(atDataTaskEntityList);
+            if (CollUtil.isNotEmpty(atDataTaskEntityList)) {
+                synchronized (atAtDataTaskEntityObj) {
+                    atDataTaskService.updateBatchById(atDataTaskEntityList);
+                }
             }
         }catch (Exception e) {
             log.error("err = {}",e.getMessage());

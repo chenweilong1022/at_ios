@@ -82,6 +82,7 @@ public class LunaProxyImpl implements ProxyService {
         if (CollUtil.isEmpty(getflowip)) {
             String getPhoneHttp = String.format("https://tq.lunaproxy.com/getflowip?neek=1136881&num=500&type=1&sep=1&regions=%s&ip_si=1&level=1&sb=","th");
             String resp = HttpUtil.get(getPhoneHttp);
+            log.info("resp = {}",resp);
             if (JSONUtil.isJson(resp)) {
                 return null;
             }

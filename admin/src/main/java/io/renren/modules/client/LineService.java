@@ -31,6 +31,8 @@ public interface LineService {
 
     SearchPhoneVO addFriendsByMid(AddFriendsByMid addFriendsByMid);
 
+    SearchPhoneVO addFriendsByReference(AddFriendsByMid addFriendsByMid);
+
     CreateGroupResultVO createGroupResult(RegisterResultDTO registerResultDTO);
 
     LineRegisterVO openApp(OpenApp openApp);
