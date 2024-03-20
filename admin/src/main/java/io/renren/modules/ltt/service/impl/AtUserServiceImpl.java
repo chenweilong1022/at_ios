@@ -3,10 +3,13 @@ package io.renren.modules.ltt.service.impl;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
+import io.renren.modules.app.service.FileService;
 import io.renren.modules.ltt.dao.UpdateAtUserCustomerParamDto;
 import io.renren.modules.ltt.dao.UpdateUserGroupParamDto;
 import io.renren.modules.ltt.dao.ValidateAtUserStatusParamDto;
+import io.renren.modules.ltt.entity.AtUserTokenEntity;
 import io.renren.modules.ltt.enums.DeleteFlag;
+import io.renren.modules.ltt.service.AtUserTokenService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -25,10 +28,13 @@ import io.renren.modules.ltt.service.AtUserService;
 import io.renren.modules.ltt.conver.AtUserConver;
 import org.springframework.util.ObjectUtils;
 
+import javax.annotation.Resource;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static io.renren.modules.ltt.enums.UserStatus.UserStatus1;
 
@@ -37,6 +43,12 @@ import static io.renren.modules.ltt.enums.UserStatus.UserStatus1;
 @Game
 @Slf4j
 public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> implements AtUserService {
+
+    @Resource
+    private AtUserTokenService atUserTokenService;
+
+    @Resource
+    private FileService fileService;
 
     @Override
     public PageUtils<AtUserVO> queryPage(AtUserDTO atUser) {
@@ -141,6 +153,36 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
             }
             return this.updateBatchById(updateList);
         }
+    }
+
+    @Override
+    public String downloadUserTokenTxt(List<Integer> ids) {
+        Assert.isTrue(CollectionUtils.isEmpty(ids), "选择的数据不能为空");
+
+        //查询对应的token
+        List<AtUserEntity> userList = baseMapper.selectBatchIds(ids);
+        Assert.isTrue(CollectionUtils.isEmpty(userList), "数据为空，请刷新重试");
+
+        List<Integer> userTokenIdList = userList.stream()
+                .filter(i -> i.getUserTokenId() != null)
+                .map(AtUserEntity::getUserTokenId).distinct()
+                .collect(Collectors.toList());
+        Assert.isTrue(CollectionUtils.isEmpty(userTokenIdList), "下载账户数据为空");
+
+        //查询token数据
+        List<AtUserTokenEntity> tokenList = atUserTokenService.selectBatchIds(userTokenIdList);
+        Assert.isTrue(CollectionUtils.isEmpty(tokenList), "下载账户数据为空");
+
+        //处理下载数据
+        List<String> tokenTextList = tokenList.stream().filter(i -> StringUtils.isNotEmpty(i.getToken()))
+                .map(AtUserTokenEntity::getToken).collect(Collectors.toList());
+        Assert.isTrue(CollectionUtils.isEmpty(tokenTextList), "下载账户数据为空");
+        try {
+            return fileService.writeTxtFile("", tokenTextList);
+        } catch (IOException e) {
+            Assert.isTrue(true, "下载异常，请稍后再试");
+        }
+        return null;
     }
 
     @Override

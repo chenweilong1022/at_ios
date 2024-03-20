@@ -84,4 +84,9 @@ public class AtUserTokenServiceImpl extends ServiceImpl<AtUserTokenDao, AtUserTo
         return super.removeByIds(ids);
     }
 
+    @Override
+    public List<AtUserTokenEntity> selectBatchIds(List<Integer> ids) {
+        return baseMapper.selectBatchIds(ids);
+    }
+
 }

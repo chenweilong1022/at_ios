@@ -110,6 +110,13 @@ public class AtUserController {
         return R.ok();
     }
 
+    @RequestMapping("/downloadUserTokenTxt")
+    @RequiresPermissions("ltt:atuser:save")
+    public R downloadUserTokenTxt(@RequestBody List<Integer> ids) {
+        String fileUrl = atUserService.downloadUserTokenTxt(ids);
+        return R.ok().put("fileUrl", fileUrl);
+    }
+
     /**
      * 删除
      */

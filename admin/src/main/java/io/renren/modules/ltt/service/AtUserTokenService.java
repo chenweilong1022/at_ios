@@ -8,6 +8,7 @@ import io.renren.modules.ltt.entity.AtUserTokenEntity;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -58,5 +59,7 @@ public interface AtUserTokenService extends IService<AtUserTokenEntity> {
      */
     @Override
     boolean removeByIds(Collection<? extends Serializable> ids);
+
+    List<AtUserTokenEntity> selectBatchIds(List<Integer> ids);
 }
 

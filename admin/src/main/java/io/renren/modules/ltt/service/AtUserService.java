@@ -69,6 +69,13 @@ public interface AtUserService extends IService<AtUserEntity> {
     boolean validateUserStatus(ValidateAtUserStatusParamDto paramDto);
 
     /**
+     * 下载账户数据
+     * @param ids
+     * @return
+     */
+    String downloadUserTokenTxt(List<Integer> ids);
+
+    /**
      * 根据id删除
      * @param id
      * @return

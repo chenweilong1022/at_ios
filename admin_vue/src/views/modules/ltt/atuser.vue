@@ -75,6 +75,7 @@
         <el-button @click="getDataList()">查询</el-button>
         <el-button v-if="isAuth('ltt:atuser:save')" type="primary" @click="userImportHandle()">账户导入</el-button>
         <el-button v-if="isAuth('ltt:atuser:save')" type="primary" @click="userTransferGroupHandle()" :disabled="dataListSelections.length <= 0">转移分组</el-button>
+        <el-button v-if="isAuth('ltt:atuser:save')" type="primary" @click="downloadUserTokenTxtHandle()" :disabled="dataListSelections.length <= 0">下载账户txt</el-button>
         <el-button v-if="isAuth('ltt:atuser:save')" type="primary" @click="userCustomerHandle()" :disabled="dataListSelections.length <= 0">分配客服</el-button>
         <el-button v-if="isAuth('ltt:atuser:save')" type="primary" @click="userValidateHandle()">验活账号</el-button>
         <el-button v-if="isAuth('ltt:atuser:delete')" type="danger" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>
@@ -367,8 +368,6 @@
         var ids = this.dataListSelections.map(item => {return item.id})
         // 是否验活全部 true：全部
         var validateFlag = ids.length > 0 ? 0 : 1
-        console.log("000000")
-        console.log(validateFlag)
         this.$confirm(`确定要对[${validateFlag ? '所有' : '勾选'}]账户进行验活操作?`, '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
@@ -391,6 +390,37 @@
                   this.getDataList()
                 }
               })
+            } else {
+              this.$message.error(data.msg)
+            }
+          })
+        })
+      },
+      // 下载账户txt
+      downloadUserTokenTxtHandle () {
+        var ids = this.dataListSelections.map(item => {return item.id})
+        this.$confirm(`确定要对勾选账户进行账户下载操作?`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$http({
+            url: this.$http.adornUrl('/ltt/atuser/downloadUserTokenTxt'),
+            method: 'post',
+            data: this.$http.adornData(ids, false)
+          }).then(({data}) => {
+            if (data && data.code === 0) {
+              console.log(")))))))")
+              console.log(data)
+              console.log(data.fileUrl)
+              // this.$message({
+              //   message: '操作成功',
+              //   type: 'success',
+              //   duration: 1500,
+              //   onClose: () => {
+                  this.$download(data.fileUrl)
+                // }
+              // })
             } else {
               this.$message.error(data.msg)
             }
