@@ -318,6 +318,40 @@ CREATE TABLE `at_data_subtask` (
 ) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='加粉任务子任务';
 
 
+CREATE TABLE `at_username_task` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `task_name` varchar(255) DEFAULT NULL COMMENT '任务名称',
+  `task_status` int(11) DEFAULT NULL COMMENT '任务状态',
+  `schedule` int(11) DEFAULT NULL COMMENT '进度',
+  `user_group_id` int(11) DEFAULT NULL COMMENT '账户分组',
+  `username_group_id` int(11) DEFAULT NULL COMMENT '昵称分组',
+  `execution_quantity` int(11) DEFAULT NULL COMMENT '执行数量',
+  `successful_quantity` int(11) DEFAULT NULL COMMENT '成功数量',
+  `failures_quantity` int(11) DEFAULT NULL COMMENT '失败数量',
+  `delete_flag` int(11) DEFAULT NULL COMMENT '删除标志',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='昵称任务';
+
+CREATE TABLE `at_avatar_subtask` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `username_task_id` int(11) DEFAULT NULL COMMENT '头像任务id',
+  `user_group_id` int(11) DEFAULT NULL COMMENT '账户分组',
+  `username_group_id` int(11) DEFAULT NULL COMMENT '昵称分组',
+  `user_id` int(11) DEFAULT NULL COMMENT '账户id',
+  `username_id` int(11) DEFAULT NULL COMMENT '昵称id',
+  `task_status` int(11) DEFAULT NULL COMMENT '任务状态',
+  `delete_flag` int(11) DEFAULT NULL COMMENT '删除标志',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `line_task_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT 'line协议的任务id',
+  `msg` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT 'line的协议返回信息',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='昵称任务子任务';
+
+
+
+
+
 
 
 

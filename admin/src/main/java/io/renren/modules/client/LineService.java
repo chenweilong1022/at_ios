@@ -56,4 +56,8 @@ public interface LineService {
     UpdateProfileImageVO updateProfileImage(UpdateProfileImageDTO updateProfileImageDTO);
 
     UpdateProfileImageResultVO updateProfileImageResult(UpdateProfileImageResultDTO updateProfileImageResultDTO);
+
+    GetAllContactIdsVO getAllContactIds(GetAllContactIdsDTO getAllContactIdsDTO);
+
+    GetContactsInfoV3VO getContactsInfoV3(GetContactsInfoV3DTO getContactsInfoV3DTO);
 }

@@ -6,8 +6,8 @@
       </el-form-item>
       <el-form-item>
         <el-button @click="getDataList()">查询</el-button>
-        <el-button v-if="isAuth('ltt:atdatasubtask:save')" type="primary" @click="addOrUpdateHandle()">新增</el-button>
-        <el-button v-if="isAuth('ltt:atdatasubtask:delete')" type="danger" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>
+        <el-button v-if="isAuth('ltt:atusernametask:save')" type="primary" @click="addOrUpdateHandle()">新增</el-button>
+        <el-button v-if="isAuth('ltt:atusernametask:delete')" type="danger" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>
       </el-form-item>
     </el-form>
     <el-table
@@ -22,43 +22,65 @@
         align="center"
         width="50">
       </el-table-column>
-
       <el-table-column
-        prop="picturePath"
+        prop="id"
         header-align="center"
         align="center"
-        label="">
-        <template slot-scope="scope">
-          <img style="width: 40px;height: 40px" :src="'https://profile.line-scdn.net' + scope.row.picturePath">
-        </template>
+        label="主键">
       </el-table-column>
       <el-table-column
-        prop="userId"
+        prop="taskName"
         header-align="center"
         align="center"
-        label="账户id">
+        label="任务名称">
       </el-table-column>
-
       <el-table-column
-        prop="displayName"
+        prop="taskStatus"
         header-align="center"
         align="center"
-        label="昵称">
+        label="任务状态">
       </el-table-column>
-
-
       <el-table-column
-        prop="mid"
+        prop="schedule"
         header-align="center"
         align="center"
-        label="好友uid">
+        label="进度">
       </el-table-column>
-
       <el-table-column
-        prop="contactKey"
+        prop="userGroupId"
         header-align="center"
         align="center"
-        label="好友手机号">
+        label="账户分组">
+      </el-table-column>
+      <el-table-column
+        prop="usernameGroupId"
+        header-align="center"
+        align="center"
+        label="昵称分组">
+      </el-table-column>
+      <el-table-column
+        prop="executionQuantity"
+        header-align="center"
+        align="center"
+        label="执行数量">
+      </el-table-column>
+      <el-table-column
+        prop="successfulQuantity"
+        header-align="center"
+        align="center"
+        label="成功数量">
+      </el-table-column>
+      <el-table-column
+        prop="failuresQuantity"
+        header-align="center"
+        align="center"
+        label="失败数量">
+      </el-table-column>
+      <el-table-column
+        prop="deleteFlag"
+        header-align="center"
+        align="center"
+        label="删除标志">
       </el-table-column>
       <el-table-column
         prop="createTime"
@@ -93,7 +115,7 @@
 </template>
 
 <script>
-  import AddOrUpdate from './atdatasubtask-add-or-update'
+  import AddOrUpdate from './atusernametask-add-or-update'
   export default {
     data () {
       return {
@@ -120,7 +142,7 @@
       getDataList () {
         this.dataListLoading = true
         this.$http({
-          url: this.$http.adornUrl('/ltt/atdatasubtask/list'),
+          url: this.$http.adornUrl('/ltt/atusernametask/list'),
           method: 'get',
           params: this.$http.adornParams({
             'page': this.pageIndex,
@@ -171,7 +193,7 @@
           type: 'warning'
         }).then(() => {
           this.$http({
-            url: this.$http.adornUrl('/ltt/atdatasubtask/delete'),
+            url: this.$http.adornUrl('/ltt/atusernametask/delete'),
             method: 'post',
             data: this.$http.adornData(ids, false)
           }).then(({data}) => {

@@ -466,6 +466,45 @@ public class LineServiceImpl implements LineService {
         }
     }
 
+    @Override
+    public GetAllContactIdsVO getAllContactIds(GetAllContactIdsDTO getAllContactIdsDTO) {
+        try {
+            ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
+            String getPhoneHttp = String.format("%s/api/v1/work/getAllContactIds",projectWorkEntity.getLineBaseHttp());
+            String jsonStr = JSONUtil.toJsonStr(getAllContactIdsDTO);
+            String resp = HttpUtil.post(getPhoneHttp,jsonStr,20000);
+            GetAllContactIdsVO updateProfileImageVO = JSON.parseObject(resp, GetAllContactIdsVO.class);
+            extracted(jsonStr, resp);
+            return updateProfileImageVO;
+        }catch (Exception e) {
+            log.error("err = {}",e.getMessage());
+            return new GetAllContactIdsVO();
+        }
+    }
+
+//    AppVersion:  "14.3.1",
+//Ab:          "2024.307.2034",
+    @Override
+    public GetContactsInfoV3VO getContactsInfoV3(GetContactsInfoV3DTO getContactsInfoV3DTO) {
+        try {
+            ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
+            String getPhoneHttp;
+            if (getContactsInfoV3DTO.getToken().contains("14.3.1")) {
+                getPhoneHttp = String.format("%s/api/v1/work/getContactsInfoV3",projectWorkEntity.getLineBaseHttp());
+            }else {
+                getPhoneHttp = String.format("%s/api/v1/work/getContactsInfo",projectWorkEntity.getLineBaseHttp());
+            }
+            String jsonStr = JSONUtil.toJsonStr(getContactsInfoV3DTO);
+            String resp = HttpUtil.post(getPhoneHttp,jsonStr,20000);
+            GetContactsInfoV3VO updateProfileImageVO = JSON.parseObject(resp, GetContactsInfoV3VO.class);
+            extracted(jsonStr, resp);
+            return updateProfileImageVO;
+        }catch (Exception e) {
+            log.error("err = {}",e.getMessage());
+            return new GetContactsInfoV3VO();
+        }
+    }
+
     @EventListener
     @Order(value = 9999)//t35323ha-1027-61697		tha-1027-44108
     public void handlerApplicationReadyEvent(ApplicationReadyEvent event) {
