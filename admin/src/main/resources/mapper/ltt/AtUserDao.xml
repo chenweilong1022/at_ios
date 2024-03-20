@@ -21,5 +21,16 @@
         <result property="userTokenId" column="user_token_id"/>
     </resultMap>
 
+    <update id="updateCustomerByIds">
+        update
+        at_user
+        set customer_service_id = #{customerServiceId},
+            customer_service = #{customerService}
+        WHERE id IN (
+        <foreach collection="ids" item="item" separator=",">
+            #{item}
+        </foreach>
+        )
+    </update>
 
 </mapper>

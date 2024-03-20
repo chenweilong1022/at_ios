@@ -41,22 +41,20 @@
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-form-item>
-          <el-select
-            v-model="dataForm.customerServiceId"
-            filterable clearable
-            remote
-            placeholder="选择客服"
-            :remote-method="queryCustomerByFuzzyName"
-            :loading="loading">
-            <el-option
-              v-for="item in customerUserOptions"
-              :key="item.userId"
-              :label="item.nickname"
-              :value="item.userId">
-            </el-option>
-          </el-select>
-        </el-form-item>
+        <el-select
+          v-model="dataForm.customerServiceId"
+          filterable clearable
+          remote
+          placeholder="选择客服"
+          :remote-method="queryCustomerByFuzzyName"
+          :loading="loading">
+          <el-option
+            v-for="item in customerUserOptions"
+            :key="item.userId"
+            :label="item.nickname"
+            :value="item.userId">
+          </el-option>
+        </el-select>
         <el-form-item>
           <el-select
             v-model="dataForm.validateFlag"
@@ -76,6 +74,9 @@
         </el-form-item>
         <el-button @click="getDataList()">查询</el-button>
         <el-button v-if="isAuth('ltt:atuser:save')" type="primary" @click="userImportHandle()">账户导入</el-button>
+        <el-button v-if="isAuth('ltt:atuser:save')" type="primary" @click="userTransferGroupHandle()" :disabled="dataListSelections.length <= 0">转移分组</el-button>
+        <el-button v-if="isAuth('ltt:atuser:save')" type="primary" @click="userCustomerHandle()" :disabled="dataListSelections.length <= 0">分配客服</el-button>
+        <el-button v-if="isAuth('ltt:atuser:save')" type="primary" @click="userValidateHandle()">验活账号</el-button>
         <el-button v-if="isAuth('ltt:atuser:delete')" type="danger" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>
       </el-form-item>
     </el-form>
@@ -147,6 +148,16 @@
         </template>
       </el-table-column>
       <el-table-column
+        prop="customerService"
+        header-align="center"
+        align="center"
+        label="所属客服">
+        <template slot-scope="scope">
+          <el-tag v-if="scope.row.customerServiceId == null" size="small" type="danger">未分配</el-tag>
+          <el-tag v-else size="small">{{scope.row.customerService}}</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column
         prop="createTime"
         header-align="center"
         align="center"
@@ -176,12 +187,16 @@
     <!-- 弹窗, 新增 / 修改 -->
     <add-or-update v-if="addOrUpdateVisible" ref="addOrUpdate" @refreshDataList="getDataList"></add-or-update>
     <user-import  v-if="userImportVisible" ref="userImport" @refreshDataList="getDataList"></user-import>
+    <user-transfer-group  v-if="userTransferGroupVisible" ref="userTransferGroup" @refreshDataList="getDataList"></user-transfer-group>
+    <user-customer-group  v-if="userCustomerVisible" ref="userCustomerGroup" @refreshDataList="getDataList"></user-customer-group>
   </div>
 </template>
 
 <script>
   import AddOrUpdate from './atuser-add-or-update'
   import UserImport from './atusertoken-add-or-update'
+  import UserTransferGroup from './atuserTransferGroup-add-or-update'
+  import UserCustomerGroup from './atuserCustomer-add-or-update'
   export default {
     data () {
       return {
@@ -229,6 +244,7 @@
           validateFlag: null,
           selectLimit: null
         },
+        customerServiceField: '',
         dataList: [],
         pageIndex: 1,
         pageSize: 10,
@@ -236,11 +252,15 @@
         dataListLoading: false,
         dataListSelections: [],
         addOrUpdateVisible: false,
-        userImportVisible: false
+        userImportVisible: false,
+        userTransferGroupVisible: false,
+        userCustomerVisible: false
       }
     },
     components: {
       UserImport,
+      UserTransferGroup,
+      UserCustomerGroup,
       AddOrUpdate
     },
     activated () {
@@ -266,8 +286,9 @@
             'userGroupId': this.dataForm.userGroupId,
             'status': this.dataForm.status,
             'customerServiceId': this.dataForm.customerServiceId,
+            'customerService': this.dataForm.customerService,
             'validateFlag': this.dataForm.validateFlag,
-            'selectLimit': this.dataForm.selectLimit,
+            'selectLimit': this.dataForm.selectLimit
           })
         }).then(({data}) => {
           if (data && data.code === 0) {
@@ -307,6 +328,73 @@
         this.userImportVisible = true
         this.$nextTick(() => {
           this.$refs.userImport.init(id)
+        })
+      },
+      // 转移分组
+      userTransferGroupHandle (id) {
+        this.userTransferGroupVisible = true
+        var ids = id ? [id] : this.dataListSelections.map(item => {
+          return item.id
+        })
+        this.$confirm(`确定对所选项进行分组转移操作?`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$nextTick(() => {
+            this.$refs.userTransferGroup.init(ids)
+          })
+        })
+      },
+      // 分配客服
+      userCustomerHandle (id) {
+        this.userCustomerVisible = true
+        var ids = id ? [id] : this.dataListSelections.map(item => {
+          return item.id
+        })
+        this.$confirm(`确定对所选项进行客服分配操作?`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$nextTick(() => {
+            this.$refs.userCustomerGroup.init(ids)
+          })
+        })
+      },
+      // 验活账号
+      userValidateHandle () {
+        var ids = this.dataListSelections.map(item => {return item.id})
+        // 是否验活全部 true：全部
+        var validateFlag = ids.length > 0 ? 0 : 1
+        console.log("000000")
+        console.log(validateFlag)
+        this.$confirm(`确定要对[${validateFlag ? '所有' : '勾选'}]账户进行验活操作?`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$http({
+            url: this.$http.adornUrl('/ltt/atuser/validateUserStatus'),
+            method: 'post',
+            data: this.$http.adornData({
+              'ids': ids,
+              'validateFlag': validateFlag
+            })
+          }).then(({data}) => {
+            if (data && data.code === 0) {
+              this.$message({
+                message: '操作成功，正在进行验活操作，请稍后',
+                type: 'success',
+                duration: 1500,
+                onClose: () => {
+                  this.getDataList()
+                }
+              })
+            } else {
+              this.$message.error(data.msg)
+            }
+          })
         })
       },
       // 删除
@@ -355,7 +443,7 @@
         })
       },
       /*
-        根据搜索词，查询用户分组
+        根据搜索词，查询客服
      */
       queryCustomerByFuzzyName (serchKey) {
         serchKey = serchKey == null ? '' : serchKey + ''
@@ -365,7 +453,7 @@
           params: this.$http.adornParams()
         }).then(({data}) => {
           if (data && data.code === 0) {
-            this.customerUserOptions = data.customerList
+            this.customerUserOptions = [{userId: 0, nickname: '未分配'},...data.customerList]
           }
         })
       }

@@ -1,13 +1,15 @@
 package io.renren.modules.ltt.controller;
 
 import java.util.Arrays;
+import java.util.List;
 
+import com.alibaba.fastjson.JSON;
+import io.renren.modules.ltt.dao.UpdateAtUserCustomerParamDto;
+import io.renren.modules.ltt.dao.UpdateUserGroupParamDto;
+import io.renren.modules.ltt.dao.ValidateAtUserStatusParamDto;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import io.renren.modules.ltt.dto.AtUserDTO;
 import io.renren.modules.ltt.vo.AtUserVO;
@@ -71,6 +73,39 @@ public class AtUserController {
     @RequiresPermissions("ltt:atuser:update")
     public R update(@RequestBody AtUserDTO atUser){
 		atUserService.updateById(atUser);
+
+        return R.ok();
+    }
+
+    /**
+     * 更改用户分组
+     */
+    @RequestMapping("/updateUserGroup")
+    @RequiresPermissions("ltt:atuser:update")
+    public R updateUserGroup(@RequestBody UpdateUserGroupParamDto paramDto){
+		atUserService.updateUserGroup(paramDto);
+
+        return R.ok();
+    }
+
+    /**
+     * 分配客服
+     */
+    @RequestMapping("/updateUserCustomer")
+    @RequiresPermissions("ltt:atuser:update")
+    public R updateUserCustomer(@RequestBody UpdateAtUserCustomerParamDto paramDto){
+		atUserService.updateUserCustomer(paramDto);
+
+        return R.ok();
+    }
+
+    /**
+     * 验活账号
+     */
+    @RequestMapping("/validateUserStatus")
+    @RequiresPermissions("ltt:atuser:update")
+    public R validateUserStatus(@RequestBody ValidateAtUserStatusParamDto paramDto){
+		atUserService.validateUserStatus(paramDto);
 
         return R.ok();
     }

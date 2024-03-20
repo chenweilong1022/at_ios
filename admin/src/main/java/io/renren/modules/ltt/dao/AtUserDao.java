@@ -13,5 +13,6 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface AtUserDao extends BaseMapper<AtUserEntity> {
-	
+
+    Integer updateCustomerByIds(UpdateAtUserCustomerParamDto paramDto);
 }

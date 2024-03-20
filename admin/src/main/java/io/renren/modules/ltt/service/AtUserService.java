@@ -2,12 +2,16 @@ package io.renren.modules.ltt.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import io.renren.common.utils.PageUtils;
+import io.renren.modules.ltt.dao.UpdateAtUserCustomerParamDto;
+import io.renren.modules.ltt.dao.UpdateUserGroupParamDto;
+import io.renren.modules.ltt.dao.ValidateAtUserStatusParamDto;
 import io.renren.modules.ltt.dto.AtUserDTO;
 import io.renren.modules.ltt.vo.AtUserVO;
 import io.renren.modules.ltt.entity.AtUserEntity;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -43,6 +47,27 @@ public interface AtUserService extends IService<AtUserEntity> {
      * @return
      */
     boolean updateById(AtUserDTO atUser);
+
+    /**
+     * 更改用户分组
+     * @return
+     */
+    boolean updateUserGroup(UpdateUserGroupParamDto paramDto);
+
+    /**
+     * 分配客服
+     * @param paramDto
+     * @return
+     */
+    boolean updateUserCustomer(UpdateAtUserCustomerParamDto paramDto);
+
+    /**
+     * 验活账号
+     * @param paramDto
+     * @return
+     */
+    boolean validateUserStatus(ValidateAtUserStatusParamDto paramDto);
+
     /**
      * 根据id删除
      * @param id
