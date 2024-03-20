@@ -2,9 +2,78 @@
   <div class="mod-config">
     <el-form :inline="true" :model="dataForm" @keyup.enter.native="getDataList()">
       <el-form-item>
-        <el-input v-model="dataForm.key" placeholder="参数名" clearable></el-input>
+        <el-input v-model="dataForm.nickName" placeholder="昵称" clearable></el-input>
       </el-form-item>
       <el-form-item>
+        <el-input v-model="dataForm.nation" placeholder="国家" clearable></el-input>
+      </el-form-item>
+      <el-form-item>
+        <el-input v-model="dataForm.telephone" placeholder="手机号" clearable></el-input>
+      </el-form-item>
+      <el-form-item>
+        <el-select
+          v-model="dataForm.userGroupId"
+          filterable clearable
+          remote
+          placeholder="选择分组"
+          :remote-method="queryUserGroupBySearchWord"
+          :loading="loading">
+          <el-option
+            v-for="item in userGroupOptions"
+            :key="item.id"
+            :label="item.name"
+            :value="item.id">
+          </el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item>
+        <el-select
+          v-model="dataForm.status"
+          class="m-2" clearable
+          placeholder="账户状态"
+          style="width: 240px">
+          <el-option
+            v-for="item in statusOptions"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item>
+        <el-form-item>
+          <el-select
+            v-model="dataForm.customerServiceId"
+            filterable clearable
+            remote
+            placeholder="选择客服"
+            :remote-method="queryCustomerByFuzzyName"
+            :loading="loading">
+            <el-option
+              v-for="item in customerUserOptions"
+              :key="item.userId"
+              :label="item.nickname"
+              :value="item.userId">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-select
+            v-model="dataForm.validateFlag"
+            class="m-2" clearable
+            placeholder="是否有验活记录"
+            style="width: 240px">
+            <el-option
+              v-for="item in validateOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-input v-model="dataForm.selectLimit" placeholder="查询条数" clearable></el-input>
+        </el-form-item>
         <el-button @click="getDataList()">查询</el-button>
         <el-button v-if="isAuth('ltt:atuser:save')" type="primary" @click="userImportHandle()">账户导入</el-button>
         <el-button v-if="isAuth('ltt:atuser:delete')" type="danger" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>
@@ -65,6 +134,19 @@
         label="分组名称">
       </el-table-column>
       <el-table-column
+        prop="status"
+        header-align="center"
+        align="center"
+        label="状态">
+        <template slot-scope="scope">
+          <el-tag v-if="scope.row.status === 1" size="small" type="danger">未验证</el-tag>
+          <el-tag v-else-if="scope.row.status === 2" size="small" type="danger">封号</el-tag>
+          <el-tag v-else-if="scope.row.status === 3" size="small" type="danger">下线</el-tag>
+          <el-tag v-else-if="scope.row.status === 4" size="small" type="danger">在线</el-tag>
+          <el-tag v-else size="small">数据错误</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column
         prop="createTime"
         header-align="center"
         align="center"
@@ -103,8 +185,49 @@
   export default {
     data () {
       return {
+        userGroupOptions: [],
+        customerUserOptions: [],
+        statusOptions: [
+          {
+            value: 1,
+            label: '未验证'
+          },
+          {
+            value: 2,
+            label: '封号'
+          },
+          {
+            value: 3,
+            label: '下线'
+          },
+          {
+            value: 4,
+            label: '在线'
+          },
+          {
+            value: 5,
+            label: '数据错误'
+          }
+        ],
+        validateOptions: [
+          {
+            value: 0,
+            label: '否'
+          },
+          {
+            value: 1,
+            label: '是'
+          }
+        ],
         dataForm: {
-          key: ''
+          nickName: '',
+          nation: '',
+          telephone: '',
+          userGroupId: null,
+          status: null,
+          customerServiceId: null,
+          validateFlag: null,
+          selectLimit: null
         },
         dataList: [],
         pageIndex: 1,
@@ -127,13 +250,24 @@
       // 获取数据列表
       getDataList () {
         this.dataListLoading = true
+        if (this.dataForm.selectLimit != null && this.dataForm.selectLimit > 0) {
+          this.pageIndex = 1
+          this.pageSize = this.dataForm.selectLimit
+        }
         this.$http({
           url: this.$http.adornUrl('/ltt/atuser/list'),
           method: 'get',
           params: this.$http.adornParams({
             'page': this.pageIndex,
             'limit': this.pageSize,
-            'key': this.dataForm.key
+            'nickName': this.dataForm.nickName,
+            'nation': this.dataForm.nation,
+            'telephone': this.dataForm.telephone,
+            'userGroupId': this.dataForm.userGroupId,
+            'status': this.dataForm.status,
+            'customerServiceId': this.dataForm.customerServiceId,
+            'validateFlag': this.dataForm.validateFlag,
+            'selectLimit': this.dataForm.selectLimit,
           })
         }).then(({data}) => {
           if (data && data.code === 0) {
@@ -203,6 +337,36 @@
               this.$message.error(data.msg)
             }
           })
+        })
+      },
+      /*
+        根据搜索词，查询用户分组
+     */
+      queryUserGroupBySearchWord (serchKey) {
+        serchKey = serchKey == null ? '' : serchKey + ''
+        this.$http({
+          url: this.$http.adornUrl(`/ltt/atusergroup/queryByFuzzyName?searchWord=${serchKey}`),
+          method: 'get',
+          params: this.$http.adornParams()
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.userGroupOptions = data.groupList
+          }
+        })
+      },
+      /*
+        根据搜索词，查询用户分组
+     */
+      queryCustomerByFuzzyName (serchKey) {
+        serchKey = serchKey == null ? '' : serchKey + ''
+        this.$http({
+          url: this.$http.adornUrl(`/ltt/customeruser/queryCustomerByFuzzyName?key=${serchKey}`),
+          method: 'get',
+          params: this.$http.adornParams()
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.customerUserOptions = data.customerList
+          }
         })
       }
     }

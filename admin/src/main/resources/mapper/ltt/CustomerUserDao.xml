@@ -46,4 +46,30 @@
 		and u.create_user_id = #{createUserId}
 	</sql>
 
+
+	<select id="queryByFuzzyName" resultType="io.renren.modules.ltt.dto.CustomerUserResultDto">
+		SELECT
+		u.user_id as userId,
+		u.username,
+		u.nickname,
+		u.status,
+		u.online_status as onlineStatus,
+		u.create_user_id as createUserId,
+		u.create_time as createTime,
+		u.update_time as updateTime,
+		r.role_id as roleId
+		FROM
+		sys_user u
+		INNER JOIN sys_user_role r ON u.user_id = r.user_id
+		<where>
+			u.user_id = r.user_id
+			AND r.role_id = #{roleId}
+			<if test="key != null and key.trim() != ''">
+				and nickname like concat(#{key}, '%')
+			</if>
+			and u.create_user_id = #{createUserId}
+		</where>
+		order by u.user_id desc
+		limit 20
+	</select>
 </mapper>

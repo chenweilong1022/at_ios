@@ -1,13 +1,11 @@
 package io.renren.modules.ltt.controller;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import io.renren.modules.ltt.dto.AtUserGroupDTO;
 import io.renren.modules.ltt.vo.AtUserGroupVO;
@@ -41,6 +39,15 @@ public class AtUserGroupController {
         return R.ok().put("page", page);
     }
 
+    /**
+     * 模糊检索根据分组名称
+     */
+    @GetMapping("/queryByFuzzyName")
+    @RequiresPermissions("ltt:atusergroup:list")
+    public R queryByFuzzyName(@RequestParam(required = false) String searchWord){
+        List<AtUserGroupVO> groupList = atUserGroupService.queryByFuzzyName(searchWord);
+        return R.ok().put("groupList", groupList);
+    }
 
     /**
      * 信息

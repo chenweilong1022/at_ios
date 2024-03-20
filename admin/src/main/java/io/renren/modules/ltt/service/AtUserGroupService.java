@@ -27,6 +27,12 @@ public interface AtUserGroupService extends IService<AtUserGroupEntity> {
      * @return
      */
     PageUtils queryPage(AtUserGroupDTO atUserGroup);
+
+    /**
+     * 模糊检索根据分组名称
+     */
+    List<AtUserGroupVO> queryByFuzzyName(String userGroupName);
+
     /**
      * 根据id查询
      * @param id

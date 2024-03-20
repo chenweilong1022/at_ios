@@ -25,4 +25,6 @@ public interface CustomerUserDao extends BaseMapper<SysUserEntity> {
 
     List<CustomerUserResultDto> queryPage(CustomerUserParamDto paramDto);
 
+    List<CustomerUserResultDto> queryByFuzzyName(CustomerUserParamDto paramDto);
+
 }

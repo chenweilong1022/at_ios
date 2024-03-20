@@ -3,8 +3,8 @@ package io.renren.modules.ltt.service.impl;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import io.renren.datasources.annotation.Game;
-import io.renren.modules.ltt.entity.AtDataTaskEntity;
 import io.renren.modules.ltt.enums.DeleteFlag;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -41,6 +41,17 @@ public class AtUserGroupServiceImpl extends ServiceImpl<AtUserGroupDao, AtUserGr
 
         return PageUtils.<AtUserGroupVO>page(page).setList(AtUserGroupConver.MAPPER.conver(page.getRecords()));
     }
+
+    @Override
+    public List<AtUserGroupVO> queryByFuzzyName(String userGroupName) {
+        List<AtUserGroupEntity> list = this.list(new QueryWrapper<AtUserGroupEntity>().lambda()
+                .likeRight(StringUtils.isNotEmpty(userGroupName), AtUserGroupEntity::getName, userGroupName)
+                .eq(AtUserGroupEntity::getDeleteFlag, DeleteFlag.NO.getKey())
+                .orderByDesc(AtUserGroupEntity::getId)
+                .last("limit " + 20));
+        return AtUserGroupConver.MAPPER.conver(list);
+    }
+
     @Override
     public AtUserGroupVO getById(Integer id) {
         return AtUserGroupConver.MAPPER.conver(baseMapper.selectById(id));

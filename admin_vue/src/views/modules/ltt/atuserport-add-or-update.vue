@@ -105,7 +105,6 @@ export default {
                 userId: this.dataForm.sysUserId,
                 username: this.dataForm.sysUserName
               }]
-              console.log(this.sysUserAccountOptions)
             }
           })
         }
@@ -117,7 +116,6 @@ export default {
      */
     queryBySearchWord(serchKey) {
       serchKey = serchKey == null ? "" : serchKey+"";
-      console.log(serchKey)
       this.$http({
         url: this.$http.adornUrl(`/sys/user/queryBySearchWord?searchWord=${serchKey}`),
         method: 'get',

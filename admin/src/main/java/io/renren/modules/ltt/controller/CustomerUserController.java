@@ -11,13 +11,11 @@ import io.renren.modules.ltt.service.CustomerUserService;
 import io.renren.modules.sys.controller.AbstractController;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
+import java.util.List;
 
 
 /**
@@ -56,6 +54,18 @@ public class CustomerUserController extends AbstractController {
         CustomerUserResultDto customeruser = sysUserService.getById(userId);
 
         return R.ok().put("customeruser", customeruser);
+    }
+
+
+    /**
+     * 模糊检索根据分组名称
+     */
+    @RequestMapping("/queryCustomerByFuzzyName")
+    @RequiresPermissions("ltt:atavatargroup:list")
+    public R queryCustomerByFuzzyName(@RequestParam String key){
+        Long createUserId = getUserId();
+        List<CustomerUserResultDto> list = sysUserService.queryByFuzzyName(key, createUserId);
+        return R.ok().put("customerList", list);
     }
 
     /**

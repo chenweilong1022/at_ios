@@ -106,5 +106,10 @@ public class AtUserDTO extends PageParam implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="用户tokenid")
 	private Integer userTokenId;
+	/**
+	 * 是否有验证记录
+	 */
+	@ApiModelProperty(required=false,value="是否有验证记录")
+	private Boolean validateFlag;
 
 }

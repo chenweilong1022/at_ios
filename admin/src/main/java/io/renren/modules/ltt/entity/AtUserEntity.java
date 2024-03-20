@@ -89,7 +89,7 @@ public class AtUserEntity implements Serializable {
 	/**
 	 * 状态
 	 */
-	@ApiModelProperty(required=false,value="状态")
+	@ApiModelProperty(required=false,value="状态 枚举：UserStatus")
 	private Integer status;
 	/**
 	 * 状态msg

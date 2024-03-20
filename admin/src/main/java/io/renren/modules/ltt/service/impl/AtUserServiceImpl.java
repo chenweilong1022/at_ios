@@ -1,6 +1,7 @@
 package io.renren.modules.ltt.service.impl;
 
 import io.renren.datasources.annotation.Game;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -18,6 +19,8 @@ import io.renren.modules.ltt.conver.AtUserConver;
 import java.io.Serializable;
 import java.util.Collection;
 
+import static io.renren.modules.ltt.enums.UserStatus.UserStatus1;
+
 
 @Service("atUserService")
 @Game
@@ -28,6 +31,14 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
         IPage<AtUserEntity> page = baseMapper.selectPage(
                 new Query<AtUserEntity>(atUser).getPage(),
                 new QueryWrapper<AtUserEntity>().lambda()
+                        .eq(StringUtils.isNotEmpty(atUser.getNickName()), AtUserEntity::getNickName, atUser.getNickName())
+                        .eq(StringUtils.isNotEmpty(atUser.getNation()), AtUserEntity::getNation, atUser.getNation())
+                        .eq(StringUtils.isNotEmpty(atUser.getTelephone()), AtUserEntity::getTelephone, atUser.getTelephone())
+                        .eq(atUser.getUserGroupId() != null, AtUserEntity::getUserGroupId, atUser.getUserGroupId())
+                        .eq(atUser.getCustomerServiceId() != null, AtUserEntity::getCustomerServiceId, atUser.getCustomerServiceId())
+                        .eq(atUser.getStatus() != null, AtUserEntity::getStatus, atUser.getStatus())
+                        .notIn(atUser.getValidateFlag() != null && Boolean.TRUE.equals(atUser.getValidateFlag()), AtUserEntity::getStatus, UserStatus1.getKey())
+                        .eq(atUser.getValidateFlag() != null && Boolean.FALSE.equals(atUser.getValidateFlag()), AtUserEntity::getStatus, UserStatus1.getKey())
                         .orderByDesc(AtUserEntity::getId)
         );
 

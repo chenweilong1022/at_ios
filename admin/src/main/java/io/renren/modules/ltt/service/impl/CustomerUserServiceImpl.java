@@ -1,12 +1,10 @@
 package io.renren.modules.ltt.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.renren.common.constant.SystemConstant;
 import io.renren.common.utils.BaseBeanUtils;
 import io.renren.common.utils.PageUtils;
-import io.renren.common.utils.Query;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.ltt.dao.CustomerUserDao;
 import io.renren.modules.ltt.dto.CustomerUserOperationParamDto;
@@ -16,6 +14,7 @@ import io.renren.modules.ltt.service.CustomerUserService;
 import io.renren.modules.sys.entity.SysUserEntity;
 import io.renren.modules.sys.service.SysUserRoleService;
 import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.crypto.hash.Sha256Hash;
 import org.springframework.stereotype.Service;
 
@@ -53,6 +52,15 @@ public class CustomerUserServiceImpl extends ServiceImpl<CustomerUserDao, SysUse
     public CustomerUserResultDto getById(Long userId) {
         SysUserEntity sysUserEntity = baseMapper.selectById(userId);
         return BaseBeanUtils.map(sysUserEntity, CustomerUserResultDto.class);
+    }
+
+    @Override
+    public List<CustomerUserResultDto> queryByFuzzyName(String key, Long createUserId) {
+        CustomerUserParamDto userParamDto = new CustomerUserParamDto();
+        userParamDto.setKey(key);
+        userParamDto.setRoleId(systemConstant.getCUSTOMER_ROLE_ID());
+        userParamDto.setCreateUserId(createUserId);
+        return baseMapper.queryByFuzzyName(userParamDto);
     }
 
     @Override

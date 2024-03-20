@@ -10,6 +10,7 @@ import io.renren.modules.sys.entity.SysUserEntity;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -33,6 +34,12 @@ public interface CustomerUserService extends IService<SysUserEntity> {
      * @return
      */
     CustomerUserResultDto getById(Long userId);
+
+    /**
+     * 模糊检索根据分组名称
+     */
+    List<CustomerUserResultDto> queryByFuzzyName(String key, Long createUserId);
+
     /**
      * 保存
      * @param sysUser
