@@ -39,12 +39,19 @@
         header-align="center"
         align="center"
         label="任务状态">
+        <template slot-scope="scope">
+          <el-button v-if="scope.row.taskStatus === 3" type="success" plain>{{scope.row.taskStatusStr}}</el-button>
+          <el-button v-if="scope.row.taskStatus === 2" type="warning" plain>{{scope.row.taskStatusStr}}</el-button>
+        </template>
       </el-table-column>
       <el-table-column
         prop="schedule"
         header-align="center"
         align="center"
         label="进度">
+        <template slot-scope="scope">
+          <el-progress :stroke-width="10" type="circle" :percentage="scope.row.scheduleFloat"></el-progress>
+        </template>
       </el-table-column>
       <el-table-column
         prop="userGroupId"
