@@ -1,4 +1,4 @@
-package io.renren.modules.ltt.entity;
+package io.renren.modules.ltt.dto;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -19,12 +19,9 @@ import java.util.Date;
  * @date 2024-03-18 10:53:33
  */
 @Data
-@TableName("at_data_subtask")
-@ApiModel("加粉任务子任务")
+@ApiModel("联系人列表")
 @Accessors(chain = true)
-public class AtDataSubtaskEntity implements Serializable {
-	private static final long serialVersionUID = 1L;
-
+public class AtDataSubtaskResultDto implements Serializable {
 	/**
 	 * 主键
 	 */
@@ -76,6 +73,11 @@ public class AtDataSubtaskEntity implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="")
 	private String createdTime;
+	/**
+	 *
+	 */
+	@ApiModelProperty(required=false,value="")
+	private String updateTime;
 	/**
 	 *
 	 */
@@ -192,11 +194,6 @@ public class AtDataSubtaskEntity implements Serializable {
 	@ApiModelProperty(required=false,value="创建时间")
 	private Date createTime;
 	/**
-	 * 创建时间
-	 */
-	@ApiModelProperty(required=false,value="修改时间")
-	private Date updateTime;
-	/**
 	 * line协议的任务id
 	 */
 	@ApiModelProperty(required=false,value="line协议的任务id")
@@ -211,4 +208,19 @@ public class AtDataSubtaskEntity implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="刷新联系人状态")
 	private Integer refreshContactStatus;
+
+	@ApiModelProperty(required = false, value = "主号手机号")
+	private String telephone;
+
+	@ApiModelProperty(required = false, value = "主账户分组id")
+	private Integer userGroupId;
+
+	@ApiModelProperty(required = false, value = "主账户状态 枚举：UserStatus")
+	private Integer userStatus;
+
+	@ApiModelProperty(required = false, value = "主账户所属客服id")
+	private Integer customerServiceId;
+
+	@ApiModelProperty(required = false, value = "主账户所属客服")
+	private Integer customerServiceName;
 }

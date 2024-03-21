@@ -1,6 +1,9 @@
 package io.renren.modules.ltt.service.impl;
 
 import io.renren.datasources.annotation.Game;
+import io.renren.modules.ltt.dto.AtDataSubtaskParamPageDTO;
+import io.renren.modules.ltt.dto.AtDataSubtaskResultDto;
+import io.renren.modules.ltt.dto.CustomerUserResultDto;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -17,6 +20,8 @@ import io.renren.modules.ltt.conver.AtDataSubtaskConver;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 
 @Service("atDataSubtaskService")
@@ -24,15 +29,16 @@ import java.util.Collection;
 public class AtDataSubtaskServiceImpl extends ServiceImpl<AtDataSubtaskDao, AtDataSubtaskEntity> implements AtDataSubtaskService {
 
     @Override
-    public PageUtils<AtDataSubtaskVO> queryPage(AtDataSubtaskDTO atDataSubtask) {
-        IPage<AtDataSubtaskEntity> page = baseMapper.selectPage(
-                new Query<AtDataSubtaskEntity>(atDataSubtask).getPage(),
-                new QueryWrapper<AtDataSubtaskEntity>().lambda()
-                        .orderByDesc(AtDataSubtaskEntity::getId)
-        );
-
-        return PageUtils.<AtDataSubtaskVO>page(page).setList(AtDataSubtaskConver.MAPPER.conver(page.getRecords()));
+    public PageUtils<AtDataSubtaskResultDto> queryPage(AtDataSubtaskParamPageDTO atDataSubtask) {
+        atDataSubtask.setPageStart((atDataSubtask.getPage() - 1) * atDataSubtask.getLimit());
+        Integer count = baseMapper.queryPageCount(atDataSubtask);
+        List<AtDataSubtaskResultDto> resultList = Collections.emptyList();
+        if (count > 0) {
+            resultList = baseMapper.queryPage(atDataSubtask);
+        }
+        return new PageUtils(resultList, count, atDataSubtask.getLimit(), atDataSubtask.getPage());
     }
+
     @Override
     public AtDataSubtaskVO getById(Integer id) {
         return AtDataSubtaskConver.MAPPER.conver(baseMapper.selectById(id));

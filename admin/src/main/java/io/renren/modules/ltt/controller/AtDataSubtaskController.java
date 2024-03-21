@@ -2,6 +2,7 @@ package io.renren.modules.ltt.controller;
 
 import java.util.Arrays;
 
+import io.renren.modules.ltt.dto.AtDataSubtaskParamPageDTO;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,7 +36,7 @@ public class AtDataSubtaskController {
      */
     @RequestMapping("/list")
     @RequiresPermissions("ltt:atdatasubtask:list")
-    public R list(AtDataSubtaskDTO atDataSubtask){
+    public R list(AtDataSubtaskParamPageDTO atDataSubtask){
         PageUtils page = atDataSubtaskService.queryPage(atDataSubtask);
 
         return R.ok().put("page", page);

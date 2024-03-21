@@ -2,7 +2,66 @@
   <div class="mod-config">
     <el-form :inline="true" :model="dataForm" @keyup.enter.native="getDataList()">
       <el-form-item>
-        <el-input v-model="dataForm.key" placeholder="参数名" clearable></el-input>
+        <el-input v-model="dataForm.contactKey" placeholder="好友手机号" clearable></el-input>
+      </el-form-item>
+      <el-form-item>
+      <el-input v-model="dataForm.telephone" placeholder="主号手机号" clearable></el-input>
+      </el-form-item>
+      <el-form-item>
+        <el-select
+          v-model="dataForm.userGroupId"
+          filterable clearable
+          remote
+          placeholder="主账号分组"
+          :remote-method="queryUserGroupBySearchWord"
+          :loading="loading">
+          <el-option
+            v-for="item in userGroupOptions"
+            :key="item.id"
+            :label="item.name"
+            :value="item.id">
+          </el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item>
+          <el-select
+            v-model="dataForm.userStatus"
+            class="m-2" clearable
+            placeholder="主账号状态"
+            style="width: 240px">
+            <el-option
+              v-for="item in statusOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+      </el-form-item>
+      <el-form-item>
+        <el-date-picker
+          v-model="dataForm.timeKey"
+          type="daterange" format="yyyy-MM-dd"
+          value-format="yyyy-MM-dd"
+          range-separator="至"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期">
+        </el-date-picker>
+      </el-form-item>
+      <el-form-item>
+        <el-select
+          v-model="dataForm.customerServiceId"
+          filterable clearable
+          remote
+          placeholder="选择客服"
+          :remote-method="queryCustomerByFuzzyName"
+          :loading="loading">
+          <el-option
+            v-for="item in customerUserOptions"
+            :key="item.userId"
+            :label="item.nickname"
+            :value="item.userId">
+          </el-option>
+        </el-select>
       </el-form-item>
       <el-form-item>
         <el-button @click="getDataList()">查询</el-button>
@@ -27,33 +86,23 @@
         prop="picturePath"
         header-align="center"
         align="center"
-        label="">
+        label="头像">
         <template slot-scope="scope">
           <img style="width: 40px;height: 40px" :src="'https://profile.line-scdn.net' + scope.row.picturePath">
         </template>
       </el-table-column>
-      <el-table-column
-        prop="userId"
-        header-align="center"
-        align="center"
-        label="账户id">
-      </el-table-column>
-
       <el-table-column
         prop="displayName"
         header-align="center"
         align="center"
         label="昵称">
       </el-table-column>
-
-
       <el-table-column
         prop="mid"
         header-align="center"
         align="center"
         label="好友uid">
       </el-table-column>
-
       <el-table-column
         prop="contactKey"
         header-align="center"
@@ -61,10 +110,39 @@
         label="好友手机号">
       </el-table-column>
       <el-table-column
-        prop="createTime"
+        prop="telephone"
         header-align="center"
         align="center"
-        label="创建时间">
+        label="主号手机号">
+      </el-table-column>
+      <el-table-column
+        prop="userStatus"
+        header-align="center"
+        align="center"
+        label="主号状态">
+        <template slot-scope="scope">
+          <el-tag v-if="scope.row.status === 1" size="small" type="danger">主号未验证</el-tag>
+          <el-tag v-else-if="scope.row.status === 2" size="small" type="danger">主号封号</el-tag>
+          <el-tag v-else-if="scope.row.status === 3" size="small" type="danger">主号下线</el-tag>
+          <el-tag v-else-if="scope.row.status === 4" size="small" type="success">主号在线</el-tag>
+          <el-tag v-else size="small" type="danger">主号数据错误</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="taskStatus"
+        header-align="center"
+        align="center"
+        label="加友方式">
+        <template slot-scope="scope">
+          <el-tag v-if="scope.row.taskStatus == null" size="small">主动添加</el-tag>
+          <el-tag v-else size="small">被动添加</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="updateTime"
+        header-align="center"
+        align="center"
+        label="更新时间">
       </el-table-column>
       <el-table-column
         fixed="right"
@@ -73,7 +151,7 @@
         width="150"
         label="操作">
         <template slot-scope="scope">
-          <el-button type="text" size="small" @click="addOrUpdateHandle(scope.row.id)">修改</el-button>
+<!--          <el-button type="text" size="small" @click="addOrUpdateHandle(scope.row.id)">修改</el-button>-->
           <el-button type="text" size="small" @click="deleteHandle(scope.row.id)">删除</el-button>
         </template>
       </el-table-column>
@@ -98,9 +176,40 @@
     data () {
       return {
         dataForm: {
-          key: ''
+          contactKey: null,
+          telephone: null,
+          userGroupId: null,
+          userStatus: null,
+          customerServiceId: null,
+          updateStartTime: null,
+          updateEndTime: null,
+          timeKey: null
         },
         dataList: [],
+        userGroupOptions: [],
+        customerUserOptions: [],
+        statusOptions: [
+          {
+            value: 1,
+            label: '未验证'
+          },
+          {
+            value: 2,
+            label: '封号'
+          },
+          {
+            value: 3,
+            label: '下线'
+          },
+          {
+            value: 4,
+            label: '在线'
+          },
+          {
+            value: 5,
+            label: '数据错误'
+          }
+        ],
         pageIndex: 1,
         pageSize: 10,
         totalPage: 0,
@@ -117,15 +226,27 @@
     },
     methods: {
       // 获取数据列表
-      getDataList () {
+      getDataList() {
         this.dataListLoading = true
+        var updateStartTime = null
+        var updateEndTime = null
+        if (this.dataForm.timeKey != null && this.dataForm.timeKey.length >= 2) {
+          updateStartTime = this.dataForm.timeKey[0]
+          updateEndTime = this.dataForm.timeKey[1]
+        }
         this.$http({
           url: this.$http.adornUrl('/ltt/atdatasubtask/list'),
           method: 'get',
           params: this.$http.adornParams({
             'page': this.pageIndex,
             'limit': this.pageSize,
-            'key': this.dataForm.key
+            'contactKey': this.dataForm.contactKey,
+            'telephone': this.dataForm.telephone,
+            'userGroupId': this.dataForm.userGroupId,
+            'userStatus': this.dataForm.userStatus,
+            'customerServiceId': this.dataForm.customerServiceId,
+            'updateStartTime': updateStartTime,
+            'updateEndTime': updateEndTime
           })
         }).then(({data}) => {
           if (data && data.code === 0) {
@@ -136,6 +257,36 @@
             this.totalPage = 0
           }
           this.dataListLoading = false
+        })
+      },
+      /*
+       根据搜索词，查询用户分组
+    */
+      queryUserGroupBySearchWord (serchKey) {
+        serchKey = serchKey == null ? '' : serchKey + ''
+        this.$http({
+          url: this.$http.adornUrl(`/ltt/atusergroup/queryByFuzzyName?searchWord=${serchKey}`),
+          method: 'get',
+          params: this.$http.adornParams()
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.userGroupOptions = data.groupList
+          }
+        })
+      },
+      /*
+       根据搜索词，查询客服
+    */
+      queryCustomerByFuzzyName (serchKey) {
+        serchKey = serchKey == null ? '' : serchKey + ''
+        this.$http({
+          url: this.$http.adornUrl(`/ltt/customeruser/queryCustomerByFuzzyName?key=${serchKey}`),
+          method: 'get',
+          params: this.$http.adornParams()
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.customerUserOptions = data.customerList
+          }
         })
       },
       // 每页数

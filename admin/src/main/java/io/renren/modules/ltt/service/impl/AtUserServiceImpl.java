@@ -178,7 +178,7 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
                 .map(AtUserTokenEntity::getToken).collect(Collectors.toList());
         Assert.isTrue(CollectionUtils.isEmpty(tokenTextList), "下载账户数据为空");
         try {
-            return fileService.writeTxtFile("", tokenTextList);
+            return fileService.writeTxtFile(String.valueOf(System.currentTimeMillis()), tokenTextList);
         } catch (IOException e) {
             Assert.isTrue(true, "下载异常，请稍后再试");
         }

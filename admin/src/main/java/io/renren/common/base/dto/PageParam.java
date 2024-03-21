@@ -1,5 +1,6 @@
 package io.renren.common.base.dto;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -26,4 +27,8 @@ public abstract class PageParam implements Serializable {
 
 	@ApiModelProperty(required=false,value="每页条数",hidden = true)
 	private Integer limit;
+
+	@TableField(exist = false)
+	@ApiModelProperty(required=false,value="分页开始 sql使用",hidden = true)
+	private Integer pageStart;
 }

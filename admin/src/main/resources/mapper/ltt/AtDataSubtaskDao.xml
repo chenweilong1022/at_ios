@@ -37,9 +37,69 @@
         <result property="videoProfile" column="video_profile"/>
         <result property="deleteFlag" column="delete_flag"/>
         <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
         <result property="lineTaskId" column="line_task_id"/>
         <result property="msg" column="msg"/>
     </resultMap>
+
+    <select id="queryPageCount" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM at_data_subtask s
+        left JOIN at_user u ON s.user_id = u.id and u.delete_flag = 1
+        <where>
+            <include refid="page_where_if"/>
+        </where>
+    </select>
+
+    <select id="queryPage" resultType="io.renren.modules.ltt.dto.AtDataSubtaskResultDto">
+        SELECT
+        s.id,
+        s.data_task_id as dataTaskId,
+        s.user_id as userId,
+        s.task_status as taskStatus,
+        s.group_type as groupType,
+        s.picture_path as picturePath,
+        s.display_name as displayName,
+        s.mid,
+        s.contact_key as contactKey,
+        s.update_time as updateTime,
+        u.id,
+        u.telephone,
+        u.user_group_id as userGroupId,
+        u.customer_service_id as customerServiceId,
+        u.status
+        FROM at_data_subtask s
+        left JOIN at_user u ON s.user_id = u.id and u.delete_flag = 1
+        <where>
+            <include refid="page_where_if"/>
+        </where>
+        order by s.id desc
+        limit #{pageStart},#{limit}
+    </select>
+
+    <sql id="page_where_if">
+        and s.delete_flag = 1 and s.mid is not null
+        <if test="contactKey != null and contactKey != ''">
+            AND s.contact_key = #{contactKey}
+        </if>
+        <if test="telephone != null and telephone != ''">
+            AND u.telephone = #{telephone}
+        </if>
+        <if test="userGroupId != null and userGroupId != ''">
+            AND u.user_group_id = #{userGroupId}
+        </if>
+        <if test="userStatus != null and userStatus != ''">
+            AND u.status = #{userStatus}
+        </if>
+        <if test="customerServiceId != null and customerServiceId != ''">
+            AND u.customer_service_id = #{customerServiceId}
+        </if>
+        <if test="updateStartTime !=null and updateEndTime !=null ">
+            and s.update_time between CONCAT(#{updateStartTime}, ' 00:00:00')
+            and CONCAT(#{updateEndTime}, ' 23:59:59')
+        </if>
+    </sql>
 
 
 </mapper>

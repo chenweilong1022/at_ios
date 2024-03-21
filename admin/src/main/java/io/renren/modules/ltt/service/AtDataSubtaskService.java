@@ -3,6 +3,7 @@ package io.renren.modules.ltt.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import io.renren.common.utils.PageUtils;
 import io.renren.modules.ltt.dto.AtDataSubtaskDTO;
+import io.renren.modules.ltt.dto.AtDataSubtaskParamPageDTO;
 import io.renren.modules.ltt.vo.AtDataSubtaskVO;
 import io.renren.modules.ltt.entity.AtDataSubtaskEntity;
 
@@ -24,7 +25,7 @@ public interface AtDataSubtaskService extends IService<AtDataSubtaskEntity> {
      * @param atDataSubtask
      * @return
      */
-    PageUtils queryPage(AtDataSubtaskDTO atDataSubtask);
+    PageUtils queryPage(AtDataSubtaskParamPageDTO atDataSubtask);
     /**
      * 根据id查询
      * @param id
