@@ -352,10 +352,34 @@ CREATE TABLE `at_avatar_subtask` (
 
 
 
+客服id
+客服名称
+消息人
+消息uid
+消息类型
+消息内容
+收发
+
+customer_service_id
+customer_service_name
+message_user_id
+message_uid
+message_type
+message_content
+send_receive
 
 
 
-
-
-
-
+CREATE TABLE `at_message_record` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `customer_service_id` int(11) DEFAULT NULL COMMENT '客服id',
+  `customer_service` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '所属客服',
+  `message_user_id` int(11) DEFAULT NULL COMMENT '消息人',
+  `message_uid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '消息uid',
+  `message_type` int(11) DEFAULT NULL COMMENT '消息类型',
+  `message_content` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '消息内容',
+  `send_receive` int(11) DEFAULT NULL COMMENT '收发',
+  `delete_flag` int(11) DEFAULT NULL COMMENT '删除标志',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间'
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='消息记录';
