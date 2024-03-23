@@ -1,211 +1,417 @@
 <template>
-  <div class="mod-config">
-    <el-form :inline="true" :model="dataForm" @keyup.enter.native="getDataList()">
-      <el-form-item>
-        <el-input v-model="dataForm.key" placeholder="参数名" clearable></el-input>
-      </el-form-item>
-      <el-form-item>
-        <el-button @click="getDataList()">查询</el-button>
-        <el-button v-if="isAuth('ltt:atmessagerecord:save')" type="primary" @click="addOrUpdateHandle()">新增</el-button>
-        <el-button v-if="isAuth('ltt:atmessagerecord:delete')" type="danger" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>
-      </el-form-item>
-    </el-form>
-    <el-table
-      :data="dataList"
-      border
-      v-loading="dataListLoading"
-      @selection-change="selectionChangeHandle"
-      style="width: 100%;">
-      <el-table-column
-        type="selection"
-        header-align="center"
-        align="center"
-        width="50">
-      </el-table-column>
-      <el-table-column
-        prop="id"
-        header-align="center"
-        align="center"
-        label="主键">
-      </el-table-column>
-      <el-table-column
-        prop="customerServiceId"
-        header-align="center"
-        align="center"
-        label="客服id">
-      </el-table-column>
-      <el-table-column
-        prop="customerService"
-        header-align="center"
-        align="center"
-        label="所属客服">
-      </el-table-column>
-      <el-table-column
-        prop="messageUserId"
-        header-align="center"
-        align="center"
-        label="消息人">
-      </el-table-column>
-      <el-table-column
-        prop="messageUid"
-        header-align="center"
-        align="center"
-        label="消息uid">
-      </el-table-column>
-      <el-table-column
-        prop="messageType"
-        header-align="center"
-        align="center"
-        label="消息类型">
-      </el-table-column>
-      <el-table-column
-        prop="messageContent"
-        header-align="center"
-        align="center"
-        label="消息内容">
-      </el-table-column>
-      <el-table-column
-        prop="sendReceive"
-        header-align="center"
-        align="center"
-        label="收发">
-      </el-table-column>
-      <el-table-column
-        prop="deleteFlag"
-        header-align="center"
-        align="center"
-        label="删除标志">
-      </el-table-column>
-      <el-table-column
-        prop="createTime"
-        header-align="center"
-        align="center"
-        label="创建时间">
-      </el-table-column>
-      <el-table-column
-        fixed="right"
-        header-align="center"
-        align="center"
-        width="150"
-        label="操作">
-        <template slot-scope="scope">
-          <el-button type="text" size="small" @click="addOrUpdateHandle(scope.row.id)">修改</el-button>
-          <el-button type="text" size="small" @click="deleteHandle(scope.row.id)">删除</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-    <el-pagination
-      @size-change="sizeChangeHandle"
-      @current-change="currentChangeHandle"
-      :current-page="pageIndex"
-      :page-sizes="[10, 20, 50, 100]"
-      :page-size="pageSize"
-      :total="totalPage"
-      layout="total, sizes, prev, pager, next, jumper">
-    </el-pagination>
-    <!-- 弹窗, 新增 / 修改 -->
-    <add-or-update v-if="addOrUpdateVisible" ref="addOrUpdate" @refreshDataList="getDataList"></add-or-update>
+  <div class="app-conntainer">
+
+    <div class="group-container">
+      <el-form :inline="true">
+        <el-form-item>
+          <el-input placeholder="参数名" clearable></el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button>查询</el-button>
+        </el-form-item>
+      </el-form>
+      <el-row class="t-header-row">
+        <el-col :span="12" class="title">
+          分组名称
+        </el-col>
+        <el-col :span="12" class="title">
+          人数
+        </el-col>
+      </el-row>
+
+      <el-row class="t-data-row">
+        <el-col :span="12">
+          <div class="data-icon-text">
+            <i class="el-icon-folder"></i>
+            <div>
+              无聊天好友
+            </div>
+          </div>
+        </el-col>
+        <el-col :span="12">
+          <el-tag type="success" effect="dark">0</el-tag>
+        </el-col>
+      </el-row>
+      <el-row class="t-data-row">
+        <el-col :span="12">
+          <div class="data-icon-text">
+            <i class="el-icon-folder"></i>
+            <div>
+              无聊天好友
+            </div>
+          </div>
+        </el-col>
+        <el-col :span="12">
+          <el-tag type="info" effect="dark">0</el-tag>
+        </el-col>
+      </el-row>
+      <el-row class="t-data-row">
+        <el-col :span="12">
+          <div class="data-icon-text">
+            <i class="el-icon-folder"></i>
+            <div>
+              无聊天好友
+            </div>
+          </div>
+        </el-col>
+        <el-col :span="12">
+          <el-tag type="danger" effect="dark">0</el-tag>
+        </el-col>
+      </el-row>
+      <el-row class="t-data-row">
+        <el-col :span="12">
+          <div class="data-icon-text">
+            <i class="el-icon-folder"></i>
+            <div>
+              无聊天好友
+            </div>
+          </div>
+        </el-col>
+        <el-col :span="12">
+          <el-tag type="warning" effect="dark">0</el-tag>
+        </el-col>
+      </el-row>
+    </div>
+
+
+      <div class="sidebar1">
+        <div class="profile-section">
+          <img src="~@/assets/img/WeChat19a93943eddee99b88a5f5409c51889b.jpg" alt="Profile Image" class="profile-image">
+        </div>
+        <!-- Menu Icons -->
+        <div class="menu">
+          <i :class="icon" v-for="icon in icons"></i>
+        </div>
+      </div>
+
+    <div class="sidebar">
+      <!-- Search and Add buttons -->
+      <div class="search-add-container">
+        <input type="search" placeholder="搜索" />
+        <button class="add-button">+</button>
+      </div>
+
+      <!-- Contact List -->
+      <ul class="contact-list">
+        <li v-for="contact in contacts" :key="contact.id" class="contact-item">
+          <img :src="contact.avatar" :alt="contact.name" class="avatar">
+          <div class="contact-details">
+            <h4 class="contact-name">{{ contact.name }}</h4>
+            <p class="contact-message">{{ contact.lastMessage }}</p>
+          </div>
+          <span class="contact-time">{{ contact.time }}</span>
+          <span class="contact-notification" v-if="contact.unread">{{ contact.unread }}</span>
+        </li>
+      </ul>
+    </div>
+    <div class="chat-window">
+      <!-- Chat Header -->
+      <div class="chat-header">
+        <span class="back-arrow">←</span>
+        <h2 class="chat-title">对话标题</h2>
+        <span class="menu-dots">⋮</span>
+      </div>
+
+      <!-- Message Content -->
+      <div class="message-content">
+        <!-- Mock messages -->
+        <div class="message-box received" v-for="message in messages" :key="message.id">
+          <p class="message-text">{{ message.content }}</p>
+          <span class="message-time">{{ message.time }}</span>
+        </div>
+        <!-- More messages here -->
+      </div>
+
+      <!-- Input Area -->
+      <div class="input-area">
+        <input type="text" v-model="newMessage" placeholder="输入消息内容" />
+        <button @click="sendMessage">发送</button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-  import AddOrUpdate from './atmessagerecord-add-or-update'
-  export default {
-    data () {
-      return {
-        dataForm: {
-          key: ''
-        },
-        dataList: [],
-        pageIndex: 1,
-        pageSize: 10,
-        totalPage: 0,
-        dataListLoading: false,
-        dataListSelections: [],
-        addOrUpdateVisible: false
-      }
-    },
-    components: {
-      AddOrUpdate
-    },
-    activated () {
-      this.getDataList()
-    },
-    methods: {
-      // 获取数据列表
-      getDataList () {
-        this.dataListLoading = true
-        this.$http({
-          url: this.$http.adornUrl('/ltt/atmessagerecord/list'),
-          method: 'get',
-          params: this.$http.adornParams({
-            'page': this.pageIndex,
-            'limit': this.pageSize,
-            'key': this.dataForm.key
-          })
-        }).then(({data}) => {
-          if (data && data.code === 0) {
-            this.dataList = data.page.list
-            this.totalPage = data.page.totalCount
-          } else {
-            this.dataList = []
-            this.totalPage = 0
-          }
-          this.dataListLoading = false
-        })
-      },
-      // 每页数
-      sizeChangeHandle (val) {
-        this.pageSize = val
-        this.pageIndex = 1
-        this.getDataList()
-      },
-      // 当前页
-      currentChangeHandle (val) {
-        this.pageIndex = val
-        this.getDataList()
-      },
-      // 多选
-      selectionChangeHandle (val) {
-        this.dataListSelections = val
-      },
-      // 新增 / 修改
-      addOrUpdateHandle (id) {
-        this.addOrUpdateVisible = true
-        this.$nextTick(() => {
-          this.$refs.addOrUpdate.init(id)
-        })
-      },
-      // 删除
-      deleteHandle (id) {
-        var ids = id ? [id] : this.dataListSelections.map(item => {
-          return item.id
-        })
-        this.$confirm(`确定对[id=${ids.join(',')}]进行[${id ? '删除' : '批量删除'}]操作?`, '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          this.$http({
-            url: this.$http.adornUrl('/ltt/atmessagerecord/delete'),
-            method: 'post',
-            data: this.$http.adornData(ids, false)
-          }).then(({data}) => {
-            if (data && data.code === 0) {
-              this.$message({
-                message: '操作成功',
-                type: 'success',
-                duration: 1500,
-                onClose: () => {
-                  this.getDataList()
-                }
-              })
-            } else {
-              this.$message.error(data.msg)
-            }
-          })
-        })
-      }
-    }
+export default {
+  data() {
+    return {
+      tableData: [{
+        date: '2016-05-02',
+        name: '王小虎',
+        address: '上海市普陀区金沙江路 1518 弄'
+      }, {
+        date: '2016-05-04',
+        name: '王小虎',
+        address: '上海市普陀区金沙江路 1517 弄'
+      }, {
+        date: '2016-05-01',
+        name: '王小虎',
+        address: '上海市普陀区金沙江路 1519 弄'
+      }, {
+        date: '2016-05-03',
+        name: '王小虎',
+        address: '上海市普陀区金沙江路 1516 弄'
+      }],
+      settings: [
+        { name: '接听开关', enabled: false },
+        { name: '外呼开关', enabled: true },
+        { name: '自接听开关', enabled: false },
+        // ...other settings
+      ],
+      statusColors: ['#ff6961', '#77dd77', '#fdfd96', '#84b6f4', '#fdcae1'],
+      icons: ['el-icon-chat-dot-round', 'el-icon-user-solid'],
+      newMessage: '',
+      messages: [
+        // Mock data for messages
+        { id: 1, content: '这是一条接收的消息', time: '16:55' },
+        // Add more message objects here
+      ],
+      contacts: [
+        // Sample data structure for contacts
+        { id: 1, name: "BOSS", avatar: "boss.jpg", lastMessage: "明日报告", time: "17:17", unread: 1 },
+        { id: 1, name: "BOSS", avatar: "boss.jpg", lastMessage: "明日报告", time: "17:17", unread: 1 },
+        // More contacts...
+      ]
+    };
   }
+};
 </script>
+
+
+
+<style scoped>
+
+.group-container {
+  width: 300px;
+}
+
+.t-data-row {
+  line-height: 40px;
+  font-size: 20px;
+  color: black;
+
+  padding: 10px;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.data-icon-text {
+  display: flex;
+  align-items: center;
+}
+
+
+.t-header-row {
+  font-size: 20px;
+  font-weight: bold;
+  color: black;
+  padding: 10px;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.app-conntainer {
+  display: flex;
+  flex: 1;
+}
+.sidebar {
+  width: 300px;
+  background: #ffffff;
+  overflow-y: scroll;
+}
+
+.search-add-container {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  background: #f2f2f2;
+}
+
+.search-add-container input[type="search"] {
+  flex-grow: 1;
+  border: none;
+  padding: 8px;
+  margin-right: 10px;
+}
+
+.add-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.contact-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 10px;
+}
+
+.contact-details {
+  flex-grow: 1;
+}
+
+.contact-name {
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+.contact-message {
+  font-size: 12px;
+  color: #666;
+}
+
+.contact-time {
+  font-size: 12px;
+  color: #999;
+  margin-left: auto;
+  padding-left: 10px;
+}
+
+.contact-notification {
+  background: #ff3b30;
+  color: white;
+  border-radius: 50%;
+  padding: 0 6px;
+  font-size: 12px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 10px;
+}
+</style>
+<style scoped>
+.chat-window {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  //height: 100vh;
+  padding-left: 10rpx;
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background-color: #f2f2f2;
+  border-bottom: 1px solid #e2e2e2;
+}
+
+.chat-title {
+  font-size: 16px;
+}
+
+.message-content {
+  flex-grow: 1;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.message-box {
+  max-width: 60%;
+  margin-bottom: 12px;
+  padding: 8px;
+  border-radius: 8px;
+  line-height: 1.4;
+}
+
+.received {
+  background-color: #ececec;
+  align-self: flex-start;
+}
+
+.input-area {
+  display: flex;
+  padding: 16px;
+  background-color: #f2f2f2;
+  border-top: 1px solid #e2e2e2;
+}
+
+.input-area input {
+  flex-grow: 1;
+  border: none;
+  padding: 8px;
+  margin-right: 8px;
+  border-radius: 18px;
+  background-color: #fff;
+}
+
+.input-area button {
+  border: none;
+  background-color: #0084ff;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 18px;
+  cursor: pointer;
+}
+</style>
+
+<style scoped>
+.sidebar1 {
+  width: 80px;
+  background-color: #ececec;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.status-indicators .status-dot {
+  height: 15px;
+  width: 15px;
+  border-radius: 50%;
+  margin-bottom: 10px;
+}
+
+.profile-section .profile-image {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  margin: 20px 0;
+}
+
+.menu {
+  height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+.menu i {
+  font-size: 40px;
+  margin: 20px 0 ;
+}
+
+.t-data-row {
+  /* Existing styles... */
+  transition: background-color 0.2s;
+}
+
+.t-data-row:after {
+  /* Existing styles... */
+  transition: transform 0.4s, background-color 0.2s;
+}
+
+/* Hover effect */
+.t-data-row:hover {
+  background-color: #a2a2a2; /* Color on hover for the switch background */
+}
+
+.t-data-row:hover:after {
+  background-color: #f0f0f0; /* Color on hover for the switch circle */
+}
+
+
+</style>
