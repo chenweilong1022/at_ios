@@ -14,8 +14,11 @@
           <icon-svg name="zhedie"></icon-svg>
         </el-menu-item>
       </el-menu>
+      <div class="port">端口总数:{{ portNumTotal }}
+        端口剩余:{{ portNumSurplus }}
+        过期时间:{{ expireTime }}</div>
       <el-menu
-        class="site-navbar__menu site-navbar__menu--right"
+        class="site-navbar__menu site-navbar__menu--right leftC"
         mode="horizontal">
         <el-menu-item index="1" @click="$router.push({ name: 'theme' })">
           <template slot="title">
@@ -59,7 +62,10 @@
   export default {
     data () {
       return {
-        updatePassowrdVisible: false
+        updatePassowrdVisible: false,
+        portNumTotal: 0,
+        expireTime: '无',
+        portNumSurplus: 0
       }
     },
     components: {
@@ -80,6 +86,9 @@
       userName: {
         get () { return this.$store.state.user.name }
       }
+    },
+    created () {
+      this.portDataSummary()
     },
     methods: {
       // 修改密码
@@ -107,7 +116,37 @@
             }
           })
         }).catch(() => {})
+      },
+      /**
+       * 端口数据汇总
+       */
+      portDataSummary () {
+        console.log("((((((((((((((((((((((((((((((((")
+        this.$http({
+          url: this.$http.adornUrl(`/ltt/atuserport/portDataSummary`),
+          method: 'get',
+          params: this.$http.adornParams()
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.portNumTotal = data.portData.portNumTotal
+            this.expireTime = data.portData.expireTime
+            this.portNumSurplus = data.portData.portNumSurplus
+          }
+        })
       }
     }
   }
 </script>
+
+<style scoped>
+.port {
+  flex: 1;
+  text-align: right;
+  margin: auto;
+}
+.site-navbar__body {
+  display: flex;
+  flex-direction: row;
+  align-content: center;
+}
+</style>

@@ -3,11 +3,13 @@ package io.renren.modules.ltt.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import io.renren.common.utils.PageUtils;
 import io.renren.modules.ltt.dto.AtUserPortDTO;
+import io.renren.modules.ltt.dto.PortDataSummaryResultDto;
 import io.renren.modules.ltt.vo.AtUserPortVO;
 import io.renren.modules.ltt.entity.AtUserPortEntity;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -58,5 +60,19 @@ public interface AtUserPortService extends IService<AtUserPortEntity> {
      */
     @Override
     boolean removeByIds(Collection<? extends Serializable> ids);
+
+    /**
+     * 查询用户未过期端口
+     *
+     * @return
+     */
+    List<AtUserPortEntity> queryValidPort(Long sysUserId);
+
+    /**
+     * 端口数据汇总
+     * @param sysUserId
+     * @return
+     */
+    PortDataSummaryResultDto portDataSummary(Long sysUserId);
 }
 

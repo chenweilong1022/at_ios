@@ -116,5 +116,9 @@ public class AtUserDTO extends PageParam implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="是否有验证记录")
 	private Boolean validateFlag;
-
+	/**
+	 * 管理账户id
+	 */
+	@ApiModelProperty(required=false,value="管理账户id")
+	private Long sysUserId;
 }

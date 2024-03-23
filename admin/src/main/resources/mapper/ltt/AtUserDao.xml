@@ -19,6 +19,7 @@
         <result property="deleteFlag" column="delete_flag"/>
         <result property="createTime" column="create_time"/>
         <result property="userTokenId" column="user_token_id"/>
+        <result property="sysUserId" column="sys_user_id"/>
     </resultMap>
 
     <update id="updateCustomerByIds">
@@ -32,5 +33,12 @@
         </foreach>
         )
     </update>
+
+    <select id="queryCountBySysUserId" resultType="java.lang.Integer">
+        select count(1)
+        from at_user
+        where sys_user_id = #{sysUserId}
+          and delete_flag = 1
+    </select>
 
 </mapper>
