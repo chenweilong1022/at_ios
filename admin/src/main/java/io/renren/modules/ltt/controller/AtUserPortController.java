@@ -3,13 +3,11 @@ package io.renren.modules.ltt.controller;
 import java.util.Arrays;
 
 import io.renren.common.utils.Constant;
+import io.renren.modules.ltt.dto.PortDataSummaryResultDto;
 import io.renren.modules.sys.controller.AbstractController;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import io.renren.modules.ltt.dto.AtUserPortDTO;
 import io.renren.modules.ltt.vo.AtUserPortVO;
@@ -79,6 +77,17 @@ public class AtUserPortController extends AbstractController {
 		atUserPortService.updateById(atUserPort);
 
         return R.ok();
+    }
+
+
+    /**
+     * 端口数据汇总
+     */
+    @GetMapping("/portDataSummary")
+//    @RequiresPermissions("ltt:atuserport:info")
+    public R portDataSummary(){
+        PortDataSummaryResultDto resultDto = atUserPortService.portDataSummary(getUserId());
+        return R.ok().put("portData", resultDto);
     }
 
     /**

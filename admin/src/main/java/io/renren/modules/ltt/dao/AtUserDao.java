@@ -15,4 +15,11 @@ import org.apache.ibatis.annotations.Mapper;
 public interface AtUserDao extends BaseMapper<AtUserEntity> {
 
     Integer updateCustomerByIds(UpdateAtUserCustomerParamDto paramDto);
+
+    /**
+     * 计算账户账号总数
+     * @param sysUserId
+     * @return
+     */
+    Integer queryCountBySysUserId(Long sysUserId);
 }

@@ -112,4 +112,10 @@ public class AtUserEntity implements Serializable {
 	@ApiModelProperty(required=false,value="用户tokenid")
 	private Integer userTokenId;
 
+	/**
+	 * 管理账户id
+	 */
+	@ApiModelProperty(required=false,value="管理账户id")
+	private Long sysUserId;
+
 }

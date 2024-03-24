@@ -35,6 +35,7 @@ import java.util.Date;
 public class DateUtils {
 	/** 时间格式(yyyy-MM-dd) */
 	public final static String DATE_PATTERN = "yyyy-MM-dd";
+	public final static String DATE_PATTERN1 = "yyyy年MM月dd日";
 	/** 时间格式(yyyy-MM-dd HH:mm:ss) */
 	public final static String DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
@@ -45,6 +46,15 @@ public class DateUtils {
      */
 	public static String format(Date date) {
         return format(date, DATE_PATTERN);
+    }
+
+    /**
+     * 日期格式化 日期格式为：yyyy年MM月dd日
+     * @param date  日期
+     * @return  返回yyyy-MM-dd格式日期
+     */
+	public static String formatDate(Date date) {
+        return format(date, DATE_PATTERN1);
     }
 
     /**

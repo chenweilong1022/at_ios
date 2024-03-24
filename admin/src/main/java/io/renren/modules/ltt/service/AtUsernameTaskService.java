@@ -8,6 +8,7 @@ import io.renren.modules.ltt.entity.AtUsernameTaskEntity;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -58,5 +59,12 @@ public interface AtUsernameTaskService extends IService<AtUsernameTaskEntity> {
      */
     @Override
     boolean removeByIds(Collection<? extends Serializable> ids);
+
+
+    /**
+     * 对错误进行重试
+     * @param ids
+     */
+    void errRetry(List<Integer> ids);
 }
 
