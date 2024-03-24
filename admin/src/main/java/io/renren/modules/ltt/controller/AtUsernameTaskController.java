@@ -86,4 +86,17 @@ public class AtUsernameTaskController {
         return R.ok();
     }
 
+
+    /**
+     * 错误重试
+     * @param ids
+     * @return
+     */
+    @RequestMapping("/errRetry")
+    @RequiresPermissions("ltt:atusernametask:delete")
+    public R errRetry(@RequestBody Integer[] ids){
+        atUsernameTaskService.errRetry(Arrays.asList(ids));
+
+        return R.ok();
+    }
 }

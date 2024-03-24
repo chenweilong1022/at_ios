@@ -14,9 +14,11 @@
           <icon-svg name="zhedie"></icon-svg>
         </el-menu-item>
       </el-menu>
-      <div class="port">端口总数:{{ portNumTotal }}
-        端口剩余:{{ portNumSurplus }}
-        过期时间:{{ expireTime }}</div>
+      <div class="port">
+        端口总数:<div style="color: #17B3A3;display: inline">{{ portNumTotal }}</div>
+        端口剩余:<div style="color: #17B3A3;display: inline">{{ portNumSurplus }}</div>
+        过期时间:<div style="color: #17B3A3;display: inline">{{ expireTime }}</div>
+      </div>
       <el-menu
         class="site-navbar__menu site-navbar__menu--right leftC"
         mode="horizontal">

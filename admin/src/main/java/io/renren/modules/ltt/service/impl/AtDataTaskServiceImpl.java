@@ -178,4 +178,31 @@ public class AtDataTaskServiceImpl extends ServiceImpl<AtDataTaskDao, AtDataTask
         this.updateBatchById(updates);
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void errRetry(List<Integer> ids) {
+        //获取头像任务所有
+        List<AtDataTaskEntity> taskEntities = this.listByIds(ids);
+
+        for (AtDataTaskEntity taskEntity : taskEntities) {
+            taskEntity.setTaskStatus(TaskStatus.TaskStatus2.getKey());
+            taskEntity.setFailuresQuantity(0);
+            //获取所有子任务
+            List<AtDataSubtaskEntity> list = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
+                    .eq(AtDataSubtaskEntity::getDataTaskId,taskEntity.getId())
+                    .eq(AtDataSubtaskEntity::getTaskStatus,TaskStatus.TaskStatus5.getKey())
+            );
+
+            for (AtDataSubtaskEntity atAvatarSubtaskEntity : list) {
+                atAvatarSubtaskEntity.setTaskStatus(TaskStatus.TaskStatus2.getKey());
+            }
+            if (CollUtil.isNotEmpty(list)) {
+                atDataSubtaskService.updateBatchById(list);
+            }
+        }
+        if (CollUtil.isNotEmpty(taskEntities)) {
+            this.updateBatchById(taskEntities);
+        }
+    }
+
 }

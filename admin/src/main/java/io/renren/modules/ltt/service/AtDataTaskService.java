@@ -5,6 +5,7 @@ import io.renren.common.utils.PageUtils;
 import io.renren.modules.ltt.dto.AtDataTaskDTO;
 import io.renren.modules.ltt.vo.AtDataTaskVO;
 import io.renren.modules.ltt.entity.AtDataTaskEntity;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -65,5 +66,11 @@ public interface AtDataTaskService extends IService<AtDataTaskEntity> {
      * @param ids
      */
     void startUp(Collection<? extends Serializable> ids);
+
+    /**
+     * 对错误进行重试
+     * @param ids
+     */
+    void errRetry(List<Integer> ids);
 }
 

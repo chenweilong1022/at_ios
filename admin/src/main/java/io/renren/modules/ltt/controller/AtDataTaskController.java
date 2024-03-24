@@ -96,4 +96,17 @@ public class AtDataTaskController {
         return R.ok();
     }
 
+    /**
+     * 错误重试
+     * @param ids
+     * @return
+     */
+    @RequestMapping("/errRetry")
+    @RequiresPermissions("ltt:atdatatask:delete")
+    public R errRetry(@RequestBody Integer[] ids){
+        atDataTaskService.errRetry(Arrays.asList(ids));
+
+        return R.ok();
+    }
+
 }
