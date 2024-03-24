@@ -30,7 +30,8 @@ public class FileServiceImpl implements FileService {
      */
     @Override
     public String writeTxtFile(String fileName, List<String> textList) throws IOException {
-        String saveUrl = fileConfig.getSaveurl() + fileName + ".txt";
+        fileName = fileName + ".txt";
+        String saveUrl = fileConfig.getSaveurl() + fileName;
 
         File file = new File(saveUrl);
         file.createNewFile();
@@ -44,9 +45,10 @@ public class FileServiceImpl implements FileService {
             }
 
             bufferedWriter.flush();
+            return fileConfig.getBaseurl() + fileName;
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return saveUrl;
+        return null;
     }
 }

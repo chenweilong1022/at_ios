@@ -73,12 +73,26 @@
           <el-input v-model="dataForm.selectLimit" placeholder="查询条数" clearable></el-input>
         </el-form-item>
         <el-button @click="getDataList()">查询</el-button>
-        <el-button v-if="isAuth('ltt:atuser:save')" type="primary" @click="userImportHandle()">账户导入</el-button>
-        <el-button v-if="isAuth('ltt:atuser:save')" type="primary" @click="userTransferGroupHandle()" :disabled="dataListSelections.length <= 0">转移分组</el-button>
-        <el-button v-if="isAuth('ltt:atuser:save')" type="primary" @click="downloadUserTokenTxtHandle()" :disabled="dataListSelections.length <= 0">下载账户txt</el-button>
-        <el-button v-if="isAuth('ltt:atuser:save')" type="primary" @click="userCustomerHandle()" :disabled="dataListSelections.length <= 0">分配客服</el-button>
-        <el-button v-if="isAuth('ltt:atuser:save')" type="primary" @click="userValidateHandle()">验活账号</el-button>
-        <el-button v-if="isAuth('ltt:atuser:delete')" type="danger" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>
+        <el-button v-if="isAuth('ltt:atuser:save')" type="primary"
+                   @click="userImportHandle()">账户导入
+        </el-button>
+        <el-button v-if="isAuth('ltt:atuser:save')" type="primary" @click="userTransferGroupHandle()"
+                   :disabled="dataListSelections.length <= 0">转移分组
+        </el-button>
+        <el-button v-if="isAuth('ltt:atuser:save')" type="primary"
+                   @click="downloadUserTokenTxtHandle()"
+                   :disabled="dataListSelections.length <= 0">下载账户txt
+        </el-button>
+        <el-button v-if="isAuth('ltt:atuser:save')" type="primary"
+                   @click="userCustomerHandle()"
+                   :disabled="dataListSelections.length <= 0">分配客服
+        </el-button>
+        <el-button style="margin-top: 15px;" v-if="isAuth('ltt:atuser:save')" type="primary"
+                   @click="userValidateHandle()">验活账号
+        </el-button>
+        <el-button style="margin-top: 15px;" v-if="isAuth('ltt:atuser:delete')" type="danger" @click="deleteHandle()"
+                   :disabled="dataListSelections.length <= 0">批量删除
+        </el-button>
       </el-form-item>
     </el-form>
     <el-table
@@ -410,22 +424,34 @@
             data: this.$http.adornData(ids, false)
           }).then(({data}) => {
             if (data && data.code === 0) {
-              console.log(")))))))")
-              console.log(data)
+              /**
+               * 下载的文件的名字
+               */
+              var fileName = this.getFilename(data.fileUrl)
               console.log(data.fileUrl)
-              // this.$message({
-              //   message: '操作成功',
-              //   type: 'success',
-              //   duration: 1500,
-              //   onClose: () => {
-                  this.$download(data.fileUrl)
-                // }
-              // })
+              var link = document.createElement('a')
+              // 这里是将url转成blob地址，
+              fetch(data.fileUrl).then((res) => res.blob())
+                .then((blob) => {
+                  // 将链接地址字符内容转变成blob地址
+                  link.href = URL.createObjectURL(blob)
+                  console.log(link.href)
+                  /**
+                   * 下载的文件的名字
+                   */
+                  link.download = fileName
+                  document.body.appendChild(link)
+                  link.click()
+                })
             } else {
               this.$message.error(data.msg)
             }
           })
         })
+      },
+      getFilename(url) {
+        // 从图片链接中提取文件名
+        return url.substring(url.lastIndexOf('/')+1);
       },
       // 删除
       deleteHandle (id) {
@@ -490,3 +516,5 @@
     }
   }
 </script>
+<style>
+</style>
