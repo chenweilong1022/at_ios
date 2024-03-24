@@ -42,6 +42,17 @@ public class AtDataSubtaskController {
         return R.ok().put("page", page);
     }
 
+    /**
+     * 获取朋友列表
+     */
+    @RequestMapping("/listFriend")
+    @RequiresPermissions("ltt:atdatasubtask:list")
+    public R listFriend(AtDataSubtaskParamPageDTO atDataSubtask){
+        PageUtils page = atDataSubtaskService.listFriend(atDataSubtask);
+        return R.ok().put("page", page);
+    }
+
+
 
     /**
      * 信息

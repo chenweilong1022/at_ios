@@ -66,4 +66,17 @@ public class AtDataSubtaskServiceImpl extends ServiceImpl<AtDataSubtaskDao, AtDa
         return super.removeByIds(ids);
     }
 
+    @Override
+    public PageUtils listFriend(AtDataSubtaskParamPageDTO atDataSubtask) {
+        IPage<AtDataSubtaskEntity> page = baseMapper.selectPage(
+                new Query<AtDataSubtaskEntity>(atDataSubtask).getPage(),
+                new QueryWrapper<AtDataSubtaskEntity>().lambda()
+                        .isNotNull(AtDataSubtaskEntity::getMid)
+                        .isNotNull(AtDataSubtaskEntity::getType)
+                        .orderByDesc(AtDataSubtaskEntity::getId)
+        );
+
+        return PageUtils.<AtDataSubtaskVO>page(page).setList(AtDataSubtaskConver.MAPPER.conver(page.getRecords()));
+    }
+
 }

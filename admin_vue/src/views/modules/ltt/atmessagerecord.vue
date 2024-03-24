@@ -85,22 +85,16 @@
       </div>
 
     <div class="sidebar">
-      <!-- Search and Add buttons -->
-      <div class="search-add-container">
-        <input type="search" placeholder="搜索" />
-        <button class="add-button">+</button>
-      </div>
-
       <!-- Contact List -->
       <ul class="contact-list">
-        <li v-for="contact in contacts" :key="contact.id" class="contact-item">
-          <img :src="contact.avatar" :alt="contact.name" class="avatar">
+        <li :style="currentIndex === index ? 'background-color: lightblue;' : ''" v-for="(data,index) in dataList" :key="index" class="contact-item" @click="contactHandler(index)">
+          <img :src="`https://profile.line-scdn.net` + data.picturePath" :alt="data.displayName" class="avatar">
           <div class="contact-details">
-            <h4 class="contact-name">{{ contact.name }}</h4>
-            <p class="contact-message">{{ contact.lastMessage }}</p>
+            <h4 class="contact-name">{{ data.displayName }}</h4>
+            <p class="contact-message">{{ data.lastMessage }}</p>
           </div>
-          <span class="contact-time">{{ contact.time }}</span>
-          <span class="contact-notification" v-if="contact.unread">{{ contact.unread }}</span>
+          <span class="contact-time">{{ data.createTime }}</span>
+          <span class="contact-notification" v-if="data.unread">{{ data.unread }}</span>
         </li>
       </ul>
     </div>
@@ -133,32 +127,11 @@
 
 <script>
 export default {
-  data() {
+  data () {
     return {
-      tableData: [{
-        date: '2016-05-02',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }, {
-        date: '2016-05-04',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1517 弄'
-      }, {
-        date: '2016-05-01',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1519 弄'
-      }, {
-        date: '2016-05-03',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1516 弄'
-      }],
-      settings: [
-        { name: '接听开关', enabled: false },
-        { name: '外呼开关', enabled: true },
-        { name: '自接听开关', enabled: false },
-        // ...other settings
-      ],
-      statusColors: ['#ff6961', '#77dd77', '#fdfd96', '#84b6f4', '#fdcae1'],
+      dataList: [],
+      totalPage: null,
+      currentIndex: 1,
       icons: ['el-icon-chat-dot-round', 'el-icon-user-solid'],
       newMessage: '',
       messages: [
@@ -172,9 +145,43 @@ export default {
         { id: 1, name: "BOSS", avatar: "boss.jpg", lastMessage: "明日报告", time: "17:17", unread: 1 },
         // More contacts...
       ]
-    };
+    }
+  },
+  activated () {
+    this.getDataList()
+  },
+  computed: {
+    currentColor () {
+      return
+    }
+  },
+  methods: {
+    contactHandler (i) {
+      this.currentIndex = i
+      this.$forceUpdate()
+      console.log(this.currentIndex)
+    },
+    getDataList () {
+      this.$http({
+        url: this.$http.adornUrl('/ltt/atdatasubtask/listFriend'),
+        method: 'get',
+        params: this.$http.adornParams({
+          'page': 1,
+          'limit': 100
+        })
+      }).then(({data}) => {
+        if (data && data.code === 0) {
+          this.dataList = data.page.list
+          this.totalPage = data.page.totalCount
+          console.log(this.dataList)
+        } else {
+          this.dataList = []
+          this.totalPage = 0
+        }
+      })
+    }
   }
-};
+}
 </script>
 
 
@@ -210,12 +217,16 @@ export default {
 
 .app-conntainer {
   display: flex;
+  align-items: stretch;
   flex: 1;
 }
 .sidebar {
   width: 300px;
   background: #ffffff;
-  overflow-y: scroll;
+  //overflow-y: scroll;
+  display: flex;
+  flex-direction: column;
+  height: 80vh;
 }
 
 .search-add-container {
@@ -240,9 +251,15 @@ export default {
 }
 
 .contact-list {
-  list-style: none;
+  //list-style: none;
   padding: 0;
   margin: 0;
+  //position: fixed;
+  overflow-y: scroll;
+  //flex: 1;
+  //display: flex;
+  //height: 100vh;
+  //flex-direction: column;
 }
 
 .contact-item {
@@ -250,6 +267,7 @@ export default {
   align-items: center;
   padding: 10px;
   border-bottom: 1px solid #eaeaea;
+  overflow-y: scroll;
 }
 
 .avatar {
@@ -413,5 +431,24 @@ export default {
   background-color: #f0f0f0; /* Color on hover for the switch circle */
 }
 
+
+.contact-item {
+  /* Existing styles... */
+  transition: background-color 0.2s;
+}
+
+.contact-item:after {
+  /* Existing styles... */
+  transition: transform 0.4s, background-color 0.2s;
+}
+
+/* Hover effect */
+.contact-item:hover {
+  background-color: #a2a2a2; /* Color on hover for the switch background */
+}
+
+.contact-item:hover:after {
+  background-color: #f0f0f0; /* Color on hover for the switch circle */
+}
 
 </style>

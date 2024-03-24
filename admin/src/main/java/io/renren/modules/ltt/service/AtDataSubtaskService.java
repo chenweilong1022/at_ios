@@ -59,5 +59,12 @@ public interface AtDataSubtaskService extends IService<AtDataSubtaskEntity> {
      */
     @Override
     boolean removeByIds(Collection<? extends Serializable> ids);
+
+    /**
+     * 朋友列表
+     * @param atDataSubtask
+     * @return
+     */
+    PageUtils listFriend(AtDataSubtaskParamPageDTO atDataSubtask);
 }
 
