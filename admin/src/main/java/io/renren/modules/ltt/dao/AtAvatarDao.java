@@ -4,6 +4,7 @@ import io.renren.modules.ltt.entity.AtAvatarEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import io.renren.modules.ltt.vo.AtAvatarGroupAvatarGroupIdVO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -17,5 +18,5 @@ import java.util.List;
 @Mapper
 public interface AtAvatarDao extends BaseMapper<AtAvatarEntity> {
 
-    List<AtAvatarGroupAvatarGroupIdVO> avatarGroupId();
+    List<AtAvatarGroupAvatarGroupIdVO> avatarGroupId(@Param("avatarGroupId") List<Integer> avatarGroupId);
 }

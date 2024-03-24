@@ -1,5 +1,6 @@
 package io.renren.modules.ltt.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.ltt.vo.AtDataGroupVODataCountGroupIdVO;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,7 @@ public class AtDataServiceImpl extends ServiceImpl<AtDataDao, AtDataEntity> impl
         IPage<AtDataEntity> page = baseMapper.selectPage(
                 new Query<AtDataEntity>(atData).getPage(),
                 new QueryWrapper<AtDataEntity>().lambda()
+                        .eq(ObjectUtil.isNotNull(atData.getSysUserId()), AtDataEntity::getSysUserId, atData.getSysUserId())
                         .orderByDesc(AtDataEntity::getId)
         );
 
@@ -63,8 +65,8 @@ public class AtDataServiceImpl extends ServiceImpl<AtDataDao, AtDataEntity> impl
     }
 
     @Override
-    public List<AtDataGroupVODataCountGroupIdVO> dataCountGroupId() {
-        return baseMapper.dataCountGroupId();
+    public List<AtDataGroupVODataCountGroupIdVO> dataCountGroupId(List<Integer> dataGroupIdList) {
+        return baseMapper.dataCountGroupId(dataGroupIdList);
     }
 
 }

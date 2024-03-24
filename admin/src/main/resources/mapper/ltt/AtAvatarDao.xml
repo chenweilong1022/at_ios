@@ -9,6 +9,7 @@
         <result property="avatarGroupId" column="avatar_group_id"/>
         <result property="avatar" column="avatar"/>
         <result property="useFlag" column="use_flag"/>
+        <result property="sysUserId" column="sys_user_id"/>
         <result property="deleteFlag" column="delete_flag"/>
         <result property="createTime" column="create_time"/>
     </resultMap>
@@ -19,7 +20,12 @@
         FROM
             at_avatar
         WHERE
-            use_flag = 1
+        use_flag = 1
+        and avatar_group_id in(
+        <foreach collection="avatarGroupId" item="item" index="index" separator=",">
+            #{item}
+        </foreach>
+        )
         GROUP BY
             avatar_group_id
     </select>

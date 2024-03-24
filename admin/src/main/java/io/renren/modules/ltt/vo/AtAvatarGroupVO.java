@@ -35,6 +35,13 @@ public class AtAvatarGroupVO implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="分组名称")
 	private String name;
+
+	/**
+	 * 管理账户id
+	 */
+	@ApiModelProperty(required=false,value="管理账户id")
+	private Long sysUserId;
+
 	/**
 	 * 删除标志
 	 */
@@ -45,5 +52,7 @@ public class AtAvatarGroupVO implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="创建时间")
 	private Date createTime;
+
+	@ApiModelProperty(value = "可用数量")
 	private Integer avatarGroupIdCount;
 }

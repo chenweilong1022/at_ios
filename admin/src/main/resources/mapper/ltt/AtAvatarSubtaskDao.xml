@@ -14,6 +14,7 @@
         <result property="taskStatus" column="task_status"/>
         <result property="deleteFlag" column="delete_flag"/>
         <result property="createTime" column="create_time"/>
+        <result property="sysUserId" column="sys_user_id"/>
     </resultMap>
 
 

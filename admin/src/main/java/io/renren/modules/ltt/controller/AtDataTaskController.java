@@ -2,6 +2,7 @@ package io.renren.modules.ltt.controller;
 
 import java.util.Arrays;
 
+import io.renren.modules.sys.controller.AbstractController;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,7 +27,7 @@ import io.renren.common.utils.R;
  */
 @RestController
 @RequestMapping("ltt/atdatatask")
-public class AtDataTaskController {
+public class AtDataTaskController extends AbstractController {
     @Autowired
     private AtDataTaskService atDataTaskService;
 
@@ -36,6 +37,7 @@ public class AtDataTaskController {
     @RequestMapping("/list")
     @RequiresPermissions("ltt:atdatatask:list")
     public R list(AtDataTaskDTO atDataTask){
+        atDataTask.setSysUserId(getAuthUserId());
         PageUtils page = atDataTaskService.queryPage(atDataTask);
 
         return R.ok().put("page", page);
@@ -59,6 +61,7 @@ public class AtDataTaskController {
     @RequestMapping("/save")
     @RequiresPermissions("ltt:atdatatask:save")
     public R save(@RequestBody AtDataTaskDTO atDataTask){
+        atDataTask.setSysUserId(getUserId());
 		atDataTaskService.save(atDataTask);
 
         return R.ok();

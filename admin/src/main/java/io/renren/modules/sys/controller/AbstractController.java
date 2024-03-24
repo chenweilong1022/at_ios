@@ -1,5 +1,6 @@
 package io.renren.modules.sys.controller;
 
+import io.renren.common.utils.Constant;
 import io.renren.modules.sys.entity.SysUserEntity;
 import org.apache.shiro.SecurityUtils;
 import org.slf4j.Logger;
@@ -46,5 +47,13 @@ public abstract class AbstractController {
 
 	protected Long getUserId() {
 		return getUser().getUserId();
+	}
+	protected Long getAuthUserId() {
+		Long userId = getUser().getUserId();
+		if(userId == Constant.SUPER_ADMIN){
+			//管理员查看所有数据
+			return userId;
+		}
+		return userId;
 	}
 }

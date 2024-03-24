@@ -1,6 +1,7 @@
 package io.renren.modules.ltt.service.impl;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.ltt.enums.DeleteFlag;
 import io.renren.modules.ltt.vo.AtAvatarGroupAvatarGroupIdVO;
@@ -29,14 +30,15 @@ public class AtAvatarServiceImpl extends ServiceImpl<AtAvatarDao, AtAvatarEntity
 
     @Override
     public PageUtils<AtAvatarVO> queryPage(AtAvatarDTO atAvatar) {
-        IPage<AtAvatarEntity> page = baseMapper.selectPage(
-                new Query<AtAvatarEntity>(atAvatar).getPage(),
-                new QueryWrapper<AtAvatarEntity>().lambda()
-                        .orderByDesc(AtAvatarEntity::getCreateTime)
-        );
+        IPage<AtAvatarEntity> page = baseMapper
+                .selectPage(new Query<AtAvatarEntity>(atAvatar).getPage(),
+                        new QueryWrapper<AtAvatarEntity>().lambda()
+                                .eq(ObjectUtil.isNotNull(atAvatar.getSysUserId()), AtAvatarEntity::getSysUserId, atAvatar.getSysUserId())
+                                .orderByDesc(AtAvatarEntity::getCreateTime));
 
         return PageUtils.<AtAvatarVO>page(page).setList(AtAvatarConver.MAPPER.conver(page.getRecords()));
     }
+
     @Override
     public AtAvatarVO getById(Integer id) {
         return AtAvatarConver.MAPPER.conver(baseMapper.selectById(id));
@@ -67,8 +69,8 @@ public class AtAvatarServiceImpl extends ServiceImpl<AtAvatarDao, AtAvatarEntity
     }
 
     @Override
-    public List<AtAvatarGroupAvatarGroupIdVO> avatarGroupId() {
-        return baseMapper.avatarGroupId();
+    public List<AtAvatarGroupAvatarGroupIdVO> avatarGroupId(List<Integer> avatarGroupId) {
+        return baseMapper.avatarGroupId(avatarGroupId);
     }
 
 }

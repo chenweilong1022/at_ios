@@ -29,6 +29,7 @@ public class AtAvatarSubtaskServiceImpl extends ServiceImpl<AtAvatarSubtaskDao, 
         IPage<AtAvatarSubtaskEntity> page = baseMapper.selectPage(
                 new Query<AtAvatarSubtaskEntity>(atAvatarSubtask).getPage(),
                 new QueryWrapper<AtAvatarSubtaskEntity>().lambda()
+                        .eq(ObjectUtil.isNotNull(atAvatarSubtask.getSysUserId()),AtAvatarSubtaskEntity::getSysUserId,atAvatarSubtask.getSysUserId())
                         .eq(ObjectUtil.isNotNull(atAvatarSubtask.getAvatarTaskId()),AtAvatarSubtaskEntity::getAvatarTaskId,atAvatarSubtask.getAvatarTaskId())
                         .eq(ObjectUtil.isNotNull(atAvatarSubtask.getTaskStatus()),AtAvatarSubtaskEntity::getTaskStatus,atAvatarSubtask.getTaskStatus())
                         .orderByDesc(AtAvatarSubtaskEntity::getId)

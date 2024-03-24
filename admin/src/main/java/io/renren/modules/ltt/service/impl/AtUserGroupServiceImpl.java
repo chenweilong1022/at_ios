@@ -2,8 +2,10 @@ package io.renren.modules.ltt.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.ltt.enums.DeleteFlag;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -36,6 +38,7 @@ public class AtUserGroupServiceImpl extends ServiceImpl<AtUserGroupDao, AtUserGr
         IPage<AtUserGroupEntity> page = baseMapper.selectPage(
                 new Query<AtUserGroupEntity>(atUserGroup).getPage(),
                 new QueryWrapper<AtUserGroupEntity>().lambda()
+                        .eq(ObjectUtil.isNotNull(atUserGroup.getSysUserId()), AtUserGroupEntity::getSysUserId, atUserGroup.getSysUserId())
                         .orderByDesc(AtUserGroupEntity::getId)
         );
 
@@ -43,9 +46,10 @@ public class AtUserGroupServiceImpl extends ServiceImpl<AtUserGroupDao, AtUserGr
     }
 
     @Override
-    public List<AtUserGroupVO> queryByFuzzyName(String userGroupName) {
+    public List<AtUserGroupVO> queryByFuzzyName(String userGroupName, Long sysUserId) {
         List<AtUserGroupEntity> list = this.list(new QueryWrapper<AtUserGroupEntity>().lambda()
                 .likeRight(StringUtils.isNotEmpty(userGroupName), AtUserGroupEntity::getName, userGroupName)
+                .eq(ObjectUtil.isNotNull(sysUserId) ,AtUserGroupEntity::getDeleteFlag, sysUserId)
                 .eq(AtUserGroupEntity::getDeleteFlag, DeleteFlag.NO.getKey())
                 .orderByDesc(AtUserGroupEntity::getId)
                 .last("limit " + 20));

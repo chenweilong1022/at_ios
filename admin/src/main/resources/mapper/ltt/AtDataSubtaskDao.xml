@@ -40,6 +40,7 @@
         <result property="updateTime" column="update_time"/>
         <result property="lineTaskId" column="line_task_id"/>
         <result property="msg" column="msg"/>
+        <result property="sysUserId" column="sys_user_id"/>
     </resultMap>
 
     <select id="queryPageCount" resultType="java.lang.Integer">
@@ -80,6 +81,7 @@
 
     <sql id="page_where_if">
         and s.delete_flag = 1 and s.mid is not null
+        and s.sys_user_id = #{sysUserId}
         <if test="contactKey != null and contactKey != ''">
             AND s.contact_key = #{contactKey}
         </if>

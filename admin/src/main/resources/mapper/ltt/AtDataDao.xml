@@ -11,18 +11,24 @@
         <result property="useFlag" column="use_flag"/>
         <result property="deleteFlag" column="delete_flag"/>
         <result property="createTime" column="create_time"/>
+        <result property="sysUserId" column="sys_user_id"/>
     </resultMap>
 
     <select id="dataCountGroupId" resultType="io.renren.modules.ltt.vo.AtDataGroupVODataCountGroupIdVO">
         SELECT
-            COUNT( data_group_id ) dataGroupIdCount,
-            data_group_id dataGroupId
+        COUNT( data_group_id ) dataGroupIdCount,
+        data_group_id dataGroupId
         FROM
-            at_data
+        at_data
         WHERE
-            use_flag = 1
+        use_flag = 1
+        and data_group_id in(
+        <foreach collection="dataGroupIdList" item="item" index="index" separator=",">
+            #{item}
+        </foreach>
+        )
         GROUP BY
-            data_group_id
+        data_group_id
     </select>
 
 

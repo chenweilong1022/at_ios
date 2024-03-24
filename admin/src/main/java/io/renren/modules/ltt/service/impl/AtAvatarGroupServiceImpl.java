@@ -9,6 +9,7 @@ import io.renren.modules.ltt.enums.DeleteFlag;
 import io.renren.modules.ltt.enums.UseFlag;
 import io.renren.modules.ltt.service.AtAvatarService;
 import io.renren.modules.ltt.vo.AtAvatarGroupAvatarGroupIdVO;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -34,19 +35,28 @@ import java.util.stream.Collectors;
 @Game
 public class AtAvatarGroupServiceImpl extends ServiceImpl<AtAvatarGroupDao, AtAvatarGroupEntity> implements AtAvatarGroupService {
 
+    @Autowired
+    private AtAvatarService atAvatarService;
+
     @Override
     public PageUtils<AtAvatarGroupVO> queryPage(AtAvatarGroupDTO atAvatarGroup) {
         IPage<AtAvatarGroupEntity> page = baseMapper.selectPage(
                 new Query<AtAvatarGroupEntity>(atAvatarGroup).getPage(),
                 new QueryWrapper<AtAvatarGroupEntity>().lambda()
+                        .eq(ObjectUtil.isNotNull(atAvatarGroup.getSysUserId()), AtAvatarGroupEntity::getSysUserId, atAvatarGroup.getSysUserId())
                         .orderByDesc(AtAvatarGroupEntity::getCreateTime)
         );
-
-        List<AtAvatarGroupAvatarGroupIdVO> atAvatarGroupAvatarGroupIdVOs = atAvatarService.avatarGroupId();
-
-        Map<Integer, Integer> integerIntegerMap = atAvatarGroupAvatarGroupIdVOs.stream().collect(Collectors.toMap(AtAvatarGroupAvatarGroupIdVO::getAvatarGroupId, AtAvatarGroupAvatarGroupIdVO::getAvatarGroupIdCount));
-        //设置分组数量
         List<AtAvatarGroupVO> records = AtAvatarGroupConver.MAPPER.conver(page.getRecords());
+
+        Map<Integer, Integer> integerIntegerMap = Collections.emptyMap();
+        if (CollectionUtil.isNotEmpty(records)) {
+            List<Integer> avatarGroupId = records.stream().map(AtAvatarGroupVO::getId).collect(Collectors.toList());
+            List<AtAvatarGroupAvatarGroupIdVO> avatarList = atAvatarService.avatarGroupId(avatarGroupId);
+            integerIntegerMap = avatarList.stream().collect(Collectors
+                    .toMap(AtAvatarGroupAvatarGroupIdVO::getAvatarGroupId, AtAvatarGroupAvatarGroupIdVO::getAvatarGroupIdCount));
+        }
+
+        //设置分组数量
         for (AtAvatarGroupVO record : records) {
             record.setAvatarGroupIdCount(0);
             Integer count = integerIntegerMap.get(record.getId());
@@ -88,9 +98,6 @@ public class AtAvatarGroupServiceImpl extends ServiceImpl<AtAvatarGroupDao, AtAv
         AtAvatarGroupEntity atAvatarGroupEntity = AtAvatarGroupConver.MAPPER.converDTO(atAvatarGroup);
         return this.save(atAvatarGroupEntity);
     }
-
-    @Autowired
-    private AtAvatarService atAvatarService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -134,7 +141,7 @@ public class AtAvatarGroupServiceImpl extends ServiceImpl<AtAvatarGroupDao, AtAv
     }
 
     @Override
-    public List<AtAvatarGroupEntity> queryByFuzzyName(String searchWord) {
-       return baseMapper.queryByFuzzyName(searchWord);
+    public List<AtAvatarGroupEntity> queryByFuzzyName(String searchWord, Long sysUserId) {
+       return baseMapper.queryByFuzzyName(searchWord, sysUserId);
     }
 }

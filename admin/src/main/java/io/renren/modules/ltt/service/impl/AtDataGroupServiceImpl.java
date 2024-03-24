@@ -1,5 +1,6 @@
 package io.renren.modules.ltt.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -37,6 +38,9 @@ import java.util.stream.Collectors;
 @Game
 public class AtDataGroupServiceImpl extends ServiceImpl<AtDataGroupDao, AtDataGroupEntity> implements AtDataGroupService {
 
+    @Autowired
+    private AtDataService atDataService;
+
     @Override
     public PageUtils<AtDataGroupVO> queryPage(AtDataGroupDTO atDataGroup) {
         IPage<AtDataGroupEntity> page = baseMapper.selectPage(
@@ -45,16 +49,22 @@ public class AtDataGroupServiceImpl extends ServiceImpl<AtDataGroupDao, AtDataGr
                         .eq(ObjectUtil.isNotNull(atDataGroup.getGroupType()),AtDataGroupEntity::getGroupType,atDataGroup.getGroupType())
                         .orderByDesc(AtDataGroupEntity::getId)
         );
-
-        //根据分组id转化为map
-        List<AtDataGroupVODataCountGroupIdVO> atDataGroupVODataCountGroupIdVOS = atDataService.dataCountGroupId();
-
-        Map<Integer, Integer> integerIntegerMap = atDataGroupVODataCountGroupIdVOS.stream().collect(Collectors.toMap(AtDataGroupVODataCountGroupIdVO::getDataGroupId, AtDataGroupVODataCountGroupIdVO::getDataGroupIdCount));
-        //设置分组数量
         List<AtDataGroupVO> records = AtDataGroupConver.MAPPER.conver(page.getRecords());
+
+        Map<Integer, Integer> groupDataMap = Collections.emptyMap();
+        if (CollectionUtil.isNotEmpty(records)) {
+            List<Integer> dataGroupId = records.stream()
+                    .map(AtDataGroupVO::getId).collect(Collectors.toList());
+            //查询分组未使用
+            List<AtDataGroupVODataCountGroupIdVO> groupDataList = atDataService.dataCountGroupId(dataGroupId);
+            groupDataMap = groupDataList.stream().collect(Collectors
+                    .toMap(AtDataGroupVODataCountGroupIdVO::getDataGroupId,
+                            AtDataGroupVODataCountGroupIdVO::getDataGroupIdCount));
+        }
+        //设置分组数量
         for (AtDataGroupVO record : records) {
             record.setDataGroupIdCount(0);
-            Integer count = integerIntegerMap.get(record.getId());
+            Integer count = groupDataMap.get(record.getId());
             if (ObjectUtil.isNotNull(count)) {
                 record.setDataGroupIdCount(count);
             }
@@ -74,9 +84,6 @@ public class AtDataGroupServiceImpl extends ServiceImpl<AtDataGroupDao, AtDataGr
         AtDataGroupEntity atDataGroupEntity = AtDataGroupConver.MAPPER.converDTO(atDataGroup);
         return this.save(atDataGroupEntity);
     }
-
-    @Autowired
-    private AtDataService atDataService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -99,6 +106,7 @@ public class AtDataGroupServiceImpl extends ServiceImpl<AtDataGroupDao, AtDataGr
         for (String string : split) {
             AtDataEntity atDataEntity = new AtDataEntity();
             atDataEntity.setDataGroupId(atDataGroup.getId());
+            atDataEntity.setSysUserId(atDataGroup.getSysUserId());
             atDataEntity.setData(string);
             atDataEntity.setUseFlag(UseFlag.NO.getKey());
             atDataEntity.setDeleteFlag(DeleteFlag.NO.getKey());

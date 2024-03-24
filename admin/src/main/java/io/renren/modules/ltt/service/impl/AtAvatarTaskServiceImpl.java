@@ -3,6 +3,7 @@ package io.renren.modules.ltt.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.ltt.entity.AtAvatarEntity;
@@ -46,11 +47,20 @@ public class AtAvatarTaskServiceImpl extends ServiceImpl<AtAvatarTaskDao, AtAvat
     @Resource
     private AtAvatarGroupService avatarGroupService;
 
+
+    @Autowired
+    private AtUserService atUserService;
+    @Autowired
+    private AtAvatarService atAvatarService;
+    @Autowired
+    private AtAvatarSubtaskService atAvatarSubtaskService;
+
     @Override
     public PageUtils<AtAvatarTaskVO> queryPage(AtAvatarTaskDTO atAvatarTask) {
         IPage<AtAvatarTaskEntity> page = baseMapper.selectPage(
                 new Query<AtAvatarTaskEntity>(atAvatarTask).getPage(),
                 new QueryWrapper<AtAvatarTaskEntity>().lambda()
+                        .eq(ObjectUtil.isNotNull(atAvatarTask.getSysUserId()), AtAvatarTaskEntity::getSysUserId, atAvatarTask.getSysUserId())
                         .orderByDesc(AtAvatarTaskEntity::getId)
         );
         List<AtAvatarTaskVO> resultList = AtAvatarTaskConver.MAPPER.conver(page.getRecords());
@@ -83,13 +93,6 @@ public class AtAvatarTaskServiceImpl extends ServiceImpl<AtAvatarTaskDao, AtAvat
     public AtAvatarTaskVO getById(Integer id) {
         return AtAvatarTaskConver.MAPPER.conver(baseMapper.selectById(id));
     }
-
-    @Autowired
-    private AtUserService atUserService;
-    @Autowired
-    private AtAvatarService atAvatarService;
-    @Autowired
-    private AtAvatarSubtaskService atAvatarSubtaskService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -137,6 +140,7 @@ public class AtAvatarTaskServiceImpl extends ServiceImpl<AtAvatarTaskDao, AtAvat
             atAvatarSubtaskEntity.setAvatarId(atAvatarEntity.getId());
             atAvatarSubtaskEntity.setDeleteFlag(DeleteFlag.NO.getKey());
             atAvatarSubtaskEntity.setCreateTime(DateUtil.date());
+            atAvatarSubtaskEntity.setSysUserId(atAvatarTask.getSysUserId());
             atAvatarSubtaskEntities.add(atAvatarSubtaskEntity);
         }
         //图片使用修改

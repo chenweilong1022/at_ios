@@ -43,4 +43,10 @@ public class AtDataSubtaskParamPageDTO extends PageParam implements Serializable
     @ApiModelProperty(required = false, value = "结束时间检索")
     private String updateEndTime;
 
+    /**
+     * 管理账户id
+     */
+    @ApiModelProperty(required=false,value="管理账户id")
+    private Long sysUserId;
+
 }

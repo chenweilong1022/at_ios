@@ -31,7 +31,7 @@ public interface AtUserGroupService extends IService<AtUserGroupEntity> {
     /**
      * 模糊检索根据分组名称
      */
-    List<AtUserGroupVO> queryByFuzzyName(String userGroupName);
+    List<AtUserGroupVO> queryByFuzzyName(String userGroupName, Long sysUserId);
 
     /**
      * 根据id查询

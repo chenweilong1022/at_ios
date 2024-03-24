@@ -65,6 +65,6 @@ public interface AtDataService extends IService<AtDataEntity> {
      * 剩余可用数据分组
      * @return
      */
-    List<AtDataGroupVODataCountGroupIdVO> dataCountGroupId();
+    List<AtDataGroupVODataCountGroupIdVO> dataCountGroupId(List<Integer> dataGroupId);
 }
 

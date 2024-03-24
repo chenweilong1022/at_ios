@@ -7,6 +7,7 @@
     <resultMap type="io.renren.modules.ltt.entity.AtAvatarGroupEntity" id="atAvatarGroupMap">
         <result property="id" column="id"/>
         <result property="name" column="name"/>
+        <result property="sysUserId" column="sys_user_id"/>
         <result property="deleteFlag" column="delete_flag"/>
         <result property="createTime" column="create_time"/>
     </resultMap>
@@ -17,6 +18,7 @@
         <if test="searchWord != null">
             and name like CONCAT( '%', #{searchWord}, '%')
         </if>
+        and sys_user_id = #{sysUserId}
         order by id desc
         limit 20
     </select>

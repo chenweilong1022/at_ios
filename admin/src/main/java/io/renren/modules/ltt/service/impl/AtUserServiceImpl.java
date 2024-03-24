@@ -1,5 +1,6 @@
 package io.renren.modules.ltt.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
@@ -52,10 +53,10 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
 
     @Override
     public PageUtils<AtUserVO> queryPage(AtUserDTO atUser) {
-        //todo bug 没有区分账户userId
         IPage<AtUserEntity> page = baseMapper.selectPage(
                 new Query<AtUserEntity>(atUser).getPage(),
                 new QueryWrapper<AtUserEntity>().lambda()
+                        .eq(ObjectUtil.isNotNull(atUser.getSysUserId()), AtUserEntity::getSysUserId, atUser.getSysUserId())
                         .eq(StringUtils.isNotEmpty(atUser.getNickName()), AtUserEntity::getNickName, atUser.getNickName())
                         .eq(StringUtils.isNotEmpty(atUser.getNation()), AtUserEntity::getNation, atUser.getNation())
                         .eq(StringUtils.isNotEmpty(atUser.getTelephone()), AtUserEntity::getTelephone, atUser.getTelephone())

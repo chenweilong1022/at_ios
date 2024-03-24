@@ -1,5 +1,6 @@
 package io.renren.modules.ltt.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.ltt.vo.AtUsernameGroupUsernameCountGroupIdVO;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,7 @@ public class AtUsernameServiceImpl extends ServiceImpl<AtUsernameDao, AtUsername
         IPage<AtUsernameEntity> page = baseMapper.selectPage(
                 new Query<AtUsernameEntity>(atUsername).getPage(),
                 new QueryWrapper<AtUsernameEntity>().lambda()
+                        .eq(ObjectUtil.isNotNull(atUsername.getSysUserId()), AtUsernameEntity::getSysUserId, atUsername.getSysUserId())
                         .orderByDesc(AtUsernameEntity::getId)
         );
 

@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import io.renren.modules.ltt.entity.AtAvatarGroupEntity;
+import io.renren.modules.sys.controller.AbstractController;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +26,7 @@ import io.renren.common.utils.R;
  */
 @RestController
 @RequestMapping("ltt/atavatargroup")
-public class AtAvatarGroupController {
+public class AtAvatarGroupController extends AbstractController {
     @Autowired
     private AtAvatarGroupService atAvatarGroupService;
 
@@ -35,6 +36,7 @@ public class AtAvatarGroupController {
     @RequestMapping("/list")
     @RequiresPermissions("ltt:atavatargroup:list")
     public R list(AtAvatarGroupDTO atAvatarGroup){
+        atAvatarGroup.setSysUserId(getAuthUserId());
         PageUtils page = atAvatarGroupService.queryPage(atAvatarGroup);
 
         return R.ok().put("page", page);
@@ -58,6 +60,7 @@ public class AtAvatarGroupController {
     @RequestMapping("/save")
     @RequiresPermissions("ltt:atavatargroup:save")
     public R save(@RequestBody AtAvatarGroupDTO atAvatarGroup){
+        atAvatarGroup.setSysUserId(getUserId());
 		atAvatarGroupService.save(atAvatarGroup);
 
         return R.ok();
@@ -91,7 +94,7 @@ public class AtAvatarGroupController {
     @RequestMapping("/queryByFuzzyName")
     @RequiresPermissions("ltt:atavatargroup:list")
     public R queryByFuzzyName(@RequestParam String searchWord){
-        List<AtAvatarGroupEntity> groupList = atAvatarGroupService.queryByFuzzyName(searchWord);
+        List<AtAvatarGroupEntity> groupList = atAvatarGroupService.queryByFuzzyName(searchWord, getAuthUserId());
         return R.ok().put("groupList", groupList);
     }
 

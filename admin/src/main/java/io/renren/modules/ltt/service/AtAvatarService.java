@@ -65,7 +65,7 @@ public interface AtAvatarService extends IService<AtAvatarEntity> {
      * 头像分组
      * @return
      */
-    List<AtAvatarGroupAvatarGroupIdVO> avatarGroupId();
+    List<AtAvatarGroupAvatarGroupIdVO> avatarGroupId(List<Integer> avatarGroupId);
 
 }
 

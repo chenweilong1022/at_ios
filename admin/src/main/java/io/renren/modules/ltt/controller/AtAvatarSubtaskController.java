@@ -2,6 +2,7 @@ package io.renren.modules.ltt.controller;
 
 import java.util.Arrays;
 
+import io.renren.modules.sys.controller.AbstractController;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,7 +27,7 @@ import io.renren.common.utils.R;
  */
 @RestController
 @RequestMapping("ltt/atavatarsubtask")
-public class AtAvatarSubtaskController {
+public class AtAvatarSubtaskController extends AbstractController {
     @Autowired
     private AtAvatarSubtaskService atAvatarSubtaskService;
 
@@ -36,6 +37,7 @@ public class AtAvatarSubtaskController {
     @RequestMapping("/list")
     @RequiresPermissions("ltt:atavatarsubtask:list")
     public R list(AtAvatarSubtaskDTO atAvatarSubtask){
+        atAvatarSubtask.setSysUserId(getAuthUserId());
         PageUtils page = atAvatarSubtaskService.queryPage(atAvatarSubtask);
 
         return R.ok().put("page", page);
@@ -59,6 +61,7 @@ public class AtAvatarSubtaskController {
     @RequestMapping("/save")
     @RequiresPermissions("ltt:atavatarsubtask:save")
     public R save(@RequestBody AtAvatarSubtaskDTO atAvatarSubtask){
+        atAvatarSubtask.setSysUserId(getUserId());
 		atAvatarSubtaskService.save(atAvatarSubtask);
 
         return R.ok();

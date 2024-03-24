@@ -23,5 +23,6 @@ public interface AtAvatarGroupDao extends BaseMapper<AtAvatarGroupEntity> {
      * @param searchWord
      * @return
      */
-    List<AtAvatarGroupEntity> queryByFuzzyName(@Param("searchWord") String searchWord);
+    List<AtAvatarGroupEntity> queryByFuzzyName(@Param("searchWord") String searchWord,
+                                               @Param("sysUserId") Long sysUserId);
 }

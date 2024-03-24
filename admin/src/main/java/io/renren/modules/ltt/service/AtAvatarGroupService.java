@@ -72,6 +72,6 @@ public interface AtAvatarGroupService extends IService<AtAvatarGroupEntity> {
      * @param searchWord
      * @return
      */
-    List<AtAvatarGroupEntity> queryByFuzzyName(String searchWord);
+    List<AtAvatarGroupEntity> queryByFuzzyName(String searchWord, Long sysUserId);
 }
 

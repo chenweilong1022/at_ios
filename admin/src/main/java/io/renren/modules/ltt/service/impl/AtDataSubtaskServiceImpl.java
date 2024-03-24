@@ -1,5 +1,6 @@
 package io.renren.modules.ltt.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.ltt.dto.AtDataSubtaskParamPageDTO;
 import io.renren.modules.ltt.dto.AtDataSubtaskResultDto;
@@ -71,6 +72,7 @@ public class AtDataSubtaskServiceImpl extends ServiceImpl<AtDataSubtaskDao, AtDa
         IPage<AtDataSubtaskEntity> page = baseMapper.selectPage(
                 new Query<AtDataSubtaskEntity>(atDataSubtask).getPage(),
                 new QueryWrapper<AtDataSubtaskEntity>().lambda()
+                        .eq(ObjectUtil.isNotNull(atDataSubtask.getSysUserId()), AtDataSubtaskEntity::getSysUserId, atDataSubtask.getSysUserId())
                         .isNotNull(AtDataSubtaskEntity::getMid)
                         .isNotNull(AtDataSubtaskEntity::getType)
                         .orderByDesc(AtDataSubtaskEntity::getId)

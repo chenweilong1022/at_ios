@@ -2,6 +2,7 @@ package io.renren.modules.ltt.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.google.common.collect.Lists;
 import io.renren.common.utils.PhoneUtil;
 import io.renren.common.utils.vo.PhoneCountryVO;
@@ -47,6 +48,7 @@ public class AtDataTaskServiceImpl extends ServiceImpl<AtDataTaskDao, AtDataTask
         IPage<AtDataTaskEntity> page = baseMapper.selectPage(
                 new Query<AtDataTaskEntity>(atDataTask).getPage(),
                 new QueryWrapper<AtDataTaskEntity>().lambda()
+                        .eq(ObjectUtil.isNotNull(atDataTask.getSysUserId()), AtDataTaskEntity::getSysUserId, atDataTask.getSysUserId())
                         .orderByDesc(AtDataTaskEntity::getId)
         );
 
@@ -122,6 +124,7 @@ public class AtDataTaskServiceImpl extends ServiceImpl<AtDataTaskDao, AtDataTask
                     atDataSubtaskEntity.setContactKey(data);
                     checkCountry(atDataEntity, atUserEntity);
                 }
+                atDataSubtaskEntity.setSysUserId(atDataTask.getSysUserId());
                 atDataSubtaskEntity.setDeleteFlag(DeleteFlag.NO.getKey());
                 atDataSubtaskEntity.setCreateTime(DateUtil.date());
                 atDataSubtaskEntities.add(atDataSubtaskEntity);

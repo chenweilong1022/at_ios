@@ -53,7 +53,11 @@ public class AtDataGroupVO implements Serializable {
 	@ApiModelProperty(required=false,value="创建时间")
 	private Date createTime;
 	private Integer dataGroupIdCount;
-
+	/**
+	 * 管理账户id
+	 */
+	@ApiModelProperty(required=false,value="管理账户id")
+	private Long sysUserId;
 	public String getGroupTypeStr() {
 		return EnumUtil.queryValueByKey(this.groupType, GroupType.values());
 	}

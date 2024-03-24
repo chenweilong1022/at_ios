@@ -223,4 +223,10 @@ public class AtDataSubtaskResultDto implements Serializable {
 
 	@ApiModelProperty(required = false, value = "主账户所属客服")
 	private Integer customerServiceName;
+
+	/**
+	 * 管理账户id
+	 */
+	@ApiModelProperty(required=false,value="管理账户id")
+	private Long sysUserId;
 }

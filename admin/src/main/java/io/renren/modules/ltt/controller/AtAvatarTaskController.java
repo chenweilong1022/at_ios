@@ -2,6 +2,7 @@ package io.renren.modules.ltt.controller;
 
 import java.util.Arrays;
 
+import io.renren.modules.sys.controller.AbstractController;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,7 +27,7 @@ import io.renren.common.utils.R;
  */
 @RestController
 @RequestMapping("ltt/atavatartask")
-public class AtAvatarTaskController {
+public class AtAvatarTaskController extends AbstractController {
     @Autowired
     private AtAvatarTaskService atAvatarTaskService;
 
@@ -36,6 +37,7 @@ public class AtAvatarTaskController {
     @RequestMapping("/list")
     @RequiresPermissions("ltt:atavatartask:list")
     public R list(AtAvatarTaskDTO atAvatarTask){
+        atAvatarTask.setSysUserId(getAuthUserId());
         PageUtils page = atAvatarTaskService.queryPage(atAvatarTask);
 
         return R.ok().put("page", page);
@@ -59,6 +61,7 @@ public class AtAvatarTaskController {
     @RequestMapping("/save")
     @RequiresPermissions("ltt:atavatartask:save")
     public R save(@RequestBody AtAvatarTaskDTO atAvatarTask){
+        atAvatarTask.setSysUserId(atAvatarTask.getSysUserId());
 		atAvatarTaskService.save(atAvatarTask);
 
         return R.ok();
@@ -76,7 +79,7 @@ public class AtAvatarTaskController {
     }
 
     /**
-     * 删除
+     * 错误重试
      */
     @RequestMapping("/errRetry")
     @RequiresPermissions("ltt:atavatartask:delete")

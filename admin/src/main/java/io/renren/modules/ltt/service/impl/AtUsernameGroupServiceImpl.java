@@ -48,6 +48,7 @@ public class AtUsernameGroupServiceImpl extends ServiceImpl<AtUsernameGroupDao, 
         List<AtUsernameGroupUsernameCountGroupIdVO> atUsernameGroupUsernameCountGroupIdVOS = atUsernameService.usernameCountGroupId();
         Map<Integer, Integer> integerIntegerMap = atUsernameGroupUsernameCountGroupIdVOS.stream().collect(Collectors.toMap(AtUsernameGroupUsernameCountGroupIdVO::getUsernameGroupId, AtUsernameGroupUsernameCountGroupIdVO::getUsernameGroupIdCount));
         //设置分组数量
+        //ToDo bug
         List<AtUsernameGroupVO> records = AtUsernameGroupConver.MAPPER.conver(page.getRecords());
         for (AtUsernameGroupVO record : records) {
             record.setUsernameGroupIdCount(0);

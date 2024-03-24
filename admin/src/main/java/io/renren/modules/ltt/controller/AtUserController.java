@@ -7,6 +7,7 @@ import com.alibaba.fastjson.JSON;
 import io.renren.modules.ltt.dao.UpdateAtUserCustomerParamDto;
 import io.renren.modules.ltt.dao.UpdateUserGroupParamDto;
 import io.renren.modules.ltt.dao.ValidateAtUserStatusParamDto;
+import io.renren.modules.sys.controller.AbstractController;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +29,7 @@ import io.renren.common.utils.R;
  */
 @RestController
 @RequestMapping("ltt/atuser")
-public class AtUserController {
+public class AtUserController extends AbstractController {
     @Autowired
     private AtUserService atUserService;
 
@@ -38,6 +39,7 @@ public class AtUserController {
     @RequestMapping("/list")
     @RequiresPermissions("ltt:atuser:list")
     public R list(AtUserDTO atUser){
+        atUser.setSysUserId(getAuthUserId());
         PageUtils page = atUserService.queryPage(atUser);
 
         return R.ok().put("page", page);
@@ -61,6 +63,7 @@ public class AtUserController {
     @RequestMapping("/save")
     @RequiresPermissions("ltt:atuser:save")
     public R save(@RequestBody AtUserDTO atUser){
+        atUser.setSysUserId(getUserId());
 		atUserService.save(atUser);
 
         return R.ok();
