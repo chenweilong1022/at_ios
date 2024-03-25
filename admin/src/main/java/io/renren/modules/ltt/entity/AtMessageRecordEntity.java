@@ -76,5 +76,9 @@ public class AtMessageRecordEntity implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="创建时间")
 	private Date createTime;
-
+	/**
+	 * 管理账户id
+	 */
+	@ApiModelProperty(required=false,value="管理账户id")
+	private Long sysUserId;
 }

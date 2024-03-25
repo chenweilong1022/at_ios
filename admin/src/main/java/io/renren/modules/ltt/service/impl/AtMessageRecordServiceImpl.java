@@ -1,5 +1,6 @@
 package io.renren.modules.ltt.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import io.renren.datasources.annotation.Game;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -27,7 +28,10 @@ public class AtMessageRecordServiceImpl extends ServiceImpl<AtMessageRecordDao, 
     public PageUtils<AtMessageRecordVO> queryPage(AtMessageRecordDTO atMessageRecord) {
         IPage<AtMessageRecordEntity> page = baseMapper.selectPage(
                 new Query<AtMessageRecordEntity>(atMessageRecord).getPage(),
-                new QueryWrapper<AtMessageRecordEntity>()
+                new QueryWrapper<AtMessageRecordEntity>().lambda()
+                        .eq(ObjectUtil.isNotNull(atMessageRecord.getSysUserId()),
+                                AtMessageRecordEntity::getSysUserId, atMessageRecord.getSysUserId())
+                        .orderByDesc(AtMessageRecordEntity::getId)
         );
 
         return PageUtils.<AtMessageRecordVO>page(page).setList(AtMessageRecordConver.MAPPER.conver(page.getRecords()));

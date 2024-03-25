@@ -2,6 +2,7 @@ package io.renren.modules.ltt.controller;
 
 import java.util.Arrays;
 
+import io.renren.modules.sys.controller.AbstractController;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,7 +27,7 @@ import io.renren.common.utils.R;
  */
 @RestController
 @RequestMapping("ltt/atmessagerecord")
-public class AtMessageRecordController {
+public class AtMessageRecordController extends AbstractController {
     @Autowired
     private AtMessageRecordService atMessageRecordService;
 
@@ -36,6 +37,7 @@ public class AtMessageRecordController {
     @RequestMapping("/list")
     @RequiresPermissions("ltt:atmessagerecord:list")
     public R list(AtMessageRecordDTO atMessageRecord){
+        atMessageRecord.setSysUserId(getAuthUserId());
         PageUtils page = atMessageRecordService.queryPage(atMessageRecord);
 
         return R.ok().put("page", page);
@@ -59,6 +61,7 @@ public class AtMessageRecordController {
     @RequestMapping("/save")
     @RequiresPermissions("ltt:atmessagerecord:save")
     public R save(@RequestBody AtMessageRecordDTO atMessageRecord){
+        atMessageRecord.setSysUserId(getUserId());
 		atMessageRecordService.save(atMessageRecord);
 
         return R.ok();
