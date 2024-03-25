@@ -68,6 +68,12 @@ public class AvatarTask {
     @Autowired
     private AtAvatarService atAvatarService;
 
+
+    @Autowired
+    private AtAvatarTaskService atAvatarTaskService;
+    @Autowired
+    private AtAvatarSubtaskService atAvatarSubtaskService;
+
     /**
      * 更新头像结果返回
      */
@@ -287,12 +293,6 @@ public class AvatarTask {
             task2Lock.unlock();
         }
     }
-
-
-    @Autowired
-    private AtAvatarTaskService atAvatarTaskService;
-    @Autowired
-    private AtAvatarSubtaskService atAvatarSubtaskService;
 
     /**
      * 获取初始化的修改图片任务

@@ -75,6 +75,12 @@ public class DataTask {
     @Autowired
     private AtAvatarService atAvatarService;
 
+    @Autowired
+    private AtDataTaskService atDataTaskService;
+    @Autowired
+    private AtDataSubtaskService atDataSubtaskService;
+
+
     /**
      * 更新头像结果返回
      */
@@ -349,12 +355,6 @@ public class DataTask {
             task2Lock.unlock();
         }
     }
-
-
-    @Autowired
-    private AtDataTaskService atDataTaskService;
-    @Autowired
-    private AtDataSubtaskService atDataSubtaskService;
 
     /**
      * 获取初始化的添加粉任务

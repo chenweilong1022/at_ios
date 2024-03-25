@@ -70,6 +70,12 @@ public class UsernameTask {
     @Autowired
     private AtUsernameService atUsernameService;
 
+    @Autowired
+    private AtUsernameTaskService atUsernameTaskService;
+    @Autowired
+    private AtUsernameSubtaskService atUsernameSubtaskService;
+
+
     /**
      * 更新头像结果返回
      */
@@ -290,11 +296,6 @@ public class UsernameTask {
         }
     }
 
-
-    @Autowired
-    private AtUsernameTaskService atUsernameTaskService;
-    @Autowired
-    private AtUsernameSubtaskService atUsernameSubtaskService;
 
     /**
      * 获取初始化的修改图片任务

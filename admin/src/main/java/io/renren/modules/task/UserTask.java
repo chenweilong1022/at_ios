@@ -245,7 +245,7 @@ public class UserTask {
                     }
 
                     if (200 == getAllContactIdsVO.getCode()) {
-                        //获取所有的mid
+                        //获取所有的mid->data
                         List<String> data = getAllContactIdsVO.getData();
                         if (CollUtil.isEmpty(data)) {
                             //获取该用户的的好友
@@ -273,6 +273,7 @@ public class UserTask {
                             }else {
                                 AtDataSubtaskEntity save = new AtDataSubtaskEntity();
                                 save.setUserId(atUserEntity.getId());
+                                save.setSysUserId(atUserEntity.getSysUserId());
                                 save.setMid(datum);
                                 save.setRefreshContactStatus(RefreshContactStatus.RefreshContactStatus1.getKey());
                                 saves.add(save);
@@ -427,8 +428,10 @@ public class UserTask {
                 return;
             }
             //获取用户分组的map
-            List<AtUserGroupEntity> list = atUserGroupService.list();
-            Map<Integer, AtUserGroupEntity> atUserGroupEntityMap = list.stream().collect(Collectors.toMap(AtUserGroupEntity::getId, item -> item));
+            List<Integer> userGroupIdList = atUserTokenEntities.stream()
+                    .filter(i -> ObjectUtil.isNotNull(i.getUserGroupId()))
+                    .map(AtUserTokenEntity::getUserGroupId).distinct().collect(Collectors.toList());
+            Map<Integer, String> atUserGroupMap = atUserGroupService.getMapByIds(userGroupIdList);
 
             List<AtUserEntity> atUserEntities = new ArrayList<>();
             List<AtUserTokenEntity> atUserTokenUpdateEntitys = new ArrayList<>();
@@ -444,14 +447,12 @@ public class UserTask {
                 atUserEntity.setNumberFriends(0);
                 //未验证账号
                 atUserEntity.setStatus(UserStatus.UserStatus1.getKey());
-                AtUserGroupEntity atUserGroupEntity = atUserGroupEntityMap.get(atUserTokenEntity.getUserGroupId());
-                if (ObjectUtil.isNotNull(atUserGroupEntity)) {
-                    atUserEntity.setUserGroupName(atUserGroupEntity.getName());
-                }
+                atUserEntity.setUserGroupName(atUserGroupMap.get(atUserTokenEntity.getUserGroupId()));
                 //将添加token添加到用户
                 atUserEntity.setDeleteFlag(DeleteFlag.NO.getKey());
                 atUserEntity.setCreateTime(DateUtil.date());
                 atUserEntity.setUserTokenId(atUserTokenEntity.getId());
+                atUserEntity.setSysUserId(atUserTokenEntity.getSysUserId());
                 atUserEntities.add(atUserEntity);
                 //修改数据使用状态
                 AtUserTokenEntity update = new AtUserTokenEntity();
