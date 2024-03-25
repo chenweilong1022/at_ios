@@ -65,8 +65,8 @@ public class AtUsernameServiceImpl extends ServiceImpl<AtUsernameDao, AtUsername
     }
 
     @Override
-    public List<AtUsernameGroupUsernameCountGroupIdVO> usernameCountGroupId() {
-        return baseMapper.usernameCountGroupId();
+    public List<AtUsernameGroupUsernameCountGroupIdVO> usernameCountGroupId(List<Integer> groupIdList) {
+        return baseMapper.usernameCountGroupId(groupIdList);
     }
 
 }

@@ -2,6 +2,7 @@ package io.renren.modules.ltt.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.ltt.entity.*;
@@ -34,13 +35,25 @@ import java.util.List;
 
 @Service("atUsernameTaskService")
 @Game
-public class AtUsernameTaskServiceImpl extends ServiceImpl<AtUsernameTaskDao, AtUsernameTaskEntity> implements AtUsernameTaskService {
+public class AtUsernameTaskServiceImpl
+        extends ServiceImpl<AtUsernameTaskDao, AtUsernameTaskEntity>
+        implements AtUsernameTaskService {
+
+    @Autowired
+    private AtUserService atUserService;
+    @Autowired
+    private AtUsernameService atUsernameService;
+    @Autowired
+    private AtUsernameSubtaskService atUsernameSubtaskService;
 
     @Override
     public PageUtils<AtUsernameTaskVO> queryPage(AtUsernameTaskDTO atUsernameTask) {
         IPage<AtUsernameTaskEntity> page = baseMapper.selectPage(
                 new Query<AtUsernameTaskEntity>(atUsernameTask).getPage(),
-                new QueryWrapper<AtUsernameTaskEntity>()
+                new QueryWrapper<AtUsernameTaskEntity>().lambda()
+                        .eq(ObjectUtil.isNotNull(atUsernameTask.getSysUserId()),
+                                AtUsernameTaskEntity::getSysUserId, atUsernameTask.getSysUserId())
+                        .orderByDesc(AtUsernameTaskEntity::getId)
         );
 
         return PageUtils.<AtUsernameTaskVO>page(page).setList(AtUsernameTaskConver.MAPPER.conver(page.getRecords()));
@@ -50,12 +63,6 @@ public class AtUsernameTaskServiceImpl extends ServiceImpl<AtUsernameTaskDao, At
         return AtUsernameTaskConver.MAPPER.conver(baseMapper.selectById(id));
     }
 
-    @Autowired
-    private AtUserService atUserService;
-    @Autowired
-    private AtUsernameService atUsernameService;
-    @Autowired
-    private AtUsernameSubtaskService atUsernameSubtaskService;
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean save(AtUsernameTaskDTO atUsernameTask) {
@@ -96,6 +103,7 @@ public class AtUsernameTaskServiceImpl extends ServiceImpl<AtUsernameTaskDao, At
             AtUsernameSubtaskEntity atUsernameSubtaskEntity = new AtUsernameSubtaskEntity();
             atUsernameSubtaskEntity.setTaskStatus(TaskStatus.TaskStatus1.getKey());
             atUsernameSubtaskEntity.setUsernameTaskId(atUsernameTaskEntity.getId());
+            atUsernameSubtaskEntity.setSysUserId(atUsernameTaskEntity.getSysUserId());
             atUsernameSubtaskEntity.setUserGroupId(atUsernameTaskEntity.getUserGroupId());
             atUsernameSubtaskEntity.setUsernameGroupId(atUsernameTaskEntity.getUsernameGroupId());
             atUsernameSubtaskEntity.setUserId(atUserEntity.getId());

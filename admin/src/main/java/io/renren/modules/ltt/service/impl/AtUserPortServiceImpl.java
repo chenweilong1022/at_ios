@@ -1,6 +1,7 @@
 package io.renren.modules.ltt.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import io.renren.common.utils.DateUtils;
 import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
@@ -45,7 +46,9 @@ public class AtUserPortServiceImpl extends ServiceImpl<AtUserPortDao, AtUserPort
         IPage<AtUserPortEntity> page = baseMapper.selectPage(
                 new Query<AtUserPortEntity>(atUserPort).getPage(),
                 new QueryWrapper<AtUserPortEntity>().lambda()
-                        .orderByDesc(AtUserPortEntity::getCreateTime)
+                        .eq(ObjectUtil.isNotNull(atUserPort.getSysUserId()),
+                                AtUserPortEntity::getSysUserId, atUserPort.getSysUserId())
+                        .orderByDesc(AtUserPortEntity::getId)
         );
 
         List<AtUserPortVO> converList = AtUserPortConver.MAPPER.conver(page.getRecords());
@@ -53,7 +56,6 @@ public class AtUserPortServiceImpl extends ServiceImpl<AtUserPortDao, AtUserPort
         //查询账户名称
         if (CollectionUtil.isNotEmpty(converList)) {
             List<Long> sysUserIdList = converList.stream()
-                    .filter(i -> i.getSysUserId() != null)
                     .map(AtUserPortVO::getSysUserId).collect(Collectors.toList());
             Map<Long, String> sysUserMap = sysUserService.queryUserNameByUserIdList(sysUserIdList);
             for (AtUserPortVO atUserPortVO : converList) {

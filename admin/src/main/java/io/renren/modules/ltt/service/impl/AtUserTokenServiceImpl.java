@@ -2,6 +2,7 @@ package io.renren.modules.ltt.service.impl;
 import java.util.Date;
 
 import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.http.HttpUtil;
 import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
@@ -37,6 +38,8 @@ public class AtUserTokenServiceImpl extends ServiceImpl<AtUserTokenDao, AtUserTo
         IPage<AtUserTokenEntity> page = baseMapper.selectPage(
                 new Query<AtUserTokenEntity>(atUserToken).getPage(),
                 new QueryWrapper<AtUserTokenEntity>().lambda()
+                        .eq(ObjectUtil.isNotNull(atUserToken.getSysUserId()),
+                                AtUserTokenEntity::getSysUserId, atUserToken.getSysUserId())
                         .orderByDesc(AtUserTokenEntity::getId)
         );
 
@@ -63,6 +66,7 @@ public class AtUserTokenServiceImpl extends ServiceImpl<AtUserTokenDao, AtUserTo
             userTokenEntity.setCreateTime(new Date());
             userTokenEntity.setPlatform(atUserToken.getPlatform());
             userTokenEntity.setUserGroupId(atUserToken.getUserGroupId());
+            userTokenEntity.setSysUserId(atUserToken.getSysUserId());
             atUserTokenEntities.add(userTokenEntity);
         }
         return this.saveBatch(atUserTokenEntities);

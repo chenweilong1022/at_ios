@@ -23,6 +23,11 @@
             at_username
         WHERE
             use_flag = 1
+        and username_group_id in(
+        <foreach collection="groupIdList" item="item" index="index" separator=",">
+            #{item}
+        </foreach>
+        )
         GROUP BY
             username_group_id
     </select>

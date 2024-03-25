@@ -51,4 +51,9 @@ public class AtUsernameGroupVO implements Serializable {
 	@ApiModelProperty(required=false,value="昵称分组数量")
 	private Integer usernameGroupIdCount;
 
+	/**
+	 * 管理账户id
+	 */
+	@ApiModelProperty(required=false,value="管理账户id")
+	private Long sysUserId;
 }

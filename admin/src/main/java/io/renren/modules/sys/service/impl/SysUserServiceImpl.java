@@ -9,6 +9,7 @@ import io.renren.common.exception.RRException;
 import io.renren.common.utils.Constant;
 import io.renren.common.utils.PageUtils;
 import io.renren.common.utils.Query;
+import io.renren.common.validator.Assert;
 import io.renren.modules.sys.dao.SysUserDao;
 import io.renren.modules.sys.entity.SysUserEntity;
 import io.renren.modules.sys.service.SysRoleService;
@@ -74,6 +75,10 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUserEntity> i
 	@Override
 	@Transactional
 	public boolean save(SysUserEntity user) {
+		//校验username是否重复
+		SysUserEntity sysUserEntity = this.queryByUserName(user.getUsername());
+		Assert.isTrue(ObjectUtil.isNotNull(sysUserEntity), "用户名已存在，请更换");
+
 		user.setCreateTime(new Date());
 		//sha256加密
 		String salt = RandomStringUtils.randomAlphanumeric(20);

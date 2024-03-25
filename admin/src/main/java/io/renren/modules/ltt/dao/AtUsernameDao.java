@@ -17,5 +17,5 @@ import java.util.List;
 @Mapper
 public interface AtUsernameDao extends BaseMapper<AtUsernameEntity> {
 
-    List<AtUsernameGroupUsernameCountGroupIdVO> usernameCountGroupId();
+    List<AtUsernameGroupUsernameCountGroupIdVO> usernameCountGroupId(List<Integer> groupIdList);
 }

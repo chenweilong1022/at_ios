@@ -2,6 +2,7 @@ package io.renren.modules.ltt.controller;
 
 import java.util.Arrays;
 
+import io.renren.modules.sys.controller.AbstractController;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,7 +27,7 @@ import io.renren.common.utils.R;
  */
 @RestController
 @RequestMapping("ltt/atusernamegroup")
-public class AtUsernameGroupController {
+public class AtUsernameGroupController extends AbstractController {
     @Autowired
     private AtUsernameGroupService atUsernameGroupService;
 
@@ -36,6 +37,7 @@ public class AtUsernameGroupController {
     @RequestMapping("/list")
     @RequiresPermissions("ltt:atusernamegroup:list")
     public R list(AtUsernameGroupDTO atUsernameGroup){
+        atUsernameGroup.setSysUserId(getAuthUserId());
         PageUtils page = atUsernameGroupService.queryPage(atUsernameGroup);
 
         return R.ok().put("page", page);
@@ -59,6 +61,7 @@ public class AtUsernameGroupController {
     @RequestMapping("/save")
     @RequiresPermissions("ltt:atusernamegroup:save")
     public R save(@RequestBody AtUsernameGroupDTO atUsernameGroup){
+        atUsernameGroup.setSysUserId(getUserId());
 		atUsernameGroupService.save(atUsernameGroup);
 
         return R.ok();
@@ -81,6 +84,7 @@ public class AtUsernameGroupController {
     @RequestMapping("/updateBatchAtUsername")
     @RequiresPermissions("ltt:atusernamegroup:update")
     public R updateBatchAtUsername(@RequestBody AtUsernameGroupDTO atUsernameGroup){
+        atUsernameGroup.setSysUserId(getUserId());
 		atUsernameGroupService.updateBatchAtUsername(atUsernameGroup);
 
         return R.ok();

@@ -1,6 +1,7 @@
 package io.renren.modules.ltt.service.impl;
 import java.util.*;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -12,6 +13,7 @@ import io.renren.modules.ltt.enums.DeleteFlag;
 import io.renren.modules.ltt.enums.UseFlag;
 import io.renren.modules.ltt.service.AtUsernameService;
 import io.renren.modules.ltt.vo.AtUsernameGroupUsernameCountGroupIdVO;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,22 +39,32 @@ import java.util.stream.Collectors;
 @Game
 public class AtUsernameGroupServiceImpl extends ServiceImpl<AtUsernameGroupDao, AtUsernameGroupEntity> implements AtUsernameGroupService {
 
+    @Autowired
+    private AtUsernameService atUsernameService;
+
     @Override
     public PageUtils<AtUsernameGroupVO> queryPage(AtUsernameGroupDTO atUsernameGroup) {
         IPage<AtUsernameGroupEntity> page = baseMapper.selectPage(
                 new Query<AtUsernameGroupEntity>(atUsernameGroup).getPage(),
                 new QueryWrapper<AtUsernameGroupEntity>().lambda()
+                        .eq(ObjectUtil.isNotNull(atUsernameGroup.getSysUserId()), AtUsernameGroupEntity::getSysUserId, atUsernameGroup.getSysUserId())
                         .orderByDesc(AtUsernameGroupEntity::getId)
         );
-        //根据分组id转化为map
-        List<AtUsernameGroupUsernameCountGroupIdVO> atUsernameGroupUsernameCountGroupIdVOS = atUsernameService.usernameCountGroupId();
-        Map<Integer, Integer> integerIntegerMap = atUsernameGroupUsernameCountGroupIdVOS.stream().collect(Collectors.toMap(AtUsernameGroupUsernameCountGroupIdVO::getUsernameGroupId, AtUsernameGroupUsernameCountGroupIdVO::getUsernameGroupIdCount));
-        //设置分组数量
-        //ToDo bug
         List<AtUsernameGroupVO> records = AtUsernameGroupConver.MAPPER.conver(page.getRecords());
+
+        Map<Integer, Integer> usernameGroup = Collections.emptyMap();
+        if (CollectionUtil.isNotEmpty(records)) {
+            List<Integer> groupIdList = records.stream()
+                    .map(AtUsernameGroupVO::getId).collect(Collectors.toList());
+            List<AtUsernameGroupUsernameCountGroupIdVO> usernameCountList = atUsernameService.usernameCountGroupId(groupIdList);
+            usernameGroup = usernameCountList.stream()
+                    .collect(Collectors.toMap(AtUsernameGroupUsernameCountGroupIdVO::getUsernameGroupId,
+                            AtUsernameGroupUsernameCountGroupIdVO::getUsernameGroupIdCount));
+        }
+        //设置分组数量
         for (AtUsernameGroupVO record : records) {
             record.setUsernameGroupIdCount(0);
-            Integer count = integerIntegerMap.get(record.getId());
+            Integer count = usernameGroup.get(record.getId());
             if (ObjectUtil.isNotNull(count)) {
                 record.setUsernameGroupIdCount(count);
             }
@@ -63,9 +75,6 @@ public class AtUsernameGroupServiceImpl extends ServiceImpl<AtUsernameGroupDao, 
     public AtUsernameGroupVO getById(Integer id) {
         return AtUsernameGroupConver.MAPPER.conver(baseMapper.selectById(id));
     }
-
-    @Autowired
-    private AtUsernameService atUsernameService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -100,6 +109,7 @@ public class AtUsernameGroupServiceImpl extends ServiceImpl<AtUsernameGroupDao, 
         for (String string : split) {
             AtUsernameEntity atUsername = new AtUsernameEntity();
             atUsername.setUsernameGroupId(atUsernameGroup.getId());
+            atUsername.setSysUserId(atUsernameGroup.getSysUserId());
             atUsername.setUsername(string);
             atUsername.setUseFlag(UseFlag.NO.getKey());
             atUsername.setDeleteFlag(DeleteFlag.NO.getKey());

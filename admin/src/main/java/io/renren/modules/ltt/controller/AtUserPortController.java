@@ -36,9 +36,7 @@ public class AtUserPortController extends AbstractController {
     @RequiresPermissions("ltt:atuserport:list")
     public R list(AtUserPortDTO atUserPort) {
         //如果不是超级管理员，则只查询自己所拥有的角色列表
-        if(getUserId() != Constant.SUPER_ADMIN){
-            atUserPort.setSysUserId(getUserId());
-        }
+        atUserPort.setSysUserId(getAuthUserId());
         PageUtils page = atUserPortService.queryPage(atUserPort);
 
         return R.ok().put("page", page);

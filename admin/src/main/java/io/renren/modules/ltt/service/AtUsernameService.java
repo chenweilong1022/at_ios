@@ -65,7 +65,7 @@ public interface AtUsernameService extends IService<AtUsernameEntity> {
      * 根据id分组用户名称
      * @return
      */
-    List<AtUsernameGroupUsernameCountGroupIdVO> usernameCountGroupId();
+    List<AtUsernameGroupUsernameCountGroupIdVO> usernameCountGroupId(List<Integer> groupIdList);
 
 
 }

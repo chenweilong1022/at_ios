@@ -81,5 +81,9 @@ public class AtUsernameSubtaskEntity implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="line的协议返回信息")
 	private String msg;
-
+	/**
+	 * 管理账户id
+	 */
+	@ApiModelProperty(required=false,value="管理账户id")
+	private Long sysUserId;
 }

@@ -67,4 +67,9 @@ public class AtUserTokenDTO extends PageParam implements Serializable {
 	@ApiModelProperty(required=false,value="分组id")
 	private Integer userGroupId;
 
+	/**
+	 * 管理账户id
+	 */
+	@ApiModelProperty(required=false,value="管理账户id")
+	private Long sysUserId;
 }
