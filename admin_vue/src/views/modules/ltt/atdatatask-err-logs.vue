@@ -1,27 +1,16 @@
 <template>
   <el-dialog
-    :title="!dataForm.id ? '错误日志' : '错误日志'"
+    :title="'错误日志'"
     :close-on-click-modal="false"
     :visible.sync="visible">
     <div class="mod-config">
-<!--      <el-form :inline="true" :model="dataForm" @keyup.enter.native="getDataList()">-->
-<!--        <el-form-item>-->
-<!--          <el-input v-model="dataForm.key" placeholder="参数名" clearable></el-input>-->
-<!--        </el-form-item>-->
-<!--        <el-form-item>-->
-<!--          <el-button @click="getDataList()">查询</el-button>-->
-<!--          <el-button v-if="isAuth('ltt:atavatarsubtask:save')" type="primary" @click="addOrUpdateHandle()">新增</el-button>-->
-<!--          <el-button v-if="isAuth('ltt:atavatarsubtask:delete')" type="danger" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>-->
-<!--        </el-form-item>-->
-<!--      </el-form>-->
       <el-table
         :data="dataList"
         border
         v-loading="dataListLoading"
-        @selection-change="selectionChangeHandle"
         style="width: 100%;">
         <el-table-column
-          prop="userTelephone"
+          prop="telephone"
           header-align="center"
           align="center"
           label="联系人手机号">
@@ -74,36 +63,6 @@
         dataAvatarGroupList: [],
         visible: false,
         dataRule: {
-          taskName: [
-            { required: true, message: '任务名称不能为空', trigger: 'blur' }
-          ],
-          taskStatus: [
-            { required: true, message: '任务状态不能为空', trigger: 'blur' }
-          ],
-          schedule: [
-            { required: true, message: '进度不能为空', trigger: 'blur' }
-          ],
-          userGroupId: [
-            { required: true, message: '账户分组不能为空', trigger: 'blur' }
-          ],
-          avatarGroupId: [
-            { required: true, message: '头像分组不能为空', trigger: 'blur' }
-          ],
-          executionQuantity: [
-            { required: true, message: '执行数量不能为空', trigger: 'blur' }
-          ],
-          successfulQuantity: [
-            { required: true, message: '成功数量不能为空', trigger: 'blur' }
-          ],
-          failuresQuantity: [
-            { required: true, message: '失败数量不能为空', trigger: 'blur' }
-          ],
-          deleteFlag: [
-            { required: true, message: '删除标志不能为空', trigger: 'blur' }
-          ],
-          createTime: [
-            { required: true, message: '创建时间不能为空', trigger: 'blur' }
-          ]
         }
       }
     },
@@ -112,13 +71,13 @@
       getDataList () {
         this.dataListLoading = true
         this.$http({
-          url: this.$http.adornUrl('/ltt/atavatarsubtask/list'),
+          url: this.$http.adornUrl('/ltt/atdatasubtask/list'),
           method: 'get',
           params: this.$http.adornParams({
             'page': this.pageIndex,
             'limit': this.pageSize,
             'taskStatus': 5,
-            'avatarTaskId': this.dataForm.id
+            'dataTaskId': this.dataForm.id
           })
         }).then(({data}) => {
           if (data && data.code === 0) {

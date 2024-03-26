@@ -105,6 +105,7 @@
           <el-button type="text" size="small" @click="errRetryHandle(scope.row.id)">错误重试</el-button>
           <!--          <el-button type="text" size="small" @click="addOrUpdateHandle(scope.row.id)">修改</el-button>-->
           <el-button type="text" size="small" @click="deleteHandle(scope.row.id)">删除</el-button>
+          <el-button type="text" size="small" @click="errLogsHandle(scope.row.id)">错误日志</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -119,11 +120,13 @@
     </el-pagination>
     <!-- 弹窗, 新增 / 修改 -->
     <add-or-update v-if="addOrUpdateVisible" ref="addOrUpdate" @refreshDataList="getDataList"></add-or-update>
+    <err-logs  v-if="errLogsVisible" ref="errLogs" @refreshDataList="getDataList"></err-logs>
   </div>
 </template>
 
 <script>
   import AddOrUpdate from './atusernametask-add-or-update'
+  import ErrLogs from './atusernametask-err-logs.vue'
   export default {
     data () {
       return {
@@ -136,10 +139,12 @@
         totalPage: 0,
         dataListLoading: false,
         dataListSelections: [],
-        addOrUpdateVisible: false
+        addOrUpdateVisible: false,
+        errLogsVisible: false
       }
     },
     components: {
+      ErrLogs,
       AddOrUpdate
     },
     activated () {
@@ -188,6 +193,13 @@
         this.addOrUpdateVisible = true
         this.$nextTick(() => {
           this.$refs.addOrUpdate.init(id)
+        })
+      },
+      // 错误日志
+      errLogsHandle (id) {
+        this.errLogsVisible = true
+        this.$nextTick(() => {
+          this.$refs.errLogs.init(id)
         })
       },
       // 错误重试

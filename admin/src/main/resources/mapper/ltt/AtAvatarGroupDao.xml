@@ -18,7 +18,9 @@
         <if test="searchWord != null">
             and name like CONCAT( '%', #{searchWord}, '%')
         </if>
-        and sys_user_id = #{sysUserId}
+        <if test="sysUserId != null  and sysUserId != 0">
+            and sys_user_id = #{sysUserId}
+        </if>
         order by id desc
         limit 20
     </select>

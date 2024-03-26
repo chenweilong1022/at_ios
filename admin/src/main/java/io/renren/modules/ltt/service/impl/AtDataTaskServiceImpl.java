@@ -43,6 +43,14 @@ import java.util.List;
 @Slf4j
 public class AtDataTaskServiceImpl extends ServiceImpl<AtDataTaskDao, AtDataTaskEntity> implements AtDataTaskService {
 
+
+    @Autowired
+    private AtUserService atUserService;
+    @Autowired
+    private AtDataService atDataService;
+    @Autowired
+    private AtDataSubtaskService atDataSubtaskService;
+
     @Override
     public PageUtils<AtDataTaskVO> queryPage(AtDataTaskDTO atDataTask) {
         IPage<AtDataTaskEntity> page = baseMapper.selectPage(
@@ -59,12 +67,6 @@ public class AtDataTaskServiceImpl extends ServiceImpl<AtDataTaskDao, AtDataTask
         return AtDataTaskConver.MAPPER.conver(baseMapper.selectById(id));
     }
 
-    @Autowired
-    private AtUserService atUserService;
-    @Autowired
-    private AtDataService atDataService;
-    @Autowired
-    private AtDataSubtaskService atDataSubtaskService;
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean save(AtDataTaskDTO atDataTask) {

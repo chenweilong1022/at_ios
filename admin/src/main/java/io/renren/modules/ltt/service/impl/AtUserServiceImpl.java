@@ -32,9 +32,7 @@ import org.springframework.util.ObjectUtils;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static io.renren.modules.ltt.enums.UserStatus.UserStatus1;
@@ -184,6 +182,19 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
             Assert.isTrue(true, "下载异常，请稍后再试");
         }
         return null;
+    }
+
+    @Override
+    public Map<Integer, String> queryTelephoneByIds(List<Integer> ids) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return Collections.emptyMap();
+        }
+        List<AtUserEntity> userList = baseMapper.selectBatchIds(ids);
+        if (CollectionUtils.isEmpty(userList)) {
+            return Collections.emptyMap();
+        }
+        return userList.stream().filter(i -> StringUtils.isNotEmpty(i.getTelephone()))
+                .collect(Collectors.toMap(AtUserEntity::getId, AtUserEntity::getTelephone));
     }
 
     @Override

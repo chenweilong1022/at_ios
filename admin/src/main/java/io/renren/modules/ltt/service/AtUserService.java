@@ -12,6 +12,7 @@ import io.renren.modules.ltt.entity.AtUserEntity;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -74,6 +75,13 @@ public interface AtUserService extends IService<AtUserEntity> {
      * @return
      */
     String downloadUserTokenTxt(List<Integer> ids);
+
+    /**
+     * 用户电话
+     * @param ids
+     * @return
+     */
+    Map<Integer, String> queryTelephoneByIds(List<Integer> ids);
 
     /**
      * 根据id删除

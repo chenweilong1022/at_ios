@@ -35,7 +35,7 @@ public class AtUsernameSubtaskController extends AbstractController {
      * 列表
      */
     @RequestMapping("/list")
-    @RequiresPermissions("ltt:atusernamesubtask:list")
+    @RequiresPermissions("ltt:atusernametask:list")
     public R list(AtUsernameSubtaskDTO atUsernameSubtask){
         atUsernameSubtask.setSysUserId(getAuthUserId());
         PageUtils page = atUsernameSubtaskService.queryPage(atUsernameSubtask);

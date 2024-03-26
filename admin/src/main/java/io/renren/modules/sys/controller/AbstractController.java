@@ -52,7 +52,7 @@ public abstract class AbstractController {
 		Long userId = getUser().getUserId();
 		if(userId == Constant.SUPER_ADMIN){
 			//管理员查看所有数据
-			return userId;
+			return null;
 		}
 		return userId;
 	}

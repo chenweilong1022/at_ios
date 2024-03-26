@@ -49,4 +49,11 @@ public class AtDataSubtaskParamPageDTO extends PageParam implements Serializable
     @ApiModelProperty(required=false,value="管理账户id")
     private Long sysUserId;
 
+    /**
+     * 数据任务id
+     */
+    @ApiModelProperty(required=false,value="数据任务id")
+    private Integer dataTaskId;
+    @ApiModelProperty(required=false,value="任务状态")
+    private Integer taskStatus;
 }

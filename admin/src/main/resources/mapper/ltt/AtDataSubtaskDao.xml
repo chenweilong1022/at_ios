@@ -65,6 +65,8 @@
         s.mid,
         s.contact_key as contactKey,
         s.update_time as updateTime,
+        s.create_time as createTime,
+        s.msg,
         u.id,
         u.telephone,
         u.user_group_id as userGroupId,
@@ -81,7 +83,9 @@
 
     <sql id="page_where_if">
         and s.delete_flag = 1 and s.mid is not null
-        and s.sys_user_id = #{sysUserId}
+        <if test="sysUserId != null  and sysUserId != 0">
+            and s.sys_user_id = #{sysUserId}
+        </if>
         <if test="contactKey != null and contactKey != ''">
             AND s.contact_key = #{contactKey}
         </if>
@@ -90,6 +94,12 @@
         </if>
         <if test="userGroupId != null and userGroupId != ''">
             AND u.user_group_id = #{userGroupId}
+        </if>
+        <if test="dataTaskId != null and dataTaskId != ''">
+            AND s.data_task_id = #{dataTaskId}
+        </if>
+        <if test="taskStatus != null and taskStatus != ''">
+            AND s.task_status = #{taskStatus}
         </if>
         <if test="userStatus != null and userStatus != ''">
             AND u.status = #{userStatus}

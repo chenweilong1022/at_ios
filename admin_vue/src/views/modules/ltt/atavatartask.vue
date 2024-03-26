@@ -190,7 +190,7 @@
           this.$refs.addOrUpdate.init(id)
         })
       },
-      // 新增 / 修改
+      // 错误日志
       errLogsHandle (id) {
         this.errLogsVisible = true
         this.$nextTick(() => {

@@ -51,6 +51,11 @@ public class AtUsernameSubtaskVO implements Serializable {
 	@ApiModelProperty(required=false,value="账户id")
 	private Integer userId;
 	/**
+	 * 电话
+	 */
+	@ApiModelProperty(required=false,value="电话")
+	private String userTelephone;
+	/**
 	 * 昵称id
 	 */
 	@ApiModelProperty(required=false,value="昵称id")
