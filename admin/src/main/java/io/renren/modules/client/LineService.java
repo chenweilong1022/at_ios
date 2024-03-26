@@ -32,6 +32,7 @@ public interface LineService {
     SearchPhoneVO addFriendsByMid(AddFriendsByMid addFriendsByMid);
 
     SearchPhoneVO addFriendsByReference(AddFriendsByMid addFriendsByMid);
+    SearchPhoneVO addFriendsByHomeRecommend(AddFriendsByHomeRecommendDTO addFriendsByHomeRecommendDTO);
 
     CreateGroupResultVO createGroupResult(RegisterResultDTO registerResultDTO);
 

@@ -242,6 +242,23 @@ public class LineServiceImpl implements LineService {
     }
 
     @Override
+    public SearchPhoneVO addFriendsByHomeRecommend(AddFriendsByHomeRecommendDTO addFriendsByHomeRecommendDTO) {
+        try {
+            ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
+            String getPhoneHttp = String.format("%s/api/v1/work/addFriendsByFriendRecommend",projectWorkEntity.getLineBaseHttp());
+            String jsonStr = JSONUtil.toJsonStr(addFriendsByHomeRecommendDTO);
+            String resp = HttpUtil.post(getPhoneHttp, jsonStr);
+            SearchPhoneVO searchPhoneVO = JSON.parseObject(resp, SearchPhoneVO.class);
+
+            extracted(jsonStr, resp);
+            return searchPhoneVO;
+        }catch (Exception e) {
+            log.error("err = {}",e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
     public CreateGroupResultVO createGroupResult(RegisterResultDTO registerResultDTO) {
         try {
             ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
