@@ -17,7 +17,10 @@ public class RenrenApplicationTests {
 	@Test
 	public void contextLoads() {
 		sysGeneratorService.generatorCode(new String[]{
-				"at_message_record"
+				"cd_get_phone",
+				"cd_register_task",
+				"cd_register_subtasks",
+				"cd_line_register",
 		});
 	}
 

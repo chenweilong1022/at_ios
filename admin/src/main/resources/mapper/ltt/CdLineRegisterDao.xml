@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.modules.ltt.dao.CdLineRegisterDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.renren.modules.ltt.entity.CdLineRegisterEntity" id="cdLineRegisterMap">
+        <result property="id" column="id"/>
+        <result property="ab" column="ab"/>
+        <result property="appVersion" column="app_version"/>
+        <result property="countryCode" column="country_code"/>
+        <result property="phone" column="phone"/>
+        <result property="proxy" column="proxy"/>
+        <result property="proxyStatus" column="proxy_status"/>
+        <result property="txtToken" column="txt_token"/>
+        <result property="taskId" column="task_id"/>
+        <result property="smsCode" column="sms_code"/>
+        <result property="registerStatus" column="register_status"/>
+        <result property="deleteFlag" column="delete_flag"/>
+        <result property="createTime" column="create_time"/>
+        <result property="token" column="token"/>
+        <result property="getPhoneId" column="get_phone_id"/>
+        <result property="pkey" column="pkey"/>
+        <result property="subtasksId" column="subtasks_id"/>
+        <result property="groupTaskId" column="group_task_id"/>
+        <result property="openStatus" column="open_status"/>
+        <result property="accountStatus" column="account_status"/>
+        <result property="groupCount" column="group_count"/>
+        <result property="accountExistStatus" column="account_exist_status"/>
+        <result property="errMsg" column="err_msg"/>
+        <result property="exportStatus" column="export_status"/>
+    </resultMap>
+
+
+</mapper>
