@@ -8,10 +8,11 @@ import io.renren.modules.ltt.entity.CdGetPhoneEntity;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 
 
 /**
- * 
+ *
  *
  * @author chenweilong
  * @email chenweilong@qq.com
@@ -58,5 +59,7 @@ public interface CdGetPhoneService extends IService<CdGetPhoneEntity> {
      */
     @Override
     boolean removeByIds(Collection<? extends Serializable> ids);
+
+    List<CdGetPhoneEntity> addCount(CdGetPhoneDTO cdGetPhone);
 }
 

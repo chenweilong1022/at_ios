@@ -17,10 +17,15 @@
 package io.renren.modules.sys.controller;
 
 
+import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.github.benmanes.caffeine.cache.Cache;
 import io.renren.common.annotation.SysLog;
+import io.renren.common.utils.ConfigConstant;
 import io.renren.common.utils.PageUtils;
 import io.renren.common.utils.R;
 import io.renren.common.validator.ValidatorUtils;
+import io.renren.modules.client.entity.ProjectWorkEntity;
 import io.renren.modules.sys.entity.SysConfigEntity;
 import io.renren.modules.sys.service.SysConfigService;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
@@ -28,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import javax.validation.Valid;
 
 /**
@@ -43,6 +49,8 @@ import javax.validation.Valid;
 public class SysConfigController extends AbstractController {
 	@Autowired
 	private SysConfigService sysConfigService;
+	@Resource(name = "caffeineCacheProjectWorkEntity")
+	private Cache<String, ProjectWorkEntity> caffeineCacheProjectWorkEntity;
 
 	/**
 	 * 所有配置列表
@@ -63,6 +71,53 @@ public class SysConfigController extends AbstractController {
 	@RequiresPermissions("sys:config:info")
 	public R info(@PathVariable("id") Long id){
 		SysConfigEntity config = sysConfigService.getById(id);
+		ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
+
+		if (ObjectUtil.isNotNull(projectWorkEntity)) {
+			config.setLineBaseHttp(projectWorkEntity.getLineBaseHttp());
+			config.setFirefoxCountry(projectWorkEntity.getFirefoxCountry());
+			config.setFirefoxToken(projectWorkEntity.getFirefoxToken());
+			config.setFirefoxIid(projectWorkEntity.getFirefoxIid());
+			config.setFirefoxBaseUrl(projectWorkEntity.getFirefoxBaseUrl());
+			config.setFirefoxCountry1(projectWorkEntity.getFirefoxCountry1());
+			config.setProxyUseCount(projectWorkEntity.getProxyUseCount());
+			config.setProxy(projectWorkEntity.getProxy());
+
+			config.setLineAb(projectWorkEntity.getLineAb());
+			config.setLineAppVersion(projectWorkEntity.getLineAppVersion());
+			config.setLineTxtToken(projectWorkEntity.getLineTxtToken());
+		}
+
+		return R.ok().put("config", config);
+	}
+
+	/**
+	 * 默认配置
+	 */
+	@GetMapping("/infoDefault")
+	@RequiresPermissions("sys:config:info")
+	public R infoDefault(){
+		SysConfigEntity config = sysConfigService.getOne(new QueryWrapper<SysConfigEntity>().lambda()
+				.last("limit 1")
+		);
+		if (ObjectUtil.isNull(config)) {
+			return R.ok();
+		}
+		ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
+		if (ObjectUtil.isNotNull(projectWorkEntity)) {
+			config.setLineBaseHttp(projectWorkEntity.getLineBaseHttp());
+			config.setFirefoxCountry(projectWorkEntity.getFirefoxCountry());
+			config.setFirefoxToken(projectWorkEntity.getFirefoxToken());
+			config.setFirefoxIid(projectWorkEntity.getFirefoxIid());
+			config.setFirefoxBaseUrl(projectWorkEntity.getFirefoxBaseUrl());
+			config.setFirefoxCountry1(projectWorkEntity.getFirefoxCountry1());
+			config.setProxyUseCount(projectWorkEntity.getProxyUseCount());
+			config.setProxy(projectWorkEntity.getProxy());
+
+			config.setLineAb(projectWorkEntity.getLineAb());
+			config.setLineAppVersion(projectWorkEntity.getLineAppVersion());
+			config.setLineTxtToken(projectWorkEntity.getLineTxtToken());
+		}
 
 		return R.ok().put("config", config);
 	}

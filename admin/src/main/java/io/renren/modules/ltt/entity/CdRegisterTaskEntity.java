@@ -12,7 +12,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 
+ *
  *
  * @author chenweilong
  * @email chenweilong@qq.com
@@ -26,48 +26,58 @@ public class CdRegisterTaskEntity implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * 
+	 *
 	 */
 	@TableId(type = IdType.AUTO)
 	@ApiModelProperty(required=false,value="")
 	private Integer id;
 	/**
-	 * 
+	 *
 	 */
 	@ApiModelProperty(required=false,value="")
 	private Integer totalAmount;
 	/**
-	 * 
+	 *
 	 */
 	@ApiModelProperty(required=false,value="")
 	private Integer numberThreads;
 	/**
-	 * 
+	 *
 	 */
 	@ApiModelProperty(required=false,value="")
 	private Integer numberRegistered;
 	/**
-	 * 
+	 *
 	 */
 	@ApiModelProperty(required=false,value="")
 	private Integer numberSuccesses;
 	/**
-	 * 
+	 *
 	 */
 	@ApiModelProperty(required=false,value="")
 	private Integer numberFailures;
 	/**
-	 * 
+	 *
 	 */
 	@ApiModelProperty(required=false,value="")
 	private Integer registrationStatus;
 	/**
-	 * 
+	 *
 	 */
 	@ApiModelProperty(required=false,value="")
 	private Integer deleteFlag;
 	/**
-	 * 
+	 *
+	 */
+	@ApiModelProperty(required=false,value="")
+	private Integer countryCode;
+	/**
+	 *
+	 */
+	@ApiModelProperty(required=false,value="")
+	private Integer fillUp;
+	/**
+	 *
 	 */
 	@ApiModelProperty(required=false,value="")
 	private Date createTime;

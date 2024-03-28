@@ -1,6 +1,13 @@
 package io.renren.modules.ltt.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import io.renren.datasources.annotation.Game;
+import io.renren.modules.client.FirefoxService;
+import io.renren.modules.client.vo.GetPhoneVO;
+import io.renren.modules.ltt.enums.DeleteFlag;
+import io.renren.modules.ltt.enums.PhoneStatus;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -14,9 +21,13 @@ import io.renren.modules.ltt.dto.CdGetPhoneDTO;
 import io.renren.modules.ltt.vo.CdGetPhoneVO;
 import io.renren.modules.ltt.service.CdGetPhoneService;
 import io.renren.modules.ltt.conver.CdGetPhoneConver;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 
 @Service("cdGetPhoneService")
@@ -59,4 +70,47 @@ public class CdGetPhoneServiceImpl extends ServiceImpl<CdGetPhoneDao, CdGetPhone
         return super.removeByIds(ids);
     }
 
+    @Resource(name = "cardMeServiceImpl")
+    private FirefoxService firefoxService;
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public List<CdGetPhoneEntity> addCount(CdGetPhoneDTO cdGetPhone){
+        Integer count = cdGetPhone.getCount();
+        List<CdGetPhoneEntity> cdGetPhoneEntities = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                log.error("err = {}");
+                continue;
+            }
+            GetPhoneVO phone = firefoxService.getPhone();
+            //获取到一个算一个，如果获取不到，直接返回
+            if (ObjectUtil.isNotNull(phone)) {
+                CdGetPhoneEntity cdGetPhoneEntity = new CdGetPhoneEntity();
+                cdGetPhoneEntity.setNumber(phone.getNumber());
+                cdGetPhoneEntity.setPkey(phone.getPkey());
+                cdGetPhoneEntity.setTime(phone.getTime());
+                cdGetPhoneEntity.setCountry(phone.getCountry());
+                cdGetPhoneEntity.setCountrycode(phone.getPhone());
+                cdGetPhoneEntity.setOther(phone.getOther());
+                cdGetPhoneEntity.setCom(phone.getCom());
+                cdGetPhoneEntity.setPhone(phone.getPhone());
+                cdGetPhoneEntity.setDeleteFlag(DeleteFlag.NO.getKey());
+                cdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus1.getKey());
+                cdGetPhoneEntity.setCreateTime(DateUtil.date());
+                cdGetPhoneEntity.setSubtasksId(cdGetPhone.getSubtasksId());
+                cdGetPhoneEntities.add(cdGetPhoneEntity);
+            }else {
+                break;
+            }
+        }
+
+        //如果获取了足够的数量 保存记录
+        if (CollUtil.isNotEmpty(cdGetPhoneEntities)) {
+            this.saveBatch(cdGetPhoneEntities);
+        }
+        return cdGetPhoneEntities;
+    }
 }

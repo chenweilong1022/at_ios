@@ -17,6 +17,7 @@ import io.renren.modules.ltt.conver.CdRegisterSubtasksConver;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 
 
 @Service("cdRegisterSubtasksService")
@@ -59,4 +60,8 @@ public class CdRegisterSubtasksServiceImpl extends ServiceImpl<CdRegisterSubtask
         return super.removeByIds(ids);
     }
 
+    @Override
+    public List<CdRegisterSubtasksVO> groupByTaskId() {
+        return baseMapper.groupByTaskId();
+    }
 }

@@ -1,10 +1,13 @@
 package io.renren.modules.app.controller;
 
 
+import io.renren.common.base.vo.EnumVo;
+import io.renren.common.utils.EnumUtil;
 import io.renren.common.utils.R;
 import io.renren.common.validator.AssertI18n;
 import io.renren.modules.app.code.UserCode;
 import io.renren.modules.app.dto.UserUpdateDTO;
+import io.renren.modules.ltt.enums.CountryCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * APP测试接口
@@ -32,6 +36,12 @@ public class AppTestController {
         log.info("[update][updateDTO: {}]", updateDTO);
         AssertI18n.isTrue(updateDTO.getId() < 10, UserCode.USER_ID_MIN_ERROR);
         return R.ok();
+    }
+
+    @GetMapping("enums/countryCodes")
+    public R update() {
+        List<EnumVo> enumVos = EnumUtil.enumToVo(CountryCode.values());
+        return R.data(enumVos);
     }
 
 }

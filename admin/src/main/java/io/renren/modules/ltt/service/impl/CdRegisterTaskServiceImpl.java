@@ -1,6 +1,7 @@
 package io.renren.modules.ltt.service.impl;
 
 import io.renren.datasources.annotation.Game;
+import io.renren.modules.ltt.enums.RegistrationStatus;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -39,6 +40,10 @@ public class CdRegisterTaskServiceImpl extends ServiceImpl<CdRegisterTaskDao, Cd
 
     @Override
     public boolean save(CdRegisterTaskDTO cdRegisterTask) {
+        cdRegisterTask.setNumberRegistered(0);
+        cdRegisterTask.setNumberSuccesses(0);
+        cdRegisterTask.setNumberFailures(0);
+        cdRegisterTask.setRegistrationStatus(RegistrationStatus.RegistrationStatus1.getKey());
         CdRegisterTaskEntity cdRegisterTaskEntity = CdRegisterTaskConver.MAPPER.converDTO(cdRegisterTask);
         return this.save(cdRegisterTaskEntity);
     }

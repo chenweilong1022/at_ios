@@ -554,9 +554,8 @@ public class LineServiceImpl implements LineService {
             config.setProxy(ProxyStatus.ProxyStatus1.getKey());
             config.setProxyUseCount(3);
             config.setFirefoxCountry1("th");
-
-            config.setLineAb("2023.1127.1821");
-            config.setLineAppVersion("13.19.1");
+            config.setLineAb("2024.307.2034");
+            config.setLineAppVersion("14.3.1");
             config.setLineTxtToken("81f9933e3a434a1aaf7af09893937fd0");
             sysConfigService.save(config);
         }else {

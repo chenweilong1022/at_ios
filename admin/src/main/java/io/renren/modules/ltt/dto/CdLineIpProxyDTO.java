@@ -16,13 +16,13 @@ import java.util.Date;
  *
  * @author chenweilong
  * @email chenweilong@qq.com
- * @date 2024-03-27 12:36:12
+ * @date 2024-03-27 17:49:13
  */
 @Data
-@TableName("cd_get_phone")
+@TableName("cd_line_ip_proxy")
 @ApiModel("")
 @Accessors(chain = true)
-public class CdGetPhoneDTO extends PageParam implements Serializable {
+public class CdLineIpProxyDTO extends PageParam implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	/**
@@ -35,52 +35,7 @@ public class CdGetPhoneDTO extends PageParam implements Serializable {
 	 *
 	 */
 	@ApiModelProperty(required=false,value="")
-	private String number;
-	/**
-	 *
-	 */
-	@ApiModelProperty(required=false,value="")
-	private String pkey;
-	/**
-	 *
-	 */
-	@ApiModelProperty(required=false,value="")
-	private String time;
-	/**
-	 *
-	 */
-	@ApiModelProperty(required=false,value="")
-	private String country;
-	/**
-	 *
-	 */
-	@ApiModelProperty(required=false,value="")
-	private String countrycode;
-	/**
-	 *
-	 */
-	@ApiModelProperty(required=false,value="")
-	private String other;
-	/**
-	 *
-	 */
-	@ApiModelProperty(required=false,value="")
-	private String com;
-	/**
-	 *
-	 */
-	@ApiModelProperty(required=false,value="")
-	private String phone;
-	/**
-	 *
-	 */
-	@ApiModelProperty(required=false,value="")
-	private String code;
-	/**
-	 *
-	 */
-	@ApiModelProperty(required=false,value="")
-	private Integer phoneStatus;
+	private String ip;
 	/**
 	 *
 	 */
@@ -95,11 +50,12 @@ public class CdGetPhoneDTO extends PageParam implements Serializable {
 	 *
 	 */
 	@ApiModelProperty(required=false,value="")
-	private Integer subtasksId;
+	private String tokenPhone;
 	/**
 	 *
 	 */
 	@ApiModelProperty(required=false,value="")
-	private Integer count;
+	private String lzCountry;
+	private String lzPhone;
 
 }

@@ -10,7 +10,7 @@ import lombok.experimental.Accessors;
  */
 @Data
 @Accessors(chain = true)
-public class GetPhoneVo {
+public class GetPhoneVO {
 
     private String number;
     private String pkey;

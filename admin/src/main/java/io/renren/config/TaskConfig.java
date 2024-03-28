@@ -6,7 +6,9 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.locks.Lock;
 
 
 /**
@@ -20,10 +22,18 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class TaskConfig {
 
     @Bean
-    public TaskScheduler taskScheduler() {
-        ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
-        taskScheduler.setPoolSize(30);
-        return taskScheduler;
+    public ConcurrentHashMap<String, Lock> lockMap() {
+        return new ConcurrentHashMap<>();
+    }
+
+    @Bean
+    public ThreadPoolTaskScheduler taskScheduler() {
+        ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+        scheduler.setPoolSize(30); // 设置线程池大小
+        scheduler.setThreadNamePrefix("scheduled-task-");
+        scheduler.setAwaitTerminationSeconds(60);
+        scheduler.setWaitForTasksToCompleteOnShutdown(true);
+        return scheduler;
     }
 
     @Bean("poolExecutor")
