@@ -152,5 +152,10 @@ public class CdLineRegisterDTO extends PageParam implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="")
 	private Date createTime;
+	/**
+	 *
+	 */
+	@ApiModelProperty(required=false,value="")
+	private Date openTime;
 
 }

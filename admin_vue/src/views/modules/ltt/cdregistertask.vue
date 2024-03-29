@@ -46,16 +46,25 @@
         label="成功数量">
       </el-table-column>
       <el-table-column
-        prop="numberFailures"
+        prop="schedule"
         header-align="center"
         align="center"
-        label="失败数量">
+        label="进度">
+        <template slot-scope="scope">
+          <el-progress :stroke-width="10" type="circle" :percentage="scope.row.scheduleFloat"></el-progress>
+        </template>
       </el-table-column>
       <el-table-column
         prop="registrationStatusStr"
         header-align="center"
         align="center"
         label="注册状态">
+        <template slot-scope="scope">
+          <el-button v-if="scope.row.registrationStatus === 7" type="success" plain>{{scope.row.registrationStatusStr}}</el-button>
+          <el-button v-if="scope.row.registrationStatus === 1" type="warning" plain>{{scope.row.registrationStatusStr}}</el-button>
+          <el-button v-if="scope.row.registrationStatus === 2" type="warning" plain>{{scope.row.registrationStatusStr}}</el-button>
+          <el-button v-if="scope.row.registrationStatus === 6" type="warning" plain>{{scope.row.registrationStatusStr}}</el-button>
+        </template>
       </el-table-column>
       <el-table-column
         fixed="right"

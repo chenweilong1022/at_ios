@@ -28,6 +28,12 @@ public interface CdLineRegisterService extends IService<CdLineRegisterEntity> {
      */
     PageUtils queryPage(CdLineRegisterDTO cdLineRegister);
     /**
+     * 根据taskid查询
+     * @param cdLineRegister
+     * @return
+     */
+    PageUtils listByTaskId(CdLineRegisterDTO cdLineRegister);
+    /**
      * 根据id查询
      * @param id
      * @return

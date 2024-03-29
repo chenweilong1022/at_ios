@@ -84,10 +84,10 @@ public class RegisterTask {
     static ReentrantLock task2Lock = new ReentrantLock();
     static ReentrantLock task3Lock = new ReentrantLock();
     static ReentrantLock task4Lock = new ReentrantLock();
-    private static final Object lockCdRegisterSubtasksEntity = new Object();
-    private static final Object lockCdRegisterTaskEntity = new Object();
-    private static final Object lockCdGetPhoneEntity = new Object();
-    private static final Object lockCdLineRegisterEntity = new Object();
+    public static final Object lockCdRegisterSubtasksEntity = new Object();
+    public static final Object lockCdRegisterTaskEntity = new Object();
+    public static final Object lockCdGetPhoneEntity = new Object();
+    public static final Object lockCdLineRegisterEntity = new Object();
     @Autowired
     private AsyncService asyncService;
     @Autowired
