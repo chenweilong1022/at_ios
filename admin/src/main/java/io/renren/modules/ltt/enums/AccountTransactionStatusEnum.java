@@ -1,4 +1,4 @@
-package io.renren.common.enums;
+package io.renren.modules.ltt.enums;
 
 import cn.hutool.core.util.ObjectUtil;
 import io.renren.common.base.interfaces.BaseEnum;
@@ -9,16 +9,15 @@ import lombok.Getter;
  * @date 2024/3/28
  */
 @Getter
-public enum AccountTransactionTypeEnum implements BaseEnum {
+public enum AccountTransactionStatusEnum implements BaseEnum {
     /**
-     * 账户交易类型：1充值
+     * 账户交易状态，如1成功、0失败等
      */
-    RECHARGE(1, "充值"),
-    //todo 暂时未定义具体消费项目，以后再改
-    CONSUMPTION(2, "消费"),
+    FAIL_STATUS(0, "失败"),
+    SUCCESS_STATUS(1, "成功"),
     ;
 
-    AccountTransactionTypeEnum(int key, String value) {
+    AccountTransactionStatusEnum(int key, String value) {
         this.key = key;
         this.value = value;
     }
@@ -26,11 +25,11 @@ public enum AccountTransactionTypeEnum implements BaseEnum {
     private final Integer key;
     private final String value;
 
-    public static AccountTransactionTypeEnum checkType(Integer key) {
+    public static AccountTransactionStatusEnum checkType(Integer key) {
         if (ObjectUtil.isNull(key)) {
             return null;
         }
-        for (AccountTransactionTypeEnum typeEnum : AccountTransactionTypeEnum.values()) {
+        for (AccountTransactionStatusEnum typeEnum : AccountTransactionStatusEnum.values()) {
             if (typeEnum.getKey().equals(key)) {
                 return typeEnum;
             }

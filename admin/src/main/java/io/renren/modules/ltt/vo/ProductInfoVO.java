@@ -52,15 +52,15 @@ public class ProductInfoVO implements Serializable {
 	@ApiModelProperty(required=false,value="库存数量")
 	private Integer stockQuantity;
 	/**
-	 * 所属分类
+	 * 国号(区号)
 	 */
-	@ApiModelProperty(required=false,value="所属分类")
-	private Integer categoryType;
+	@ApiModelProperty(required=false,value="国号(区号)")
+	private Integer countryCode;
 	/**
 	 * 商品图片URL地址
 	 */
-	@ApiModelProperty(required=false,value="商品图片URL地址")
-	private String imageUrl;
+	@ApiModelProperty(required=false,value="商品类型")
+	private Integer productType;
 	/**
 	 * 商品状态（1上架 0下架）
 	 */

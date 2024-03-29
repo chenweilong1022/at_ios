@@ -1,5 +1,8 @@
 package io.renren.modules.ltt.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
+import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
@@ -19,6 +22,8 @@ import io.renren.modules.ltt.conver.ProductInfoConver;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service("productInfoService")
@@ -45,6 +50,8 @@ public class ProductInfoServiceImpl extends ServiceImpl<ProductInfoDao, ProductI
 
     @Override
     public boolean save(ProductInfoDTO productInfo) {
+        this.checkParam(productInfo);//校验入参
+
         ProductInfoEntity productInfoEntity = ProductInfoConver.MAPPER.converDTO(productInfo);
         productInfoEntity.setCreateTime(new Date());
         productInfoEntity.setUpdateTime(new Date());
@@ -54,8 +61,30 @@ public class ProductInfoServiceImpl extends ServiceImpl<ProductInfoDao, ProductI
 
     @Override
     public boolean updateById(ProductInfoDTO productInfo) {
+        this.checkParam(productInfo);//校验入参
+
         ProductInfoEntity productInfoEntity = ProductInfoConver.MAPPER.converDTO(productInfo);
         return this.updateById(productInfoEntity);
+    }
+
+    private Boolean checkParam(ProductInfoDTO productInfo) {
+        //商品类型+地区唯一
+        List<ProductInfoEntity> productList = baseMapper
+                .selectList(new QueryWrapper<ProductInfoEntity>().lambda()
+                        .eq(ProductInfoEntity::getProductType, productInfo.getProductType())
+                        .eq(ProductInfoEntity::getCountryCode, productInfo.getCountryCode()));
+
+        if (ObjectUtil.isNull(productInfo.getProductId())) {
+            //新增
+            Assert.isTrue(CollectionUtil.isNotEmpty(productList), "商品类型加国号，此组合商品已存在，不可新增");
+        } else {
+            //修改
+            if (CollectionUtil.isNotEmpty(productList)) {
+                List<Integer> productIdList = productList.stream().map(ProductInfoEntity::getProductId).collect(Collectors.toList());
+                Assert.isTrue(!productIdList.contains(productInfo.getProductId()), "商品类型加国号，此组合商品已存在，不可修改");
+            }
+        }
+        return true;
     }
 
     @Override

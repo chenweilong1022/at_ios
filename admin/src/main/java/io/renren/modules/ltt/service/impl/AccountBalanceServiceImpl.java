@@ -2,7 +2,7 @@ package io.renren.modules.ltt.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
-import io.renren.common.enums.AccountTransactionTypeEnum;
+import io.renren.modules.ltt.enums.AccountTransactionTypeEnum;
 import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.ltt.entity.AccountDetailsEntity;
@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static io.renren.common.enums.AccountTransactionTypeEnum.RECHARGE;
+import static io.renren.modules.ltt.enums.AccountTransactionTypeEnum.RECHARGE;
 
 
 @Service("accountBalanceService")
