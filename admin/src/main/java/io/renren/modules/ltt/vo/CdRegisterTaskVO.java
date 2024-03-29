@@ -81,6 +81,11 @@ public class CdRegisterTaskVO implements Serializable {
 	 *
 	 */
 	@ApiModelProperty(required=false,value="")
+	private Integer fillUpRegisterTaskId;
+	/**
+	 *
+	 */
+	@ApiModelProperty(required=false,value="")
 	private Date createTime;
 
 	public String getRegistrationStatusStr() {

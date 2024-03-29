@@ -96,5 +96,10 @@ public class CdGetPhoneVO implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="")
 	private Date createTime;
+	/**
+	 *
+	 */
+	@ApiModelProperty(required=false,value="")
+	private Integer lineRegisterId;
 
 }

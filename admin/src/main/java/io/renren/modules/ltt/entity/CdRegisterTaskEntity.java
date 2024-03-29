@@ -80,6 +80,11 @@ public class CdRegisterTaskEntity implements Serializable {
 	 *
 	 */
 	@ApiModelProperty(required=false,value="")
+	private Integer fillUpRegisterTaskId;
+	/**
+	 *
+	 */
+	@ApiModelProperty(required=false,value="")
 	private Date createTime;
 
 }

@@ -12,7 +12,8 @@ public enum RegistrationStatus implements BaseEnum {
     RegistrationStatus3(3,"暂停注册"),
     RegistrationStatus4(4,"注册异常"),
     RegistrationStatus5(5,"验证码提交完成"),
-    RegistrationStatus6(6,"注册完成"),
+    RegistrationStatus6(6,"子任务保存完成"),
+    RegistrationStatus7(7,"注册完成"),
     ;
 
     RegistrationStatus(int key, String value) {

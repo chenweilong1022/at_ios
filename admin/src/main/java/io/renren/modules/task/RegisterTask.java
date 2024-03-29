@@ -6,16 +6,16 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.benmanes.caffeine.cache.Cache;
 import io.renren.common.utils.ConfigConstant;
 import io.renren.modules.client.FirefoxService;
 import io.renren.modules.client.LineService;
 import io.renren.modules.client.ProxyService;
-import io.renren.modules.client.dto.LineRegisterDTO;
+import io.renren.modules.client.dto.*;
 import io.renren.modules.client.entity.ProjectWorkEntity;
-import io.renren.modules.client.vo.DataLineRegisterVO;
-import io.renren.modules.client.vo.LineRegisterVO;
+import io.renren.modules.client.vo.*;
 import io.renren.modules.ltt.dto.CdGetPhoneDTO;
 import io.renren.modules.ltt.dto.CdLineIpProxyDTO;
 import io.renren.modules.ltt.entity.CdGetPhoneEntity;
@@ -25,7 +25,9 @@ import io.renren.modules.ltt.entity.CdRegisterTaskEntity;
 import io.renren.modules.ltt.enums.*;
 import io.renren.modules.ltt.service.*;
 import io.renren.modules.ltt.service.impl.AsyncService;
+import io.renren.modules.ltt.vo.CdLineRegisterVO;
 import io.renren.modules.ltt.vo.CdRegisterSubtasksVO;
+import io.renren.modules.ltt.vo.GetCountBySubTaskIdVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -39,11 +41,14 @@ import javax.annotation.Resource;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 import static io.renren.modules.ltt.enums.PhoneStatus.PhoneStatus5;
+import static io.renren.modules.ltt.enums.PhoneStatus.PhoneStatus6;
 
 /**
  * @author liuyuchan
@@ -80,6 +85,7 @@ public class RegisterTask {
     static ReentrantLock task3Lock = new ReentrantLock();
     static ReentrantLock task4Lock = new ReentrantLock();
     private static final Object lockCdRegisterSubtasksEntity = new Object();
+    private static final Object lockCdRegisterTaskEntity = new Object();
     private static final Object lockCdGetPhoneEntity = new Object();
     private static final Object lockCdLineRegisterEntity = new Object();
     @Autowired
@@ -114,6 +120,70 @@ public class RegisterTask {
     @Transactional(rollbackFor = Exception.class)
     @Async
     public void task7() {
+        //获取所有已经发起注册的机器
+        List<CdLineRegisterEntity> cdLineRegisterEntities = cdLineRegisterService.list(new QueryWrapper<CdLineRegisterEntity>().lambda()
+                .in(CdLineRegisterEntity::getRegisterStatus,RegisterStatus.RegisterStatus3.getKey(),RegisterStatus.RegisterStatus1.getKey())
+        );
+        if (CollUtil.isEmpty(cdLineRegisterEntities)) {
+            log.info("task7 cdLineRegisterEntities isEmpty");
+            return;
+        }
+        for (CdLineRegisterEntity cdLineRegisterEntity : cdLineRegisterEntities) {
+            poolExecutor.execute(() -> {
+                RegisterResultDTO registerResultDTO = new RegisterResultDTO();
+                registerResultDTO.setTaskId(cdLineRegisterEntity.getTaskId());
+                RegisterResultVO registerResultVO = lineService.registerResult(registerResultDTO);
+                if (ObjectUtil.isNull(registerResultVO)) {
+                    return;
+                }
+                if (200 == registerResultVO.getCode()) {
+                    Long status = registerResultVO.getData().getStatus();
+                    if (2 == status || 1 == status || Long.valueOf(20001).equals(status)) {
+                        if (2 == status) {
+                            SyncLineTokenDTO syncLineTokenDTO = new SyncLineTokenDTO();
+                            syncLineTokenDTO.setTaskId(cdLineRegisterEntity.getTaskId());
+                            SyncLineTokenVO syncLineTokenVO = lineService.SyncLineTokenDTO(syncLineTokenDTO);
+                            if (ObjectUtil.isNull(syncLineTokenVO)) {
+                                return;
+                            }
+                            if (200 == syncLineTokenVO.getCode() && CollUtil.isNotEmpty(syncLineTokenVO.getData())) {
+                                SyncLineTokenVOData syncLineTokenVOData = syncLineTokenVO.getData().get(0);
+                                cdLineRegisterEntity.setRegisterStatus(RegisterStatus.RegisterStatus4.getKey());
+                                String token = syncLineTokenVOData.getToken();
+                                LineTokenJson lineTokenJson = JSON.parseObject(token, LineTokenJson.class);
+                                boolean accountExistStatus = lineTokenJson.isAccountExistStatus();
+                                if (accountExistStatus) {
+                                    cdLineRegisterEntity.setAccountExistStatus(AccountExistStatus.AccountExistStatus2.getKey());
+                                }else {
+                                    cdLineRegisterEntity.setAccountExistStatus(AccountExistStatus.AccountExistStatus1.getKey());
+                                }
+                                cdLineRegisterEntity.setToken(token);
+                                synchronized (lockCdLineRegisterEntity) {
+                                    cdLineRegisterService.updateById(cdLineRegisterEntity);
+                                }
+                            }
+                        }
+                        return;
+                    }
+                    cdLineRegisterEntity.setRegisterStatus(RegisterStatus.RegisterStatus5.getKey());
+                    cdLineRegisterEntity.setErrMsg(registerResultVO.getData().getRemark());
+
+                    CdGetPhoneEntity cdGetPhoneEntity = new CdGetPhoneEntity();
+                    cdGetPhoneEntity.setId(cdLineRegisterEntity.getGetPhoneId());
+                    cdGetPhoneEntity.setPhoneStatus(PhoneStatus6.getKey());
+                    if (StrUtil.isNotEmpty(cdLineRegisterEntity.getPkey())) {
+                        boolean b = firefoxService.withBlackMobile(cdLineRegisterEntity.getPkey());
+                        cdGetPhoneEntity.setPhoneStatus(PhoneStatus6.getKey());
+                    }
+                    synchronized (lockCdLineRegisterEntity) {
+                        cdLineRegisterService.updateById(cdLineRegisterEntity);
+                    }
+                    synchronized (lockCdGetPhoneEntity) {
+                        cdGetPhoneService.updateById(cdGetPhoneEntity);
+                    }
+                }
+            });
+        }
     }
 
 
@@ -137,6 +207,7 @@ public class RegisterTask {
              poolExecutor.execute(() -> {
                 String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource4, cdGetPhoneEntity.getId());
                 Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
+                 CdLineRegisterEntity update = null;
                 boolean triedLock = lock.tryLock();
                 log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
                 if(triedLock) {
@@ -145,8 +216,7 @@ public class RegisterTask {
                         if(PhoneStatus5.getKey().equals(cdGetPhoneEntity.getPhoneStatus())) {
                             boolean b = firefoxService.setRel(cdGetPhoneEntity.getPkey());
                             if (b) {
-                                cdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus6.getKey());
-                                cdGetPhoneService.updateById(cdGetPhoneEntity);
+                                cdGetPhoneEntity.setPhoneStatus(PhoneStatus6.getKey());
                             }
                             //如果需要修改验证码
                         }else {
@@ -156,7 +226,6 @@ public class RegisterTask {
                             if (between > 7) {
                                 cdGetPhoneEntity.setCode("验证码超时");
                                 cdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus3.getKey());
-                                cdGetPhoneService.updateById(cdGetPhoneEntity);
                                 return;
                             }
                             if (StrUtil.isEmpty(phoneCode)) {
@@ -169,11 +238,38 @@ public class RegisterTask {
                             if (StrUtil.isNotEmpty(phoneCode)) {
                                 cdGetPhoneEntity.setCode(phoneCode);
                                 cdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus3.getKey());
-                                caffeineCacheCode.put(cdGetPhoneEntity.getPhone(),phoneCode);
-                                cdGetPhoneService.updateById(cdGetPhoneEntity);
+
+                                CdLineRegisterVO lineRegisterVO = cdLineRegisterService.getById(cdGetPhoneEntity.getLineRegisterId());
+                                if (ObjectUtil.isNull(lineRegisterVO)) {
+                                    return;
+                                }
+
+                                SMSCodeDTO smsCodeDTO = new SMSCodeDTO();
+                                smsCodeDTO.setsmsCode(phoneCode);
+                                smsCodeDTO.setTaskId(lineRegisterVO.getTaskId());
+                                SMSCodeVO smsCodeVO = lineService.smsCode(smsCodeDTO);
+                                if (ObjectUtil.isNull(smsCodeVO)) {
+                                    return;
+                                }
+                                log.info("smsCodeVO = {}", JSONUtil.toJsonStr(smsCodeVO));
+                                if (200 == smsCodeVO.getCode()) {
+                                    update = new CdLineRegisterEntity();
+                                    update.setId(lineRegisterVO.getId());
+                                    update.setRegisterStatus(RegisterStatus.RegisterStatus3.getKey());
+                                    update.setSmsCode(phoneCode);
+                                    cdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus4.getKey());
+                                }
                             }
                         }
                     }finally {
+                        synchronized (lockCdGetPhoneEntity) {
+                            cdGetPhoneService.updateById(cdGetPhoneEntity);
+                        }
+                        synchronized (lockCdLineRegisterEntity) {
+                            if (ObjectUtil.isNotNull(update)) {
+                                cdLineRegisterService.updateById(update);
+                            }
+                        }
                         lock.unlock();
                     }
                 }else {
@@ -257,13 +353,14 @@ public class RegisterTask {
                             CdGetPhoneEntity update = new CdGetPhoneEntity();
                             update.setId(cdGetPhoneEntity.getId());
                             update.setPhoneStatus(PhoneStatus.PhoneStatus2.getKey());
-                            //修改注册
-                            synchronized (lockCdGetPhoneEntity) {
-                                cdGetPhoneService.updateById(update);
-                            }
-
+                            //注册
                             synchronized (lockCdLineRegisterEntity) {
                                 cdLineRegisterService.save(cdLineRegisterDTO);
+                            }
+                            //修改注册
+                            synchronized (lockCdGetPhoneEntity) {
+                                update.setLineRegisterId(cdLineRegisterDTO.getId());
+                                cdGetPhoneService.updateById(update);
                             }
                         }
                     }finally {
@@ -277,26 +374,26 @@ public class RegisterTask {
 
     }
 
-
-    /**
-     *
-     */
-    @Scheduled(fixedDelay = 5000)
-    @Transactional(rollbackFor = Exception.class)
-    @Async
-    public void task4() {
-        boolean b = task4Lock.tryLock();
-        if (!b) {
-            return;
-        }
-        try {
-        }catch (Exception e) {
-            log.error("err = {}",e.getMessage());
-        }finally {
-            task4Lock.unlock();
-        }
-    }
-
+//
+//    /**
+//     *
+//     */
+//    @Scheduled(fixedDelay = 5000)
+//    @Transactional(rollbackFor = Exception.class)
+//    @Async
+//    public void task4() {
+//        boolean b = task4Lock.tryLock();
+//        if (!b) {
+//            return;
+//        }
+//        try {
+//        }catch (Exception e) {
+//            log.error("err = {}",e.getMessage());
+//        }finally {
+//            task4Lock.unlock();
+//        }
+//    }
+//
 
     /**
      *
@@ -305,15 +402,86 @@ public class RegisterTask {
     @Transactional(rollbackFor = Exception.class)
     @Async
     public void task3() {
-        boolean b = task3Lock.tryLock();
-        if (!b) {
+        //获取所有子任务保存完成的
+        List<CdRegisterTaskEntity> cdRegisterTaskEntities = cdRegisterTaskService.list(new QueryWrapper<CdRegisterTaskEntity>().lambda()
+                .eq(CdRegisterTaskEntity::getRegistrationStatus,RegistrationStatus.RegistrationStatus2.getKey())
+                .lt(CdRegisterTaskEntity::getFillUpRegisterTaskId,0)
+                .or(item -> item.eq(CdRegisterTaskEntity::getFillUp,FillUp.YES.getKey()))
+        );
+        if (CollUtil.isEmpty(cdRegisterTaskEntities)) {
+            log.info("RegisterTask task2 list isEmpty");
             return;
         }
-        try {
-        }catch (Exception e) {
-            log.error("err = {}",e.getMessage());
-        }finally {
-            task3Lock.unlock();
+
+        //所有注册的任务
+        for (CdRegisterTaskEntity cdRegisterTaskEntity : cdRegisterTaskEntities) {
+            //获取所有子任务
+            List<CdRegisterSubtasksEntity> cdRegisterSubtasksEntities = cdRegisterSubtasksService.list(new QueryWrapper<CdRegisterSubtasksEntity>().lambda()
+                    .eq(CdRegisterSubtasksEntity::getTaskId,cdRegisterTaskEntity.getId())
+            );
+            //获取所有的子任务Ids
+            List<Integer> registerSubtasksIds = cdRegisterSubtasksEntities.stream().map(CdRegisterSubtasksEntity::getId).collect(Collectors.toList());
+            if (CollUtil.isEmpty(registerSubtasksIds)) {
+                return;
+            }
+            List<GetCountBySubTaskIdVO> getCountBySubTaskIdVOS = cdLineRegisterService.getCountBySubTaskId(registerSubtasksIds);
+            Map<Integer, GetCountBySubTaskIdVO> integerGetCountBySubTaskIdVOMap = getCountBySubTaskIdVOS.stream().collect(Collectors.toMap(GetCountBySubTaskIdVO::getSubtasksId, item -> item));
+
+            Integer successTotal = 0;
+            Integer registerSuccessCount = 0;
+            Integer errorTotal = 0;
+            Integer totalNumber = 0;
+            for (CdRegisterSubtasksEntity cdRegisterSubtasksEntity : cdRegisterSubtasksEntities) {
+                GetCountBySubTaskIdVO getCountBySubTaskIdVO = integerGetCountBySubTaskIdVOMap.get(cdRegisterSubtasksEntity.getId());
+                if (ObjectUtil.isNull(getCountBySubTaskIdVO)) {
+                    continue;
+                }
+                //设置成功数量
+                cdRegisterSubtasksEntity.setNumberSuccesses(getCountBySubTaskIdVO.getSuccessCount());
+                //设置失败数量
+                cdRegisterSubtasksEntity.setNumberFailures(getCountBySubTaskIdVO.getErrorCount());
+                errorTotal = errorTotal + cdRegisterSubtasksEntity.getNumberFailures();
+                successTotal = successTotal + cdRegisterSubtasksEntity.getNumberSuccesses();
+                registerSuccessCount = registerSuccessCount + getCountBySubTaskIdVO.getRegisterSuccessCount();
+                totalNumber = totalNumber + cdRegisterSubtasksEntity.getNumberRegistrations();
+            }
+            //如果 注册成功了，去修改状态
+            if (registerSuccessCount >= cdRegisterTaskEntity.getNumberRegistered()) {
+                cdRegisterTaskEntity.setRegistrationStatus(RegistrationStatus.RegistrationStatus7.getKey());
+            }else {
+                Integer count = cdRegisterTaskService.sumByTaskId(cdRegisterTaskEntity.getId());
+                //说明都已经去注册了，注册剩余的数量去
+                if (successTotal + errorTotal >= count) {
+                    CdRegisterTaskEntity newCdRegisterTaskEntity = new CdRegisterTaskEntity();
+                    Integer newTotalAmount = cdRegisterTaskEntity.getTotalAmount() - successTotal;
+                    if (newTotalAmount > 0) {
+                        newCdRegisterTaskEntity.setTotalAmount(newTotalAmount);
+                        newCdRegisterTaskEntity.setNumberThreads(cdRegisterTaskEntity.getNumberThreads());
+                        newCdRegisterTaskEntity.setNumberRegistered(0);
+                        newCdRegisterTaskEntity.setNumberSuccesses(0);
+                        newCdRegisterTaskEntity.setNumberFailures(0);
+                        newCdRegisterTaskEntity.setRegistrationStatus(RegistrationStatus.RegistrationStatus1.getKey());
+                        newCdRegisterTaskEntity.setDeleteFlag(DeleteFlag.NO.getKey());
+                        newCdRegisterTaskEntity.setCountryCode(cdRegisterTaskEntity.getCountryCode());
+                        newCdRegisterTaskEntity.setFillUp(cdRegisterTaskEntity.getFillUp());
+                        newCdRegisterTaskEntity.setFillUpRegisterTaskId(cdRegisterTaskEntity.getId());
+                        newCdRegisterTaskEntity.setCreateTime(DateUtil.date());
+                        synchronized (lockCdRegisterTaskEntity) {
+                            cdRegisterTaskService.save(newCdRegisterTaskEntity);
+                        }
+                    }
+                }
+            }
+            //成功数量
+            cdRegisterTaskEntity.setNumberSuccesses(successTotal);
+            //失败数量
+            cdRegisterTaskEntity.setNumberFailures(errorTotal);
+            synchronized (lockCdRegisterTaskEntity) {
+                cdRegisterTaskService.updateById(cdRegisterTaskEntity);
+            }
+            synchronized (lockCdRegisterSubtasksEntity) {
+                cdRegisterSubtasksService.updateBatchById(cdRegisterSubtasksEntities);
+            }
         }
     }
 
@@ -398,7 +566,6 @@ public class RegisterTask {
         //查询是否有注册任务 或者注册任务为充满的
         List<CdRegisterTaskEntity> list = cdRegisterTaskService.list(new QueryWrapper<CdRegisterTaskEntity>().lambda()
                 .eq(CdRegisterTaskEntity::getRegistrationStatus, RegistrationStatus.RegistrationStatus1.getKey())
-                .or().eq(CdRegisterTaskEntity::getFillUp, FillUp.YES.getKey())
         );
         if (CollUtil.isEmpty(list)) {
             log.info("注册任务没有查到数量为【0】");
@@ -438,21 +605,24 @@ public class RegisterTask {
                                 }
                                 CdRegisterSubtasksEntity cdRegisterSubtasksEntity = new CdRegisterSubtasksEntity();
                                 cdRegisterSubtasksEntity.setTaskId(cdRegisterTaskEntity.getId());
-                                cdRegisterSubtasksEntity.setNumberRegistrations(newNumberRegistrations);
+                                if (cdRegisterTaskEntity.getFillUpRegisterTaskId() > 0) {
+                                    cdRegisterSubtasksEntity.setTaskId(cdRegisterTaskEntity.getFillUpRegisterTaskId());
+                                }
+                                cdRegisterSubtasksEntity.setNumberRegistrations(newNumberRegistrations > 0 ? newNumberRegistrations : numberRegistered);
                                 cdRegisterSubtasksEntity.setNumberSuccesses(0);
                                 cdRegisterSubtasksEntity.setNumberFailures(0);
                                 cdRegisterSubtasksEntity.setRegistrationStatus(RegistrationStatus.RegistrationStatus1.getKey());
+                                cdRegisterSubtasksEntity.setCreateTime(DateUtil.date());
+                                cdRegisterSubtasksEntity.setDeleteFlag(DeleteFlag.NO.getKey());
                                 cdRegisterSubtasksEntities.add(cdRegisterSubtasksEntity);
                                 //设置主表注册数量
                                 cdRegisterTaskEntity.setNumberRegistered(cdRegisterTaskEntity.getNumberRegistered() + newNumberRegistrations);
                             }
-                            try {
-                                Thread.sleep(50000);
-                            } catch (InterruptedException e) {
-
-                            }
                             synchronized (lockCdRegisterSubtasksEntity) {
                                 cdRegisterSubtasksService.saveBatch(cdRegisterSubtasksEntities);
+                            }
+                            synchronized (lockCdRegisterSubtasksEntity) {
+                                cdRegisterTaskService.updateById(cdRegisterTaskEntity);
                             }
                         }
                     }finally {

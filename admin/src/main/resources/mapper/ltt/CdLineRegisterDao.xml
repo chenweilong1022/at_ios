@@ -31,5 +31,24 @@
         <result property="exportStatus" column="export_status"/>
     </resultMap>
 
+    <select id="getCountBySubTaskId" resultType="io.renren.modules.ltt.vo.GetCountBySubTaskIdVO">
+        SELECT
+            lr.subtasks_id AS subtasksId,
+            COUNT(lr.subtasks_id) totalCount,
+            SUM(IF( lr.register_status IN(3,4), 1, 0 )) AS successCount,
+            SUM(IF( lr.register_status = 4, 1, 0 )) AS registerSuccessCount,
+            SUM(IF( lr.register_status = 5, 1, 0 )) AS errorCount
+        FROM
+            cd_line_register lr
+        WHERE
+            lr.subtasks_id > 0 AND
+        subtasks_id IN
+        <foreach item="item" index="index" collection="registerSubtasksIds" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        GROUP BY
+            lr.subtasks_id
+    </select>
+
 
 </mapper>
