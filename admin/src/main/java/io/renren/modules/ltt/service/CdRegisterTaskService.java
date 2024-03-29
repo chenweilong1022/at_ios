@@ -11,7 +11,7 @@ import java.util.Collection;
 
 
 /**
- * 
+ *
  *
  * @author chenweilong
  * @email chenweilong@qq.com
@@ -58,5 +58,12 @@ public interface CdRegisterTaskService extends IService<CdRegisterTaskEntity> {
      */
     @Override
     boolean removeByIds(Collection<? extends Serializable> ids);
+
+    /**
+     * 统计根据任务id
+     * @param id
+     * @return
+     */
+    Integer sumByTaskId(Integer id);
 }
 

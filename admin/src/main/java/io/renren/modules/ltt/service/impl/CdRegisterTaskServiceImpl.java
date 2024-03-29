@@ -28,7 +28,8 @@ public class CdRegisterTaskServiceImpl extends ServiceImpl<CdRegisterTaskDao, Cd
     public PageUtils<CdRegisterTaskVO> queryPage(CdRegisterTaskDTO cdRegisterTask) {
         IPage<CdRegisterTaskEntity> page = baseMapper.selectPage(
                 new Query<CdRegisterTaskEntity>(cdRegisterTask).getPage(),
-                new QueryWrapper<CdRegisterTaskEntity>()
+                new QueryWrapper<CdRegisterTaskEntity>().lambda()
+                .lt(CdRegisterTaskEntity::getFillUpRegisterTaskId,0)
         );
 
         return PageUtils.<CdRegisterTaskVO>page(page).setList(CdRegisterTaskConver.MAPPER.conver(page.getRecords()));
@@ -62,6 +63,11 @@ public class CdRegisterTaskServiceImpl extends ServiceImpl<CdRegisterTaskDao, Cd
     @Override
     public boolean removeByIds(Collection<? extends Serializable> ids) {
         return super.removeByIds(ids);
+    }
+
+    @Override
+    public Integer sumByTaskId(Integer id) {
+        return baseMapper.sumByTaskId(id);
     }
 
 }

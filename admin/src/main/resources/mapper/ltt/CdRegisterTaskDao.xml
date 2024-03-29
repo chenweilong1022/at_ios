@@ -16,5 +16,15 @@
         <result property="createTime" column="create_time"/>
     </resultMap>
 
+    <select id="sumByTaskId" resultType="java.lang.Integer">
+        SELECT
+            SUM( total_amount ) AS totalAmount
+        FROM
+            cd_register_task
+        WHERE
+            id = #{id}
+           OR fill_up_register_task_id = #{id}
+    </select>
+
 
 </mapper>
