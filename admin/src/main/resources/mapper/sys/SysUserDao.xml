@@ -34,9 +34,7 @@
 		where status=1
 		and user_id!=1
 		<if test="searchWord != null">
-			and (username like CONCAT( '%', #{searchWord}, '%')
-			or mobile like CONCAT('%', #{searchWord}, '%')
-			)
+			and username like CONCAT( '%', #{searchWord}, '%')
 		</if>
 		order by user_id desc
 		limit 20

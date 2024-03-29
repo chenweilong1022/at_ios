@@ -114,8 +114,8 @@ export default {
     /*
     根据搜索词，查询系统用户
      */
-    queryBySearchWord(serchKey) {
-      serchKey = serchKey == null ? "" : serchKey+"";
+    queryBySearchWord (serchKey) {
+      serchKey = serchKey == null ? '' : serchKey + ''
       this.$http({
         url: this.$http.adornUrl(`/sys/user/queryBySearchWord?searchWord=${serchKey}`),
         method: 'get',

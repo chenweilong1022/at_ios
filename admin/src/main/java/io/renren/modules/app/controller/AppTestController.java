@@ -2,6 +2,8 @@ package io.renren.modules.app.controller;
 
 
 import io.renren.common.base.vo.EnumVo;
+import io.renren.common.enums.AccountTransactionStatusEnum;
+import io.renren.common.enums.AccountTransactionTypeEnum;
 import io.renren.common.utils.EnumUtil;
 import io.renren.common.utils.R;
 import io.renren.common.validator.AssertI18n;
@@ -41,6 +43,18 @@ public class AppTestController {
     @GetMapping("enums/countryCodes")
     public R update() {
         List<EnumVo> enumVos = EnumUtil.enumToVo(CountryCode.values());
+        return R.data(enumVos);
+    }
+
+    @GetMapping("enums/accountTransactionTypeCodes")
+    public R accountTransactionTypeCodes() {
+        List<EnumVo> enumVos = EnumUtil.enumToVo(AccountTransactionTypeEnum.values());
+        return R.data(enumVos);
+    }
+
+    @GetMapping("enums/accountTransactionStatusCodes")
+    public R accountTransactionStatusCodes() {
+        List<EnumVo> enumVos = EnumUtil.enumToVo(AccountTransactionStatusEnum.values());
         return R.data(enumVos);
     }
 
