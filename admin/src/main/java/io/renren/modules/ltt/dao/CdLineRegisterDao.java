@@ -1,7 +1,11 @@
 package io.renren.modules.ltt.dao;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.renren.modules.ltt.dto.CdLineRegisterDTO;
 import io.renren.modules.ltt.entity.CdLineRegisterEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import io.renren.modules.ltt.vo.CdLineRegisterVO;
 import io.renren.modules.ltt.vo.GetCountBySubTaskIdVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -23,4 +27,6 @@ public interface CdLineRegisterDao extends BaseMapper<CdLineRegisterEntity> {
      * @return
      */
     List<GetCountBySubTaskIdVO> getCountBySubTaskId(@Param("registerSubtasksIds") List<Integer> registerSubtasksIds);
+
+    IPage<CdLineRegisterVO> listPage(Page<CdLineRegisterEntity> page,@Param("dto")  CdLineRegisterDTO cdLineRegister);
 }

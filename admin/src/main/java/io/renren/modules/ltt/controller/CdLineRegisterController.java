@@ -18,7 +18,7 @@ import io.renren.common.utils.R;
 
 
 /**
- * 
+ *
  *
  * @author chenweilong
  * @email chenweilong@qq.com
@@ -38,6 +38,16 @@ public class CdLineRegisterController {
     public R list(CdLineRegisterDTO cdLineRegister){
         PageUtils page = cdLineRegisterService.queryPage(cdLineRegister);
 
+        return R.ok().put("page", page);
+    }
+
+    /**
+     * 根据taskid查询
+     */
+    @RequestMapping("/listByTaskId")
+    @RequiresPermissions("ltt:cdlineregister:list")
+    public R listByTaskId(CdLineRegisterDTO cdLineRegister){
+        PageUtils page = cdLineRegisterService.listByTaskId(cdLineRegister);
         return R.ok().put("page", page);
     }
 

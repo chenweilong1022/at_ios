@@ -34,6 +34,16 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
 
         return PageUtils.<CdLineRegisterVO>page(page).setList(CdLineRegisterConver.MAPPER.conver(page.getRecords()));
     }
+
+    @Override
+    public PageUtils listByTaskId(CdLineRegisterDTO cdLineRegister) {
+        IPage<CdLineRegisterVO> page = baseMapper.listPage(
+                new Query<CdLineRegisterEntity>(cdLineRegister).getPage(),
+                cdLineRegister
+        );
+        return PageUtils.<CdLineRegisterVO>page(page);
+    }
+
     @Override
     public CdLineRegisterVO getById(Integer id) {
         return CdLineRegisterConver.MAPPER.conver(baseMapper.selectById(id));

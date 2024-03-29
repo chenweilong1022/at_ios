@@ -11,6 +11,7 @@ public enum LockMapKeyResource implements BaseEnum {
     LockMapKeyResource2(2,"CdRegisterSubtasksEntity"),
     LockMapKeyResource3(3,"CdLineIpProxyEntity"),
     LockMapKeyResource4(4,"CdGetPhoneEntity"),
+    LockMapKeyResource5(5,"CdLineRegisterEntity"),
     ;
 
     LockMapKeyResource(int key, String value) {

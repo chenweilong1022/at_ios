@@ -118,7 +118,7 @@
   export default {
     data () {
       return {
-        registerStatus: null,
+        registerStatus: 4,
         workOptions: [
           {
             value: 1,
