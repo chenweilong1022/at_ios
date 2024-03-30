@@ -17,8 +17,8 @@ const http = axios.create({
  * 请求拦截
  */
 http.interceptors.request.use(config => {
-  config.headers['token'] = Vue.cookie.get('token') // 请求头带上token
-  // config.headers['token'] = 'fc540cdf0306cf27d7dee59225edf0bb' // 请求头带上token
+  // config.headers['token'] = Vue.cookie.get('token') // 请求头带上token
+  config.headers['token'] = '4a6d677605854a4a2f437cb8dcb0eeae' // 请求头带上token
   return config
 }, error => {
   return Promise.reject(error)

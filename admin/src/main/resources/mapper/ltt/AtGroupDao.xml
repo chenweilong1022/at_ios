@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.modules.ltt.dao.AtGroupDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.renren.modules.ltt.entity.AtGroupEntity" id="atGroupMap">
+        <result property="id" column="id"/>
+        <result property="groupName" column="group_name"/>
+        <result property="proxy" column="proxy"/>
+        <result property="intervals" column="intervals"/>
+        <result property="roomId" column="room_id"/>
+        <result property="chatRoomUrl" column="chat_room_url"/>
+        <result property="roomTicketId" column="room_ticket_id"/>
+        <result property="uploadGroupNumber" column="upload_group_number"/>
+        <result property="currentExecutionsNumber" column="current_executions_number"/>
+        <result property="successfullyAttractGroupsNumber" column="successfully_attract_groups_number"/>
+        <result property="groupStatus" column="group_status"/>
+        <result property="deleteFlag" column="delete_flag"/>
+        <result property="createTime" column="create_time"/>
+        <result property="taskId" column="task_id"/>
+        <result property="lineRegisterId" column="line_register_id"/>
+        <result property="addType" column="add_type"/>
+        <result property="materialId" column="material_id"/>
+        <result property="materialPhoneType" column="material_phone_type"/>
+    </resultMap>
+
+
+</mapper>

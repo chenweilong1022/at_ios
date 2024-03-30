@@ -17,7 +17,8 @@ public class RenrenApplicationTests {
 	@Test
 	public void contextLoads() {
 		sysGeneratorService.generatorCode(new String[]{
-				"cd_line_ip_proxy"
+				"at_group",
+				"at_group_task"
 		});
 	}
 
