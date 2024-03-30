@@ -78,7 +78,7 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
 
     @Override
     public Integer getCountByRegisterStatus(Integer registerStatus,
-                                            Integer countryCode) {
+                                            String countryCode) {
         Integer count = baseMapper.selectCount(new QueryWrapper<CdLineRegisterEntity>().lambda()
                 .eq(CdLineRegisterEntity::getRegisterStatus, registerStatus)
                 .eq(CdLineRegisterEntity::getCountryCode, countryCode));
@@ -87,7 +87,7 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
 
     @Override
     public List<CdLineRegisterVO> getListByRegisterStatus(Integer registerStatus,
-                                                          Integer countryCode,
+                                                          String countryCode,
                                                           Integer limit) {
         List<CdLineRegisterEntity> list = baseMapper.selectList(new QueryWrapper<CdLineRegisterEntity>().lambda()
                 .eq(CdLineRegisterEntity::getRegisterStatus, registerStatus)

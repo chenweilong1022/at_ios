@@ -89,7 +89,8 @@ public class AtOrdersServiceImpl extends ServiceImpl<AtOrdersDao, AtOrdersEntity
         if (atOrders.getOrderNumber() > registerCount) {
             //数量不够，则创建注册任务
             cdRegisterTaskService.createRegisterTask(
-                    atOrders.getOrderNumber() - registerCount, productInfoVO.getCountryCode());
+                    atOrders.getOrderNumber() - registerCount,
+                    CountryCode.getKeyByValue(productInfoVO.getCountryCode()));
         }
 
 
@@ -99,6 +100,7 @@ public class AtOrdersServiceImpl extends ServiceImpl<AtOrdersDao, AtOrdersEntity
         atOrdersEntity.setOrderStatus(OrderStatus.OrderStatus1.getKey());
         atOrdersEntity.setTotalAmount(totalAmount);
         atOrdersEntity.setOrderTime(new Date());
+        atOrdersEntity.setUpdateTime(new Date());
         atOrdersEntity.setProductId(productInfoVO.getProductId());
         atOrdersEntity.setProductType(productInfoVO.getProductType());
         atOrdersEntity.setCountryCode(productInfoVO.getCountryCode());
@@ -127,6 +129,7 @@ public class AtOrdersServiceImpl extends ServiceImpl<AtOrdersDao, AtOrdersEntity
         accountBalanceDTO.setAmount(amount);
         accountBalanceDTO.setDescription("购买账号");
         accountBalanceDTO.setOperationUserId(sysUserId);
+        accountBalanceDTO.setSysUserId(sysUserId);
         accountBalanceService.changeAccount(accountBalanceDTO);
     }
 

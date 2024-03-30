@@ -52,7 +52,7 @@ public class OrderTask {
     /**
      * token订单处理
      */
-    @Scheduled(fixedDelay = 1000*1000)
+    @Scheduled(fixedDelay = 10 * 1000)
     @Transactional(rollbackFor = Exception.class)
     @Async
     public void tokenOrderRegister() {
@@ -146,8 +146,12 @@ public class OrderTask {
             updateLineRegisterDto.setRegisterStatus(RegisterStatus.RegisterStatus11.getKey());
             updateLineRegisterList.add(updateLineRegisterDto);
         }
-        atUserTokenService.saveBatch(userTokenEntityList);
-        cdLineRegisterService.updateBatchById(updateLineRegisterList);
+        if (CollUtil.isNotEmpty(userTokenEntityList)) {
+            atUserTokenService.saveUserTokenBatch(userTokenEntityList);
+        }
+        if (CollUtil.isNotEmpty(updateLineRegisterList)) {
+            cdLineRegisterService.updateBatchById(updateLineRegisterList);
+        }
     }
 
 }

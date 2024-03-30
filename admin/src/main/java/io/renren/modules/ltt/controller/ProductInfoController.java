@@ -56,7 +56,7 @@ public class ProductInfoController {
     @RequestMapping("/queryOnlyProduct")
     @RequiresPermissions("ltt:productinfo:info")
     public R queryOnlyProduct(@RequestParam("productType") Integer productType,
-                              @RequestParam("countryCode") Integer countryCode,
+                              @RequestParam("countryCode") String countryCode,
                               @RequestParam(value = "status", required = false) Integer status) {
         ProductInfoEntity productInfo = productInfoService.queryOnlyProduct(productType, countryCode, status);
 

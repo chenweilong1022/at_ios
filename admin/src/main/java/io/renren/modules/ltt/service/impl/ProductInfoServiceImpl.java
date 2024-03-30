@@ -85,13 +85,13 @@ public class ProductInfoServiceImpl extends ServiceImpl<ProductInfoDao, ProductI
 
     @Override
     public ProductInfoEntity queryOnlyProduct(Integer productType,
-                                              Integer countryCode,
+                                              String countryCode,
                                               Integer status) {
         return baseMapper.selectList(new QueryWrapper<ProductInfoEntity>().lambda()
                         .eq(ProductInfoEntity::getProductType, productType)
                         .eq(ProductInfoEntity::getCountryCode, countryCode)
                         .eq(ObjectUtil.isNotNull(status), ProductInfoEntity::getStatus, status))
-                .stream().findFirst().get();
+                .stream().findFirst().orElse(null);
     }
 
     @Override

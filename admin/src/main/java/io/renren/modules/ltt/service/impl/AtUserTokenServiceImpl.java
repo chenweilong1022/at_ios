@@ -73,7 +73,7 @@ public class AtUserTokenServiceImpl extends ServiceImpl<AtUserTokenDao, AtUserTo
     }
 
     @Override
-    public boolean saveBatch(List<AtUserTokenEntity>  userTokenEntityList) {
+    public boolean saveUserTokenBatch(List<AtUserTokenEntity>  userTokenEntityList) {
         return this.saveBatch(userTokenEntityList);
     }
 

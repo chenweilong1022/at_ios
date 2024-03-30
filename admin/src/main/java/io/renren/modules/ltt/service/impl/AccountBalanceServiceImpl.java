@@ -133,7 +133,7 @@ public class AccountBalanceServiceImpl extends ServiceImpl<AccountBalanceDao, Ac
         //插入流水表
         AccountDetailsEntity DetailsEntity = new AccountDetailsEntity();
         DetailsEntity.setAccountId(accountBalanceEntity.getAccountId());
-        DetailsEntity.setSysUserId(accountBalanceEntity.getSysUserId());
+        DetailsEntity.setSysUserId(accountParam.getSysUserId());
         DetailsEntity.setTransactionType(accountParam.getTransactionType());//交易类型
         DetailsEntity.setAmount(accountParam.getAmount());
         DetailsEntity.setDescription(accountParam.getDescription());

@@ -39,7 +39,7 @@ public interface AtUserTokenService extends IService<AtUserTokenEntity> {
      */
     boolean save(AtUserTokenDTO atUserToken);
 
-    boolean saveBatch(List<AtUserTokenEntity> userTokenEntityList);
+    boolean saveUserTokenBatch(List<AtUserTokenEntity> userTokenEntityList);
 
     /**
      * 根据id修改

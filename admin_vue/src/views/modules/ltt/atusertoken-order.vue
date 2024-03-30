@@ -38,7 +38,7 @@
         <el-select v-model="dataForm.countryCode" placeholder="请选择注册国家" clearable @change="productChangeHandler">
           <el-option
             v-for="item in countryCodes"
-            :key="item.key"
+            :key="item.value"
             :label="item.value"
             :value="item.key">
           </el-option>
@@ -157,14 +157,14 @@ export default {
           'status': 1
         })
       }).then(({data}) => {
-        if (data && data.code === 0) {
+        if (data && data.code === 0 && data.productInfo != null) {
           this.dataForm.productName = data.productInfo.productName
           this.dataForm.price = data.productInfo.price
           this.dataForm.productId = data.productInfo.productId
         } else {
-          this.dataForm.productName = null
-          this.dataForm.price = null
-          this.dataForm.productId = null
+          this.dataForm.productName = ''
+          this.dataForm.price = ''
+          this.dataForm.productId = ''
         }
       })
     },

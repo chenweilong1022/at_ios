@@ -75,7 +75,7 @@ public class AtOrdersVO implements Serializable {
 	 * 国家code
 	 */
 	@ApiModelProperty(required=false,value="国家code")
-	private Integer countryCode;
+	private String countryCode;
 	/**
 	 * 购买数量
 	 */

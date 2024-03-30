@@ -52,7 +52,7 @@ public interface ProductInfoService extends IService<ProductInfoEntity> {
      * @return
      */
     ProductInfoEntity queryOnlyProduct(Integer productType,
-                                       Integer countryCode,
+                                       String countryCode,
                                        Integer status);
 
     /**

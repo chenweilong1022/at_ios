@@ -91,7 +91,7 @@ public interface CdLineRegisterService extends IService<CdLineRegisterEntity> {
      * @param registerStatus
      * @return
      */
-    Integer getCountByRegisterStatus(Integer registerStatus, Integer countryCode);
+    Integer getCountByRegisterStatus(Integer registerStatus, String countryCode);
 
     /**
      * 根据注册状态查询列表
@@ -100,6 +100,6 @@ public interface CdLineRegisterService extends IService<CdLineRegisterEntity> {
      * @param limit
      * @return
      */
-    List<CdLineRegisterVO> getListByRegisterStatus(Integer registerStatus, Integer countryCode, Integer limit);
+    List<CdLineRegisterVO> getListByRegisterStatus(Integer registerStatus, String countryCode, Integer limit);
 }
 

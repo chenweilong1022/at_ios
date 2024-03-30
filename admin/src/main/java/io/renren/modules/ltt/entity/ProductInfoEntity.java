@@ -56,7 +56,7 @@ public class ProductInfoEntity implements Serializable {
 	 * 国号(区号)
 	 */
 	@ApiModelProperty(required=false,value="国号(区号) 枚举：CountryCode")
-	private Integer countryCode;
+	private String countryCode;
 	/**
 	 * 商品图片URL地址
 	 */
