@@ -1,6 +1,5 @@
 package io.renren.modules.ltt.service.impl;
 
-import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
@@ -22,8 +21,6 @@ import io.renren.modules.ltt.conver.ProductInfoConver;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
 
 
 @Service("productInfoService")
@@ -37,6 +34,9 @@ public class ProductInfoServiceImpl extends ServiceImpl<ProductInfoDao, ProductI
                 new QueryWrapper<ProductInfoEntity>().lambda()
                         .likeRight(StringUtils.isNotEmpty(productInfo.getProductName()),
                                 ProductInfoEntity::getProductName, productInfo.getProductName())
+                        .eq(ObjectUtil.isNotNull(productInfo.getCountryCode()), ProductInfoEntity::getCountryCode, productInfo.getCountryCode())
+                        .eq(ObjectUtil.isNotNull(productInfo.getProductType()), ProductInfoEntity::getProductType, productInfo.getProductType())
+                        .eq(ObjectUtil.isNotNull(productInfo.getStatus()), ProductInfoEntity::getStatus, productInfo.getStatus())
                         .orderByDesc(ProductInfoEntity::getProductId)
         );
 
@@ -69,22 +69,29 @@ public class ProductInfoServiceImpl extends ServiceImpl<ProductInfoDao, ProductI
 
     private Boolean checkParam(ProductInfoDTO productInfo) {
         //商品类型+地区唯一
-        List<ProductInfoEntity> productList = baseMapper
-                .selectList(new QueryWrapper<ProductInfoEntity>().lambda()
-                        .eq(ProductInfoEntity::getProductType, productInfo.getProductType())
-                        .eq(ProductInfoEntity::getCountryCode, productInfo.getCountryCode()));
+        ProductInfoEntity productInfoEntity = this.queryOnlyProduct(productInfo.getProductType(), productInfo.getCountryCode(), null);
 
         if (ObjectUtil.isNull(productInfo.getProductId())) {
             //新增
-            Assert.isTrue(CollectionUtil.isNotEmpty(productList), "商品类型加国号，此组合商品已存在，不可新增");
+            Assert.isTrue(ObjectUtil.isNotNull(productInfoEntity), "商品类型加国号，此组合商品已存在，不可新增");
         } else {
             //修改
-            if (CollectionUtil.isNotEmpty(productList)) {
-                List<Integer> productIdList = productList.stream().map(ProductInfoEntity::getProductId).collect(Collectors.toList());
-                Assert.isTrue(!productIdList.contains(productInfo.getProductId()), "商品类型加国号，此组合商品已存在，不可修改");
+            if (ObjectUtil.isNotNull(productInfoEntity)) {
+                Assert.isTrue(!productInfoEntity.getProductId().equals(productInfo.getProductId()), "商品类型加国号，此组合商品已存在，不可修改");
             }
         }
         return true;
+    }
+
+    @Override
+    public ProductInfoEntity queryOnlyProduct(Integer productType,
+                                              Integer countryCode,
+                                              Integer status) {
+        return baseMapper.selectList(new QueryWrapper<ProductInfoEntity>().lambda()
+                        .eq(ProductInfoEntity::getProductType, productType)
+                        .eq(ProductInfoEntity::getCountryCode, countryCode)
+                        .eq(ObjectUtil.isNotNull(status), ProductInfoEntity::getStatus, status))
+                .stream().findFirst().get();
     }
 
     @Override

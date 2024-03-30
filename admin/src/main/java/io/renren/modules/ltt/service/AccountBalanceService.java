@@ -7,6 +7,7 @@ import io.renren.modules.ltt.vo.AccountBalanceVO;
 import io.renren.modules.ltt.entity.AccountBalanceEntity;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Collection;
 
 
@@ -61,5 +62,11 @@ public interface AccountBalanceService extends IService<AccountBalanceEntity> {
      */
     @Override
     boolean removeByIds(Collection<? extends Serializable> ids);
+
+    /**
+     * 判断账户余额是否足够
+     * @return
+     */
+    boolean judgeAccountBalance(Long sysUserId, BigDecimal amount);
 }
 

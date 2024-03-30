@@ -76,6 +76,9 @@
         <el-button v-if="isAuth('ltt:atuser:save')" type="primary"
                    @click="userImportHandle()">账户导入
         </el-button>
+        <el-button v-if="isAuth('ltt:atuser:save')" type="primary"
+                   @click="userTokenOrderHandle()">账户购买
+        </el-button>
         <el-button v-if="isAuth('ltt:atuser:save')" type="primary" @click="userTransferGroupHandle()"
                    :disabled="dataListSelections.length <= 0">转移分组
         </el-button>
@@ -202,6 +205,7 @@
     <!-- 弹窗, 新增 / 修改 -->
     <add-or-update v-if="addOrUpdateVisible" ref="addOrUpdate" @refreshDataList="getDataList"></add-or-update>
     <user-import  v-if="userImportVisible" ref="userImport" @refreshDataList="getDataList"></user-import>
+    <user-token-order  v-if="userTokenOrderVisible" ref="userTokenOrder" @refreshDataList="getDataList"></user-token-order>
     <user-transfer-group  v-if="userTransferGroupVisible" ref="userTransferGroup" @refreshDataList="getDataList"></user-transfer-group>
     <user-customer-group  v-if="userCustomerVisible" ref="userCustomerGroup" @refreshDataList="getDataList"></user-customer-group>
   </div>
@@ -210,6 +214,7 @@
 <script>
   import AddOrUpdate from './atuser-add-or-update'
   import UserImport from './atusertoken-add-or-update'
+  import UserTokenOrder from './atusertoken-order'
   import UserTransferGroup from './atuserTransferGroup-add-or-update'
   import UserCustomerGroup from './atuserCustomer-add-or-update'
   export default {
@@ -268,12 +273,14 @@
         dataListSelections: [],
         addOrUpdateVisible: false,
         userImportVisible: false,
+        userTokenOrderVisible: false,
         userTransferGroupVisible: false,
         userCustomerVisible: false
       }
     },
     components: {
       UserImport,
+      UserTokenOrder,
       UserTransferGroup,
       UserCustomerGroup,
       AddOrUpdate
@@ -343,6 +350,13 @@
         this.userImportVisible = true
         this.$nextTick(() => {
           this.$refs.userImport.init(id)
+        })
+      },
+      // 账户购买
+      userTokenOrderHandle (id) {
+        this.userTokenOrderVisible = true
+        this.$nextTick(() => {
+          this.$refs.userTokenOrder.init(id)
         })
       },
       // 转移分组

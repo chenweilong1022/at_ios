@@ -1,5 +1,6 @@
 package io.renren.modules.ltt.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.ltt.enums.RegistrationStatus;
 import org.springframework.stereotype.Service;
@@ -29,11 +30,12 @@ public class CdRegisterTaskServiceImpl extends ServiceImpl<CdRegisterTaskDao, Cd
         IPage<CdRegisterTaskEntity> page = baseMapper.selectPage(
                 new Query<CdRegisterTaskEntity>(cdRegisterTask).getPage(),
                 new QueryWrapper<CdRegisterTaskEntity>().lambda()
-                .lt(CdRegisterTaskEntity::getFillUpRegisterTaskId,0)
+                        .lt(CdRegisterTaskEntity::getFillUpRegisterTaskId, 0)
         );
 
         return PageUtils.<CdRegisterTaskVO>page(page).setList(CdRegisterTaskConver.MAPPER.conver(page.getRecords()));
     }
+
     @Override
     public CdRegisterTaskVO getById(Integer id) {
         return CdRegisterTaskConver.MAPPER.conver(baseMapper.selectById(id));
@@ -47,6 +49,16 @@ public class CdRegisterTaskServiceImpl extends ServiceImpl<CdRegisterTaskDao, Cd
         cdRegisterTask.setRegistrationStatus(RegistrationStatus.RegistrationStatus1.getKey());
         CdRegisterTaskEntity cdRegisterTaskEntity = CdRegisterTaskConver.MAPPER.converDTO(cdRegisterTask);
         return this.save(cdRegisterTaskEntity);
+    }
+
+    @Override
+    public void createRegisterTask(Integer registerCount, Integer countryCode) {
+        CdRegisterTaskDTO registerTaskDTO = new CdRegisterTaskDTO();
+        registerTaskDTO.setTotalAmount(registerCount);
+        registerTaskDTO.setNumberThreads(50);
+        registerTaskDTO.setFillUp(1);
+        registerTaskDTO.setCountryCode(countryCode);
+        this.save(registerTaskDTO);
     }
 
     @Override

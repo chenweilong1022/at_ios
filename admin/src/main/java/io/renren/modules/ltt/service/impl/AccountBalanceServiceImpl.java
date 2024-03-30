@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -128,7 +129,7 @@ public class AccountBalanceServiceImpl extends ServiceImpl<AccountBalanceDao, Ac
      * 保存账户流水
      */
     private AccountDetailsEntity saveAccountDetail(AccountBalanceDTO accountParam,
-                                                                         AccountBalanceEntity accountBalanceEntity) {
+                                                   AccountBalanceEntity accountBalanceEntity) {
         //插入流水表
         AccountDetailsEntity DetailsEntity = new AccountDetailsEntity();
         DetailsEntity.setAccountId(accountBalanceEntity.getAccountId());
@@ -157,6 +158,22 @@ public class AccountBalanceServiceImpl extends ServiceImpl<AccountBalanceDao, Ac
     @Override
     public boolean removeByIds(Collection<? extends Serializable> ids) {
         return super.removeByIds(ids);
+    }
+
+    @Override
+    public boolean judgeAccountBalance(Long sysUserId, BigDecimal amount) {
+        if (ObjectUtil.isNull(sysUserId) || ObjectUtil.isNull(amount)) {
+            return false;
+        }
+        AccountBalanceVO accountBalanceVO = this.getBySysUserId(sysUserId);
+        if (ObjectUtil.isNull(accountBalanceVO) || ObjectUtil.isNull(accountBalanceVO.getBalance())) {
+            return false;
+        }
+        //判断账户余额是否足够
+        if (accountBalanceVO.getBalance().compareTo(amount) >= 1) {
+            return true;
+        }
+        return false;
     }
 
 }

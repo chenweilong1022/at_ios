@@ -2,51 +2,50 @@ package io.renren.modules.ltt.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import io.renren.common.utils.PageUtils;
-import io.renren.modules.ltt.dto.AtUserTokenDTO;
-import io.renren.modules.ltt.vo.AtUserTokenVO;
-import io.renren.modules.ltt.entity.AtUserTokenEntity;
+import io.renren.modules.ltt.dto.AtOrdersDTO;
+import io.renren.modules.ltt.dto.AtOrdersTokenParamDTO;
+import io.renren.modules.ltt.vo.AtOrdersVO;
+import io.renren.modules.ltt.entity.AtOrdersEntity;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.List;
 
 
 /**
- * 用户token数据
+ * 订单表
  *
  * @author chenweilong
  * @email chenweilong@qq.com
- * @date 2024-03-01 02:03:03
+ * @date 2024-03-29 17:15:12
  */
-public interface AtUserTokenService extends IService<AtUserTokenEntity> {
+public interface AtOrdersService extends IService<AtOrdersEntity> {
 
     /**
      * 分页查询
-     * @param atUserToken
+     * @param atOrders
      * @return
      */
-    PageUtils queryPage(AtUserTokenDTO atUserToken);
+    PageUtils queryPage(AtOrdersDTO atOrders);
     /**
      * 根据id查询
-     * @param id
+     * @param orderId
      * @return
      */
-    AtUserTokenVO getById(Integer id);
-    /**
-     * 保存
-     * @param atUserToken
-     * @return
-     */
-    boolean save(AtUserTokenDTO atUserToken);
+    AtOrdersVO getById(Long orderId);
 
-    boolean saveBatch(List<AtUserTokenEntity> userTokenEntityList);
+    /**
+     * 生成token订单
+     * @param atOrders
+     * @return
+     */
+    boolean createOrderToken(AtOrdersTokenParamDTO atOrders);
 
     /**
      * 根据id修改
-     * @param atUserToken
+     * @param atOrders
      * @return
      */
-    boolean updateById(AtUserTokenDTO atUserToken);
+    boolean updateById(AtOrdersDTO atOrders);
     /**
      * 根据id删除
      * @param id
@@ -62,7 +61,5 @@ public interface AtUserTokenService extends IService<AtUserTokenEntity> {
      */
     @Override
     boolean removeByIds(Collection<? extends Serializable> ids);
-
-    List<AtUserTokenEntity> selectBatchIds(List<Integer> ids);
 }
 
