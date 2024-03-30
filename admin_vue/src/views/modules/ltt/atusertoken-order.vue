@@ -40,7 +40,7 @@
             v-for="item in countryCodes"
             :key="item.value"
             :label="item.value"
-            :value="item.key">
+            :value="item.value">
           </el-option>
         </el-select>
       </el-form-item>

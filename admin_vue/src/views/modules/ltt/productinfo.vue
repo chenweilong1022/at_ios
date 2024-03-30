@@ -45,7 +45,7 @@
         align="center"
         label="国号(区号)">
         <template slot-scope="scope">
-          <el-tag v-for="item in countryCodes" :key="item.key" v-if="scope.row.countryCode === item.key">
+          <el-tag v-for="item in countryCodes" :key="item.key" v-if="scope.row.countryCode === item.value">
             {{ item.value }}
           </el-tag>
         </template>

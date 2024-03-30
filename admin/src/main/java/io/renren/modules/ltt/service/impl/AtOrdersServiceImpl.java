@@ -1,13 +1,17 @@
 package io.renren.modules.ltt.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
+import io.renren.modules.ltt.conver.AccountBalanceConver;
 import io.renren.modules.ltt.dto.AccountBalanceDTO;
 import io.renren.modules.ltt.dto.AtOrdersTokenParamDTO;
 import io.renren.modules.ltt.enums.*;
 import io.renren.modules.ltt.service.*;
+import io.renren.modules.ltt.vo.AccountBalanceVO;
 import io.renren.modules.ltt.vo.ProductInfoVO;
+import io.renren.modules.sys.service.SysUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -28,6 +32,9 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @Service("atOrdersService")
@@ -49,16 +56,30 @@ public class AtOrdersServiceImpl extends ServiceImpl<AtOrdersDao, AtOrdersEntity
     @Resource
     private AtUserTokenService atUserTokenService;
 
+    @Resource
+    private SysUserService sysUserService;
 
     @Override
     public PageUtils<AtOrdersVO> queryPage(AtOrdersDTO atOrders) {
         IPage<AtOrdersEntity> page = baseMapper.selectPage(
                 new Query<AtOrdersEntity>(atOrders).getPage(),
                 new QueryWrapper<AtOrdersEntity>().lambda()
+                        .eq(ObjectUtil.isNotNull(atOrders.getSysUserId()),AtOrdersEntity::getSysUserId,atOrders.getSysUserId() )
+                        .eq(ObjectUtil.isNotNull(atOrders.getOrderStatus()),AtOrdersEntity::getOrderStatus,atOrders.getOrderStatus() )
+                        .eq(ObjectUtil.isNotNull(atOrders.getProductType()),AtOrdersEntity::getProductType,atOrders.getProductType() )
+                        .eq(ObjectUtil.isNotNull(atOrders.getCountryCode()),AtOrdersEntity::getCountryCode,atOrders.getCountryCode() )
                         .orderByDesc(AtOrdersEntity::getOrderTime)
         );
 
-        return PageUtils.<AtOrdersVO>page(page).setList(AtOrdersConver.MAPPER.conver(page.getRecords()));
+        List<AtOrdersVO> resultList = AtOrdersConver.MAPPER.conver(page.getRecords());
+        if (CollectionUtil.isNotEmpty(resultList)) {
+            List<Long> sysUserIdList = resultList.stream().map(AtOrdersVO::getSysUserId).collect(Collectors.toList());
+            //查询username
+            Map<Long, String> usernameMap = sysUserService.queryUserNameByUserIdList(sysUserIdList);
+            resultList.forEach(i -> i.setSysUsername(usernameMap.get(i.getSysUserId())));
+        }
+
+        return PageUtils.<AtOrdersVO>page(page).setList(resultList);
     }
 
     @Override

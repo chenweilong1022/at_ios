@@ -37,6 +37,11 @@ public class AtOrdersVO implements Serializable {
 	@ApiModelProperty(required=false,value="用户ID")
 	private Long sysUserId;
 	/**
+	 * 用户ID
+	 */
+	@ApiModelProperty(required=false,value="用户ID")
+	private String sysUsername;
+	/**
 	 * 订单状态（待处理，处理中，已完成）
 	 */
 	@ApiModelProperty(required=false,value="订单状态（待处理，处理中，已完成）")

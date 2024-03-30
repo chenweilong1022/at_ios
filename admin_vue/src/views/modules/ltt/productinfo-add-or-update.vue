@@ -31,9 +31,9 @@
           placeholder="请选择国家">
           <el-option
             v-for="item in countryCodes"
-            :key="item.key"
+            :key="item.value"
             :label="item.value"
-            :value="item.key">
+            :value="item.value">
           </el-option>
         </el-select>
       </el-form-item>
