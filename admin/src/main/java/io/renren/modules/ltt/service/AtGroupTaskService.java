@@ -5,6 +5,7 @@ import io.renren.common.utils.PageUtils;
 import io.renren.modules.ltt.dto.AtGroupTaskDTO;
 import io.renren.modules.ltt.vo.AtGroupTaskVO;
 import io.renren.modules.ltt.entity.AtGroupTaskEntity;
+import io.renren.modules.ltt.vo.OnGroupPreVO;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -71,6 +72,12 @@ public interface AtGroupTaskService extends IService<AtGroupTaskEntity> {
      * 群预览
      * @param atGroupTask
      */
-    void onGroupPre(AtGroupTaskDTO atGroupTask);
+    List<OnGroupPreVO> onGroupPre(AtGroupTaskDTO atGroupTask);
+
+    /**
+     * 拉群开始
+     * @param atGroupTask
+     */
+    void onGroupStart(AtGroupTaskDTO atGroupTask);
 }
 

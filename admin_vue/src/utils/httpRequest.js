@@ -9,7 +9,8 @@ const http = axios.create({
   timeout: 1000 * 30,
   withCredentials: true,
   headers: {
-    'Content-Type': 'application/json; charset=utf-8'
+    'Content-Type': 'application/json; charset=utf-8',
+    'token': '092327affe90899052e67d79785caaae'
   }
 })
 
@@ -18,7 +19,7 @@ const http = axios.create({
  */
 http.interceptors.request.use(config => {
   // config.headers['token'] = Vue.cookie.get('token') // 请求头带上token
-  config.headers['token'] = '4a6d677605854a4a2f437cb8dcb0eeae' // 请求头带上token
+  config.headers['token'] = '092327affe90899052e67d79785caaae' // 请求头带上token
   return config
 }, error => {
   return Promise.reject(error)

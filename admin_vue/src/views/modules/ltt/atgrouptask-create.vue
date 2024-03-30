@@ -73,7 +73,42 @@
 
           <el-row>
             <el-col :span="24">
+              <el-button @click="startGroup">开始拉群</el-button>
               <el-button @click="onGroupPreHandler">预览</el-button>
+              <el-button @click="hide">隐藏表格</el-button>
+              <el-button @click="show">显示表格</el-button>
+            </el-col>
+          </el-row>
+
+          <el-row>
+            <el-col :span="24">
+              <el-table
+                v-if="tableDataFlag"
+                :data="tableData"
+                style="width: 100%">
+                <el-table-column :label="remaining" align="center">
+                  <el-table-column
+                    prop="groupName"
+                    align="center"
+                    label="群名称">
+                  </el-table-column>
+                  <el-table-column
+                    align="center"
+                    prop="navyTextListsStr"
+                    label="水军">
+                  </el-table-column>
+                  <el-table-column
+                    align="center"
+                    prop="materialUrlsStr"
+                    label="料子">
+                  </el-table-column>
+                  <el-table-column
+                    align="center"
+                    prop="total"
+                    label="总和">
+                  </el-table-column>
+                </el-table-column>
+              </el-table>
             </el-col>
           </el-row>
 
@@ -97,10 +132,13 @@ import ModalBox from './modalbox.vue'
   export default {
     data () {
       return {
+        tableData: [],
         navyUrlFileList: [],
         materialUrlFileList: [],
         isModalVisible: false,
+        tableDataFlag: false,
         fileContentList: [],
+        remaining: '',
         dataRule: {
         },
         dataForm: {
@@ -119,7 +157,14 @@ import ModalBox from './modalbox.vue'
       console.log(userId)
     },
     methods: {
+      hide () {
+        this.tableDataFlag = false;
+      },
+      show () {
+        this.tableDataFlag = true;
+      },
       onGroupPreHandler () {
+        this.show()
         this.dataForm.navyUrlList = []
         for (let i = 0; i < this.navyUrlFileList.length; i++) {
           let data = this.navyUrlFileList[i]
@@ -143,7 +188,8 @@ import ModalBox from './modalbox.vue'
           })
         }).then(({data}) => {
           if (data && data.code === 0) {
-            this.fileContentList = data.data
+            this.tableData = data.onGroupPreVOS
+            this.remaining = data.remaining
           } else {
             this.$message.error(data.msg)
           }

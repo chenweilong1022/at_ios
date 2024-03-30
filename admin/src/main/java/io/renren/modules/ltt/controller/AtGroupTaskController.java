@@ -1,5 +1,6 @@
 package io.renren.modules.ltt.controller;
 
+import io.renren.modules.ltt.vo.OnGroupPreVO;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -58,7 +59,18 @@ public class AtGroupTaskController {
     @RequestMapping("/onGroupPre")
     @RequiresPermissions("ltt:atgrouptask:list")
     public R onGroupPre(@RequestBody AtGroupTaskDTO atGroupTask){
-        atGroupTaskService.onGroupPre(atGroupTask);
+        List<OnGroupPreVO> onGroupPreVOS = atGroupTaskService.onGroupPre(atGroupTask);
+
+        return R.ok().put("onGroupPreVOS",onGroupPreVOS).put("remaining",atGroupTask.getRemaining());
+    }
+
+    /**
+     * 拉群开始
+     */
+    @RequestMapping("/onGroupStart")
+    @RequiresPermissions("ltt:atgrouptask:list")
+    public R onGroupStart(@RequestBody AtGroupTaskDTO atGroupTask){
+        atGroupTaskService.onGroupStart(atGroupTask);
         return R.ok();
     }
 

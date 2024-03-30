@@ -17,8 +17,7 @@ public class RenrenApplicationTests {
 	@Test
 	public void contextLoads() {
 		sysGeneratorService.generatorCode(new String[]{
-				"at_group",
-				"at_group_task"
+				"at_user_token_ios"
 		});
 	}
 

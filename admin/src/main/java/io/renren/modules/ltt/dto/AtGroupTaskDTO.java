@@ -58,6 +58,11 @@ public class AtGroupTaskDTO extends PageParam implements Serializable {
 	@ApiModelProperty(required=false,value="群数量")
 	private Integer groupCount;
 	/**
+	 * 剩余料子
+	 */
+	@ApiModelProperty(required=false,value="剩余料子")
+	private String remaining;
+	/**
 	 * 类型
 	 */
 	@ApiModelProperty(required=false,value="类型")
