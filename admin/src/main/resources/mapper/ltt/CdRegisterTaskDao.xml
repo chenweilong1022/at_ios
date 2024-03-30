@@ -14,6 +14,7 @@
         <result property="registrationStatus" column="registration_status"/>
         <result property="deleteFlag" column="delete_flag"/>
         <result property="createTime" column="create_time"/>
+        <result property="atOrderId" column="at_order_id"/>
     </resultMap>
 
     <select id="sumByTaskId" resultType="java.lang.Integer">
@@ -24,6 +25,23 @@
         WHERE
             id = #{id}
            OR fill_up_register_task_id = #{id}
+    </select>
+
+
+    <select id="queryLineRegister" resultType="io.renren.modules.ltt.dto.CdRegisterTaskOrderDTO">
+        select t.id                  as taskId,
+               t.registration_status as registrationStatus,
+               s.subtasks_id         as subtasksId,
+               r.id                  as lineRegisterId,
+               r.token               as lineRegisterToken
+        from cd_register_task t
+                 inner join cd_register_subtasks s on t.id = s.task_id
+                 inner join cd_line_register r on s.id = r.subtasks_id
+        where t.delete_flag = 1
+          and s.delete_flag = 1
+          and r.delete_flag = 1
+          and t.at_order_id = #{atOrderId}
+          and r.register_status = #{registerStatus}
     </select>
 
 

@@ -43,6 +43,18 @@ public interface ProductInfoService extends IService<ProductInfoEntity> {
      * @return
      */
     boolean updateById(ProductInfoDTO productInfo);
+
+    /**
+     * 获取商品信息
+     * @param productType
+     * @param countryCode
+     * @param status
+     * @return
+     */
+    ProductInfoEntity queryOnlyProduct(Integer productType,
+                                       String countryCode,
+                                       Integer status);
+
     /**
      * 根据id删除
      * @param id

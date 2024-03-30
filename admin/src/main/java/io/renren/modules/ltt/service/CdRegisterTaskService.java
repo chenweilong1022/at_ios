@@ -37,6 +37,14 @@ public interface CdRegisterTaskService extends IService<CdRegisterTaskEntity> {
      * @return
      */
     boolean save(CdRegisterTaskDTO cdRegisterTask);
+
+    /**
+     * 创建注册任务
+     * @param registerCount 注册数量
+     * @param countryCode 国家code
+     */
+    void createRegisterTask(Integer registerCount, Integer countryCode);
+
     /**
      * 根据id修改
      * @param cdRegisterTask

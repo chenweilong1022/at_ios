@@ -73,6 +73,11 @@ public class AtUserTokenServiceImpl extends ServiceImpl<AtUserTokenDao, AtUserTo
     }
 
     @Override
+    public boolean saveUserTokenBatch(List<AtUserTokenEntity>  userTokenEntityList) {
+        return this.saveBatch(userTokenEntityList);
+    }
+
+    @Override
     public boolean updateById(AtUserTokenDTO atUserToken) {
         AtUserTokenEntity atUserTokenEntity = AtUserTokenConver.MAPPER.converDTO(atUserToken);
         return this.updateById(atUserTokenEntity);

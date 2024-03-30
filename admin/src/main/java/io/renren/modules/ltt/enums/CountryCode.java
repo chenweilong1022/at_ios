@@ -3,8 +3,10 @@
 package io.renren.modules.ltt.enums;
 
 
+import cn.hutool.core.util.ObjectUtil;
 import io.renren.common.base.interfaces.BaseEnum;
 import lombok.Getter;
+import org.apache.commons.lang.StringUtils;
 
 @Getter
 public enum CountryCode implements BaseEnum {
@@ -32,5 +34,17 @@ public enum CountryCode implements BaseEnum {
 
     public String getValue() {
         return value;
+    }
+
+    public static Integer getKeyByValue(String value) {
+        if (StringUtils.isEmpty(value)) {
+            return null;
+        }
+        for (CountryCode typeEnum : CountryCode.values()) {
+            if (typeEnum.getValue().equals(value)) {
+                return typeEnum.getKey();
+            }
+        }
+        return null;
     }
 }

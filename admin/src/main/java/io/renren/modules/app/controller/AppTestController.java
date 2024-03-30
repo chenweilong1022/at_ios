@@ -2,15 +2,12 @@ package io.renren.modules.app.controller;
 
 
 import io.renren.common.base.vo.EnumVo;
-import io.renren.modules.ltt.enums.AccountTransactionStatusEnum;
-import io.renren.modules.ltt.enums.AccountTransactionTypeEnum;
+import io.renren.modules.ltt.enums.*;
 import io.renren.common.utils.EnumUtil;
 import io.renren.common.utils.R;
 import io.renren.common.validator.AssertI18n;
 import io.renren.modules.app.code.UserCode;
 import io.renren.modules.app.dto.UserUpdateDTO;
-import io.renren.modules.ltt.enums.CountryCode;
-import io.renren.modules.ltt.enums.ProductTypeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -62,6 +59,12 @@ public class AppTestController {
     @GetMapping("enums/getProductTypeCodes")
     public R getProductTypeCodes() {
         List<EnumVo> enumVos = EnumUtil.enumToVo(ProductTypeEnum.values());
+        return R.data(enumVos);
+    }
+
+    @GetMapping("enums/getOrderStatus")
+    public R getOrderStatus() {
+        List<EnumVo> enumVos = EnumUtil.enumToVo(OrderStatus.values());
         return R.data(enumVos);
     }
 

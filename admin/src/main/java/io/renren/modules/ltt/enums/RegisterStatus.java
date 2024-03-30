@@ -16,6 +16,7 @@ public enum RegisterStatus implements BaseEnum {
     RegisterStatus8(8,"账号被二次接码"),
     RegisterStatus9(9,"真机注册"),
     RegisterStatus10(10,"账号锁了"),
+    RegisterStatus11(11,"已购买"),
     ;
 
     RegisterStatus(Integer key, String value) {

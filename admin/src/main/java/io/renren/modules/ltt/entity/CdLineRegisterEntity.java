@@ -139,7 +139,7 @@ public class CdLineRegisterEntity implements Serializable {
 	/**
 	 *
 	 */
-	@ApiModelProperty(required=false,value="")
+	@ApiModelProperty(required=false,value="首次卡/二次卡")
 	private Integer accountExistStatus;
 	/**
 	 *

@@ -76,4 +76,24 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
         return baseMapper.getCountBySubTaskId(registerSubtasksIds);
     }
 
+    @Override
+    public Integer getCountByRegisterStatus(Integer registerStatus,
+                                            String countryCode) {
+        Integer count = baseMapper.selectCount(new QueryWrapper<CdLineRegisterEntity>().lambda()
+                .eq(CdLineRegisterEntity::getRegisterStatus, registerStatus)
+                .eq(CdLineRegisterEntity::getCountryCode, countryCode));
+        return count == null ? 0 : count;
+    }
+
+    @Override
+    public List<CdLineRegisterVO> getListByRegisterStatus(Integer registerStatus,
+                                                          String countryCode,
+                                                          Integer limit) {
+        List<CdLineRegisterEntity> list = baseMapper.selectList(new QueryWrapper<CdLineRegisterEntity>().lambda()
+                .eq(CdLineRegisterEntity::getRegisterStatus, registerStatus)
+                .eq(CdLineRegisterEntity::getCountryCode, countryCode)
+                .last("limit " + limit));
+        return CdLineRegisterConver.MAPPER.conver(list);
+    }
+
 }

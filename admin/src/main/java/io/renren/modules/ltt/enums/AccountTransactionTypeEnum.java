@@ -15,7 +15,8 @@ public enum AccountTransactionTypeEnum implements BaseEnum {
      */
     RECHARGE(1, "充值"),
     //todo 暂时未定义具体消费项目，以后再改
-    CONSUMPTION(2, "消费"),
+    ACCOUNT_TOKEN(2, "购买账号"),
+    CONSUMPTION(999, "消费"),
     ;
 
     AccountTransactionTypeEnum(int key, String value) {
