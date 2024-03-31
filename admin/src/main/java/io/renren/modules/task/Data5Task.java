@@ -97,7 +97,7 @@
 //
 //
 //    /**
-//     * 更新头像结果返回
+//     *
 //     */
 //    @Scheduled(fixedDelay = 5000)
 //    @Transactional(rollbackFor = Exception.class)

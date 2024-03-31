@@ -1,6 +1,7 @@
 package io.renren.modules.ltt.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
@@ -67,4 +68,7 @@ public class AtUserTokenEntity implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="管理账户id")
 	private Long sysUserId;
+
+	@TableField(exist = false)
+	private String telephone;
 }
