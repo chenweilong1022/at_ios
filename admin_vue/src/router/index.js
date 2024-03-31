@@ -36,6 +36,7 @@ const mainRoutes = {
     { path: '/home', component: _import('common/home'), name: 'home', meta: { title: '首页' } },
     { path: '/theme', component: _import('common/theme'), name: 'theme', meta: { title: '主题' } },
     { path: '/atgrouptask-create', component: _import('modules/ltt/atgrouptask-create'), name: 'atgrouptask-create', meta: { title: '拉群任务创建', isTab: true} },
+    { path: '/ltt-accountdetails', component: _import('modules/ltt/accountdetails'), name: 'ltt-accountdetails', meta: { title: '账户流水明细', isTab: true} },
     { path: '/demo-echarts', component: _import('demo/echarts'), name: 'demo-echarts', meta: { title: 'demo-echarts', isTab: true } },
     { path: '/demo-ueditor', component: _import('demo/ueditor'), name: 'demo-ueditor', meta: { title: 'demo-ueditor', isTab: true } }
   ],

@@ -162,23 +162,21 @@
       AddOrUpdate
     },
     activated () {
+      this.init()
       this.getDataList()
       this.getAccountTransactionTypeCodes()
       this.getAccountTransactionStatusCodes()
     },
     methods: {
-      init (sysUserId, sysUserName) {
-        this.dataForm.sysUserId = null
-        this.$nextTick(() => {
-          // this.$refs['dataForm'].resetFields()
-          if (sysUserId) {
-            this.dataForm.sysUserId = sysUserId
-            this.sysUserAccountOptions = [{
-              userId: sysUserId,
-              username: sysUserName
-            }]
-          }
-        })
+      init() {
+        this.dataForm.sysUserId = this.$route.query.sysUserId
+        this.dataForm.sysUsername = this.$route.query.sysUsername
+        if (this.dataForm.sysUserId) {
+          this.sysUserAccountOptions = [{
+            userId: this.dataForm.sysUserId,
+            username: this.dataForm.sysUsername
+          }]
+        }
       },
       // 获取数据列表
       getDataList () {

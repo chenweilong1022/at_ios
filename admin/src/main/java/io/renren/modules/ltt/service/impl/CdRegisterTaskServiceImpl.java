@@ -39,6 +39,7 @@ public class CdRegisterTaskServiceImpl extends ServiceImpl<CdRegisterTaskDao, Cd
                 new Query<CdRegisterTaskEntity>(cdRegisterTask).getPage(),
                 new QueryWrapper<CdRegisterTaskEntity>().lambda()
                         .lt(CdRegisterTaskEntity::getFillUpRegisterTaskId, 0)
+                        .orderByDesc(CdRegisterTaskEntity::getId)
         );
 
         return PageUtils.<CdRegisterTaskVO>page(page).setList(CdRegisterTaskConver.MAPPER.conver(page.getRecords()));

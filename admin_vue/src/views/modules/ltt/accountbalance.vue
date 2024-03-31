@@ -155,7 +155,7 @@
       accountDetailHandle (sysUserId, sysUsername) {
         this.accountDetailVisible = true
         this.$nextTick(() => {
-          this.$refs.accountdetails.init(sysUserId, sysUsername)
+          this.$router.push({name: 'ltt-accountdetails', query: { sysUserId: sysUserId, sysUsername: sysUsername}})
         })
       },
       // 删除
