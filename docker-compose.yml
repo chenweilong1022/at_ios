@@ -1,15 +1,16 @@
 version: '3'
 services:
-  sweat:
-    container_name: sweat
+  atios:
+    container_name: atios
     build:
-      context: ./sweat_x/admin/
+      context: ./at_ios/admin/
       dockerfile: Dockerfile
-    image: sweat:1.0.0
+    image: atios:1.0.0
     env_file:
       - ./app.env
     volumes:
-      - /Users/chenweilong/sweat/home/webfile:/home/webfile
+      - /home/webfile:/home/webfile
     ports:
       - "8880:8880"
+      - "8888:8888"
     restart: always
