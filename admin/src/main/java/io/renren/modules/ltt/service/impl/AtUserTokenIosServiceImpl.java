@@ -34,10 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.*;
 
 
 @Service("atUserTokenIosService")
@@ -174,6 +171,23 @@ public class AtUserTokenIosServiceImpl extends ServiceImpl<AtUserTokenIosDao, At
 
     @Override
     public void backUp(AtUserTokenIosDTO atUserTokenIos) {
+        if (CollUtil.isNotEmpty(atUserTokenIos.getIds())) {
+            List<AtUserTokenIosEntity> atUserTokenIosEntities = this.listByIds(atUserTokenIos.getIds());
+            for (AtUserTokenIosEntity atUserTokenIosEntity : atUserTokenIosEntities) {
+                IOSTaskVO iosTaskVO = new IOSTaskVO();
+                iosTaskVO.setTaskType("backup");
+                iosTaskVO.setPhone(atUserTokenIosEntity.getPhoneNumber().replace("+",""));
+
+                String deviceId = atUserTokenIosEntity.getDeviceId();
+                Queue<IOSTaskVO> cacheIOSTaskVOIfPresent = stringQueueCacheIOSTaskVO.getIfPresent(deviceId);
+                if (CollUtil.isEmpty(cacheIOSTaskVOIfPresent) || cacheIOSTaskVOIfPresent.isEmpty()) {
+                    cacheIOSTaskVOIfPresent = new LinkedList<>();
+                }
+                cacheIOSTaskVOIfPresent.offer(iosTaskVO);
+                stringQueueCacheIOSTaskVO.put(deviceId,cacheIOSTaskVOIfPresent);
+            }
+            return;
+        }
         IOSTaskVO iosTaskVO = new IOSTaskVO();
         iosTaskVO.setTaskType("backup");
         iosTaskVO.setPhone(atUserTokenIos.getPhoneNumber().replace("+",""));

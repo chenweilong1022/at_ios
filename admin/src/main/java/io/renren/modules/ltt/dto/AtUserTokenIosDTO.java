@@ -8,6 +8,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.experimental.Accessors;
+
+import java.util.List;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -31,6 +33,8 @@ public class AtUserTokenIosDTO extends PageParam implements Serializable {
 	@TableId(type = IdType.AUTO)
 	@ApiModelProperty(required=false,value="主键")
 	private Integer id;
+	@ApiModelProperty(required=false,value="主键")
+	private List<Integer> ids;
 	/**
 	 * country
 	 */
