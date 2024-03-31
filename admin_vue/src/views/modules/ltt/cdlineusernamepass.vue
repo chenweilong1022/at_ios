@@ -6,8 +6,8 @@
       </el-form-item>
       <el-form-item>
         <el-button @click="getDataList()">查询</el-button>
-        <el-button v-if="isAuth('ltt:atusertokenios:save')" type="primary" @click="addOrUpdateHandle()">新增</el-button>
-        <el-button v-if="isAuth('ltt:atusertokenios:delete')" type="danger" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>
+        <el-button v-if="isAuth('ltt:cdlineusernamepass:save')" type="primary" @click="addOrUpdateHandle()">新增</el-button>
+        <el-button v-if="isAuth('ltt:cdlineusernamepass:delete')" type="danger" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>
       </el-form-item>
     </el-form>
     <el-table
@@ -26,55 +26,31 @@
         prop="id"
         header-align="center"
         align="center"
-        label="主键">
+        label="">
       </el-table-column>
       <el-table-column
-        prop="country"
+        prop="username"
         header-align="center"
         align="center"
-        label="country">
+        label="">
       </el-table-column>
       <el-table-column
-        prop="bundleId"
+        prop="pass"
         header-align="center"
         align="center"
-        label="bundleId">
-      </el-table-column>
-      <el-table-column
-        prop="userName"
-        header-align="center"
-        align="center"
-        label="userName">
-      </el-table-column>
-      <el-table-column
-        prop="phoneNumber"
-        header-align="center"
-        align="center"
-        label="phoneNumber">
-      </el-table-column>
-      <el-table-column
-        prop="mid"
-        header-align="center"
-        align="center"
-        label="mid">
-      </el-table-column>
-      <el-table-column
-        prop="useFlag"
-        header-align="center"
-        align="center"
-        label="使用状态">
+        label="">
       </el-table-column>
       <el-table-column
         prop="deleteFlag"
         header-align="center"
         align="center"
-        label="删除标志">
+        label="">
       </el-table-column>
       <el-table-column
         prop="createTime"
         header-align="center"
         align="center"
-        label="创建时间">
+        label="">
       </el-table-column>
       <el-table-column
         fixed="right"
@@ -85,7 +61,6 @@
         <template slot-scope="scope">
           <el-button type="text" size="small" @click="addOrUpdateHandle(scope.row.id)">修改</el-button>
           <el-button type="text" size="small" @click="deleteHandle(scope.row.id)">删除</el-button>
-          <el-button type="text" size="small" @click="restoreDataHandle(scope.row.id)">还原</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -104,7 +79,7 @@
 </template>
 
 <script>
-  import AddOrUpdate from './atusertokenios-add-or-update'
+  import AddOrUpdate from './cdlineusernamepass-add-or-update'
   export default {
     data () {
       return {
@@ -131,7 +106,7 @@
       getDataList () {
         this.dataListLoading = true
         this.$http({
-          url: this.$http.adornUrl('/ltt/atusertokenios/list'),
+          url: this.$http.adornUrl('/ltt/cdlineusernamepass/list'),
           method: 'get',
           params: this.$http.adornParams({
             'page': this.pageIndex,
@@ -171,36 +146,6 @@
           this.$refs.addOrUpdate.init(id)
         })
       },
-      restoreDataHandle (id) {
-        var ids = id ? [id] : this.dataListSelections.map(item => {
-          return item.id
-        })
-        this.$confirm(`确定对[id=${ids.join(',')}]进行[${id ? '还原' : '批量还原'}]操作?`, '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          this.$http({
-            url: this.$http.adornUrl('/ltt/atusertokenios/taskIosFind'),
-            method: 'post',
-            data: this.$http.adornData(ids, false)
-          }).then(({data}) => {
-            if (data && data.code === 0) {
-              this.$message({
-                message: '操作成功',
-                type: 'success',
-                duration: 1500,
-                onClose: () => {
-                  this.getDataList()
-                }
-              })
-            } else {
-              this.$message.error(data.msg)
-            }
-          })
-        })
-
-      },
       // 删除
       deleteHandle (id) {
         var ids = id ? [id] : this.dataListSelections.map(item => {
@@ -212,7 +157,7 @@
           type: 'warning'
         }).then(() => {
           this.$http({
-            url: this.$http.adornUrl('/ltt/atusertokenios/delete'),
+            url: this.$http.adornUrl('/ltt/cdlineusernamepass/delete'),
             method: 'post',
             data: this.$http.adornData(ids, false)
           }).then(({data}) => {

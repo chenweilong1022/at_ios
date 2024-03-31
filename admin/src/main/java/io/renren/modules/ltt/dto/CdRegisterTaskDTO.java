@@ -75,6 +75,11 @@ public class CdRegisterTaskDTO extends PageParam implements Serializable {
 	 *
 	 */
 	@ApiModelProperty(required=false,value="")
+	private Integer realMachine;
+	/**
+	 *
+	 */
+	@ApiModelProperty(required=false,value="")
 	private Integer deleteFlag;
 	/**
 	 *

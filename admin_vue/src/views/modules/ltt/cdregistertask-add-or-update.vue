@@ -10,6 +10,12 @@
       <el-form-item label="线程数" prop="numberThreads">
         <el-input v-model="dataForm.numberThreads" placeholder="线程数"></el-input>
       </el-form-item>
+      <el-form-item label="是否真机">
+        <el-radio-group v-model="dataForm.realMachine">
+          <el-radio :label="1">否</el-radio>
+          <el-radio :label="2">是</el-radio>
+        </el-radio-group>
+      </el-form-item>
       <el-form-item label="是否自动补充">
         <el-radio-group v-model="dataForm.fillUp">
           <el-radio :label="0">补充</el-radio>
@@ -81,6 +87,7 @@ export default {
         numberSuccesses: '',
         numberFailures: '',
         registrationStatus: '',
+        realMachine: 1,
         deleteFlag: '',
         countryCode: 66,
         fillUp: 1,
@@ -170,6 +177,7 @@ export default {
               'numberFailures': this.dataForm.numberFailures,
               'registrationStatus': this.dataForm.registrationStatus,
               'fillUp': this.dataForm.fillUp,
+              'realMachine': this.dataForm.realMachine,
               'countryCode': this.dataForm.countryCode,
               'deleteFlag': this.dataForm.deleteFlag,
               'createTime': this.dataForm.createTime

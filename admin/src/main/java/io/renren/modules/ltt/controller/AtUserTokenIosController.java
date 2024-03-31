@@ -1,7 +1,10 @@
 package io.renren.modules.ltt.controller;
 
 import java.util.Arrays;
+import java.util.Queue;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import io.renren.modules.ltt.vo.IOSTaskVO;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,6 +18,7 @@ import io.renren.modules.ltt.service.AtUserTokenIosService;
 import io.renren.common.utils.PageUtils;
 import io.renren.common.utils.R;
 
+import javax.annotation.Resource;
 
 
 /**
@@ -52,6 +56,20 @@ public class AtUserTokenIosController {
 
         return R.ok().put("atUserTokenIos", atUserTokenIos);
     }
+
+
+
+
+    /**
+     * 去找手机
+     */
+    @RequestMapping("/taskIosFind")
+    @RequiresPermissions("ltt:atusertokenios:save")
+    public R taskIosFind(@RequestBody Integer[] ids){
+        atUserTokenIosService.taskIosFind(ids);
+        return R.ok();
+    }
+
 
     /**
      * 保存

@@ -17,7 +17,7 @@ public class RenrenApplicationTests {
 	@Test
 	public void contextLoads() {
 		sysGeneratorService.generatorCode(new String[]{
-				"at_user_token_ios"
+				"cd_line_username_pass"
 		});
 	}
 

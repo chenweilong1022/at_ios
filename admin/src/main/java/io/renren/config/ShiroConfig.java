@@ -74,6 +74,7 @@ public class ShiroConfig {
         filterMap.put("/captcha.jpg", "anon");
         filterMap.put("/ltt/cdlineip/save", "anon");
         filterMap.put("/app/token/syncAppToken", "anon");
+        filterMap.put("/ltt/cdlineusernamepass/save", "anon");
         filterMap.put("/**", "oauth2");
         shiroFilter.setFilterChainDefinitionMap(filterMap);
 

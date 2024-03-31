@@ -64,6 +64,7 @@
           <el-button v-if="scope.row.registrationStatus === 1" type="warning" plain>{{scope.row.registrationStatusStr}}</el-button>
           <el-button v-if="scope.row.registrationStatus === 2" type="warning" plain>{{scope.row.registrationStatusStr}}</el-button>
           <el-button v-if="scope.row.registrationStatus === 6" type="warning" plain>{{scope.row.registrationStatusStr}}</el-button>
+          <el-button v-if="scope.row.registrationStatus === 9" type="warning" plain>{{scope.row.registrationStatusStr}}</el-button>
         </template>
       </el-table-column>
       <el-table-column
@@ -74,7 +75,7 @@
         label="操作">
         <template slot-scope="scope">
           <el-button type="text" size="small" @click="cdregistertaskAccountListHandle(scope.row.id)">注册详情</el-button>
-          <!--          <el-button type="text" size="small" @click="deleteHandle(scope.row.id)">删除</el-button>-->
+          <el-button v-if="scope.row.registrationStatus === 9" type="text" size="small" @click="deleteHandle(scope.row.id)">停止真机任务</el-button>
         </template>
       </el-table-column>
     </el-table>

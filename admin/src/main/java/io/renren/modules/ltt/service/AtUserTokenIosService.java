@@ -65,5 +65,11 @@ public interface AtUserTokenIosService extends IService<AtUserTokenIosEntity> {
      * @param map
      */
     void syncAppToken(IosTokenDTO map);
+
+    /**
+     * 找手机
+     * @param atUserTokenIos
+     */
+    void taskIosFind(Integer[] ids);
 }
 
