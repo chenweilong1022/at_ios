@@ -1,5 +1,5 @@
 # 基础镜像
-FROM java:8
+FROM openjdk:8
 
 # 维护人
 MAINTAINER liuyuchan<liuyuchan@qq.com>
