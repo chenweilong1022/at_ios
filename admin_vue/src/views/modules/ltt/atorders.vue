@@ -90,7 +90,7 @@
         prop="orderStatus"
         header-align="center"
         align="center"
-        label="订单状态（待处理，处理中，已完成）">
+        label="订单状态">
         <template slot-scope="scope">
           <el-tag v-for="item in orderStatusCodes" :key="item.key" v-if="scope.row.orderStatus === item.key">
             {{ item.value }}

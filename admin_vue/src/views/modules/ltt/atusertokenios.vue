@@ -1,8 +1,47 @@
 <template>
   <div class="mod-config">
     <el-form :inline="true" :model="dataForm" @keyup.enter.native="getDataList()">
-      <el-form-item>
-        <el-input v-model="dataForm.key" placeholder="参数名" clearable></el-input>
+      <el-form-item label="所属账号" prop="sysUserId">
+        <el-select
+          v-model="dataForm.sysUserId"
+          filterable clearable
+          remote
+          placeholder="请选择账号"
+          :remote-method="queryBySearchWord"
+          :loading="loading">
+          <el-option
+            v-for="item in sysUserAccountOptions"
+            :key="item.userId"
+            :label="item.username"
+            :value="item.userId">
+          </el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="国号(区号)" prop="country">
+        <el-select
+          v-model="dataForm.country"
+          filterable clearable
+          placeholder="请选择国家">
+          <el-option
+            v-for="item in countryCodes"
+            :key="item.value"
+            :label="item.value"
+            :value="item.value">
+          </el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="是否还原" prop="reductionFlag">
+        <el-select
+          v-model="dataForm.reductionFlag"
+          filterable clearable
+          placeholder="请选择是否已还原">
+          <el-option
+            v-for="item in reductionFlagCodes"
+            :key="item.key"
+            :label="item.value"
+            :value="item.key">
+          </el-option>
+        </el-select>
       </el-form-item>
       <el-form-item>
         <el-button @click="getDataList()">查询</el-button>
@@ -58,17 +97,22 @@
         align="center"
         label="mid">
       </el-table-column>
+<!--      <el-table-column-->
+<!--        prop="useFlag"-->
+<!--        header-align="center"-->
+<!--        align="center"-->
+<!--        label="使用状态">-->
+<!--      </el-table-column>-->
       <el-table-column
-        prop="useFlag"
+        prop="reductionFlag"
         header-align="center"
         align="center"
-        label="使用状态">
-      </el-table-column>
-      <el-table-column
-        prop="deleteFlag"
-        header-align="center"
-        align="center"
-        label="删除标志">
+        label="还原状态">
+        <template slot-scope="scope">
+          <el-tag v-for="item in reductionFlagCodes" :key="item.key" v-if="scope.row.reductionFlag === item.key">
+            {{ item.value }}
+          </el-tag>
+        </template>
       </el-table-column>
       <el-table-column
         prop="createTime"
@@ -109,7 +153,9 @@
     data () {
       return {
         dataForm: {
-          key: ''
+          reductionFlag: null,
+          sysUserId: null,
+          country: null
         },
         dataList: [],
         pageIndex: 1,
@@ -117,7 +163,10 @@
         totalPage: 0,
         dataListLoading: false,
         dataListSelections: [],
-        addOrUpdateVisible: false
+        addOrUpdateVisible: false,
+        reductionFlagCodes: [{ key: 1, value: "未还原"}, { key: 0, value: "已还原"}],
+        sysUserAccountOptions: [],
+        countryCodes: []
       }
     },
     components: {
@@ -125,6 +174,7 @@
     },
     activated () {
       this.getDataList()
+      this.getCountryCodes()
     },
     methods: {
       // 获取数据列表
@@ -136,7 +186,9 @@
           params: this.$http.adornParams({
             'page': this.pageIndex,
             'limit': this.pageSize,
-            'key': this.dataForm.key
+            'reductionFlag': this.dataForm.reductionFlag,
+            'sysUserId': this.dataForm.sysUserId,
+            'country': this.dataForm.country
           })
         }).then(({data}) => {
           if (data && data.code === 0) {
@@ -200,6 +252,33 @@
           })
         })
 
+      },
+      /*
+   根据搜索词，查询系统用户
+ */
+      queryBySearchWord (serchKey) {
+        serchKey = serchKey == null ? '' : serchKey + ''
+        this.$http({
+          url: this.$http.adornUrl(`/sys/user/queryBySearchWord?searchWord=${serchKey}`),
+          method: 'get',
+          params: this.$http.adornParams()
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.sysUserAccountOptions = data.userList
+          }
+        })
+      },
+      getCountryCodes () {
+        this.$http({
+          url: this.$http.adornUrl(`/app/enums/countryCodes`),
+          method: 'get'
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.countryCodes = data.data
+          } else {
+            this.$message.error(data.msg)
+          }
+        })
       },
       // 删除
       deleteHandle (id) {

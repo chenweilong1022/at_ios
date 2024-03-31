@@ -73,5 +73,11 @@ public interface CdRegisterTaskService extends IService<CdRegisterTaskEntity> {
      * @return
      */
     Integer sumByTaskId(Integer id);
+
+    /**
+     * 查询真机注册数据
+     * @return
+     */
+    CdRegisterTaskEntity queryRealMachineRegister();
 }
 

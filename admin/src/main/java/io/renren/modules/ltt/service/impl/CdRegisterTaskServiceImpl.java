@@ -1,9 +1,9 @@
 package io.renren.modules.ltt.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.ObjectUtil;
 import com.github.benmanes.caffeine.cache.Cache;
 import io.renren.datasources.annotation.Game;
+import io.renren.modules.ltt.enums.DeleteFlag;
 import io.renren.modules.ltt.enums.RealMachine;
 import io.renren.modules.ltt.enums.RegistrationStatus;
 import io.renren.modules.ltt.vo.IOSTaskVO;
@@ -24,6 +24,7 @@ import io.renren.modules.ltt.conver.CdRegisterTaskConver;
 import javax.annotation.Resource;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -68,7 +69,7 @@ public class CdRegisterTaskServiceImpl extends ServiceImpl<CdRegisterTaskDao, Cd
                 cacheIOSTaskVOIfPresent = new LinkedList<>();
             }
             cacheIOSTaskVOIfPresent.offer(iosTaskVO);
-            stringQueueCacheIOSTaskVO.put("register",cacheIOSTaskVOIfPresent);
+            stringQueueCacheIOSTaskVO.put("register", cacheIOSTaskVOIfPresent);
         }
         CdRegisterTaskEntity cdRegisterTaskEntity = CdRegisterTaskConver.MAPPER.converDTO(cdRegisterTask);
         return this.save(cdRegisterTaskEntity);
@@ -81,6 +82,8 @@ public class CdRegisterTaskServiceImpl extends ServiceImpl<CdRegisterTaskDao, Cd
         registerTaskDTO.setNumberThreads(50);
         registerTaskDTO.setFillUp(1);
         registerTaskDTO.setCountryCode(countryCode);
+        registerTaskDTO.setCreateTime(new Date());
+        registerTaskDTO.setDeleteFlag(DeleteFlag.NO.getKey());
         this.save(registerTaskDTO);
     }
 
@@ -99,13 +102,20 @@ public class CdRegisterTaskServiceImpl extends ServiceImpl<CdRegisterTaskDao, Cd
     public boolean removeByIds(Collection<? extends Serializable> ids) {
         //真机注册清除
         Queue<IOSTaskVO> cacheIOSTaskVOIfPresent = new LinkedList<>();
-        stringQueueCacheIOSTaskVO.put("register",cacheIOSTaskVOIfPresent);
+        stringQueueCacheIOSTaskVO.put("register", cacheIOSTaskVOIfPresent);
         return super.removeByIds(ids);
     }
 
     @Override
     public Integer sumByTaskId(Integer id) {
         return baseMapper.sumByTaskId(id);
+    }
+
+    @Override
+    public CdRegisterTaskEntity queryRealMachineRegister() {
+        return baseMapper.selectList(new QueryWrapper<CdRegisterTaskEntity>().lambda()
+                .eq(CdRegisterTaskEntity::getRegistrationStatus, RegistrationStatus.RegistrationStatus9.getKey())
+                .eq(CdRegisterTaskEntity::getDeleteFlag, DeleteFlag.NO.getKey())).stream().findFirst().orElse(null);
     }
 
 }

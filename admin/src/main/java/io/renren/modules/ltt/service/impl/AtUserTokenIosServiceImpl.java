@@ -5,12 +5,18 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSON;
 import com.github.benmanes.caffeine.cache.Cache;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.ltt.dto.IosTokenDTO;
+import io.renren.modules.ltt.entity.CdRegisterTaskEntity;
 import io.renren.modules.ltt.enums.DeleteFlag;
 import io.renren.modules.ltt.enums.UseFlag;
+import io.renren.modules.ltt.service.CdRegisterTaskService;
 import io.renren.modules.ltt.vo.IOSTaskVO;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -29,19 +35,29 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Queue;
 
 
 @Service("atUserTokenIosService")
 @Game
+@Slf4j
 public class AtUserTokenIosServiceImpl extends ServiceImpl<AtUserTokenIosDao, AtUserTokenIosEntity> implements AtUserTokenIosService {
+
+    @Autowired
+    private CdRegisterTaskService cdRegisterTaskService;
 
     @Override
     public PageUtils<AtUserTokenIosVO> queryPage(AtUserTokenIosDTO atUserTokenIos) {
         IPage<AtUserTokenIosEntity> page = baseMapper.selectPage(
                 new Query<AtUserTokenIosEntity>(atUserTokenIos).getPage(),
-                new QueryWrapper<AtUserTokenIosEntity>()
+                new QueryWrapper<AtUserTokenIosEntity>().lambda()
+                        .eq(AtUserTokenIosEntity::getDeleteFlag, DeleteFlag.NO.getKey())
+                        .eq(StringUtils.isNotEmpty(atUserTokenIos.getCountry()), AtUserTokenIosEntity::getCountry, atUserTokenIos.getCountry())
+                        .eq(StringUtils.isNotEmpty(atUserTokenIos.getUserName()), AtUserTokenIosEntity::getUserName, atUserTokenIos.getUserName())
+                        .eq(ObjectUtil.isNotNull(atUserTokenIos.getReductionFlag()), AtUserTokenIosEntity::getReductionFlag, atUserTokenIos.getReductionFlag())
+                        .orderByDesc(AtUserTokenIosEntity::getId)
         );
 
         return PageUtils.<AtUserTokenIosVO>page(page).setList(AtUserTokenIosConver.MAPPER.conver(page.getRecords()));
@@ -93,12 +109,39 @@ public class AtUserTokenIosServiceImpl extends ServiceImpl<AtUserTokenIosDao, At
                 .eq(AtUserTokenIosEntity::getPhoneNumber,phoneNumber)
                 .last("limit 1")
         );
+        //获取注册任务id，当无任务，或者任务已完成时，返回空
+        Integer taskId = this.getRegisterTaskId();
+        if (ObjectUtil.isNull(taskId)) {
+            log.warn("syncAppToken 真机注册任务已完成");
+            return;
+        }
+        atUserTokenIosEntity.setTaskId(taskId);
+
         if (ObjectUtil.isNull(one)) {
             this.save(atUserTokenIosEntity);
         }else {
             atUserTokenIosEntity.setId(one.getId());
             this.updateById(atUserTokenIosEntity);
         }
+
+    }
+
+    /**
+     * 获取注册任务id
+     * @return 当无任务，或者任务已完成时，返回空
+     */
+    private Integer getRegisterTaskId() {
+        CdRegisterTaskEntity registerTaskEntity = cdRegisterTaskService.queryRealMachineRegister();
+        if (ObjectUtil.isNull(registerTaskEntity)) {
+            return null;
+        }
+        Integer registerCount = baseMapper.selectCount(new QueryWrapper<AtUserTokenIosEntity>().lambda()
+                .eq(AtUserTokenIosEntity::getTaskId, registerTaskEntity.getId()));
+        if (registerCount >= registerTaskEntity.getTotalAmount()) {
+            cdRegisterTaskService.removeByIds(Collections.singletonList(registerTaskEntity.getId()));
+            return null;
+        }
+        return registerTaskEntity.getId();
     }
 
     @Resource(name = "stringQueueCacheIOSTaskVO")
@@ -120,6 +163,12 @@ public class AtUserTokenIosServiceImpl extends ServiceImpl<AtUserTokenIosDao, At
             }
             cacheIOSTaskVOIfPresent.offer(iosTaskVO);
             stringQueueCacheIOSTaskVO.put(deviceId,cacheIOSTaskVOIfPresent);
+
+            //更新状态为已还原
+            AtUserTokenIosEntity updateEntity = new AtUserTokenIosEntity();
+            updateEntity.setId(atUserTokenIosEntity.getId());
+            updateEntity.setReductionFlag(0);
+            this.updateById(updateEntity);
         }
     }
 

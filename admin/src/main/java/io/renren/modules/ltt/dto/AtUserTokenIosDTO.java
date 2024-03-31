@@ -91,4 +91,9 @@ public class AtUserTokenIosDTO extends PageParam implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="deviceId")
 	private String deviceId;
+	@ApiModelProperty(required=false,value="cd_register_task表id")
+	private Integer taskId;
+
+	@ApiModelProperty(required=false,value="还原状态 1未还原 0已还原")
+	private Integer reductionFlag;
 }
