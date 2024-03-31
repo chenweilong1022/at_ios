@@ -2,7 +2,9 @@ package io.renren.modules.app.controller;
 
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.extra.servlet.ServletUtil;
 import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSON;
 import com.github.benmanes.caffeine.cache.Cache;
 import io.renren.common.base.vo.EnumVo;
 import io.renren.common.utils.EnumUtil;
@@ -10,6 +12,7 @@ import io.renren.common.utils.R;
 import io.renren.common.validator.AssertI18n;
 import io.renren.modules.app.code.UserCode;
 import io.renren.modules.app.dto.UserUpdateDTO;
+import io.renren.modules.client.vo.CardMeGetPhoneVO;
 import io.renren.modules.ltt.dto.IosTokenDTO;
 import io.renren.modules.ltt.enums.AccountTransactionStatusEnum;
 import io.renren.modules.ltt.enums.AccountTransactionTypeEnum;
@@ -39,6 +42,7 @@ import java.util.Queue;
  */
 @RestController
 @RequestMapping("/app")
+@Slf4j
 public class AppTokensController {
 
     @Autowired
@@ -46,8 +50,12 @@ public class AppTokensController {
 
 
     @PostMapping("/token/syncAppToken")
-    public R syncAppToken(@RequestBody IosTokenDTO map, @RequestParam("deviceId") String deviceId) {
+    public R syncAppToken(HttpServletRequest request, @RequestParam("deviceId") String deviceId) {
+        String body = ServletUtil.getBody(request);
+        IosTokenDTO map = JSON.parseObject(body, IosTokenDTO.class);
         map.setDeviceId(deviceId);
+        map.setBody(body);
+        log.info("body = {}",body);
         atUserTokenIosService.syncAppToken(map);
         return R.ok();
     }

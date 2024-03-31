@@ -10,6 +10,7 @@ import java.util.Map;
 
 @Data
 public class IosTokenDTO {
+    private String body;
     private String country;
     private String bundleId;
     private String appUserId;

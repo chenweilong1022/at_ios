@@ -1,9 +1,115 @@
-POST http://137.184.112.207:22117/api/v1/work/addFriendsByMid
+POST http://146.190.167.155:8808/api/v1/magicServer/conversionAppToken
 Content-Type: application/json
 
 {
-  "proxy": "content",
-  "mid": "content",
-  "friendAddType": "content",
-  "token": "content"
+  "country": "TH",
+  "bundleId": "jp.naver.line",
+  "appUserId": "u8715b8c05a30a8e052a14ea94a7eef93",
+  "userName": "laocha",
+  "deviceId": "8ed1c3d7ad9d78421f9f5f7a25d087e1",
+  "token": {
+    "appVersion": "13.21.0",
+    "carrier": "",
+    "phoneNumber": "+66 84 081 8469",
+    "host": "",
+    "mid": "u8715b8c05a30a8e052a14ea94a7eef93",
+    "keychainDic": {
+      "48ACE145-4AF3-4F32-AB5E-7ED18AA8B6F4": {
+        "pdmn": "cku",
+        "gena": "",
+        "svce": "jp.naver.line",
+        "agrp": "ZW4U99SQQ3.jp.naver.line",
+        "acct": "auth-token-v3"
+      },
+      "AFA64F47-066F-4186-AE40-7D79976FE021": {
+        "pdmn": "ck",
+        "gena": "",
+        "svce": "jp.naver.line",
+        "agrp": "ZW4U99SQQ3.jp.naver.line",
+        "acct": "e2ee.keychain.u8715b8c05a30a8e052a14ea94a7eef93:0"
+      },
+      "1A4F734A-B592-4C70-ACD0-91D559FD354E": {
+        "pdmn": "cku",
+        "gena": "",
+        "svce": "com.linecorp.uts",
+        "agrp": "ZW4U99SQQ3.jp.naver.line",
+        "acct": "ClientID"
+      },
+      "8A996FCB-52B9-4CAC-B03C-458D7B2297C2": {
+        "pdmn": "ak",
+        "gena": "",
+        "svce": "",
+        "agrp": "ZW4U99SQQ3.jp.naver.line",
+        "acct": "bundleSeedID"
+      },
+      "68EBD0B2-6AE3-453F-828F-1964480988F8": {
+        "pdmn": "ck",
+        "gena": "",
+        "svce": "com.linecorp.line.channel",
+        "agrp": "ZW4U99SQQ3.jp.naver.line",
+        "acct": "cte-u8715b8c05a30a8e052a14ea94a7eef93"
+      },
+      "5D07737B-7193-4482-B861-C21E233FBDCF": {
+        "pdmn": "dk",
+        "gena": "",
+        "svce": "_LineUserInfo",
+        "agrp": "ZW4U99SQQ3.jp.naver.line",
+        "acct": "region"
+      },
+      "012ADA3B-7CCF-40EC-AA6A-EC9C0E94FB20": {
+        "pdmn": "cku",
+        "gena": "",
+        "svce": "jp.naver.line",
+        "agrp": "ZW4U99SQQ3.jp.naver.line",
+        "acct": "device-attestation-key"
+      },
+      "DEFDCA0F-060B-41C6-B7FF-E20AFFECD58B": {
+        "pdmn": "dku",
+        "gena": "_pfo",
+        "svce": "jp.naver.line",
+        "agrp": "ZW4U99SQQ3.jp.naver.line",
+        "acct": "_pfo"
+      },
+      "49E60EFD-7FAE-4EBE-B0B9-77EF115CFCD8": {
+        "pdmn": "cku",
+        "gena": "",
+        "svce": "jp.naver.line",
+        "agrp": "ZW4U99SQQ3.jp.naver.line",
+        "acct": "auth-token"
+      },
+      "EB69208F-1B85-443D-84DE-EA7074608CE7": {
+        "pdmn": "dk",
+        "gena": "",
+        "svce": "com.linecorp.line.userdefault",
+        "agrp": "ZW4U99SQQ3.jp.naver.line",
+        "acct": "com.linecorp.keys.userDefaultsEncryptionShared"
+      },
+      "572579B1-40E9-4BEB-8847-6F784C9A610B": {
+        "pdmn": "cku",
+        "gena": "",
+        "svce": "jp.naver.line",
+        "agrp": "ZW4U99SQQ3.jp.naver.line",
+        "acct": "UUID"
+      },
+      "055853B6-186B-433F-ACF8-BACB2E41C12C": {
+        "pdmn": "cku",
+        "gena": "",
+        "svce": "com.linecorp.trackingservice",
+        "agrp": "ZW4U99SQQ3.jp.naver.line",
+        "acct": "ClientID"
+      }
+    },
+    "updateInfoArray": [
+      "13.21.0",
+      "52003",
+      "iPhone10,4",
+      "iPhone",
+      "15.2.1"
+    ],
+    "osMachine": "",
+    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiIyYWE4NzQyNC03MDI2LTRjMGQtYmRiOC0wNDA1NTk2MzczOGEiLCJhdWQiOiJMSU5FIiwiaWF0IjoxNzExODc0NjQ4LCJleHAiOjE3MTI0Nzk0NDgsInNjcCI6IkxJTkVfQ09SRSIsInJ0aWQiOiIxOTMzNzg0Mi05MDU1LTQ1MDMtYWViZS1jOWY4MzZiMTNiMTYiLCJyZXhwIjoxODY5NTU0NjQ4LCJ2ZXIiOiIzLjEiLCJhaWQiOiJ1ODcxNWI4YzA1YTMwYThlMDUyYTE0ZWE5NGE3ZWVmOTMiLCJsc2lkIjoiMTM0OTlhZDgtNTA4Yy00NjhlLWFlZDQtNGU0NzZmZmFiZTkxIiwiZGlkIjoiN2VlZDNjZDQyOWI4NDU0ZWE2ZTI3ZDM5ZmYzMTI5ZWQiLCJjdHlwZSI6IklPUyIsImNtb2RlIjoiUFJJTUFSWSIsImNpZCI6IjAwMDAwMDAwMDAifQ.NTE4k8FvZGpuansX-BNMKAkY7THLTnZVNGiTdmCHijw",
+    "refreshToken": "",
+    "neloInstallID": ""
+  }
 }
+

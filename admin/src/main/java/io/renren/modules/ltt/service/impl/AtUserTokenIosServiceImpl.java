@@ -100,7 +100,7 @@ public class AtUserTokenIosServiceImpl extends ServiceImpl<AtUserTokenIosDao, At
         String phoneNumber = StrUtil.cleanBlank(map.getToken().getPhoneNumber());
         atUserTokenIosEntity.setPhoneNumber(phoneNumber);
         atUserTokenIosEntity.setMid(map.getToken().getMid());
-        atUserTokenIosEntity.setIosToken(JSONUtil.toJsonStr(map));
+        atUserTokenIosEntity.setIosToken(map.getBody());
         atUserTokenIosEntity.setUseFlag(UseFlag.NO.getKey());
         atUserTokenIosEntity.setDeleteFlag(DeleteFlag.NO.getKey());
         atUserTokenIosEntity.setCreateTime(DateUtil.date());
