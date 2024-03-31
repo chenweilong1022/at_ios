@@ -70,6 +70,16 @@ public class AtUserTokenIosController {
         return R.ok();
     }
 
+    /**
+     * 备份
+     */
+    @RequestMapping("/backUp")
+    @RequiresPermissions("ltt:atusertokenios:save")
+    public R backUp(@RequestBody AtUserTokenIosDTO atUserTokenIos){
+        atUserTokenIosService.backUp(atUserTokenIos);
+        return R.ok();
+    }
+
 
     /**
      * 保存

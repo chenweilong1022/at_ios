@@ -172,4 +172,19 @@ public class AtUserTokenIosServiceImpl extends ServiceImpl<AtUserTokenIosDao, At
         }
     }
 
+    @Override
+    public void backUp(AtUserTokenIosDTO atUserTokenIos) {
+        IOSTaskVO iosTaskVO = new IOSTaskVO();
+        iosTaskVO.setTaskType("backup");
+        iosTaskVO.setPhone(atUserTokenIos.getPhoneNumber().replace("+",""));
+
+        String deviceId = atUserTokenIos.getDeviceId();
+        Queue<IOSTaskVO> cacheIOSTaskVOIfPresent = stringQueueCacheIOSTaskVO.getIfPresent(deviceId);
+        if (CollUtil.isEmpty(cacheIOSTaskVOIfPresent) || cacheIOSTaskVOIfPresent.isEmpty()) {
+            cacheIOSTaskVOIfPresent = new LinkedList<>();
+        }
+        cacheIOSTaskVOIfPresent.offer(iosTaskVO);
+        stringQueueCacheIOSTaskVO.put(deviceId,cacheIOSTaskVOIfPresent);
+    }
+
 }

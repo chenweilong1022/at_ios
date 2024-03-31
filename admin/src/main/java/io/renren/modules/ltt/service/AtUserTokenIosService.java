@@ -71,5 +71,7 @@ public interface AtUserTokenIosService extends IService<AtUserTokenIosEntity> {
      * @param atUserTokenIos
      */
     void taskIosFind(Integer[] ids);
+
+    void backUp(AtUserTokenIosDTO atUserTokenIos);
 }
 

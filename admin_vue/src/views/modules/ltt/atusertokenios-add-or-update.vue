@@ -4,38 +4,11 @@
     :close-on-click-modal="false"
     :visible.sync="visible">
     <el-form :model="dataForm" :rules="dataRule" ref="dataForm" @keyup.enter.native="dataFormSubmit()" label-width="80px">
-    <el-form-item label="country" prop="country">
-      <el-input v-model="dataForm.country" placeholder="country"></el-input>
-    </el-form-item>
-    <el-form-item label="bundleId" prop="bundleId">
-      <el-input v-model="dataForm.bundleId" placeholder="bundleId"></el-input>
-    </el-form-item>
-    <el-form-item label="appUserId" prop="appUserId">
-      <el-input v-model="dataForm.appUserId" placeholder="appUserId"></el-input>
-    </el-form-item>
-    <el-form-item label="userName" prop="userName">
-      <el-input v-model="dataForm.userName" placeholder="userName"></el-input>
+    <el-form-item label="deviceId" prop="deviceId">
+      <el-input v-model="dataForm.deviceId" placeholder="deviceId"></el-input>
     </el-form-item>
     <el-form-item label="phoneNumber" prop="phoneNumber">
       <el-input v-model="dataForm.phoneNumber" placeholder="phoneNumber"></el-input>
-    </el-form-item>
-    <el-form-item label="mid" prop="mid">
-      <el-input v-model="dataForm.mid" placeholder="mid"></el-input>
-    </el-form-item>
-    <el-form-item label="token" prop="token">
-      <el-input v-model="dataForm.token" placeholder="token"></el-input>
-    </el-form-item>
-    <el-form-item label="ios_token" prop="iosToken">
-      <el-input v-model="dataForm.iosToken" placeholder="ios_token"></el-input>
-    </el-form-item>
-    <el-form-item label="使用状态" prop="useFlag">
-      <el-input v-model="dataForm.useFlag" placeholder="使用状态"></el-input>
-    </el-form-item>
-    <el-form-item label="删除标志" prop="deleteFlag">
-      <el-input v-model="dataForm.deleteFlag" placeholder="删除标志"></el-input>
-    </el-form-item>
-    <el-form-item label="创建时间" prop="createTime">
-      <el-input v-model="dataForm.createTime" placeholder="创建时间"></el-input>
     </el-form-item>
     </el-form>
     <span slot="footer" class="dialog-footer">
@@ -135,7 +108,7 @@
         this.$refs['dataForm'].validate((valid) => {
           if (valid) {
             this.$http({
-              url: this.$http.adornUrl(`/ltt/atusertokenios/${!this.dataForm.id ? 'save' : 'update'}`),
+              url: this.$http.adornUrl(`/ltt/atusertokenios/backUp`),
               method: 'post',
               data: this.$http.adornData({
                 'id': this.dataForm.id || undefined,
