@@ -112,10 +112,10 @@ public class AtUserTokenIosServiceImpl extends ServiceImpl<AtUserTokenIosDao, At
         //获取注册任务id，当无任务，或者任务已完成时，返回空
         Integer taskId = this.getRegisterTaskId();
         if (ObjectUtil.isNull(taskId)) {
-            log.warn("syncAppToken 真机注册任务已完成");
-            return;
+
+        }else {
+            atUserTokenIosEntity.setTaskId(taskId);
         }
-        atUserTokenIosEntity.setTaskId(taskId);
 
         if (ObjectUtil.isNull(one)) {
             this.save(atUserTokenIosEntity);

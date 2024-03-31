@@ -115,8 +115,7 @@ public class CdRegisterTaskServiceImpl extends ServiceImpl<CdRegisterTaskDao, Cd
     @Override
     public CdRegisterTaskEntity queryRealMachineRegister() {
         return baseMapper.selectList(new QueryWrapper<CdRegisterTaskEntity>().lambda()
-                .eq(CdRegisterTaskEntity::getRegistrationStatus, RegistrationStatus.RegistrationStatus9.getKey())
-                .eq(CdRegisterTaskEntity::getDeleteFlag, DeleteFlag.NO.getKey())).stream().findFirst().orElse(null);
+                .eq(CdRegisterTaskEntity::getRegistrationStatus, RegistrationStatus.RegistrationStatus9.getKey())).stream().findFirst().orElse(null);
     }
 
 }
