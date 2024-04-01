@@ -12,13 +12,11 @@ import io.renren.modules.client.dto.GetAllContactIdsDTO;
 import io.renren.modules.client.dto.GetContactsInfoV3DTO;
 import io.renren.modules.client.dto.IssueLiffViewDTO;
 import io.renren.modules.client.dto.LineTokenJson;
+import io.renren.modules.client.vo.ConversionAppTokenVO;
 import io.renren.modules.client.vo.GetAllContactIdsVO;
 import io.renren.modules.client.vo.GetContactsInfoV3VO;
 import io.renren.modules.ltt.dto.CdLineIpProxyDTO;
-import io.renren.modules.ltt.entity.AtDataSubtaskEntity;
-import io.renren.modules.ltt.entity.AtUserEntity;
-import io.renren.modules.ltt.entity.AtUserGroupEntity;
-import io.renren.modules.ltt.entity.AtUserTokenEntity;
+import io.renren.modules.ltt.entity.*;
 import io.renren.modules.ltt.enums.*;
 import io.renren.modules.ltt.service.*;
 import io.renren.modules.ltt.vo.IssueLiffViewVO;
@@ -39,6 +37,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
+import static io.renren.modules.ltt.enums.AtUserTokenTypeEnum.AtUserTokenType2;
+import static net.sf.jsqlparser.parser.feature.Feature.update;
+
 /**
  * @author liuyuchan
  * @email liuyuchan286@gmail.com
@@ -56,12 +57,15 @@ public class UserTask {
     private AtUserTokenService atUserTokenService;
     @Autowired
     private AtUserGroupService atUserGroupService;
+    @Autowired
+    private AtUserTokenIosService atUserTokenIosService;
 
 
     static ReentrantLock task1Lock = new ReentrantLock();
     static ReentrantLock task2Lock = new ReentrantLock();
     static ReentrantLock task3Lock = new ReentrantLock();
     static ReentrantLock task4Lock = new ReentrantLock();
+    static ReentrantLock task5Lock = new ReentrantLock();
 
     public static final Object atUserlockObj = new Object();
     public static final Object atUserTokenlockObj = new Object();
@@ -468,6 +472,10 @@ public class UserTask {
                 atUserEntity.setCreateTime(DateUtil.date());
                 atUserEntity.setUserTokenId(atUserTokenEntity.getId());
                 atUserEntity.setSysUserId(atUserTokenEntity.getSysUserId());
+                if (ObjectUtil.isNotNull(atUserTokenEntity.getTokenType())
+                        && AtUserTokenType2.getKey().equals(atUserTokenEntity.getTokenType())) {
+                    atUserEntity.setUserSource(AtUserSourceEnum.AtUserSource2.getKey());
+                }
                 atUserEntities.add(atUserEntity);
                 //修改数据使用状态
                 AtUserTokenEntity update = new AtUserTokenEntity();
@@ -490,4 +498,69 @@ public class UserTask {
         }
 
     }
+
+    /**
+     * 生成真机token
+     */
+    @Scheduled(fixedDelay = 5000)
+    @Transactional(rollbackFor = Exception.class)
+    @Async
+    public void task5() {
+        boolean b = task5Lock.tryLock();
+        if (!b) {
+            return;
+        }
+        try {
+            //获取刚导入的token去转化为账号
+            List<AtUserTokenIosEntity> atUserTokenIosEntityList = atUserTokenIosService.list(new QueryWrapper<AtUserTokenIosEntity>().lambda().isNull(AtUserTokenIosEntity::getAtUserTokenId).last("limit 10"));
+            if (CollUtil.isEmpty(atUserTokenIosEntityList)) {
+                log.info("UserTask task5 atUserTokenIosEntityList isEmpty");
+                return;
+            }
+            final CountDownLatch latch = new CountDownLatch(atUserTokenIosEntityList.size());
+
+            for (AtUserTokenIosEntity tokenIosEntity : atUserTokenIosEntityList) {
+                threadPoolTaskExecutor.submit(new Thread(() -> {
+                    if (StrUtil.isEmpty(tokenIosEntity.getIosToken())) {
+                        latch.countDown();
+                        return;
+                    }
+                    //获取用户token
+                    ConversionAppTokenVO conversionAppToken = lineService.conversionAppToken(tokenIosEntity.getIosToken());
+                    if (ObjectUtil.isNull(conversionAppToken)) {
+                        latch.countDown();
+                        return;
+                    }
+                    //成功获取返回zhi
+                    if (200 == conversionAppToken.getCode()) {
+                        String token = conversionAppToken.getToken();
+                        if (StrUtil.isEmpty(token)) {
+                            latch.countDown();
+                            return;
+                        }
+
+                        //插入token
+                        AtUserTokenEntity updateAtUserToken = new AtUserTokenEntity();
+                        updateAtUserToken.setToken(token);
+                        updateAtUserToken.setUserGroupId(null);
+                        updateAtUserToken.setSysUserId(1L);
+                        updateAtUserToken.setTokenType(AtUserTokenType2.getKey());//token类型 1协议token 2真机token
+                        atUserTokenService.save(updateAtUserToken);
+
+                        AtUserTokenIosEntity updateAtUserTokenIos = new AtUserTokenIosEntity();
+                        updateAtUserTokenIos.setId(tokenIosEntity.getId());
+                        updateAtUserTokenIos.setAtUserTokenId(updateAtUserToken.getId());
+                        atUserTokenIosService.updateById(updateAtUserTokenIos);
+                    }
+                    latch.countDown();
+                }));
+            }
+            latch.await();
+        } catch (Exception e) {
+            log.error("UserTask task5 err = {}", e.getMessage());
+        } finally {
+            task5Lock.unlock();
+        }
+    }
+
 }

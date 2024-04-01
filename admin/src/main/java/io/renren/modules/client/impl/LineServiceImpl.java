@@ -580,4 +580,20 @@ public class LineServiceImpl implements LineService {
             }
         }
     }
+
+    @Override
+    public ConversionAppTokenVO conversionAppToken(String iosToken) {
+        try {
+            ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
+            String getPhoneHttp = String.format("%s/api/v1/magicServer/conversionAppToken",projectWorkEntity.getLineBaseHttp());
+            String resp = HttpUtil.post(getPhoneHttp, iosToken);
+            log.info("param = {},resp = {}", iosToken, resp);
+            ConversionAppTokenVO issueLiffViewVO = JSON.parseObject(resp, ConversionAppTokenVO.class);
+            extracted(iosToken, resp);
+            return issueLiffViewVO;
+        }catch (Exception e) {
+            log.error("err = {}",e.getMessage());
+        }
+        return null;
+    }
 }

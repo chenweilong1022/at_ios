@@ -132,10 +132,6 @@
 //            //生成token
 //            userTokenEntity = new AtUserTokenEntity();
 //            userTokenEntity.setToken(cdLineRegisterVO.getToken());
-//            userTokenEntity.setUseFlag(UseFlag.NO.getKey());
-//            userTokenEntity.setDeleteFlag(DeleteFlag.NO.getKey());
-//            userTokenEntity.setCreateTime(new Date());
-//            userTokenEntity.setPlatform(Platform.IOS.getKey());
 //            userTokenEntity.setUserGroupId(null);
 //            userTokenEntity.setSysUserId(sysUserId);
 //            userTokenEntityList.add(userTokenEntity);

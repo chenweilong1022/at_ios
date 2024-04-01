@@ -7,6 +7,7 @@ import cn.hutool.http.HttpUtil;
 import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.ltt.enums.DeleteFlag;
+import io.renren.modules.ltt.enums.Platform;
 import io.renren.modules.ltt.enums.UseFlag;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -74,6 +75,12 @@ public class AtUserTokenServiceImpl extends ServiceImpl<AtUserTokenDao, AtUserTo
 
     @Override
     public boolean saveUserTokenBatch(List<AtUserTokenEntity>  userTokenEntityList) {
+        for (AtUserTokenEntity userTokenEntity : userTokenEntityList) {
+            userTokenEntity.setUseFlag(UseFlag.NO.getKey());
+            userTokenEntity.setDeleteFlag(DeleteFlag.NO.getKey());
+            userTokenEntity.setCreateTime(new Date());
+            userTokenEntity.setPlatform(Platform.IOS.getKey());
+        }
         return this.saveBatch(userTokenEntityList);
     }
 

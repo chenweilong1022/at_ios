@@ -48,6 +48,17 @@
         label="分组id">
       </el-table-column>
       <el-table-column
+        prop="tokenType"
+        header-align="center"
+        align="center"
+        label="token类型">
+        <template slot-scope="scope">
+          <el-tag v-if="scope.row.status === 1" size="small" type="danger">协议token</el-tag>
+          <el-tag v-if="scope.row.status === 2" size="small" type="danger">真机token</el-tag>
+          <el-tag v-else size="small">真机token</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column
         prop="createTime"
         header-align="center"
         align="center"
