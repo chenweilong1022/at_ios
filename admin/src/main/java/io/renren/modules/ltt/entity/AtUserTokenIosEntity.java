@@ -95,5 +95,7 @@ public class AtUserTokenIosEntity implements Serializable {
 	private Integer taskId;
 	@ApiModelProperty(required=false,value="还原状态 1未还原 0已还原")
 	private Integer reductionFlag;
+	@ApiModelProperty(required=false,value="at_user_token表id")
+	private Integer atUserTokenId;
 
 }

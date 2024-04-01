@@ -13,6 +13,7 @@
         <result property="platform" column="platform"/>
         <result property="userGroupId" column="user_group_id"/>
         <result property="sysUserId" column="sys_user_id"/>
+        <result property="tokenType" column="token_type"/>
     </resultMap>
 
 
