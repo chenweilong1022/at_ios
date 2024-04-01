@@ -66,6 +66,7 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
                         .eq(atUser.getStatus() != null, AtUserEntity::getStatus, atUser.getStatus())
                         .notIn(atUser.getValidateFlag() != null && Boolean.TRUE.equals(atUser.getValidateFlag()), AtUserEntity::getStatus, UserStatus1.getKey())
                         .eq(atUser.getValidateFlag() != null && Boolean.FALSE.equals(atUser.getValidateFlag()), AtUserEntity::getStatus, UserStatus1.getKey())
+                        .eq(atUser.getUserSource() != null, AtUserEntity::getUserSource, atUser.getUserSource())
                         .orderByDesc(AtUserEntity::getId)
         );
 

@@ -118,7 +118,7 @@ public class AtUserEntity implements Serializable {
 	@ApiModelProperty(required=false,value="管理账户id")
 	private Long sysUserId;
 
-	@ApiModelProperty(required=false,value="账号来源协议 1协议 2真机")
+	@ApiModelProperty(required=false,value="账号来源协议 1协议 2真机 AtUserSourceEnum")
 	private Integer userSource;
 
 }

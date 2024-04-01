@@ -68,4 +68,10 @@ public class AppTestController {
         return R.data(enumVos);
     }
 
+    @GetMapping("enums/getAtUserSource")
+    public R getAtUserSource() {
+        List<EnumVo> enumVos = EnumUtil.enumToVo(AtUserSourceEnum.values());
+        return R.data(enumVos);
+    }
+
 }

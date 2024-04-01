@@ -28,12 +28,12 @@
       </el-form-item>
       <el-form-item>
         <el-select
-          v-model="dataForm.status"
+          v-model="dataForm.userSource"
           class="m-2" clearable
           placeholder="账户状态"
           style="width: 240px">
           <el-option
-            v-for="item in statusOptions"
+            v-for="item in atUserSourceCodes"
             :key="item.value"
             :label="item.label"
             :value="item.value"
@@ -67,6 +67,16 @@
               :label="item.label"
               :value="item.value"
             />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-select v-model="dataForm.userSource" placeholder="账户来源" clearable>
+            <el-option
+              v-for="item in atUserSourceCodes"
+              :key="item.key"
+              :label="item.value"
+              :value="item.key">
+            </el-option>
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -151,6 +161,17 @@
         header-align="center"
         align="center"
         label="分组名称">
+      </el-table-column>
+      <el-table-column
+        prop="userSource"
+        header-align="center"
+        align="center"
+        label="账号来源">
+        <template slot-scope="scope">
+          <el-tag v-for="item in atUserSourceCodes" :key="item.key" v-if="scope.row.userSource === item.key">
+            {{ item.value }}
+          </el-tag>
+        </template>
       </el-table-column>
       <el-table-column
         prop="status"
@@ -262,10 +283,12 @@
           status: null,
           customerServiceId: null,
           validateFlag: null,
+          userSource: null,
           selectLimit: null
         },
         customerServiceField: '',
         dataList: [],
+        atUserSourceCodes: [],
         pageIndex: 1,
         pageSize: 10,
         totalPage: 0,
@@ -287,6 +310,7 @@
     },
     activated () {
       this.getDataList()
+      this.getAtUserSource()
     },
     methods: {
       // 获取数据列表
@@ -310,6 +334,7 @@
             'customerServiceId': this.dataForm.customerServiceId,
             'customerService': this.dataForm.customerService,
             'validateFlag': this.dataForm.validateFlag,
+            'userSource': this.dataForm.userSource,
             'selectLimit': this.dataForm.selectLimit
           })
         }).then(({data}) => {
@@ -526,7 +551,19 @@
             this.customerUserOptions = [{userId: 0, nickname: '未分配'},...data.customerList]
           }
         })
-      }
+      },
+      getAtUserSource () {
+        this.$http({
+          url: this.$http.adornUrl(`/app/enums/getAtUserSource`),
+          method: 'get'
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.atUserSourceCodes = data.data
+          } else {
+            this.$message.error(data.msg)
+          }
+        })
+      },
     }
   }
 </script>
