@@ -7,8 +7,8 @@
           <img src="~@/assets/250px-Bagua-name-earlier.svg.png">
 
           <div class="title">拉群配置</div>
-          <el-form-item label="拉群号">
-            <el-select v-model="dataForm.countryCode" placeholder="注册国家" clearable>
+          <el-form-item label="拉群号国家">
+            <el-select v-model="dataForm.countryCode" placeholder="拉群号国家" clearable>
               <el-option
                 v-for="item in countryCodes"
                 :key="item.key"
@@ -18,7 +18,7 @@
             </el-select>
           </el-form-item>
 
-          <el-form-item label="账户分组" prop="userGroupId">
+          <el-form-item label="拉群号分组" prop="userGroupId">
             <el-select v-model="dataForm.userGroupId" placeholder="账户分组">
               <el-option
                 v-for="item in dataUserGroupList"
@@ -29,7 +29,7 @@
             </el-select>
           </el-form-item>
 
-          <el-form-item label="类型" prop="groupType">
+          <el-form-item label="拉群类型" prop="groupType">
             <el-select
               v-model="groupType"
               @change="groupTypeChangeHandler"
@@ -188,7 +188,8 @@ import ModalBox from './modalbox.vue'
         },
         dataForm: {
           id: null,
-          groupType: '',
+          userGroupId: null,
+          groupType: null,
           groupName: '',
           countryCode: 66,
           groupCount: null,
@@ -266,8 +267,11 @@ import ModalBox from './modalbox.vue'
           data: this.$http.adornData({
             'id': this.dataForm.id,
             'groupName': this.dataForm.groupName,
+            'countryCode': this.dataForm.countryCode,
+            'userGroupId': this.dataForm.userGroupId,
             'navyUrlList': this.dataForm.navyUrlList,
             'materialUrlList': this.dataForm.materialUrlList,
+            'groupType': this.groupType,
             'groupCount': this.dataForm.groupCount
           })
         }).then(({data}) => {
