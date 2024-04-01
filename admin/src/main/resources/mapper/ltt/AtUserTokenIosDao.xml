@@ -19,6 +19,7 @@
         <result property="createTime" column="create_time"/>
         <result property="taskId" column="task_id"/>
         <result property="reductionFlag" column="reduction_flag"/>
+        <result property="atUserTokenId" column="at_user_token_id"/>
     </resultMap>
 
 
