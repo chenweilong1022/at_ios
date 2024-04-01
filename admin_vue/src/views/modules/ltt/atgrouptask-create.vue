@@ -5,6 +5,47 @@
 
         <div class="img-logo">
           <img src="~@/assets/250px-Bagua-name-earlier.svg.png">
+
+          <div class="title">拉群配置</div>
+          <el-form-item label="拉群号">
+            <el-select v-model="dataForm.countryCode" placeholder="注册国家" clearable>
+              <el-option
+                v-for="item in countryCodes"
+                :key="item.key"
+                :label="item.value"
+                :value="item.key">
+              </el-option>
+            </el-select>
+          </el-form-item>
+
+          <el-form-item label="账户分组" prop="userGroupId">
+            <el-select v-model="dataForm.userGroupId" placeholder="账户分组">
+              <el-option
+                v-for="item in dataUserGroupList"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id">
+              </el-option>
+            </el-select>
+          </el-form-item>
+
+          <el-form-item label="类型" prop="groupType">
+            <el-select
+              v-model="groupType"
+              @change="groupTypeChangeHandler"
+              class="m-2"
+              placeholder="选择类型"
+              size="large"
+              style="width: 240px">
+              <el-option
+                v-for="item in options"
+                :key="item.key"
+                :label="item.value"
+                :value="item.key"
+              />
+            </el-select>
+          </el-form-item>
+
         </div>
 
         <div class="group-content">
@@ -73,7 +114,7 @@
 
           <el-row>
             <el-col :span="24">
-              <el-button @click="startGroup">开始拉群</el-button>
+              <el-button @click="startGroupHandler">开始拉群</el-button>
               <el-button @click="onGroupPreHandler">预览</el-button>
               <el-button @click="hide">隐藏表格</el-button>
               <el-button @click="show">显示表格</el-button>
@@ -132,17 +173,24 @@ import ModalBox from './modalbox.vue'
   export default {
     data () {
       return {
+        groupType: null,
+        options: [],
         tableData: [],
         navyUrlFileList: [],
+        dataUserGroupList: [],
         materialUrlFileList: [],
         isModalVisible: false,
         tableDataFlag: false,
         fileContentList: [],
         remaining: '',
+        countryCodes: [],
         dataRule: {
         },
         dataForm: {
+          id: null,
+          groupType: '',
           groupName: '',
+          countryCode: 66,
           groupCount: null,
           navyUrlList: [],
           materialUrlList: []
@@ -153,15 +201,82 @@ import ModalBox from './modalbox.vue'
       ModalBox
     },
     activated () {
-      const userId = this.$route.query.id
-      console.log(userId)
+      const groupTaskId = this.$route.query.id
+      this.dataForm.id = groupTaskId
+      this.getCountryCodeEnums()
+      this.getUserGroupDataList()
+      this.getGroupType()
     },
     methods: {
+      getGroupType () {
+        this.$http({
+          url: this.$http.adornUrl(`/app/enums/getGroupType`),
+          method: 'get'
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.options = data.data
+          } else {
+            this.$message.error(data.msg)
+          }
+        })
+      },
+      groupTypeChangeHandler () {
+        this.dataForm.groupType = this.groupType
+      },
+      // 获取数据列表
+      getUserGroupDataList () {
+        this.$http({
+          url: this.$http.adornUrl('/ltt/atusergroup/list'),
+          method: 'get',
+          params: this.$http.adornParams({
+            'page': 1,
+            'limit': 100
+          })
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.dataUserGroupList = data.page.list
+          } else {
+            this.dataUserGroupList = []
+          }
+        })
+      },
+      // 表单提交
+      getCountryCodeEnums () {
+        this.$http({
+          url: this.$http.adornUrl(`/app/enums/countryCodes`),
+          method: 'get'
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.countryCodes = data.data
+          } else {
+            this.$message.error(data.msg)
+          }
+        })
+      },
       hide () {
         this.tableDataFlag = false;
       },
       show () {
         this.tableDataFlag = true;
+      },
+      startGroupHandler () {
+        this.$http({
+          url: this.$http.adornUrl('/ltt/atgrouptask/onGroupStart'),
+          method: 'POST',
+          data: this.$http.adornData({
+            'id': this.dataForm.id,
+            'groupName': this.dataForm.groupName,
+            'navyUrlList': this.dataForm.navyUrlList,
+            'materialUrlList': this.dataForm.materialUrlList,
+            'groupCount': this.dataForm.groupCount
+          })
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+
+          } else {
+            this.$message.error(data.msg)
+          }
+        })
       },
       onGroupPreHandler () {
         this.show()
@@ -250,6 +365,12 @@ import ModalBox from './modalbox.vue'
       flex-direction: row;
       .img-logo {
         flex: 1;
+        .title {
+          margin: 10px 0px;
+          text-align: center;
+          font-size: 30px;
+          font-weight: bold;
+        }
       }
       .group-content {
         flex: 2;

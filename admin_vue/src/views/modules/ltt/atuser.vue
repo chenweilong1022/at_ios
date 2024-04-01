@@ -563,7 +563,7 @@
             this.$message.error(data.msg)
           }
         })
-      },
+      }
     }
   }
 </script>

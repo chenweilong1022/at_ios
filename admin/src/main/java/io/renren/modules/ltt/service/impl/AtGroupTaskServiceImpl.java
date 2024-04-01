@@ -12,6 +12,7 @@ import io.renren.modules.ltt.conver.AtDataTaskConver;
 import io.renren.modules.ltt.dto.AtDataTaskDTO;
 import io.renren.modules.ltt.entity.*;
 import io.renren.modules.ltt.enums.*;
+import io.renren.modules.ltt.service.AtDataSubtaskService;
 import io.renren.modules.ltt.service.AtDataTaskService;
 import io.renren.modules.ltt.service.AtGroupService;
 import io.renren.modules.ltt.vo.OnGroupPreVO;
@@ -30,6 +31,7 @@ import io.renren.modules.ltt.dto.AtGroupTaskDTO;
 import io.renren.modules.ltt.vo.AtGroupTaskVO;
 import io.renren.modules.ltt.service.AtGroupTaskService;
 import io.renren.modules.ltt.conver.AtGroupTaskConver;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
 import java.util.*;
@@ -157,8 +159,12 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
     @Autowired
     private AtDataTaskService atDataTaskService;
     @Autowired
+    private AtDataSubtaskService atDataSubtaskService;
+    @Autowired
     private AtGroupService atGroupService;
+
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void onGroupStart(AtGroupTaskDTO atGroupTask) {
         //分组
         List<OnGroupPreVO> onGroupPreVOS = onGroupPre(atGroupTask);
@@ -168,6 +174,7 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
             List<String> materialUrls = onGroupPreVO.getMaterialUrls();
             //保存群分组
             AtGroupEntity atGroupTaskEntity = new AtGroupEntity();
+            atGroupTaskEntity.setGroupTaskId(atGroupTask.getId());
             atGroupTaskEntity.setGroupName(onGroupPreVO.getGroupName());
             atGroupTaskEntity.setUploadGroupNumber(materialUrls.size());
             atGroupTaskEntity.setCurrentExecutionsNumber(0);
@@ -181,20 +188,30 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
             //水军
             List<String> navyTextLists = onGroupPreVO.getNavyTextLists();
 
+            GroupType groupType4 = GroupType.GroupType4;
             AtDataTaskEntity atDataTask = new AtDataTaskEntity();
+            atDataTask.setTaskName(String.format("%s加粉-%s",onGroupPreVO.getGroupName(),groupType4.getValue()));
+            atDataTask.setGroupType(groupType4.getKey());
             atDataTask.setCreateTime(DateUtil.date());
             atDataTask.setDeleteFlag(DeleteFlag.NO.getKey());
-            atDataTask.setAddTotalQuantity(0);
+            atDataTask.setAddTotalQuantity(navyTextLists.size() + materialUrls.size());
             atDataTask.setSuccessfulQuantity(0);
             atDataTask.setFailuresQuantity(0);
             atDataTask.setUpdateTime(DateUtil.date());
             atDataTask.setTaskStatus(TaskStatus.TaskStatus0.getKey());
+            atDataTask.setSysUserId(atGroupTask.getSysUserId());
+            atDataTask.setGroupId(atGroupTaskEntity.getId());
             atDataTaskService.save(atDataTask);
+
+            List<AtDataSubtaskEntity> atDataSubtaskEntities = new ArrayList<>();
             for (String navyTextList : navyTextLists) {
                 String[] parts = navyTextList.split("\\s+");
                 AtDataSubtaskEntity save = new AtDataSubtaskEntity();
-                save.setGroupType(GroupType.GroupType5.getKey());
+                save.setGroupId(atGroupTaskEntity.getId());
+                save.setGroupType(groupType4.getKey());
                 save.setDataTaskId(atDataTask.getId());
+                save.setSysUserId(atGroupTask.getSysUserId());
+                save.setDataType(DataType.DataType2.getKey());
 //                c.setUserId(atUserEntity.getId());
                 if (parts.length > 2) {
                     save.setContactKey(parts[0].trim());
@@ -208,13 +225,17 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
                 }
                 save.setDeleteFlag(DeleteFlag.NO.getKey());
                 save.setCreateTime(DateUtil.date());
+                atDataSubtaskEntities.add(save);
             }
 
             for (String materialUrl : materialUrls) {
                 String[] parts = materialUrl.split("\\s+");
                 AtDataSubtaskEntity save = new AtDataSubtaskEntity();
-                save.setGroupType(GroupType.GroupType5.getKey());
+                save.setGroupId(atGroupTaskEntity.getId());
+                save.setGroupType(groupType4.getKey());
                 save.setDataTaskId(atDataTask.getId());
+                save.setSysUserId(atGroupTask.getSysUserId());
+                save.setDataType(DataType.DataType1.getKey());
 //                c.setUserId(atUserEntity.getId());
                 if (parts.length > 2) {
                     save.setContactKey(parts[0].trim());
@@ -228,9 +249,9 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
                 }
                 save.setDeleteFlag(DeleteFlag.NO.getKey());
                 save.setCreateTime(DateUtil.date());
+                atDataSubtaskEntities.add(save);
             }
-
-
+            atDataSubtaskService.saveBatch(atDataSubtaskEntities);
         }
     }
 

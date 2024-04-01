@@ -8,21 +8,20 @@
       <el-input v-model="dataForm.taskName" placeholder="任务名称"></el-input>
     </el-form-item>
       <el-form-item label="类型" prop="groupType">
-        <el-select
-          v-model="groupType"
-          @change="groupTypeChangeHandler"
-          class="m-2"
-          placeholder="选择类型"
-          size="large"
-          style="width: 240px"
-        >
-          <el-option
-            v-for="item in options"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
-          />
-        </el-select>
+          <el-select
+            v-model="groupType"
+            @change="groupTypeChangeHandler"
+            class="m-2"
+            placeholder="选择类型"
+            size="large"
+            style="width: 240px">
+            <el-option
+              v-for="item in options"
+              :key="item.key"
+              :label="item.value"
+              :value="item.key"
+            />
+          </el-select>
       </el-form-item>
     <el-form-item label="账户分组" prop="userGroupId">
       <el-select v-model="dataForm.userGroupId" placeholder="账户分组">
@@ -64,28 +63,7 @@
         visible: false,
         dataUserGroupList: [],
         datagroupList: [],
-        options: [
-          {
-            value: 1,
-            label: '手机号'
-          },
-          {
-            value: 2,
-            label: '不封控地区普通uid模式'
-          },
-          {
-            value: 3,
-            label: '自定义id'
-          },
-          {
-            value: 4,
-            label: '日本，台湾专用uid模式'
-          },
-          {
-            value: 5,
-            label: '同步通讯录模式'
-          }
-        ],
+        options: [],
         dataForm: {
           id: 0,
           taskName: '',
@@ -146,6 +124,18 @@
       }
     },
     methods: {
+      getGroupType () {
+        this.$http({
+          url: this.$http.adornUrl(`/app/enums/getGroupType`),
+          method: 'get'
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.options = data.data
+          } else {
+            this.$message.error(data.msg)
+          }
+        })
+      },
       groupTypeChangeHandler () {
         this.dataForm.groupType = this.groupType
         if (this.groupType === 5) {
@@ -193,6 +183,7 @@
         this.dataForm.id = id || 0
         this.groupType = null
         this.visible = true
+        this.getGroupType()
         this.getUserGroupDataList()
         this.getDataGroupDataList(null)
         this.$nextTick(() => {

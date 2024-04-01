@@ -74,4 +74,10 @@ public class AppTestController {
         return R.data(enumVos);
     }
 
+    @GetMapping("enums/getGroupType")
+    public R getGroupType() {
+        List<EnumVo> enumVos = EnumUtil.enumToVo(GroupType.values());
+        return R.data(enumVos);
+    }
+
 }

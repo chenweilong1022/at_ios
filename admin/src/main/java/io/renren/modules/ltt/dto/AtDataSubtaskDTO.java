@@ -212,5 +212,14 @@ public class AtDataSubtaskDTO extends PageParam implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="管理账户id")
 	private Long sysUserId;
-
+	/**
+	 * 数据类型
+	 */
+	@ApiModelProperty(required=false,value="数据类型")
+	private Integer dataType;
+	/**
+	 * 群id
+	 */
+	@ApiModelProperty(required=false,value="群id")
+	private Integer groupId;
 }
