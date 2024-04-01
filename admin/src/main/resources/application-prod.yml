@@ -77,3 +77,8 @@ spring:
 #客服角色id
 customer:
     roleId: 2
+
+#获取token
+magicServer:
+    url: http://146.190.167.155:8808
+
