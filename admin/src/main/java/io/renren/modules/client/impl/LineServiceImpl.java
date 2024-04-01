@@ -7,6 +7,7 @@ import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.benmanes.caffeine.cache.Cache;
+import io.renren.common.constant.SystemConstant;
 import io.renren.common.utils.ConfigConstant;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.client.LineService;
@@ -40,6 +41,9 @@ public class LineServiceImpl implements LineService {
 
     @Autowired
     private SysConfigService sysConfigService;
+    @Resource
+    private SystemConstant systemConstant;
+
     @Resource(name = "caffeineCacheProjectWorkEntity")
     private Cache<String, ProjectWorkEntity> caffeineCacheProjectWorkEntity;
 
@@ -584,15 +588,14 @@ public class LineServiceImpl implements LineService {
     @Override
     public ConversionAppTokenVO conversionAppToken(String iosToken) {
         try {
-            ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
-            String getPhoneHttp = String.format("%s/api/v1/magicServer/conversionAppToken",projectWorkEntity.getLineBaseHttp());
+            String getPhoneHttp = String.format("%s/api/v1/magicServer/conversionAppToken",systemConstant.getMAGIC_SERVER_URL());
             String resp = HttpUtil.post(getPhoneHttp, iosToken);
             log.info("param = {},resp = {}", iosToken, resp);
             ConversionAppTokenVO issueLiffViewVO = JSON.parseObject(resp, ConversionAppTokenVO.class);
             extracted(iosToken, resp);
             return issueLiffViewVO;
         }catch (Exception e) {
-            log.error("err = {}",e.getMessage());
+            log.error("err = {}",e);
         }
         return null;
     }

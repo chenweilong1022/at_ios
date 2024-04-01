@@ -15,5 +15,10 @@ import java.util.List;
 public class ConversionAppTokenVO {
     private String msg;
     private long code;
-    private String token;
+    private Data data;
+
+    @lombok.Data
+    public static class Data {
+        private String token;
+    }
 }

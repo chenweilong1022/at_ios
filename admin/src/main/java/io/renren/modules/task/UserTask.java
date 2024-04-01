@@ -29,10 +29,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -532,8 +529,8 @@ public class UserTask {
                         return;
                     }
                     //成功获取返回zhi
-                    if (200 == conversionAppToken.getCode()) {
-                        String token = conversionAppToken.getToken();
+                    if (0 == conversionAppToken.getCode() && conversionAppToken.getData() != null) {
+                        String token = conversionAppToken.getData().getToken();
                         if (StrUtil.isEmpty(token)) {
                             latch.countDown();
                             return;
@@ -545,6 +542,10 @@ public class UserTask {
                         updateAtUserToken.setUserGroupId(null);
                         updateAtUserToken.setSysUserId(1L);
                         updateAtUserToken.setTokenType(AtUserTokenType2.getKey());//token类型 1协议token 2真机token
+                        updateAtUserToken.setUseFlag(UseFlag.NO.getKey());
+                        updateAtUserToken.setDeleteFlag(DeleteFlag.NO.getKey());
+                        updateAtUserToken.setCreateTime(new Date());
+                        updateAtUserToken.setPlatform(Platform.IOS.getKey());
                         atUserTokenService.save(updateAtUserToken);
 
                         AtUserTokenIosEntity updateAtUserTokenIos = new AtUserTokenIosEntity();
