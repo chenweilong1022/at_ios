@@ -81,6 +81,23 @@
         limit #{pageStart},#{limit}
     </select>
 
+    <select id="groupByUserId" resultType="io.renren.modules.ltt.vo.AtDataSubtaskVO">
+        SELECT
+            MIN( id ) id,
+            MIN( data_task_id ) dataTaskId,
+            MIN( group_id ) groupId,
+            MIN( user_id ) userId,
+            GROUP_CONCAT(contact_key) contactKeys,
+            GROUP_CONCAT(mid) mids
+        FROM
+            at_data_subtask
+        WHERE
+            task_status = #{dto.taskStatus}
+          AND group_type = #{dto.groupType}
+        GROUP BY
+            user_id
+    </select>
+
     <sql id="page_where_if">
         and s.delete_flag = 1 and s.mid is not null
         <if test="sysUserId != null  and sysUserId != 0">

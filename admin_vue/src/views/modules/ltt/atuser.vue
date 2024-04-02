@@ -183,6 +183,7 @@
           <el-tag v-else-if="scope.row.status === 2" size="small" type="danger">封号</el-tag>
           <el-tag v-else-if="scope.row.status === 3" size="small" type="danger">下线</el-tag>
           <el-tag v-else-if="scope.row.status === 4" size="small" type="danger">在线</el-tag>
+          <el-tag v-else-if="scope.row.status === 6" size="small" type="danger">已使用</el-tag>
           <el-tag v-else size="small">数据错误</el-tag>
         </template>
       </el-table-column>

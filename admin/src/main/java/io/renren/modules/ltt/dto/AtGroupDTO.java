@@ -121,5 +121,10 @@ public class AtGroupDTO extends PageParam implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="")
 	private Integer materialPhoneType;
+	/**
+	 *
+	 */
+	@ApiModelProperty(required=false,value="")
+	private String msg;
 
 }

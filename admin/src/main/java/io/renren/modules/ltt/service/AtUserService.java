@@ -6,6 +6,7 @@ import io.renren.modules.ltt.dao.UpdateAtUserCustomerParamDto;
 import io.renren.modules.ltt.dao.UpdateUserGroupParamDto;
 import io.renren.modules.ltt.dao.ValidateAtUserStatusParamDto;
 import io.renren.modules.ltt.dto.AtUserDTO;
+import io.renren.modules.ltt.enums.UserStatus;
 import io.renren.modules.ltt.vo.AtUserVO;
 import io.renren.modules.ltt.entity.AtUserEntity;
 
@@ -36,6 +37,12 @@ public interface AtUserService extends IService<AtUserEntity> {
      * @return
      */
     AtUserVO getById(Integer id);
+    /**
+     * 根据id查询
+     * @param id
+     * @return
+     */
+    boolean unlock(Integer id, UserStatus userStatus);
     /**
      * 保存
      * @param atUser

@@ -81,4 +81,9 @@ public class AtDataSubtaskServiceImpl extends ServiceImpl<AtDataSubtaskDao, AtDa
         return PageUtils.<AtDataSubtaskVO>page(page).setList(AtDataSubtaskConver.MAPPER.conver(page.getRecords()));
     }
 
+    @Override
+    public List<AtDataSubtaskVO> groupByUserId(AtDataSubtaskEntity dto) {
+        return baseMapper.groupByUserId(dto);
+    }
+
 }

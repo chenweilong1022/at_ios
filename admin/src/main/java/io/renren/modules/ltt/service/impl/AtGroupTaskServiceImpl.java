@@ -3,6 +3,7 @@ package io.renren.modules.ltt.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
 import io.renren.common.utils.EnumUtil;
 import io.renren.common.utils.PhoneUtil;
@@ -176,15 +177,22 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
         atUserDTO.setSysUserId(atGroupTask.getSysUserId());
         String regions = EnumUtil.queryValueByKey(atGroupTask.getCountryCode(), CountryCode.values());
         atUserDTO.setNation(regions.toUpperCase());
+        atUserDTO.setUserGroupId(atGroupTask.getUserGroupId());
         atUserDTO.setLimit(onGroupPreVOS.size());
         atUserDTO.setStatus(UserStatus.UserStatus4.getKey());
+        atUserDTO.setUserSource(AtUserSourceEnum.AtUserSource1.getKey());
         //获取符合账号的号码
         PageUtils pageUtils = atUserService.queryPage(atUserDTO);
         List<AtUserVO> atUserVOS = pageUtils.getList();
         Assert.isTrue(onGroupPreVOS.size()>atUserVOS.size(),"拉群号不足，请增加拉群号");
         Queue<AtUserVO> atUserVOQueue = new LinkedList<>(atUserVOS);
+        List<AtUserEntity> atUserEntityUpdates = new ArrayList<>();
         for (OnGroupPreVO onGroupPreVO : onGroupPreVOS) {
             AtUserVO poll = atUserVOQueue.poll();
+            AtUserEntity atUserEntity = new AtUserEntity();
+            atUserEntity.setId(poll.getId());
+            atUserEntity.setStatus(UserStatus.UserStatus6.getKey());
+            atUserEntityUpdates.add(atUserEntity);
             //料子
             List<String> materialUrls = onGroupPreVO.getMaterialUrls();
             //保存群分组
@@ -205,6 +213,7 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
             Integer groupType = atGroupTask.getGroupType();
             GroupType groupType4 = GroupType.getGroupTypeByKey(groupType);
             AtDataTaskEntity atDataTask = new AtDataTaskEntity();
+            atDataTask.setUserGroupId(atGroupTask.getUserGroupId());
             atDataTask.setTaskName(String.format("%s加粉-%s",onGroupPreVO.getGroupName(),groupType4.getValue()));
             atDataTask.setGroupType(groupType4.getKey());
             atDataTask.setCreateTime(DateUtil.date());
@@ -239,6 +248,12 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
                 }else {
                     save.setContactKey(parts[0].trim());
                 }
+                //校验通讯录模式的国家
+                if (GroupType.GroupType5.getKey().equals(groupType4.getKey())) {
+                    Assert.isTrue(StrUtil.isEmpty(save.getContactKey()),"手机号不能为空");
+                }else {
+                    Assert.isTrue(StrUtil.isEmpty(save.getMid()),"uid不能为空");
+                }
                 save.setDeleteFlag(DeleteFlag.NO.getKey());
                 save.setCreateTime(DateUtil.date());
                 atDataSubtaskEntities.add(save);
@@ -264,12 +279,43 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
                 }else {
                     save.setContactKey(parts[0].trim());
                 }
+                //校验通讯录模式的国家
+                if (GroupType.GroupType5.getKey().equals(groupType4.getKey())) {
+                    Assert.isTrue(StrUtil.isEmpty(save.getContactKey()),"手机号不能为空");
+                }else {
+                    Assert.isTrue(StrUtil.isEmpty(save.getMid()),"uid不能为空");
+                }
                 save.setDeleteFlag(DeleteFlag.NO.getKey());
                 save.setCreateTime(DateUtil.date());
                 atDataSubtaskEntities.add(save);
             }
-            atDataSubtaskService.saveBatch(atDataSubtaskEntities);
+
+            //校验通讯录模式的国家
+            if (GroupType.GroupType5.getKey().equals(groupType4.getKey())) {
+                checkCountry(poll, atDataSubtaskEntities);
+            }
+            if (CollUtil.isNotEmpty(atUserEntityUpdates)) {
+                atUserService.updateBatchById(atUserEntityUpdates);
+            }
+            if (CollUtil.isNotEmpty(atDataSubtaskEntities)) {
+                atDataSubtaskService.saveBatch(atDataSubtaskEntities);
+            }
         }
+    }
+
+    private static void checkCountry(AtUserVO poll, List<AtDataSubtaskEntity> atDataSubtaskEntities) {
+        Set<Long> set = new HashSet<>();
+        try {
+            PhoneCountryVO user = PhoneUtil.getPhoneNumberInfo(poll.getTelephone());
+            set.add(user.getCountryCode());
+            for (AtDataSubtaskEntity atDataSubtaskEntity : atDataSubtaskEntities) {
+                PhoneCountryVO phoneNumberInfo = PhoneUtil.getPhoneNumberInfo(atDataSubtaskEntity.getContactKey());
+                set.add(phoneNumberInfo.getCountryCode());
+            }
+        }catch (Exception e) {
+
+        }
+        Assert.isTrue(set.size() > 1,"通讯录模式，协议号和料子国家必须相同");
     }
 
     private void getNavyTextLists(List<String> navyUrlList, List<List<String>> navyTextListsList) {
@@ -320,7 +366,6 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
         Pattern pattern = Pattern.compile(regex);
         // 获取matcher对象
         Matcher matcher = pattern.matcher(text);
-        System.out.println("Found numbers:");
         while (matcher.find()) {
             // 打印出找到的每一个数字
             return matcher.group();

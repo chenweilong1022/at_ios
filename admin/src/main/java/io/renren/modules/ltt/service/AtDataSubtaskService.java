@@ -9,6 +9,7 @@ import io.renren.modules.ltt.entity.AtDataSubtaskEntity;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -66,5 +67,7 @@ public interface AtDataSubtaskService extends IService<AtDataSubtaskEntity> {
      * @return
      */
     PageUtils listFriend(AtDataSubtaskParamPageDTO atDataSubtask);
+
+    List<AtDataSubtaskVO> groupByUserId(AtDataSubtaskEntity dto);
 }
 

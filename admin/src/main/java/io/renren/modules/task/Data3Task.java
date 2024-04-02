@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 @Component
 @Slf4j
 @EnableAsync
-public class Data4Task {
+public class Data3Task {
 
 
     @Autowired
@@ -51,36 +51,33 @@ public class Data4Task {
     static ReentrantLock task2Lock = new ReentrantLock();
     static ReentrantLock task3Lock = new ReentrantLock();
     static ReentrantLock task4Lock = new ReentrantLock();
+
+    @Autowired
+    private LineService lineService;
+
+    @Autowired
+    ThreadPoolTaskExecutor threadPoolTaskExecutor;
+    @Autowired
+    private AtAvatarService atAvatarService;
     @Autowired
     private CdLineIpProxyService cdLineIpProxyService;
     @Autowired
     private ConcurrentHashMap<String, Lock> lockMap;
-
-    @Autowired
-    private LineService lineService;
-    @Autowired
-    ThreadPoolTaskExecutor threadPoolTaskExecutor;
-
     @Autowired
     private AtDataTaskService atDataTaskService;
-
     @Autowired
     private AtDataSubtaskService atDataSubtaskService;
     @Autowired
     private AtGroupService atGroupService;
 
-//    /**
-//     * 更新头像结果返回
-//     */
+
 //    @Scheduled(fixedDelay = 5000)
 //    @Transactional(rollbackFor = Exception.class)
 //    @Async
 //    public void task4() {}
 
 
-//    /**
-//     * 更新头像结果返回
-//     */
+
 //    @Scheduled(fixedDelay = 5000)
 //    @Transactional(rollbackFor = Exception.class)
 //    @Async
@@ -95,8 +92,7 @@ public class Data4Task {
     @Async
     public void task2() {
 
-
-        AtDataSubtaskEntity dto = new AtDataSubtaskEntity().setTaskStatus(TaskStatus.TaskStatus2.getKey()).setGroupType(GroupType.GroupType4.getKey());
+        AtDataSubtaskEntity dto = new AtDataSubtaskEntity().setTaskStatus(TaskStatus.TaskStatus2.getKey()).setGroupType(GroupType.GroupType3.getKey());
         List<AtDataSubtaskVO> atDataSubtaskEntities = atDataSubtaskService.groupByUserId(dto);
 
         //任务为空
@@ -144,7 +140,7 @@ public class Data4Task {
                         addFriendsByHomeRecommendDTO.setMid(mid);
                         addFriendsByHomeRecommendDTO.setToken(atUserTokenEntity.getToken());
 
-                        SearchPhoneVO searchPhoneVO = lineService.addFriendsByFriendRecommend(addFriendsByHomeRecommendDTO);
+                        SearchPhoneVO searchPhoneVO = lineService.addFriendsBySearchV3(addFriendsByHomeRecommendDTO);
                         AtDataSubtaskEntity update = new AtDataSubtaskEntity();
                         if (ObjectUtil.isNull(searchPhoneVO)) {
                             return;
@@ -198,6 +194,7 @@ public class Data4Task {
                 }
             });
         }
+
     }
 
 

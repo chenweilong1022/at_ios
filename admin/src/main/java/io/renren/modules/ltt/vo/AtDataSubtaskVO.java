@@ -1,10 +1,15 @@
 package io.renren.modules.ltt.vo;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ArrayUtil;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+
+import java.util.Arrays;
+import java.util.List;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import java.io.Serializable;
@@ -69,7 +74,17 @@ public class AtDataSubtaskVO implements Serializable {
 	 *
 	 */
 	@ApiModelProperty(required=false,value="")
+	private String contactKeys;
+	/**
+	 *
+	 */
+	@ApiModelProperty(required=false,value="")
 	private String mid;
+	/**
+	 *
+	 */
+	@ApiModelProperty(required=false,value="")
+	private String mids;
 	/**
 	 *
 	 */
@@ -221,4 +236,28 @@ public class AtDataSubtaskVO implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="群id")
 	private Integer groupId;
+
+	public String getContactKeys() {
+		String[] split = contactKeys.split(",");
+		if (ArrayUtil.isNotEmpty(split)) {
+			return split[0];
+		}
+		return null;
+	}
+
+	public List<String> getContactKeysToList() {
+		String[] split = contactKeys.split(",");
+		if (ArrayUtil.isNotEmpty(split)) {
+			return Arrays.asList(split);
+		}
+		return CollUtil.newArrayList();
+	}
+
+	public String getMids() {
+		String[] split = mids.split(",");
+		if (ArrayUtil.isNotEmpty(split)) {
+			return split[0];
+		}
+		return null;
+	}
 }
