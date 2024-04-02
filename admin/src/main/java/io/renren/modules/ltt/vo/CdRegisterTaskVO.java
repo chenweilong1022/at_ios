@@ -87,8 +87,6 @@ public class CdRegisterTaskVO implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="")
 	private Date createTime;
-	@ApiModelProperty(required=false,value="来源订单id")
-	private Integer atOrderId;
 	public String getRegistrationStatusStr() {
 		return EnumUtil.queryValueByKey(this.registrationStatus, RegistrationStatus.values());
 	}

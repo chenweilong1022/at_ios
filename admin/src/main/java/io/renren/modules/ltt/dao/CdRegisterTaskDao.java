@@ -20,9 +20,4 @@ public interface CdRegisterTaskDao extends BaseMapper<CdRegisterTaskEntity> {
 
     Integer sumByTaskId(@Param("id") Integer id);
 
-    /**
-     * 通过来源订单id，查询注册手机号
-     */
-    List<CdRegisterTaskDTO> queryLineRegister(@Param("atOrderId") Integer atOrderId,
-                                              @Param("registerStatus") Integer registerStatus);
 }

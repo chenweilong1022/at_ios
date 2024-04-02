@@ -36,7 +36,7 @@
       <el-form-item label="数据上传">
         <el-upload
           class="upload-demo"
-          action="http://localhost:8880/app/file/upload"
+          :action="uploadUrl"
           :on-success="handleAvatarSuccess">
           <el-button size="small" type="primary">点击上传</el-button>
         </el-upload>
@@ -54,6 +54,7 @@
     data () {
       return {
         visible: false,
+        uploadUrl: '',
         options: [
           {
             value: 1,
@@ -103,6 +104,7 @@
       },
       init () {
         this.visible = true
+        this.uploadUrl = this.$http.adornUrl(`/app/file/upload`)
         this.getDataList()
       },
       // 获取数据列表

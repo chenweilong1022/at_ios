@@ -13,7 +13,7 @@
           v-model:file-list="fileList"
           class="upload-demo"
           :multiple="multiple"
-          action="http://localhost:8880/app/file/upload"
+          :action="uploadUrl"
           :on-preview="handlePreview"
           :on-remove="handleRemove"
           :on-success="handleSuccess"
@@ -42,6 +42,7 @@
         multiple: true,
         fileList: [],
         visible: false,
+        uploadUrl: '',
         dataForm: {
           avatarList: [],
           id: 0,
@@ -81,6 +82,7 @@
       init (id) {
         this.dataForm.id = id || 0
         this.visible = true
+        this.uploadUrl = this.$http.adornUrl(`/app/file/upload`)
         this.$refs.upload.clearFiles()
         this.$nextTick(() => {
           this.$refs['dataForm'].resetFields()

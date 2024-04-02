@@ -10,7 +10,7 @@
       <el-form-item label="数据上传" prop="groupName">
         <el-upload ref="upload"
             class="upload-demo"
-            action="http://localhost:8880/app/file/upload"
+            :action="uploadUrl"
             :on-success="handleAvatarSuccess">
           <el-button size="small" type="primary">点击上传</el-button>
         </el-upload>
@@ -28,6 +28,7 @@
     data () {
       return {
         visible: false,
+        uploadUrl: '',
         dataForm: {
           id: 0,
           name: '',
@@ -55,6 +56,7 @@
       init (id) {
         this.dataForm.id = id || 0
         this.visible = true
+        this.uploadUrl = this.$http.adornUrl(`/app/file/upload`)
         this.$refs.upload.clearFiles()
         this.$nextTick(() => {
           this.$refs['dataForm'].resetFields()

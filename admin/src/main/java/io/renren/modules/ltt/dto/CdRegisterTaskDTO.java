@@ -91,6 +91,4 @@ public class CdRegisterTaskDTO extends PageParam implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="")
 	private Date createTime;
-	@ApiModelProperty(required=false,value="来源订单id")
-	private Integer atOrderId;
 }

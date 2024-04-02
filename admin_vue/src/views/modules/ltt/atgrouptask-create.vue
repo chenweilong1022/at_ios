@@ -81,7 +81,7 @@
               <el-upload
                 drag
                 v-model:file-list="navyUrlFileList"
-                action="http://localhost:8880/app/file/upload"
+                :action="uploadUrl"
                 :on-success="handleNavyUrlListHandler"
                 :on-preview="handleNavyUrlListHandlerPreview"
                 :on-remove="handleNavyUrlListHandlerRemove"
@@ -99,7 +99,7 @@
               <el-upload
                 drag
                 v-model:file-list="materialUrlFileList"
-                action="http://localhost:8880/app/file/upload"
+                :action="uploadUrl"
                 :on-success="handleMaterialUrlListHanlder"
                 :on-preview="handleMaterialUrlListHanlderPreview"
                 :on-remove="handleMaterialUrlListHanlderRemove"
@@ -174,6 +174,7 @@ import ModalBox from './modalbox.vue'
     data () {
       return {
         groupType: null,
+        uploadUrl: '',
         options: [],
         tableData: [],
         navyUrlFileList: [],
@@ -204,6 +205,7 @@ import ModalBox from './modalbox.vue'
     activated () {
       const groupTaskId = this.$route.query.id
       this.dataForm.id = groupTaskId
+      this.uploadUrl = this.$http.adornUrl(`/app/file/upload`)
       this.getCountryCodeEnums()
       this.getUserGroupDataList()
       this.getGroupType()
