@@ -190,7 +190,10 @@ public class Data2Task {
                         }
                         update.setId(atDataSubtaskEntity.getId());
                         atDataSubtaskService.updateById(update);
-                    }finally {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException e) {
+                        log.error("err = ",e.getMessage());
+                    } finally {
                         lock.unlock();
                     }
                 }else {
