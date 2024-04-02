@@ -17,18 +17,6 @@
       @selection-change="selectionChangeHandle"
       style="width: 100%;">
       <el-table-column
-        type="selection"
-        header-align="center"
-        align="center"
-        width="50">
-      </el-table-column>
-      <el-table-column
-        prop="usernameGroupId"
-        header-align="center"
-        align="center"
-        label="昵称分组id">
-      </el-table-column>
-      <el-table-column
         prop="username"
         header-align="center"
         align="center"
