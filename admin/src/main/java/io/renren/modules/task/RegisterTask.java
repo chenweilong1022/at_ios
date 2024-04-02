@@ -637,21 +637,21 @@
 //    }
 //
 //
-////     poolExecutor.execute(() -> {
-////        String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource1, cdRegisterTaskEntity.getId());
-////        Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
-////        boolean triedLock = lock.tryLock();
-////        log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
-////        if(triedLock) {
-////            try{
-////
-////            }finally {
-////                lock.unlock();
-////            }
-////        }else {
-////            log.info("keyByResource = {} 在执行",keyByResource);
-////        }
-////    });
+//     poolExecutor.execute(() -> {
+//        String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource1, cdRegisterTaskEntity.getId());
+//        Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
+//        boolean triedLock = lock.tryLock();
+//        log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
+//        if(triedLock) {
+//            try{
+//
+//            }finally {
+//                lock.unlock();
+//            }
+//        }else {
+//            log.info("keyByResource = {} 在执行",keyByResource);
+//        }
+//    });
 //
 //
 //}

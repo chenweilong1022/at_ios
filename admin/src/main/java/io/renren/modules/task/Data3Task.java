@@ -3,11 +3,8 @@ package io.renren.modules.task;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import io.renren.modules.client.LineService;
-import io.renren.modules.client.ProxyService;
 import io.renren.modules.client.dto.AddFriendsByHomeRecommendDTO;
-import io.renren.modules.client.dto.AddFriendsByMid;
 import io.renren.modules.client.vo.SearchPhoneVO;
 import io.renren.modules.ltt.dto.CdLineIpProxyDTO;
 import io.renren.modules.ltt.entity.AtDataSubtaskEntity;
@@ -27,11 +24,9 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -44,7 +39,7 @@ import java.util.stream.Collectors;
 @Component
 @Slf4j
 @EnableAsync
-public class Data2Task {
+public class Data3Task {
 
 
     @Autowired
@@ -124,7 +119,7 @@ public class Data2Task {
     @Async
     public void task2() {
 
-        AtDataSubtaskEntity dto = new AtDataSubtaskEntity().setTaskStatus(TaskStatus.TaskStatus2.getKey()).setGroupType(GroupType.GroupType2.getKey());
+        AtDataSubtaskEntity dto = new AtDataSubtaskEntity().setTaskStatus(TaskStatus.TaskStatus2.getKey()).setGroupType(GroupType.GroupType3.getKey());
         List<AtDataSubtaskVO> atDataSubtaskEntities = atDataSubtaskService.groupByUserId(dto);
 
         //任务为空
@@ -172,7 +167,7 @@ public class Data2Task {
                         addFriendsByHomeRecommendDTO.setMid(mid);
                         addFriendsByHomeRecommendDTO.setToken(atUserTokenEntity.getToken());
 
-                        SearchPhoneVO searchPhoneVO = lineService.addFriendsByHomeRecommend(addFriendsByHomeRecommendDTO);
+                        SearchPhoneVO searchPhoneVO = lineService.addFriendsBySearchV3(addFriendsByHomeRecommendDTO);
                         AtDataSubtaskEntity update = new AtDataSubtaskEntity();
                         update.setId(atDataSubtaskEntity.getId());
                         if (ObjectUtil.isNull(searchPhoneVO)) {

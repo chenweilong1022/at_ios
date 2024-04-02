@@ -13,6 +13,8 @@ public enum UserStatusCode implements BaseEnum {
     UserStatusCode4(4,"Access token refresh"),
     UserStatusCode5(5,"unknown result"),
     UserStatusCode6(6,"Protocol.LineContact"),
+    UserStatusCode7(7,"ABUSE_BLOCK"),
+    UserStatusCode8(8,"EXCESSIVE_ACCESS"),
     ;
 
     UserStatusCode(int key, String value) {

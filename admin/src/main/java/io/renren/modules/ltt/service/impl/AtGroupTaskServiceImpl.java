@@ -176,8 +176,10 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
         atUserDTO.setSysUserId(atGroupTask.getSysUserId());
         String regions = EnumUtil.queryValueByKey(atGroupTask.getCountryCode(), CountryCode.values());
         atUserDTO.setNation(regions.toUpperCase());
+        atUserDTO.setUserGroupId(atGroupTask.getUserGroupId());
         atUserDTO.setLimit(onGroupPreVOS.size());
         atUserDTO.setStatus(UserStatus.UserStatus4.getKey());
+        atUserDTO.setUserSource(AtUserSourceEnum.AtUserSource1.getKey());
         //获取符合账号的号码
         PageUtils pageUtils = atUserService.queryPage(atUserDTO);
         List<AtUserVO> atUserVOS = pageUtils.getList();
@@ -205,6 +207,7 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
             Integer groupType = atGroupTask.getGroupType();
             GroupType groupType4 = GroupType.getGroupTypeByKey(groupType);
             AtDataTaskEntity atDataTask = new AtDataTaskEntity();
+            atDataTask.setUserGroupId(atGroupTask.getUserGroupId());
             atDataTask.setTaskName(String.format("%s加粉-%s",onGroupPreVO.getGroupName(),groupType4.getValue()));
             atDataTask.setGroupType(groupType4.getKey());
             atDataTask.setCreateTime(DateUtil.date());
