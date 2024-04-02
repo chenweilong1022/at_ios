@@ -28,12 +28,12 @@
       </el-form-item>
       <el-form-item>
         <el-select
-          v-model="dataForm.userSource"
+          v-model="dataForm.status"
           class="m-2" clearable
           placeholder="账户状态"
           style="width: 240px">
           <el-option
-            v-for="item in atUserSourceCodes"
+            v-for="item in statusOptions"
             :key="item.value"
             :label="item.label"
             :value="item.value"
