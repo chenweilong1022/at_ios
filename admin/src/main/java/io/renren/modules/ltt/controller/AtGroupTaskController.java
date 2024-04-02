@@ -39,6 +39,7 @@ public class AtGroupTaskController extends AbstractController {
     @RequestMapping("/list")
     @RequiresPermissions("ltt:atgrouptask:list")
     public R list(AtGroupTaskDTO atGroupTask){
+        atGroupTask.setSysUserId(getAuthUserId());
         PageUtils page = atGroupTaskService.queryPage(atGroupTask);
 
         return R.ok().put("page", page);
@@ -94,6 +95,7 @@ public class AtGroupTaskController extends AbstractController {
     @RequestMapping("/save")
     @RequiresPermissions("ltt:atgrouptask:save")
     public R save(@RequestBody AtGroupTaskDTO atGroupTask){
+        atGroupTask.setSysUserId(getUserId());
 		atGroupTaskService.save(atGroupTask);
 
         return R.ok();

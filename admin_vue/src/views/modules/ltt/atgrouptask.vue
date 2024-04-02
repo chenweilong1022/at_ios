@@ -89,10 +89,10 @@
         label="创建时间">
       </el-table-column>
       <el-table-column
-        prop="sysUserId"
+        prop="sysUsername"
         header-align="center"
         align="center"
-        label="管理账户id">
+        label="账户名称">
       </el-table-column>
       <el-table-column
         fixed="right"

@@ -1,8 +1,10 @@
 package io.renren.modules.ltt.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
 import io.renren.common.utils.EnumUtil;
@@ -16,8 +18,10 @@ import io.renren.modules.ltt.dto.AtUserDTO;
 import io.renren.modules.ltt.entity.*;
 import io.renren.modules.ltt.enums.*;
 import io.renren.modules.ltt.service.*;
+import io.renren.modules.ltt.vo.AccountBalanceVO;
 import io.renren.modules.ltt.vo.AtUserVO;
 import io.renren.modules.ltt.vo.OnGroupPreVO;
+import io.renren.modules.sys.service.SysUserService;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.api.WxConsts;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +38,7 @@ import io.renren.modules.ltt.vo.AtGroupTaskVO;
 import io.renren.modules.ltt.conver.AtGroupTaskConver;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.io.Serializable;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -46,14 +51,24 @@ import java.util.stream.Collectors;
 @Slf4j
 public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupTaskEntity> implements AtGroupTaskService {
 
+    @Resource
+    private SysUserService sysUserService;
     @Override
     public PageUtils<AtGroupTaskVO> queryPage(AtGroupTaskDTO atGroupTask) {
         IPage<AtGroupTaskEntity> page = baseMapper.selectPage(
                 new Query<AtGroupTaskEntity>(atGroupTask).getPage(),
-                new QueryWrapper<AtGroupTaskEntity>()
+                new QueryWrapper<AtGroupTaskEntity>().lambda()
+                        .eq(ObjectUtil.isNotNull(atGroupTask.getSysUserId()), AtGroupTaskEntity::getSysUserId, atGroupTask.getSysUserId())
+                        .orderByDesc(AtGroupTaskEntity::getId)
         );
-
-        return PageUtils.<AtGroupTaskVO>page(page).setList(AtGroupTaskConver.MAPPER.conver(page.getRecords()));
+        List<AtGroupTaskVO> resultList = AtGroupTaskConver.MAPPER.conver(page.getRecords());
+        if (CollectionUtil.isNotEmpty(resultList)) {
+            List<Long> sysUserIdList = resultList.stream().map(AtGroupTaskVO::getSysUserId).collect(Collectors.toList());
+            //查询username
+            Map<Long, String> usernameMap = sysUserService.queryUserNameByUserIdList(sysUserIdList);
+            resultList.forEach(i -> i.setSysUsername(usernameMap.get(i.getSysUserId())));
+        }
+        return PageUtils.<AtGroupTaskVO>page(page).setList(resultList);
     }
     @Override
     public AtGroupTaskVO getById(Integer id) {
