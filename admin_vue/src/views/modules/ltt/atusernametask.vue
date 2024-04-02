@@ -72,12 +72,6 @@
         label="失败数量">
       </el-table-column>
       <el-table-column
-        prop="deleteFlag"
-        header-align="center"
-        align="center"
-        label="删除标志">
-      </el-table-column>
-      <el-table-column
         prop="createTime"
         header-align="center"
         align="center"

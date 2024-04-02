@@ -1,22 +1,14 @@
 package io.renren.modules.task;
 
-import cn.hutool.core.codec.Base64;
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.io.FastByteArrayOutputStream;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.http.HttpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import io.renren.modules.client.LineService;
-import io.renren.modules.client.ProxyService;
 import io.renren.modules.client.dto.AddFriendsByMid;
 import io.renren.modules.client.dto.SearchPhoneDTO;
-import io.renren.modules.client.dto.UpdateProfileImageDTO;
-import io.renren.modules.client.dto.UpdateProfileImageResultDTO;
 import io.renren.modules.client.vo.SearchPhoneVO;
 import io.renren.modules.client.vo.The818051863582;
-import io.renren.modules.client.vo.UpdateProfileImageResultVO;
-import io.renren.modules.client.vo.UpdateProfileImageVO;
 import io.renren.modules.ltt.dto.CdLineIpProxyDTO;
 import io.renren.modules.ltt.entity.*;
 import io.renren.modules.ltt.enums.*;
@@ -36,7 +28,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -69,8 +60,7 @@ public class DataTask {
     public static final Object atAtDataTaskEntityObj = new Object();
     @Autowired
     private LineService lineService;
-    @Autowired
-    private ProxyService proxyService;
+
 
     @Autowired
     ThreadPoolTaskExecutor threadPoolTaskExecutor;
@@ -159,6 +149,22 @@ public class DataTask {
                         update.setTaskStatus(TaskStatus.TaskStatus3.getKey());
                     }
                     atDataTaskEntityList.add(update);
+                }else if (GroupType.GroupType3.getKey().equals(atDataTaskEntity.getGroupType())) {
+                    update.setSuccessfulQuantity((int) success8);
+                    update.setFailuresQuantity((int) fail);
+                    update.setId(atDataTaskEntity.getId());
+                    if (success8 + fail == atDataTaskEntity.getAddTotalQuantity()) {
+                        update.setTaskStatus(TaskStatus.TaskStatus3.getKey());
+                    }
+                    atDataTaskEntityList.add(update);
+                }else if (GroupType.GroupType4.getKey().equals(atDataTaskEntity.getGroupType())) {
+                    update.setSuccessfulQuantity((int) success8);
+                    update.setFailuresQuantity((int) fail);
+                    update.setId(atDataTaskEntity.getId());
+                    if (success8 + fail == atDataTaskEntity.getAddTotalQuantity()) {
+                        update.setTaskStatus(TaskStatus.TaskStatus3.getKey());
+                    }
+                    atDataTaskEntityList.add(update);
                 }
             }
             if (CollUtil.isNotEmpty(atDataTaskEntityList)) {
@@ -213,6 +219,10 @@ public class DataTask {
                         if (StrUtil.isEmpty(contactKey)) {
                             return;
                         }
+                        String mid = atDataSubtaskEntity.getMids();
+                        if (StrUtil.isEmpty(mid)) {
+                            return;
+                        }
                         //获取代理
                         CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
                         cdLineIpProxyDTO.setTokenPhone(atUserTokenEntity.getTelephone());
@@ -224,8 +234,8 @@ public class DataTask {
 
                         AddFriendsByMid addFriendsByMid = new AddFriendsByMid();
                         addFriendsByMid.setProxy(proxyIp);
-                        addFriendsByMid.setPhone(atDataSubtaskEntity.getContactKey());
-                        addFriendsByMid.setMid(atDataSubtaskEntity.getMid());
+                        addFriendsByMid.setPhone(contactKey);
+                        addFriendsByMid.setMid(mid);
                         addFriendsByMid.setFriendAddType("phoneSearch");
                         addFriendsByMid.setToken(atUserTokenEntity.getToken());
                         SearchPhoneVO searchPhoneVO = lineService.addFriendsByMid(addFriendsByMid);
@@ -359,7 +369,7 @@ public class DataTask {
                                     update.setStatusMessage(value.getStatusMessage());
                                     update.setPicturePath(value.getPicturePath());
                                     update.setRecommendpArams(value.getRecommendParams());
-                                    update.setMusicProfile(value.getMusicProfile());
+                                    update.setMusicProfile(proxyIp);
                                     update.setVideoProfile(value.getVideoProfile());
                                 }
                             }else if (201 == searchPhoneVO.getCode()) {
@@ -440,7 +450,6 @@ public class DataTask {
             List<AtDataSubtaskEntity> atDataSubtaskEntities = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
                     .eq(AtDataSubtaskEntity::getTaskStatus,TaskStatus.TaskStatus1.getKey())
                     .in(AtDataSubtaskEntity::getDataTaskId,ids)
-                    .last("limit 5")
             );
 
             if (CollUtil.isEmpty(atDataSubtaskEntities)) {

@@ -35,8 +35,8 @@
         SELECT
             lr.subtasks_id AS subtasksId,
             COUNT(lr.subtasks_id) totalCount,
-            SUM(IF( lr.register_status IN(3,4), 1, 0 )) AS successCount,
-            SUM(IF( lr.register_status = 4, 1, 0 )) AS registerSuccessCount,
+            SUM(IF( lr.register_status IN(3,4,11), 1, 0 )) AS successCount,
+            SUM(IF( lr.register_status in (4,11), 1, 0 )) AS registerSuccessCount,
             SUM(IF( lr.register_status = 5, 1, 0 )) AS errorCount
         FROM
             cd_line_register lr

@@ -93,7 +93,7 @@ public class AtDataTaskController extends AbstractController {
      * startUp
      */
     @RequestMapping("/startUp")
-    @RequiresPermissions("ltt:atdatatask:delete")
+    @RequiresPermissions("ltt:atdatatask:save")
     public R startUp(@RequestBody Integer[] ids){
 		atDataTaskService.startUp(Arrays.asList(ids));
         return R.ok();
@@ -105,7 +105,7 @@ public class AtDataTaskController extends AbstractController {
      * @return
      */
     @RequestMapping("/errRetry")
-    @RequiresPermissions("ltt:atdatatask:delete")
+    @RequiresPermissions("ltt:atdatatask:save")
     public R errRetry(@RequestBody Integer[] ids){
         atDataTaskService.errRetry(Arrays.asList(ids));
 

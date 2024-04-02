@@ -187,16 +187,16 @@
           <el-tag v-else size="small">数据错误</el-tag>
         </template>
       </el-table-column>
-      <el-table-column
-        prop="customerService"
-        header-align="center"
-        align="center"
-        label="所属客服">
-        <template slot-scope="scope">
-          <el-tag v-if="scope.row.customerServiceId == null" size="small" type="danger">未分配</el-tag>
-          <el-tag v-else size="small">{{scope.row.customerService}}</el-tag>
-        </template>
-      </el-table-column>
+<!--      <el-table-column-->
+<!--        prop="customerService"-->
+<!--        header-align="center"-->
+<!--        align="center"-->
+<!--        label="所属客服">-->
+<!--        <template slot-scope="scope">-->
+<!--          <el-tag v-if="scope.row.customerServiceId == null" size="small" type="danger">未分配</el-tag>-->
+<!--          <el-tag v-else size="small">{{scope.row.customerService}}</el-tag>-->
+<!--        </template>-->
+<!--      </el-table-column>-->
       <el-table-column
         prop="createTime"
         header-align="center"

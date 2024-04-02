@@ -107,4 +107,9 @@ public class AtDataTaskDTO extends PageParam implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="管理账户id")
 	private Long sysUserId;
+	/**
+	 * 国家
+	 */
+	@ApiModelProperty(required=false,value="国家")
+	private Integer countryCode;
 }

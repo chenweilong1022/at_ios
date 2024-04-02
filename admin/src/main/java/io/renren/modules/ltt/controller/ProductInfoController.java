@@ -31,7 +31,7 @@ public class ProductInfoController {
      * 列表
      */
     @RequestMapping("/list")
-    @RequiresPermissions("ltt:productinfo:list")
+    @RequiresPermissions("ltt:atuser:list")
     public R list(ProductInfoDTO productInfo) {
         PageUtils page = productInfoService.queryPage(productInfo);
 
@@ -43,7 +43,7 @@ public class ProductInfoController {
      * 信息
      */
     @RequestMapping("/info/{productId}")
-    @RequiresPermissions("ltt:productinfo:info")
+    @RequiresPermissions("ltt:atuser:list")
     public R info(@PathVariable("productId") Integer productId) {
         ProductInfoVO productInfo = productInfoService.getById(productId);
 
@@ -54,7 +54,7 @@ public class ProductInfoController {
      * 获取商品信息
      */
     @RequestMapping("/queryOnlyProduct")
-    @RequiresPermissions("ltt:productinfo:info")
+    @RequiresPermissions("ltt:atuser:list")
     public R queryOnlyProduct(@RequestParam("productType") Integer productType,
                               @RequestParam("countryCode") String countryCode,
                               @RequestParam(value = "status", required = false) Integer status) {

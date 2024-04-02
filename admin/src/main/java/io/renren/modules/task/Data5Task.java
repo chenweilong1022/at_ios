@@ -15,10 +15,7 @@ import io.renren.modules.ltt.entity.AtDataSubtaskEntity;
 import io.renren.modules.ltt.entity.AtGroupEntity;
 import io.renren.modules.ltt.entity.AtUserEntity;
 import io.renren.modules.ltt.entity.AtUserTokenEntity;
-import io.renren.modules.ltt.enums.GroupStatus;
-import io.renren.modules.ltt.enums.GroupType;
-import io.renren.modules.ltt.enums.LockMapKeyResource;
-import io.renren.modules.ltt.enums.TaskStatus;
+import io.renren.modules.ltt.enums.*;
 import io.renren.modules.ltt.service.*;
 import io.renren.modules.ltt.vo.AtDataSubtaskVO;
 import lombok.extern.slf4j.Slf4j;
@@ -129,7 +126,9 @@ public class Data5Task {
                         }
 
                         List<AtDataSubtaskEntity> atDataSubtaskEntityList = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
-                                .eq(AtDataSubtaskEntity::getGroupId,atDataSubtaskVO.getGroupId())
+                                .eq(AtDataSubtaskEntity::getDataTaskId,atDataSubtaskVO.getDataTaskId())
+                                .eq(AtDataSubtaskEntity::getUserId,atDataSubtaskVO.getUserId())
+                                .eq(AtDataSubtaskEntity::getTaskStatus,TaskStatus.TaskStatus9.getKey())
                         );
                         if (CollUtil.isEmpty(atDataSubtaskEntityList)) {
                             return;
@@ -187,7 +186,8 @@ public class Data5Task {
                                     atDataSubtaskEntity.setMsg(syncContentsResultVO.getMsg());
                                 }
                                 atDataSubtaskService.updateBatchById(atDataSubtaskEntityList);
-
+                                //同步失败，账号风控
+                                atUserService.unlock(atDataSubtaskVO.getUserId(), UserStatus.UserStatus2);
                                 if (ObjectUtil.isNotNull(atDataSubtaskVO.getGroupId())) {
                                     //拉群改状态
                                     AtGroupEntity atGroupEntity = new AtGroupEntity();
@@ -286,12 +286,16 @@ public class Data5Task {
                         if (200 == lineRegisterVO.getCode()) {
                             update.setTaskStatus(TaskStatus.TaskStatus9.getKey());
                             atDataSubtaskService.update(update,new UpdateWrapper<AtDataSubtaskEntity>().lambda()
-                                    .eq(AtDataSubtaskEntity::getGroupId,atDataSubtaskEntity.getGroupId())
+                                    .eq(AtDataSubtaskEntity::getDataTaskId,atDataSubtaskEntity.getDataTaskId())
+                                    .eq(AtDataSubtaskEntity::getUserId,atDataSubtaskEntity.getUserId())
+                                    .eq(AtDataSubtaskEntity::getTaskStatus,TaskStatus.TaskStatus2.getKey())
                             );
                         }else {
                             update.setTaskStatus(TaskStatus.TaskStatus5.getKey());
                             atDataSubtaskService.update(update,new UpdateWrapper<AtDataSubtaskEntity>().lambda()
-                                    .eq(AtDataSubtaskEntity::getGroupId,atDataSubtaskEntity.getGroupId())
+                                    .eq(AtDataSubtaskEntity::getDataTaskId,atDataSubtaskEntity.getDataTaskId())
+                                    .eq(AtDataSubtaskEntity::getUserId,atDataSubtaskEntity.getUserId())
+                                    .eq(AtDataSubtaskEntity::getTaskStatus,TaskStatus.TaskStatus2.getKey())
                             );
                         }
                     }finally {

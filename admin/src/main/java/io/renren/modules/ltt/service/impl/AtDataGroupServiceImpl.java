@@ -47,6 +47,7 @@ public class AtDataGroupServiceImpl extends ServiceImpl<AtDataGroupDao, AtDataGr
                 new Query<AtDataGroupEntity>(atDataGroup).getPage(),
                 new QueryWrapper<AtDataGroupEntity>().lambda()
                         .eq(ObjectUtil.isNotNull(atDataGroup.getGroupType()),AtDataGroupEntity::getGroupType,atDataGroup.getGroupType())
+                        .eq(ObjectUtil.isNotNull(atDataGroup.getSysUserId()),AtDataGroupEntity::getSysUserId,atDataGroup.getSysUserId())
                         .orderByDesc(AtDataGroupEntity::getId)
         );
         List<AtDataGroupVO> records = AtDataGroupConver.MAPPER.conver(page.getRecords());

@@ -1,6 +1,7 @@
 package io.renren.modules.ltt.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
 import com.github.benmanes.caffeine.cache.Cache;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.ltt.enums.DeleteFlag;
@@ -58,6 +59,8 @@ public class CdRegisterTaskServiceImpl extends ServiceImpl<CdRegisterTaskDao, Cd
         cdRegisterTask.setNumberRegistered(0);
         cdRegisterTask.setNumberSuccesses(0);
         cdRegisterTask.setNumberFailures(0);
+        cdRegisterTask.setCreateTime(DateUtil.date());
+        cdRegisterTask.setDeleteFlag(DeleteFlag.NO.getKey());
         cdRegisterTask.setRegistrationStatus(RegistrationStatus.RegistrationStatus1.getKey());
         //真机
         if (RealMachine.RealMachine2.getKey().equals(cdRegisterTask.getRealMachine())) {

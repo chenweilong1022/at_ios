@@ -13,7 +13,6 @@ import io.renren.common.utils.ConfigConstant;
 import io.renren.common.utils.DateUtils;
 import io.renren.modules.client.FirefoxService;
 import io.renren.modules.client.LineService;
-import io.renren.modules.client.ProxyService;
 import io.renren.modules.client.dto.*;
 import io.renren.modules.client.entity.ProjectWorkEntity;
 import io.renren.modules.client.vo.*;
@@ -33,14 +32,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -94,8 +91,6 @@ public class RegisterTask {
     private AsyncService asyncService;
     @Autowired
     private LineService lineService;
-    @Autowired
-    private ProxyService proxyService;
     @Autowired
     private AtAvatarService atAvatarService;
 

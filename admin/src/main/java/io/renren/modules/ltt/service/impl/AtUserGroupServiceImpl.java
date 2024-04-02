@@ -49,8 +49,7 @@ public class AtUserGroupServiceImpl extends ServiceImpl<AtUserGroupDao, AtUserGr
     public List<AtUserGroupVO> queryByFuzzyName(String userGroupName, Long sysUserId) {
         List<AtUserGroupEntity> list = this.list(new QueryWrapper<AtUserGroupEntity>().lambda()
                 .likeRight(StringUtils.isNotEmpty(userGroupName), AtUserGroupEntity::getName, userGroupName)
-                .eq(ObjectUtil.isNotNull(sysUserId) ,AtUserGroupEntity::getDeleteFlag, sysUserId)
-                .eq(AtUserGroupEntity::getDeleteFlag, DeleteFlag.NO.getKey())
+                .eq(ObjectUtil.isNotNull(sysUserId) ,AtUserGroupEntity::getSysUserId, sysUserId)
                 .orderByDesc(AtUserGroupEntity::getId)
                 .last("limit " + 20));
         return AtUserGroupConver.MAPPER.conver(list);

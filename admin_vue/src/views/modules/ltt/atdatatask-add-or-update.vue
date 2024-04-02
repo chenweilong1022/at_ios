@@ -7,6 +7,7 @@
     <el-form-item label="任务名称" prop="taskName">
       <el-input v-model="dataForm.taskName" placeholder="任务名称"></el-input>
     </el-form-item>
+
       <el-form-item label="类型" prop="groupType">
           <el-select
             v-model="groupType"
@@ -23,6 +24,7 @@
             />
           </el-select>
       </el-form-item>
+
     <el-form-item label="账户分组" prop="userGroupId">
       <el-select v-model="dataForm.userGroupId" placeholder="账户分组">
         <el-option
@@ -33,6 +35,16 @@
         </el-option>
       </el-select>
     </el-form-item>
+      <el-form-item label="加粉号国家">
+        <el-select v-model="dataForm.countryCode" placeholder="拉群号国家" clearable>
+          <el-option
+            v-for="item in countryCodes"
+            :key="item.key"
+            :label="item.value"
+            :value="item.key">
+          </el-option>
+        </el-select>
+      </el-form-item>
     <el-form-item label="数据分组" prop="dataGroupId">
       <el-select v-model="dataForm.dataGroupId" placeholder="数据分组">
         <el-option
@@ -44,7 +56,7 @@
       </el-select>
     </el-form-item>
     <el-form-item label="每个号加粉数量" prop="addQuantityLimit">
-      <el-input-number v-model="dataForm.addQuantityLimit" :min="1" :max="100" label="每个号加粉数量"></el-input-number>
+      <el-input-number v-model="dataForm.addQuantityLimit" :min="1" :max="99" label="每个号加粉数量"></el-input-number>
 
     </el-form-item>
     </el-form>
@@ -63,6 +75,7 @@
         visible: false,
         dataUserGroupList: [],
         datagroupList: [],
+        countryCodes: [],
         options: [],
         dataForm: {
           id: 0,
@@ -71,6 +84,7 @@
           dataGroupId: '',
           groupType: '',
           addTotalQuantity: '',
+          countryCode: null,
           successfulQuantity: '',
           failuresQuantity: '',
           taskStatus: '',
@@ -124,6 +138,19 @@
       }
     },
     methods: {
+      // 表单提交
+      getCountryCodeEnums () {
+        this.$http({
+          url: this.$http.adornUrl(`/app/enums/countryCodes`),
+          method: 'get'
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.countryCodes = data.data
+          } else {
+            this.$message.error(data.msg)
+          }
+        })
+      },
       getGroupType () {
         this.$http({
           url: this.$http.adornUrl(`/app/enums/getGroupType`),
@@ -138,11 +165,7 @@
       },
       groupTypeChangeHandler () {
         this.dataForm.groupType = this.groupType
-        if (this.groupType === 5) {
-          this.getDataGroupDataList(1)
-        } else {
-          this.getDataGroupDataList(this.groupType)
-        }
+        this.getDataGroupDataList(this.groupType)
       },
       // 获取数据列表
       getUserGroupDataList () {
@@ -184,6 +207,7 @@
         this.groupType = null
         this.visible = true
         this.getGroupType()
+        this.getCountryCodeEnums()
         this.getUserGroupDataList()
         this.getDataGroupDataList(null)
         this.$nextTick(() => {
@@ -227,6 +251,7 @@
                 'userGroupId': this.dataForm.userGroupId,
                 'dataGroupId': this.dataForm.dataGroupId,
                 'groupType': this.dataForm.groupType,
+                'countryCode': this.dataForm.countryCode,
                 'addTotalQuantity': this.dataForm.addTotalQuantity,
                 'successfulQuantity': this.dataForm.successfulQuantity,
                 'failuresQuantity': this.dataForm.failuresQuantity,

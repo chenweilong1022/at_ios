@@ -118,7 +118,8 @@ public class AtDataTaskVO implements Serializable {
 		return EnumUtil.queryValueByKey(this.taskStatus, TaskStatus.values());
 	}
 
-	public double getScheduleFloat() {
-		return (double) (successfulQuantity + failuresQuantity) / addTotalQuantity * 100;
+	public String getScheduleFloat() {
+		double v = (double) (successfulQuantity + failuresQuantity) / addTotalQuantity * 100;
+        return String.format("%.2f", v);
 	}
 }

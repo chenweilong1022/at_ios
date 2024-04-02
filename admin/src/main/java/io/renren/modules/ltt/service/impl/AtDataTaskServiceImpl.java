@@ -5,18 +5,18 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Lists;
+import io.renren.common.utils.EnumUtil;
 import io.renren.common.utils.PhoneUtil;
 import io.renren.common.utils.vo.PhoneCountryVO;
 import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
+import io.renren.modules.ltt.dto.AtUserDTO;
 import io.renren.modules.ltt.entity.*;
-import io.renren.modules.ltt.enums.DeleteFlag;
-import io.renren.modules.ltt.enums.GroupType;
-import io.renren.modules.ltt.enums.TaskStatus;
-import io.renren.modules.ltt.enums.UseFlag;
+import io.renren.modules.ltt.enums.*;
 import io.renren.modules.ltt.service.AtDataService;
 import io.renren.modules.ltt.service.AtDataSubtaskService;
 import io.renren.modules.ltt.service.AtUserService;
+import io.renren.modules.ltt.vo.AtUserVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -79,11 +79,22 @@ public class AtDataTaskServiceImpl extends ServiceImpl<AtDataTaskDao, AtDataTask
         atDataTask.setUpdateTime(DateUtil.date());
         atDataTask.setTaskStatus(TaskStatus.TaskStatus0.getKey());
         AtDataTaskEntity atDataTaskEntity = AtDataTaskConver.MAPPER.converDTO(atDataTask);
+
+        AtUserDTO atUserDTO = new AtUserDTO();
+        atUserDTO.setSysUserId(atDataTask.getSysUserId());
+        String regions = EnumUtil.queryValueByKey(atDataTask.getCountryCode(), CountryCode.values());
+        atUserDTO.setNation(regions.toUpperCase());
+        atUserDTO.setUserGroupId(atDataTask.getUserGroupId());
+        atUserDTO.setStatus(UserStatus.UserStatus4.getKey());
+        atUserDTO.setUserSource(AtUserSourceEnum.AtUserSource1.getKey());
+        //获取符合账号的号码
+        PageUtils pageUtils = atUserService.queryPage(atUserDTO);
+
+
+
         //获取分组下所有的用户
-        List<AtUserEntity> atUserEntities = atUserService.list(new QueryWrapper<AtUserEntity>().lambda()
-                .eq(AtUserEntity::getUserGroupId,atDataTask.getUserGroupId())
-        );
-        Assert.isTrue(CollUtil.isEmpty(atUserEntities),"用户分组不能为空");
+        List<AtUserVO> atUserEntities = pageUtils.getList();
+        Assert.isTrue(CollUtil.isEmpty(atUserEntities),String.format("分组下%s国家账号不足",regions));
         Integer addQuantityLimit = atDataTask.getAddQuantityLimit();
         Integer limit = addQuantityLimit * atUserEntities.size();
         List<AtDataEntity> atDataEntities = atDataService.list(new QueryWrapper<AtDataEntity>().lambda()
@@ -91,7 +102,7 @@ public class AtDataTaskServiceImpl extends ServiceImpl<AtDataTaskDao, AtDataTask
                 .eq(AtDataEntity::getUseFlag, UseFlag.NO.getKey())
                 .last("limit " + limit)
         );
-        Assert.isTrue(atDataEntities.size() < limit,"数据不够用户分配，请补充");
+//        Assert.isTrue(atDataEntities.size() < limit,"数据不够用户分配，请补充");
         //设置总拉粉人数，并且去保存
         atDataTaskEntity.setAddTotalQuantity(atDataEntities.size());
         boolean save = this.save(atDataTaskEntity);
@@ -99,11 +110,16 @@ public class AtDataTaskServiceImpl extends ServiceImpl<AtDataTaskDao, AtDataTask
         List<List<AtDataEntity>> partitions = Lists.partition(atDataEntities, addQuantityLimit);
         List<AtDataSubtaskEntity> atDataSubtaskEntities = new ArrayList<>();
         List<AtDataEntity> updates = new ArrayList<>();
+        int addTotalQuantity = 0;
         for (int i = 0; i < partitions.size(); i++) {
             //获取分组后的datalist
             List<AtDataEntity> atDataEntityList = partitions.get(i);
             //获取用户
-            AtUserEntity atUserEntity = atUserEntities.get(i);
+            AtUserVO atUserEntity = atUserEntities.get(i);
+            if (addQuantityLimit > atDataEntityList.size()) {
+                break;
+            }
+            addTotalQuantity = addTotalQuantity + atDataEntityList.size();
             for (AtDataEntity atDataEntity : atDataEntityList) {
                 String data = atDataEntity.getData();
                 //修改data为已经使用
@@ -121,6 +137,8 @@ public class AtDataTaskServiceImpl extends ServiceImpl<AtDataTaskDao, AtDataTask
                     atDataSubtaskEntity.setContactKey(data);
                 }else if (GroupType.GroupType2.getKey().equals(atDataTaskEntity.getGroupType())) {
                     atDataSubtaskEntity.setMid(data);
+                }else if (GroupType.GroupType3.getKey().equals(atDataTaskEntity.getGroupType())) {
+                    atDataSubtaskEntity.setMid(data);
                 }else if (GroupType.GroupType4.getKey().equals(atDataTaskEntity.getGroupType())) {
                     atDataSubtaskEntity.setMid(data);
                 }else if (GroupType.GroupType5.getKey().equals(atDataTaskEntity.getGroupType())) {
@@ -133,12 +151,17 @@ public class AtDataTaskServiceImpl extends ServiceImpl<AtDataTaskDao, AtDataTask
                 atDataSubtaskEntities.add(atDataSubtaskEntity);
             }
         }
+        Assert.isTrue(addTotalQuantity <= 0,"数据不足，请添加数据");
+        AtDataTaskEntity update = new AtDataTaskEntity();
+        update.setId(atDataTaskEntity.getId());
+        update.setAddTotalQuantity(addTotalQuantity);
+        this.updateById(update);
         atDataSubtaskService.saveBatch(atDataSubtaskEntities);
         atDataService.updateBatchById(updates);
         return save;
     }
 
-    private static void checkCountry(AtDataEntity atDataEntity, AtUserEntity atUserEntity) {
+    private static void checkCountry(AtDataEntity atDataEntity, AtUserVO atUserEntity) {
         boolean flag = false;
         try {
             String data = atDataEntity.getData();

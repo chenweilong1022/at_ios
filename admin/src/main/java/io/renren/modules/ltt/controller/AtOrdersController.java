@@ -35,6 +35,7 @@ public class AtOrdersController extends AbstractController {
     @RequestMapping("/list")
     @RequiresPermissions("ltt:atorders:list")
     public R list(AtOrdersDTO atOrders){
+        atOrders.setSysUserId(getAuthUserId());
         PageUtils page = atOrdersService.queryPage(atOrders);
 
         return R.ok().put("page", page);

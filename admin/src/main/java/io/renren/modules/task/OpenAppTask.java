@@ -7,7 +7,6 @@
 //import cn.hutool.core.util.StrUtil;
 //import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 //import io.renren.modules.client.LineService;
-//import io.renren.modules.client.ProxyService;
 //import io.renren.modules.client.dto.OpenApp;
 //import io.renren.modules.client.dto.RegisterResultDTO;
 //import io.renren.modules.client.vo.LineRegisterVO;
@@ -28,10 +27,8 @@
 //import org.springframework.transaction.annotation.Transactional;
 //
 //import javax.annotation.Resource;
-//import java.util.ArrayList;
 //import java.util.List;
 //import java.util.concurrent.ConcurrentHashMap;
-//import java.util.concurrent.CountDownLatch;
 //import java.util.concurrent.locks.Lock;
 //import java.util.concurrent.locks.ReentrantLock;
 //
@@ -57,8 +54,6 @@
 //    private CdLineRegisterService cdLineRegisterService;
 //    @Autowired
 //    private LineService lineService;
-//    @Autowired
-//    private ProxyService proxyService;
 //    @Autowired
 //    private CdLineIpProxyService cdLineIpProxyService;
 //    @Autowired

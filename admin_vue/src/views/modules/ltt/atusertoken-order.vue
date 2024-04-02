@@ -44,11 +44,17 @@
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="商品名称" prop="productName">
-        <el-input v-model="dataForm.productName" placeholder="商品名称" disabled="true"></el-input>
-      </el-form-item>
-      <el-form-item label="商品价格" prop="price">
-        <el-input v-model="dataForm.price" placeholder="商品价格" disabled="true"></el-input>
+<!--      <el-form-item label="商品名称" prop="productName">-->
+<!--        <el-input v-model="dataForm.productName" placeholder="商品名称" disabled="true"></el-input>-->
+<!--      </el-form-item>-->
+      <el-form-item label="价格" prop="price">
+        <el-row>
+          <el-col :span="12">
+            <el-input v-model="dataForm.price" placeholder="价格" disabled="true">
+              <template slot="append">U</template>
+            </el-input>
+          </el-col>
+        </el-row>
       </el-form-item>
       <el-form-item label="购买数量" prop="orderNumber">
         <el-input v-model="dataForm.orderNumber" placeholder="购买数量"></el-input>
@@ -104,12 +110,13 @@ export default {
     init() {
       this.visible = true
       this.getCountryCodeEnums()
+      this.productChangeHandler()
     },
     // 表单提交
     dataFormSubmit() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          this.$confirm(`确定购买[${this.countryValue}] 数量:[${this.dataForm.orderNumber}]?`, '提示', {
+          this.$confirm(`确定购买数量:[${this.dataForm.orderNumber}]?`, '提示', {
             confirmButtonText: '确定',
             cancelButtonText: '取消',
             type: 'warning'
@@ -141,10 +148,7 @@ export default {
         }
       })
     },
-    productChangeHandler() {
-      this.countryCodes.find((item) => {
-        this.countryValue = item.value
-      })
+    productChangeHandler () {
       this.queryProductBySearchWord()
     },
     queryProductBySearchWord() {
