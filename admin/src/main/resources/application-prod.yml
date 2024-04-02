@@ -2,7 +2,7 @@ project:
     host:
         name: ${PROJECT_HOST_NAME:127.0.0.1:8880}
     mysql:
-        hostname: ${PROJECT_MYSQL_HOSTNAME:127.0.0.1}
+        hostname: ${PROJECT_MYSQL_HOSTNAME:192.168.40.99}
         port: ${PROJECT_MYSQL_PORT:3308}
         url: ${project.mysql.hostname}:${project.mysql.port}
         username: ${PROJECT_MYSQL_USERNAME:root}
@@ -23,9 +23,9 @@ project:
             username: ${PROJECT_GAME_MYSQL_USERNAME:${project.mysql.username}}
             password: ${PROJECT_GAME_MYSQL_PASSWORD:${project.mysql.password}}
     log:
-        file: ${PROJECT_LOG_PATH:/Users/chenweilong/Desktop/java代码/at_ios/file/logs/}
+        file: ${PROJECT_LOG_PATH:/Users/huyan/work/at_ios/file/logs/}
     file:
-        saveurl: ${PROJECT_FILE_SAVEURL:/Users/chenweilong/Desktop/java代码/at_ios/file}
+        saveurl: ${PROJECT_FILE_SAVEURL:/Users/huyan/work/at_ios/file}
 logging:
     file: ${project.log.file}/logs.log
 file:
