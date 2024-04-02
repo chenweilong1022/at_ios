@@ -80,7 +80,10 @@
         this.dataForm.id = id || 0
         this.uploadUrl = this.$http.adornUrl(`/app/file/upload`)
         this.visible = true
-        this.$refs.upload.clearFiles()
+
+        if (this.$refs.upload != null) {
+          this.$refs.upload.clearFiles()
+        }
         this.$nextTick(() => {
           this.$refs['dataForm'].resetFields()
           if (this.dataForm.id) {
