@@ -93,6 +93,16 @@ public class AtGroupTaskDTO extends PageParam implements Serializable {
 	@ApiModelProperty(required=false,value="进度")
 	private Integer schedule;
 	/**
+	 * 国家
+	 */
+	@ApiModelProperty(required=false,value="国家")
+	private Integer countryCode;
+	/**
+	 * 用户分组id
+	 */
+	@ApiModelProperty(required=false,value="用户分组id")
+	private Integer userGroupId;
+	/**
 	 * 更新时间
 	 */
 	@ApiModelProperty(required=false,value="更新时间")

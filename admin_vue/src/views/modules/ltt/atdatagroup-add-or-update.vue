@@ -7,19 +7,19 @@
     <el-form-item label="分组名称" prop="name">
       <el-input v-model="dataForm.name" placeholder="分组名称"></el-input>
     </el-form-item>
+
     <el-form-item label="分组类型">
       <el-select
         v-model="groupType"
         class="m-2"
-        placeholder="Select"
+        placeholder="选择类型"
         size="large"
-        style="width: 240px"
-      >
+        style="width: 240px">
         <el-option
           v-for="item in options"
-          :key="item.value"
-          :label="item.label"
-          :value="item.value"
+          :key="item.key"
+          :label="item.value"
+          :value="item.key"
         />
       </el-select>
     </el-form-item>
@@ -36,24 +36,7 @@
     data () {
       return {
         groupType: null,
-        options: [
-          {
-            value: 1,
-            label: '手机号'
-          },
-          {
-            value: 2,
-            label: '不封控地区普通uid模式'
-          },
-          {
-            value: 3,
-            label: '自定义id'
-          },
-          {
-            value: 4,
-            label: '日本，台湾专用uid模式'
-          }
-        ],
+        options: [],
         visible: false,
         dataForm: {
           id: 0,
@@ -79,9 +62,22 @@
       }
     },
     methods: {
+      getGroupType () {
+        this.$http({
+          url: this.$http.adornUrl(`/app/enums/getGroupType`),
+          method: 'get'
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.options = data.data
+          } else {
+            this.$message.error(data.msg)
+          }
+        })
+      },
       init (id) {
         this.dataForm.id = id || 0
         this.visible = true
+        this.getGroupType()
         this.$nextTick(() => {
           this.$refs['dataForm'].resetFields()
           if (this.dataForm.id) {

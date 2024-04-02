@@ -1,6 +1,7 @@
 package io.renren.modules.ltt.controller;
 
 import io.renren.modules.ltt.vo.OnGroupPreVO;
+import io.renren.modules.sys.controller.AbstractController;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,7 +29,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("ltt/atgrouptask")
-public class AtGroupTaskController {
+public class AtGroupTaskController extends AbstractController {
     @Autowired
     private AtGroupTaskService atGroupTaskService;
 
@@ -70,6 +71,7 @@ public class AtGroupTaskController {
     @RequestMapping("/onGroupStart")
     @RequiresPermissions("ltt:atgrouptask:list")
     public R onGroupStart(@RequestBody AtGroupTaskDTO atGroupTask){
+        atGroupTask.setSysUserId(getUserId());
         atGroupTaskService.onGroupStart(atGroupTask);
         return R.ok();
     }

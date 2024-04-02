@@ -92,6 +92,11 @@ public class AtDataTaskEntity implements Serializable {
 	@ApiModelProperty(required=false,value="删除标志")
 	private Integer deleteFlag;
 	/**
+	 * 群id
+	 */
+	@ApiModelProperty(required=false,value="群id")
+	private Integer groupId;
+	/**
 	 * 创建时间
 	 */
 	@ApiModelProperty(required=false,value="创建时间")
