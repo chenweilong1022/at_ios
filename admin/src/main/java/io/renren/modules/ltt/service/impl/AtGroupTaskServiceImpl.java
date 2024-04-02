@@ -3,6 +3,7 @@ package io.renren.modules.ltt.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
 import io.renren.common.utils.EnumUtil;
 import io.renren.common.utils.PhoneUtil;
@@ -242,6 +243,12 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
                 }else {
                     save.setContactKey(parts[0].trim());
                 }
+                //校验通讯录模式的国家
+                if (GroupType.GroupType5.getKey().equals(groupType4.getKey())) {
+                    Assert.isTrue(StrUtil.isEmpty(save.getContactKey()),"手机号不能为空");
+                }else {
+                    Assert.isTrue(StrUtil.isEmpty(save.getMid()),"uid不能为空");
+                }
                 save.setDeleteFlag(DeleteFlag.NO.getKey());
                 save.setCreateTime(DateUtil.date());
                 atDataSubtaskEntities.add(save);
@@ -267,12 +274,40 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
                 }else {
                     save.setContactKey(parts[0].trim());
                 }
+                //校验通讯录模式的国家
+                if (GroupType.GroupType5.getKey().equals(groupType4.getKey())) {
+                    Assert.isTrue(StrUtil.isEmpty(save.getContactKey()),"手机号不能为空");
+                }else {
+                    Assert.isTrue(StrUtil.isEmpty(save.getMid()),"uid不能为空");
+                }
                 save.setDeleteFlag(DeleteFlag.NO.getKey());
                 save.setCreateTime(DateUtil.date());
                 atDataSubtaskEntities.add(save);
             }
+
+            //校验通讯录模式的国家
+            if (GroupType.GroupType5.getKey().equals(groupType4.getKey())) {
+                checkCountry(poll, atDataSubtaskEntities);
+            }else {
+
+            }
             atDataSubtaskService.saveBatch(atDataSubtaskEntities);
         }
+    }
+
+    private static void checkCountry(AtUserVO poll, List<AtDataSubtaskEntity> atDataSubtaskEntities) {
+        Set<Long> set = new HashSet<>();
+        try {
+            PhoneCountryVO user = PhoneUtil.getPhoneNumberInfo(poll.getTelephone());
+            set.add(user.getCountryCode());
+            for (AtDataSubtaskEntity atDataSubtaskEntity : atDataSubtaskEntities) {
+                PhoneCountryVO phoneNumberInfo = PhoneUtil.getPhoneNumberInfo(atDataSubtaskEntity.getContactKey());
+                set.add(phoneNumberInfo.getCountryCode());
+            }
+        }catch (Exception e) {
+
+        }
+        Assert.isTrue(set.size() > 1,"通讯录模式，协议号和料子国家必须相同");
     }
 
     private void getNavyTextLists(List<String> navyUrlList, List<List<String>> navyTextListsList) {
@@ -323,7 +358,6 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
         Pattern pattern = Pattern.compile(regex);
         // 获取matcher对象
         Matcher matcher = pattern.matcher(text);
-        System.out.println("Found numbers:");
         while (matcher.find()) {
             // 打印出找到的每一个数字
             return matcher.group();
