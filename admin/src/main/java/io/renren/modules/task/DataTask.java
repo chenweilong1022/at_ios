@@ -89,9 +89,7 @@ public class DataTask {
     private AtDataSubtaskService atDataSubtaskService;
 
 
-    /**
-     * 更新头像结果返回
-     */
+
     @Scheduled(fixedDelay = 5000)
     @Transactional(rollbackFor = Exception.class)
     @Async
@@ -276,7 +274,10 @@ public class DataTask {
                         }
                         update.setId(atDataSubtaskEntity.getId());
                         atDataSubtaskService.updateById(update);
-                    }finally {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException e) {
+                        log.error("err = {}",e.getMessage());
+                    } finally {
                         lock.unlock();
                     }
                 }else {
@@ -398,8 +399,11 @@ public class DataTask {
                             }
                             update.setId(atDataSubtaskEntity.getId());
                             atDataSubtaskService.updateById(update);
+                            Thread.sleep(5000);
                         }
-                    }finally {
+                    } catch (InterruptedException e) {
+                        log.error("err = ",e.getMessage());
+                    } finally {
                         lock.unlock();
                     }
                 }else {

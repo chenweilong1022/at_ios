@@ -3,8 +3,8 @@
     <div class="site-content__wrapper">
       <div class="site-content">
         <div class="brand-info">
-          <h2 class="brand-info__text">ATIOS</h2>
-          <p class="brand-info__intro">ATIOS管理后台系统</p>
+          <h2 class="brand-info__text">LINEABC</h2>
+          <p class="brand-info__intro">LINEABC开放平台</p>
         </div>
         <div class="login-main">
           <h3 class="login-title">登录</h3>
