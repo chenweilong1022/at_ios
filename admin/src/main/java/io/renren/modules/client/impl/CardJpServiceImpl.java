@@ -93,59 +93,25 @@ public class CardJpServiceImpl implements FirefoxService {
     }
 
     public static void main(String[] args) {
-        String a = "{\n" +
-                "\t\"code\": 1,\n" +
-                "\t\"msg\": \"SUCCESS\",\n" +
-                "\t\"time\": \"1712073834\",\n" +
-                "\t\"data\": {\n" +
-                "\t\t\"ret\": [{\n" +
-                "\t\t\t\"take_id\": 129234,\n" +
-                "\t\t\t\"state\": 1,\n" +
-                "\t\t\t\"phone_number\": \"08020928481\",\n" +
-                "\t\t\t\"take_time\": 1712064763,\n" +
-                "\t\t\t\"sms\": [{\n" +
-                "\t\t\t\t\t\"recv_time\": 1712064834,\n" +
-                "\t\t\t\t\t\"content\": \"認証番号「951274」をLINEで入力して下さい。\\n他人には教えないで下さい。30分間有効です。\"\n" +
-                "\t\t\t\t}, {\n" +
-                "\t\t\t\t\t\"recv_time\": 1712066306,\n" +
-                "\t\t\t\t\t\"content\": \"認証番号「665752」をLINEで入力して下さい。\\n他人には教えないで下さい。30分間有効です。\"\n" +
-                "\t\t\t\t}, {\n" +
-                "\t\t\t\t\t\"recv_time\": 1712066428,\n" +
-                "\t\t\t\t\t\"content\": \"認証番号「063771」をLINEで入力して下さい。\\n他人には教えないで下さい。30分間有効です。\"\n" +
-                "\t\t\t\t},\n" +
-                "\t\t\t\t{\n" +
-                "\t\t\t\t\t\"recv_time\": 1712073829,\n" +
-                "\t\t\t\t\t\"content\": \"認証番号「963384」をLINEで入力して下さい。\\n他人には教えないで下さい。30分間有効です。\"\n" +
-                "\t\t\t\t}, {\n" +
-                "\t\t\t\t\t\"recv_time\": 1712071424,\n" +
-                "\t\t\t\t\t\"content\": \"認証番号「951562」をLINEで入力して下さい。\\n他人には教えないで下さい。30分間有効です。\"\n" +
-                "\t\t\t\t}\n" +
-                "\t\t\t]\n" +
-                "\t\t}]\n" +
-                "\t}\n" +
+        String resp = "{\n" +
+                "  \"code\": 1,\n" +
+                "  \"msg\": \"SUCCESS\",\n" +
+                "  \"time\": \"1709050984\",\n" +
+                "  \"data\": {\n" +
+                "    \"take_ids\": [\n" +
+                "      18199\n" +
+                "    ]\n" +
+                "  }\n" +
                 "}";
-        String createTimestamp = "1712073756";
-
-        CardJpGetPhoneSmsVO resultDto = JSON.parseObject(a, CardJpGetPhoneSmsVO.class);
-        log.info("CardJpServiceImpl_getPhoneCode_resultDto {}", resultDto);
+        CardJpGetPhoneCancelVO resultDto = JSON.parseObject(resp, CardJpGetPhoneCancelVO.class);
+        log.error("CardJpServiceImpl_setRel_resultDto {}", resultDto);
 
         if (resultDto.getCode() != 1 || resultDto.getData() == null) {
-            System.out.println(1);
+            System.out.println(false);
         }
-        List<CardJpGetPhoneSmsVO.Data.Ret> ret = resultDto.getData().getRet();
-        if (CollectionUtil.isNotEmpty(ret)) {
-            CardJpGetPhoneSmsVO.Data.Ret ret1 = ret.stream().filter(i -> CollectionUtil.isNotEmpty(i.getSms())).findFirst().orElse(null);
-            if (ObjectUtil.isNotNull(ret1) && CollectionUtil.isNotEmpty(ret1.getSms())) {
-                CardJpGetPhoneSmsVO.Data.Ret.Sm sms = ret1.getSms().stream()
-                        .filter(i -> DateUtils.comparisonTime(i.getRecvTime(), createTimestamp))
-                        .findFirst().orElse(null);
-                 if(ObjectUtil.isNotNull(sms)){
-                     System.out.println("-------");
-                     System.out.println(extractVerificationCode(sms.getContent()));
-                 } else {
-                     System.out.println("33333333");
-                 }
-            }
+        List<String> takeIds = resultDto.getData().getTake_ids();
+        if (CollectionUtil.isNotEmpty(takeIds) && takeIds.contains("18200")) {
+            System.out.println(true);
         }
     }
 

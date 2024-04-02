@@ -59,7 +59,7 @@ public class SysUserController extends AbstractController {
 	@GetMapping("/queryBySearchWord")
 //	@RequiresPermissions("sys:user:list")
 	public R list(@RequestParam(value = "searchWord", required = false) String searchWord){
-		List<SysUserEntity> list = sysUserService.queryBySearchWord(searchWord);
+		List<SysUserEntity> list = sysUserService.queryBySearchWord(searchWord, getAuthUserId());
 		return R.ok().put("userList", list);
 	}
 

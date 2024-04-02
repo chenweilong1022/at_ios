@@ -36,6 +36,9 @@
 		<if test="searchWord != null">
 			and username like CONCAT( '%', #{searchWord}, '%')
 		</if>
+		<if test="sysUserId != null">
+			and user_id = #{sysUserId}
+		</if>
 		order by user_id desc
 		limit 20
 	</select>

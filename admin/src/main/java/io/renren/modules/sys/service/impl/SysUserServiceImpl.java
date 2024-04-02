@@ -68,8 +68,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUserEntity> i
 	}
 
 	@Override
-	public List<SysUserEntity> queryBySearchWord(String searchWord) {
-		return baseMapper.queryBySearchWord(searchWord);
+	public List<SysUserEntity> queryBySearchWord(String searchWord, Long sysUserId) {
+		return baseMapper.queryBySearchWord(searchWord, sysUserId);
 	}
 
 	@Override

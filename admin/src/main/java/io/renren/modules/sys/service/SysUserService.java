@@ -39,7 +39,7 @@ public interface SysUserService extends IService<SysUserEntity> {
 	/**
 	 * 根据搜索词，查询系统用户
 	 */
-	List<SysUserEntity> queryBySearchWord(String searchWord);
+	List<SysUserEntity> queryBySearchWord(String searchWord, Long sysUserId);
 
 	/**
 	 * 保存用户
