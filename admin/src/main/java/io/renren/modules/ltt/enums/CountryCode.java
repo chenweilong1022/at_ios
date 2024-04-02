@@ -47,4 +47,28 @@ public enum CountryCode implements BaseEnum {
         }
         return null;
     }
+
+    public static String getValueByKey(Integer key) {
+        if (ObjectUtil.isNull(key)) {
+            return null;
+        }
+        for (CountryCode typeEnum : CountryCode.values()) {
+            if (typeEnum.getKey().equals(key)) {
+                return typeEnum.getValue();
+            }
+        }
+        return null;
+    }
+
+    public static CountryCode getEnumByValue(String value) {
+        if (StringUtils.isEmpty(value)) {
+            return null;
+        }
+        for (CountryCode typeEnum : CountryCode.values()) {
+            if (typeEnum.getValue().equals(value)) {
+                return typeEnum;
+            }
+        }
+        return null;
+    }
 }

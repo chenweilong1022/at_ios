@@ -545,6 +545,7 @@ public class LineServiceImpl implements LineService {
     @EventListener
     @Order(value = 9999)//t35323ha-1027-61697		tha-1027-44108
     public void handlerApplicationReadyEvent(ApplicationReadyEvent event) {
+        //配置项
         SysConfigEntity one = sysConfigService.getOne(new QueryWrapper<SysConfigEntity>().lambda()
                 .eq(SysConfigEntity::getParamKey, ConfigConstant.PROJECT_WORK_KEY)
         );

@@ -10,6 +10,7 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.benmanes.caffeine.cache.Cache;
 import io.renren.common.utils.ConfigConstant;
+import io.renren.common.utils.DateUtils;
 import io.renren.modules.client.FirefoxService;
 import io.renren.modules.client.LineService;
 import io.renren.modules.client.ProxyService;
@@ -29,6 +30,7 @@ import io.renren.modules.ltt.vo.CdLineRegisterVO;
 import io.renren.modules.ltt.vo.CdRegisterSubtasksVO;
 import io.renren.modules.ltt.vo.GetCountBySubTaskIdVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -109,10 +111,14 @@ public class RegisterTask {
     private CdLineIpProxyService cdLineIpProxyService;
     @Resource(name = "cardMeServiceImpl")
     private FirefoxService firefoxService;
+
+    @Resource(name = "cardJpServiceImpl")
+    private FirefoxService cardJpService;
     @Resource(name = "caffeineCacheCode")
     private Cache<String, String> caffeineCacheCode;
 
-
+    @Resource(name = "cardJpSms")
+    private Cache<String, String> cardJpSms;
     /**
      *
      */
@@ -172,7 +178,13 @@ public class RegisterTask {
                     cdGetPhoneEntity.setId(cdLineRegisterEntity.getGetPhoneId());
                     cdGetPhoneEntity.setPhoneStatus(PhoneStatus6.getKey());
                     if (StrUtil.isNotEmpty(cdLineRegisterEntity.getPkey())) {
-                        boolean b = firefoxService.withBlackMobile(cdLineRegisterEntity.getPkey());
+                        if (StringUtils.isNotEmpty(cdGetPhoneEntity.getCountrycode())
+                                && CountryCode.CountryCode3.getValue().equals(cdGetPhoneEntity.getCountrycode())) {
+                            //日本
+                            cardJpService.withBlackMobile(cdLineRegisterEntity.getPkey());
+                        } else {
+                            firefoxService.withBlackMobile(cdLineRegisterEntity.getPkey());
+                        }
                         cdGetPhoneEntity.setPhoneStatus(PhoneStatus6.getKey());
                     }
                     synchronized (lockCdLineRegisterEntity) {
@@ -204,17 +216,26 @@ public class RegisterTask {
             return;
         }
         for (CdGetPhoneEntity cdGetPhoneEntity : list) {
-             poolExecutor.execute(() -> {
+            poolExecutor.execute(() -> {
                 String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource4, cdGetPhoneEntity.getId());
                 Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
-                 CdLineRegisterEntity update = null;
+                CdLineRegisterEntity update = null;
                 boolean triedLock = lock.tryLock();
                 log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
                 if(triedLock) {
                     try{
                         //如果需要释放
                         if(PhoneStatus5.getKey().equals(cdGetPhoneEntity.getPhoneStatus())) {
-                            boolean b = firefoxService.setRel(cdGetPhoneEntity.getPkey());
+                            boolean b;
+
+                            if (StringUtils.isNotEmpty(cdGetPhoneEntity.getCountrycode())
+                                    && CountryCode.CountryCode3.getValue().equals(cdGetPhoneEntity.getCountrycode())) {
+                                //日本
+                                b = cardJpService.setRel(cdGetPhoneEntity.getPkey());
+                            } else {
+                                b = firefoxService.setRel(cdGetPhoneEntity.getPkey());
+                            }
+
                             if (b) {
                                 cdGetPhoneEntity.setPhoneStatus(PhoneStatus6.getKey());
                             }
@@ -229,7 +250,14 @@ public class RegisterTask {
                                 return;
                             }
                             if (StrUtil.isEmpty(phoneCode)) {
-                                phoneCode = firefoxService.getPhoneCode(cdGetPhoneEntity.getPkey());
+                                if (StringUtils.isNotEmpty(cdGetPhoneEntity.getCountrycode())
+                                        && CountryCode.CountryCode3.getValue().equals(cdGetPhoneEntity.getCountrycode())) {
+                                    //日本
+                                    cardJpSms.put(ConfigConstant.CARD_JP_SMS, DateUtils.getTimestampMillis(cdGetPhoneEntity.getCreateTime()));
+                                    phoneCode = cardJpService.getPhoneCode(cdGetPhoneEntity.getPkey());
+                                } else {
+                                    phoneCode = firefoxService.getPhoneCode(cdGetPhoneEntity.getPkey());
+                                }
                             }
                             if (StrUtil.isEmpty(phoneCode)) {
                                 return;
@@ -301,7 +329,7 @@ public class RegisterTask {
             return;
         }
         for (CdGetPhoneEntity cdGetPhoneEntity : list) {
-             poolExecutor.execute(() -> {
+            poolExecutor.execute(() -> {
                 String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource4, cdGetPhoneEntity.getId());
                 Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
                 boolean triedLock = lock.tryLock();
@@ -312,7 +340,7 @@ public class RegisterTask {
                         LineRegisterDTO lineRegisterDTO = new LineRegisterDTO();
                         lineRegisterDTO.setAb(projectWorkEntity.getLineAb());
                         lineRegisterDTO.setAppVersion(projectWorkEntity.getLineAppVersion());
-                        lineRegisterDTO.setCountryCode(projectWorkEntity.getFirefoxCountry1());
+                        lineRegisterDTO.setCountryCode(cdGetPhoneEntity.getCountrycode());
                         lineRegisterDTO.setPhone(cdGetPhoneEntity.getPhone());
                         //获取代理
                         CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
@@ -500,7 +528,7 @@ public class RegisterTask {
             return;
         }
         for (CdRegisterSubtasksVO cdRegisterSubtasksEntity : cdRegisterSubtasksVOS) {
-             poolExecutor.execute(() -> {
+            poolExecutor.execute(() -> {
                 String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource2, cdRegisterSubtasksEntity.getId());
                 Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
                 boolean triedLock = lock.tryLock();
@@ -517,6 +545,7 @@ public class RegisterTask {
                                 CdGetPhoneDTO cdGetPhoneDTO = new CdGetPhoneDTO();
                                 cdGetPhoneDTO.setCount(cdRegisterSubtasksEntity.getNumberRegistrations() - count);
                                 cdGetPhoneDTO.setSubtasksId(cdRegisterSubtasksEntity.getId());
+                                cdGetPhoneDTO.setCountrycode(CountryCode.getValueByKey(cdRegisterSubtasksEntity.getCountryCode()));
                                 List<CdGetPhoneEntity> cdGetPhoneEntities = cdGetPhoneService.addCount(cdGetPhoneDTO);
                                 //如果数量相等
                                 if (cdGetPhoneDTO.getCount().equals(cdGetPhoneEntities.size() + count)) {
@@ -533,6 +562,7 @@ public class RegisterTask {
                         CdGetPhoneDTO cdGetPhoneDTO = new CdGetPhoneDTO();
                         cdGetPhoneDTO.setCount(cdRegisterSubtasksEntity.getNumberRegistrations());
                         cdGetPhoneDTO.setSubtasksId(cdRegisterSubtasksEntity.getId());
+                        cdGetPhoneDTO.setCountrycode(CountryCode.getValueByKey(cdRegisterSubtasksEntity.getCountryCode()));
                         List<CdGetPhoneEntity> cdGetPhoneEntities = cdGetPhoneService.addCount(cdGetPhoneDTO);
                         //如果数量相等
                         if (CollUtil.isNotEmpty(cdGetPhoneEntities)) {
@@ -608,6 +638,7 @@ public class RegisterTask {
                                 if (cdRegisterTaskEntity.getFillUpRegisterTaskId() > 0) {
                                     cdRegisterSubtasksEntity.setTaskId(cdRegisterTaskEntity.getFillUpRegisterTaskId());
                                 }
+                                cdRegisterSubtasksEntity.setCountryCode(cdRegisterTaskEntity.getCountryCode());
                                 cdRegisterSubtasksEntity.setNumberRegistrations(newNumberRegistrations > 0 ? newNumberRegistrations : numberRegistered);
                                 cdRegisterSubtasksEntity.setNumberSuccesses(0);
                                 cdRegisterSubtasksEntity.setNumberFailures(0);
@@ -655,3 +686,4 @@ public class RegisterTask {
 
 
 }
+

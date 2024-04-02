@@ -57,6 +57,11 @@ public class CdRegisterSubtasksDTO extends PageParam implements Serializable {
 	@ApiModelProperty(required=false,value="")
 	private Integer registrationStatus;
 	/**
+	 * 国家code（这里是数字代码）
+	 */
+	@ApiModelProperty(required = false, value = "国家code（这里是数字代码）")
+	private Integer countryCode;
+	/**
 	 * 
 	 */
 	@ApiModelProperty(required=false,value="")

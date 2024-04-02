@@ -101,5 +101,12 @@ public interface CdLineRegisterService extends IService<CdLineRegisterEntity> {
      * @return
      */
     List<CdLineRegisterVO> getListByRegisterStatus(Integer registerStatus, String countryCode, Integer limit);
+
+    /**
+     * 注册重试
+     * @param id
+     * @return
+     */
+    boolean registerRetry(Integer id);
 }
 

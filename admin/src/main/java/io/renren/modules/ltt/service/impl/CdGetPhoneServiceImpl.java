@@ -6,8 +6,10 @@ import cn.hutool.core.util.ObjectUtil;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.client.FirefoxService;
 import io.renren.modules.client.vo.GetPhoneVO;
+import io.renren.modules.ltt.enums.CountryCode;
 import io.renren.modules.ltt.enums.DeleteFlag;
 import io.renren.modules.ltt.enums.PhoneStatus;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -27,11 +29,13 @@ import javax.annotation.Resource;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 
 @Service("cdGetPhoneService")
 @Game
+@Slf4j
 public class CdGetPhoneServiceImpl extends ServiceImpl<CdGetPhoneDao, CdGetPhoneEntity> implements CdGetPhoneService {
 
     @Override
@@ -71,7 +75,10 @@ public class CdGetPhoneServiceImpl extends ServiceImpl<CdGetPhoneDao, CdGetPhone
     }
 
     @Resource(name = "cardMeServiceImpl")
-    private FirefoxService firefoxService;
+    private FirefoxService cardMeService;
+
+    @Resource(name = "cardJpServiceImpl")
+    private FirefoxService cardJpService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -82,10 +89,18 @@ public class CdGetPhoneServiceImpl extends ServiceImpl<CdGetPhoneDao, CdGetPhone
             try {
                 Thread.sleep(50);
             } catch (InterruptedException e) {
-                log.error("err = {}");
+                log.error("err = {}", e);
                 continue;
             }
-            GetPhoneVO phone = firefoxService.getPhone();
+
+            GetPhoneVO phone = null;
+            if (CountryCode.CountryCode3.getValue().equals(cdGetPhone.getCountrycode())) {
+                //日本
+                phone = cardJpService.getPhone();
+            } else {
+                phone = cardMeService.getPhone();
+            }
+
             //获取到一个算一个，如果获取不到，直接返回
             if (ObjectUtil.isNotNull(phone)) {
                 CdGetPhoneEntity cdGetPhoneEntity = new CdGetPhoneEntity();
@@ -93,7 +108,7 @@ public class CdGetPhoneServiceImpl extends ServiceImpl<CdGetPhoneDao, CdGetPhone
                 cdGetPhoneEntity.setPkey(phone.getPkey());
                 cdGetPhoneEntity.setTime(phone.getTime());
                 cdGetPhoneEntity.setCountry(phone.getCountry());
-                cdGetPhoneEntity.setCountrycode(phone.getPhone());
+                cdGetPhoneEntity.setCountrycode(cdGetPhone.getCountrycode());
                 cdGetPhoneEntity.setOther(phone.getOther());
                 cdGetPhoneEntity.setCom(phone.getCom());
                 cdGetPhoneEntity.setPhone(phone.getPhone());

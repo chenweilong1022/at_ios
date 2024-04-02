@@ -61,4 +61,16 @@ public class CacheConfig {
                 .build();
     }
 
+    @Bean(value = "cardJpSms")
+    public Cache<String, String> cardJpSms() {
+        return Caffeine.newBuilder()
+                // 设置最后一次写入或访问后两个小时后过期
+                .expireAfterWrite(30, TimeUnit.MINUTES)
+                // 初始的缓存空间大小
+                .initialCapacity(100)
+                // 缓存的最大条数
+                .maximumSize(50000)
+                .build();
+    }
+
 }

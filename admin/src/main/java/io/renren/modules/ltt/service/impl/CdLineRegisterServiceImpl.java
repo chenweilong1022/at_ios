@@ -1,6 +1,13 @@
 package io.renren.modules.ltt.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
+import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
+import io.renren.modules.ltt.entity.CdGetPhoneEntity;
+import io.renren.modules.ltt.enums.PhoneStatus;
+import io.renren.modules.ltt.enums.RegisterStatus;
+import io.renren.modules.ltt.service.CdGetPhoneService;
+import io.renren.modules.ltt.vo.CdGetPhoneVO;
 import io.renren.modules.ltt.vo.GetCountBySubTaskIdVO;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -16,14 +23,19 @@ import io.renren.modules.ltt.vo.CdLineRegisterVO;
 import io.renren.modules.ltt.service.CdLineRegisterService;
 import io.renren.modules.ltt.conver.CdLineRegisterConver;
 
+import javax.annotation.Resource;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 
 @Service("cdLineRegisterService")
 @Game
 public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, CdLineRegisterEntity> implements CdLineRegisterService {
+
+    @Resource
+    private CdGetPhoneService getPhoneService;
 
     @Override
     public PageUtils<CdLineRegisterVO> queryPage(CdLineRegisterDTO cdLineRegister) {
@@ -94,6 +106,29 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
                 .eq(CdLineRegisterEntity::getCountryCode, countryCode)
                 .last("limit " + limit));
         return CdLineRegisterConver.MAPPER.conver(list);
+    }
+
+    @Override
+    public boolean registerRetry(Integer id) {
+        CdLineRegisterEntity cdLineRegisterEntity = baseMapper.selectById(id);
+        Assert.isTrue(ObjectUtil.isNull(cdLineRegisterEntity), "数据为空");
+        Assert.isTrue(ObjectUtil.isNull(cdLineRegisterEntity.getGetPhoneId()), "无对应的手机记录，请确认");
+        Assert.isTrue(!RegisterStatus.RegisterStatus5.getKey().equals(cdLineRegisterEntity.getRegisterStatus()), "注册状态正常，无需重试");
+
+
+        CdGetPhoneVO cdGetPhone = getPhoneService.getById(cdLineRegisterEntity.getGetPhoneId());
+        Assert.isTrue(ObjectUtil.isNull(cdGetPhone), "数据为空");
+
+        //更新此条数据，发起重新注册
+        CdGetPhoneEntity updateCdGetPhoneEntity = new CdGetPhoneEntity();
+        updateCdGetPhoneEntity.setId(cdGetPhone.getId());
+        updateCdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus1.getKey());
+        updateCdGetPhoneEntity.setCode("");
+        updateCdGetPhoneEntity.setCreateTime(new Date());
+        getPhoneService.updateById(updateCdGetPhoneEntity);
+
+        //删除line注册此条记录
+        return baseMapper.deleteById(cdLineRegisterEntity.getId()) > 0;
     }
 
 }

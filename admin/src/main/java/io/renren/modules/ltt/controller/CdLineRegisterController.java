@@ -34,7 +34,7 @@ public class CdLineRegisterController {
      * 列表
      */
     @RequestMapping("/list")
-    @RequiresPermissions("ltt:cdlineregister:list")
+    @RequiresPermissions("ltt:cdregistertask:list")
     public R list(CdLineRegisterDTO cdLineRegister){
         PageUtils page = cdLineRegisterService.queryPage(cdLineRegister);
 
@@ -45,7 +45,7 @@ public class CdLineRegisterController {
      * 根据taskid查询
      */
     @RequestMapping("/listByTaskId")
-    @RequiresPermissions("ltt:cdlineregister:list")
+    @RequiresPermissions("ltt:cdregistertask:list")
     public R listByTaskId(CdLineRegisterDTO cdLineRegister){
         PageUtils page = cdLineRegisterService.listByTaskId(cdLineRegister);
         return R.ok().put("page", page);
@@ -56,7 +56,7 @@ public class CdLineRegisterController {
      * 信息
      */
     @RequestMapping("/info/{id}")
-    @RequiresPermissions("ltt:cdlineregister:info")
+    @RequiresPermissions("ltt:cdregistertask:info")
     public R info(@PathVariable("id") Integer id){
 		CdLineRegisterVO cdLineRegister = cdLineRegisterService.getById(id);
 
@@ -67,7 +67,7 @@ public class CdLineRegisterController {
      * 保存
      */
     @RequestMapping("/save")
-    @RequiresPermissions("ltt:cdlineregister:save")
+    @RequiresPermissions("ltt:cdregistertask:save")
     public R save(@RequestBody CdLineRegisterDTO cdLineRegister){
 		cdLineRegisterService.save(cdLineRegister);
 
@@ -78,7 +78,7 @@ public class CdLineRegisterController {
      * 修改
      */
     @RequestMapping("/update")
-    @RequiresPermissions("ltt:cdlineregister:update")
+    @RequiresPermissions("ltt:cdregistertask:update")
     public R update(@RequestBody CdLineRegisterDTO cdLineRegister){
 		cdLineRegisterService.updateById(cdLineRegister);
 
@@ -89,9 +89,20 @@ public class CdLineRegisterController {
      * 删除
      */
     @RequestMapping("/delete")
-    @RequiresPermissions("ltt:cdlineregister:delete")
+    @RequiresPermissions("ltt:cdregistertask:delete")
     public R delete(@RequestBody Integer[] ids){
 		cdLineRegisterService.removeByIds(Arrays.asList(ids));
+
+        return R.ok();
+    }
+
+    /**
+     * 注册重试
+     */
+    @RequestMapping("/registerRetry/{id}")
+    @RequiresPermissions("ltt:cdregistertask:info")
+    public R registerRetry(@PathVariable("id") Integer id){
+        boolean b = cdLineRegisterService.registerRetry(id);
 
         return R.ok();
     }

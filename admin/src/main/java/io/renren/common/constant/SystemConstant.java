@@ -19,4 +19,14 @@ public class SystemConstant {
     @Value(value = "${magicServer.url}")
     private String MAGIC_SERVER_URL;
 
+    @Value(value = "${jpSmsConfig.userCode}")
+    private String jpSmsConfigUserCode;
+
+    @Value(value = "${jpSmsConfig.interfaceKey}")
+    private String jpSmsConfigInterfaceKey;
+
+    @Value(value = "${jpSmsConfig.interfaceUrl}")
+    private String jpSmsConfigInterfaceUrl;
+
+
 }

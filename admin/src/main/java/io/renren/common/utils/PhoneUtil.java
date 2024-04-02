@@ -98,7 +98,8 @@ public class PhoneUtil {
 
         // {"number":"85268476749","regionCode":"HK","nationalNumber":68476749,"countryCode":852,"description":"香港","fullNumber":"+85268476749"}
 
-        PhoneCountryVO phoneNumberInfo = PhoneUtil.getPhoneNumberInfo("+66 83 209 2640");
+        //jp: 08092924050
+        PhoneCountryVO phoneNumberInfo = PhoneUtil.getPhoneNumberInfo("8108092924050");
         System.out.println(phoneNumberInfo);
 
         // {"number":"16467879865","regionCode":"US","nationalNumber":6467879865,"countryCode":1,"description":"美国","fullNumber":"+16467879865"}

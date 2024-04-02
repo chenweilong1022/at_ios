@@ -66,7 +66,8 @@
         r.err_msg as errMsg,
         r.register_status as registerStatus,
         r.delete_flag as deleteFlag,
-        r.create_time as createTime
+        r.create_time as createTime,
+        r.get_phone_id as getPhoneId
         FROM
         cd_line_register r
         LEFT JOIN cd_register_subtasks s ON r.subtasks_id = s.id
@@ -79,6 +80,7 @@
                 AND r.register_status = #{dto.registerStatus}
             </if>
         </where>
+        order by r.id desc
     </select>
 
 

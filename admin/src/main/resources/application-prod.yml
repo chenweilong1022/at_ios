@@ -82,3 +82,9 @@ customer:
 magicServer:
     url: http://146.190.167.155:8808
 
+#jp-sms配置
+jpSmsConfig:
+    userCode: 431657
+    interfaceKey: 1e1824c7c39d44cab61817fed90776bf
+    interfaceUrl: https://api.yamadamms.com/api/Request/
+

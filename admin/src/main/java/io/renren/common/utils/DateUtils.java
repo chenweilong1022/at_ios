@@ -183,4 +183,51 @@ public class DateUtils {
         DateTime dateTime = new DateTime(date);
         return dateTime.plusYears(years).toDate();
     }
+
+    /**
+     * 时间戳(秒)
+     * @return
+     */
+    public static String getTimestampMillis() {
+        // 获取当前时间的时间戳（毫秒）
+        long timestampMillis = System.currentTimeMillis();
+        // 将毫秒转换为秒
+        return String.valueOf(timestampMillis / 1000);
+    }
+
+
+    /**
+     * 时间戳(秒)
+     * @return
+     */
+    public static String getTimestampMillis(Date date) {
+
+        // 使用getTime()方法获取时间戳（毫秒）
+        long timestampMillis = date.getTime();
+
+        // 将毫秒转换为秒
+        return String.valueOf(timestampMillis / 1000);
+    }
+
+    /**
+     * timestamp1 > timestamp2
+     * @param timestampStr1 时间戳字符串（以秒为单位）
+     * @param timestampStr2 时间戳字符串（以秒为单位）
+     * @return
+     */
+    public static boolean comparisonTime(String timestampStr1, String timestampStr2) {
+        if (StringUtils.isEmpty(timestampStr1) || StringUtils.isEmpty(timestampStr2)) {
+            return false;
+        }
+
+        // 将字符串转换为long类型
+        long timestamp1 = Long.parseLong(timestampStr1);
+        long timestamp2 = Long.parseLong(timestampStr2);
+
+        // 比较这两个时间戳
+        if (timestamp1 > timestamp2) {
+            return true;
+        }
+        return false;
+    }
 }

@@ -12,4 +12,6 @@ public class ConfigConstant {
      */
     public final static String CLOUD_STORAGE_CONFIG_KEY = "CLOUD_STORAGE_CONFIG_KEY";
     public final static String PROJECT_WORK_KEY = "PROJECT_WORK_KEY";
+
+    public final static String CARD_JP_SMS = "CARD_JP_SMS";
 }
