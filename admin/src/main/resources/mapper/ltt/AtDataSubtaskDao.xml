@@ -84,10 +84,11 @@
     <select id="groupByUserId" resultType="io.renren.modules.ltt.vo.AtDataSubtaskVO">
         SELECT
             MIN( id ) id,
+            MIN( data_task_id ) dataTaskId,
             MIN( group_id ) groupId,
             MIN( user_id ) userId,
-            GROUP_CONCAT(contact_key) contact_keys,
-            GROUP_CONCAT(mid) mid
+            GROUP_CONCAT(contact_key) contactKeys,
+            GROUP_CONCAT(mid) mids
         FROM
             at_data_subtask
         WHERE

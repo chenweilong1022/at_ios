@@ -6,24 +6,19 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import io.renren.modules.client.LineService;
-import io.renren.modules.client.ProxyService;
-import io.renren.modules.client.dto.AddFriendsByMid;
-import io.renren.modules.client.dto.SearchPhoneDTO;
 import io.renren.modules.client.dto.SyncContentsDTO;
 import io.renren.modules.client.dto.SyncContentsResultDTO;
 import io.renren.modules.client.vo.LineRegisterVO;
-import io.renren.modules.client.vo.SearchPhoneVO;
 import io.renren.modules.client.vo.SyncContentsResultVO;
-import io.renren.modules.client.vo.The818051863582;
 import io.renren.modules.ltt.dto.CdLineIpProxyDTO;
 import io.renren.modules.ltt.entity.AtDataSubtaskEntity;
-import io.renren.modules.ltt.entity.AtDataTaskEntity;
+import io.renren.modules.ltt.entity.AtGroupEntity;
 import io.renren.modules.ltt.entity.AtUserEntity;
 import io.renren.modules.ltt.entity.AtUserTokenEntity;
+import io.renren.modules.ltt.enums.GroupStatus;
 import io.renren.modules.ltt.enums.GroupType;
 import io.renren.modules.ltt.enums.LockMapKeyResource;
 import io.renren.modules.ltt.enums.TaskStatus;
-import io.renren.modules.ltt.enums.UserStatusCode;
 import io.renren.modules.ltt.service.*;
 import io.renren.modules.ltt.vo.AtDataSubtaskVO;
 import lombok.extern.slf4j.Slf4j;
@@ -35,9 +30,9 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -77,6 +72,8 @@ public class Data5Task {
     ThreadPoolTaskExecutor threadPoolTaskExecutor;
     @Autowired
     private AtAvatarService atAvatarService;
+    @Autowired
+    private AtGroupService atGroupService;
 
 
     @Autowired
@@ -84,24 +81,11 @@ public class Data5Task {
     @Autowired
     private AtDataSubtaskService atDataSubtaskService;
 
-    /**
-     * 更新头像结果返回
-     */
-    @Scheduled(fixedDelay = 5000)
-    @Transactional(rollbackFor = Exception.class)
-    @Async
-    public void task4() {
-        boolean b = task4Lock.tryLock();
-        if (!b) {
-            return;
-        }
-        try {
-        }catch (Exception e) {
-            log.error("err = {}",e.getMessage());
-        }finally {
-            task4Lock.unlock();
-        }
-    }
+
+//    @Scheduled(fixedDelay = 5000)
+//    @Transactional(rollbackFor = Exception.class)
+//    @Async
+//    public void task4() {}
 
 
     /**
@@ -188,6 +172,13 @@ public class Data5Task {
                                     atDataSubtaskEntity.setMsg(syncContentsResultVO.getMsg());
                                 }
                                 atDataSubtaskService.updateBatchById(atDataSubtaskEntityList);
+                                if (ObjectUtil.isNotNull(atDataSubtaskVO.getGroupId())) {
+                                    //拉群改状态
+                                    AtGroupEntity atGroupEntity = new AtGroupEntity();
+                                    atGroupEntity.setId(atDataSubtaskVO.getGroupId());
+                                    atGroupEntity.setGroupStatus(GroupStatus.GroupStatus7.getKey());
+                                    atGroupService.updateById(atGroupEntity);
+                                }
                                 //失败
                             }else if (-1 == data.getStatus()) {
                                 for (AtDataSubtaskEntity atDataSubtaskEntity : atDataSubtaskEntityList) {
@@ -196,6 +187,14 @@ public class Data5Task {
                                     atDataSubtaskEntity.setMsg(syncContentsResultVO.getMsg());
                                 }
                                 atDataSubtaskService.updateBatchById(atDataSubtaskEntityList);
+
+                                if (ObjectUtil.isNotNull(atDataSubtaskVO.getGroupId())) {
+                                    //拉群改状态
+                                    AtGroupEntity atGroupEntity = new AtGroupEntity();
+                                    atGroupEntity.setId(atDataSubtaskVO.getGroupId());
+                                    atGroupEntity.setGroupStatus(GroupStatus.GroupStatus8.getKey());
+                                    atGroupService.updateById(atGroupEntity);
+                                }
                                 //网络异常
                             }else if (-2 == data.getStatus()) {
                                 for (AtDataSubtaskEntity atDataSubtaskEntity : atDataSubtaskEntityList) {
@@ -221,7 +220,7 @@ public class Data5Task {
 
 
     /**
-     * 获取type为1 加粉类型为手机号模式
+     * 通讯录加粉模式，通过通讯录加粉
      */
     @Scheduled(fixedDelay = 5000)
     @Transactional(rollbackFor = Exception.class)
@@ -281,11 +280,16 @@ public class Data5Task {
                         if (ObjectUtil.isNull(lineRegisterVO)) {
                             return;
                         }
+                        AtDataSubtaskEntity update = new AtDataSubtaskEntity();
+                        update.setLineTaskId(lineRegisterVO.getData().getTaskId());
+                        update.setMsg(lineRegisterVO.getMsg());
                         if (200 == lineRegisterVO.getCode()) {
-                            AtDataSubtaskEntity update = new AtDataSubtaskEntity();
-                            update.setLineTaskId(lineRegisterVO.getData().getTaskId());
-                            update.setMsg(lineRegisterVO.getMsg());
                             update.setTaskStatus(TaskStatus.TaskStatus9.getKey());
+                            atDataSubtaskService.update(update,new UpdateWrapper<AtDataSubtaskEntity>().lambda()
+                                    .eq(AtDataSubtaskEntity::getGroupId,atDataSubtaskEntity.getGroupId())
+                            );
+                        }else {
+                            update.setTaskStatus(TaskStatus.TaskStatus5.getKey());
                             atDataSubtaskService.update(update,new UpdateWrapper<AtDataSubtaskEntity>().lambda()
                                     .eq(AtDataSubtaskEntity::getGroupId,atDataSubtaskEntity.getGroupId())
                             );
@@ -302,24 +306,9 @@ public class Data5Task {
 
     }
 
-    /**
-     * 获取初始化的添加粉任务
-     */
-    @Scheduled(fixedDelay = 5000)
-    @Transactional(rollbackFor = Exception.class)
-    @Async
-    public void task1() {
-        boolean b = task1Lock.tryLock();
-        if (!b) {
-            return;
-        }
-        try{
 
-        }catch (Exception e) {
-            log.error("err = {}",e.getMessage());
-        }finally {
-            task1Lock.unlock();
-        }
-
-    }
+//    @Scheduled(fixedDelay = 5000)
+//    @Transactional(rollbackFor = Exception.class)
+//    @Async
+//    public void task1() {}
 }

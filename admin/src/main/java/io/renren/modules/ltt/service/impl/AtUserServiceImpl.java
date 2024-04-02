@@ -10,6 +10,7 @@ import io.renren.modules.ltt.dao.UpdateUserGroupParamDto;
 import io.renren.modules.ltt.dao.ValidateAtUserStatusParamDto;
 import io.renren.modules.ltt.entity.AtUserTokenEntity;
 import io.renren.modules.ltt.enums.DeleteFlag;
+import io.renren.modules.ltt.enums.UserStatus;
 import io.renren.modules.ltt.service.AtUserTokenService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -76,6 +77,14 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
     @Override
     public AtUserVO getById(Integer id) {
         return AtUserConver.MAPPER.conver(baseMapper.selectById(id));
+    }
+
+    @Override
+    public boolean unlock(Integer id, UserStatus userStatus) {
+        AtUserEntity atUserEntity = new AtUserEntity();
+        atUserEntity.setId(id);
+        atUserEntity.setStatus(userStatus.getKey());
+        return this.updateById(atUserEntity);
     }
 
     @Override

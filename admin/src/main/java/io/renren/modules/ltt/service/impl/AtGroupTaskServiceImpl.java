@@ -186,8 +186,13 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
         List<AtUserVO> atUserVOS = pageUtils.getList();
         Assert.isTrue(onGroupPreVOS.size()>atUserVOS.size(),"拉群号不足，请增加拉群号");
         Queue<AtUserVO> atUserVOQueue = new LinkedList<>(atUserVOS);
+        List<AtUserEntity> atUserEntityUpdates = new ArrayList<>();
         for (OnGroupPreVO onGroupPreVO : onGroupPreVOS) {
             AtUserVO poll = atUserVOQueue.poll();
+            AtUserEntity atUserEntity = new AtUserEntity();
+            atUserEntity.setId(poll.getId());
+            atUserEntity.setStatus(UserStatus.UserStatus6.getKey());
+            atUserEntityUpdates.add(atUserEntity);
             //料子
             List<String> materialUrls = onGroupPreVO.getMaterialUrls();
             //保存群分组
@@ -288,10 +293,13 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
             //校验通讯录模式的国家
             if (GroupType.GroupType5.getKey().equals(groupType4.getKey())) {
                 checkCountry(poll, atDataSubtaskEntities);
-            }else {
-
             }
-            atDataSubtaskService.saveBatch(atDataSubtaskEntities);
+            if (CollUtil.isNotEmpty(atUserEntityUpdates)) {
+                atUserService.updateBatchById(atUserEntityUpdates);
+            }
+            if (CollUtil.isNotEmpty(atDataSubtaskEntities)) {
+                atDataSubtaskService.saveBatch(atDataSubtaskEntities);
+            }
         }
     }
 
