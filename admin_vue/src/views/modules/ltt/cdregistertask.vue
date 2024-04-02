@@ -22,6 +22,23 @@
         width="50">
       </el-table-column>
       <el-table-column
+        prop="id"
+        header-align="center"
+        align="center"
+        label="任务id">
+      </el-table-column>
+      <el-table-column
+        prop="countryCode"
+        header-align="center"
+        align="center"
+        label="国家code">
+        <template slot-scope="scope">
+          <el-tag v-for="item in countryCodes" :key="item.key" v-if="scope.row.countryCode === item.key">
+            {{ item.value }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column
         prop="totalAmount"
         header-align="center"
         align="center"
@@ -103,6 +120,7 @@ export default {
       dataForm: {
         key: ''
       },
+      countryCodes: [],
       dataList: [],
       pageIndex: 1,
       pageSize: 10,
@@ -119,6 +137,7 @@ export default {
   },
   activated () {
     this.getDataList()
+    this.getCountryCodeEnums()
   },
   methods: {
     // 获取数据列表
@@ -141,6 +160,18 @@ export default {
           this.totalPage = 0
         }
         this.dataListLoading = false
+      })
+    },
+    getCountryCodeEnums () {
+      this.$http({
+        url: this.$http.adornUrl(`/app/enums/countryCodes`),
+        method: 'get'
+      }).then(({data}) => {
+        if (data && data.code === 0) {
+          this.countryCodes = data.data
+        } else {
+          this.$message.error(data.msg)
+        }
       })
     },
     // 每页数
