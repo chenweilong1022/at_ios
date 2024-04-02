@@ -73,4 +73,10 @@ public class AccountDetailsDTO extends PageParam implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="管理账户id")
 	private Long sysUserId;
+
+	@ApiModelProperty(required=false,value="变更前余额")
+	private BigDecimal beforeAmount;
+
+	@ApiModelProperty(required=false,value="变动后余额")
+	private BigDecimal afterAmount;
 }

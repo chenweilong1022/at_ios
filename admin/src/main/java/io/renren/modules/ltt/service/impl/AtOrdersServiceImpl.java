@@ -147,7 +147,7 @@ public class AtOrdersServiceImpl extends ServiceImpl<AtOrdersDao, AtOrdersEntity
         AccountBalanceDTO accountBalanceDTO = new AccountBalanceDTO();
         accountBalanceDTO.setSysUserId(sysUserId);
         accountBalanceDTO.setTransactionType(AccountTransactionTypeEnum.ACCOUNT_TOKEN.getKey());
-        accountBalanceDTO.setAmount(amount);
+        accountBalanceDTO.setAmount(amount.negate());
         accountBalanceDTO.setDescription("购买账号");
         accountBalanceDTO.setOperationUserId(sysUserId);
         accountBalanceDTO.setSysUserId(sysUserId);

@@ -14,6 +14,8 @@
         <result property="description" column="description"/>
         <result property="transactionDate" column="transaction_date"/>
         <result property="operationUserId" column="operation_user_id"/>
+        <result property="beforeAmount" column="before_amount"/>
+        <result property="afterAmount" column="after_amount"/>
     </resultMap>
 
 

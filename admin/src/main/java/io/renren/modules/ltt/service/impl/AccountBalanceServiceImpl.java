@@ -99,7 +99,6 @@ public class AccountBalanceServiceImpl extends ServiceImpl<AccountBalanceDao, Ac
         return accountBalanceEntity;
     }
 
-
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean changeAccount(AccountBalanceDTO accountParam) {
@@ -119,9 +118,16 @@ public class AccountBalanceServiceImpl extends ServiceImpl<AccountBalanceDao, Ac
         //修改账户变动
         AccountBalanceEntity accountBalanceEntity = this.saveAccountBalance(accountParam, accountInfo);
 
+        //变更前余额
+        BigDecimal beforeAmount = ObjectUtil.isNull(accountInfo) ?
+                BigDecimal.ZERO : accountInfo.getBalance();
+        //变动后余额
+        BigDecimal afterAmount = accountBalanceEntity.getBalance();
         //插入账户流水
-        this.saveAccountDetail(accountParam, accountBalanceEntity);
-
+        AccountDetailsEntity accountDetailsEntity = this.saveAccountDetail(accountParam, accountBalanceEntity.getAccountId());
+        accountDetailsEntity.setBeforeAmount(beforeAmount);//变更前余额
+        accountDetailsEntity.setAfterAmount(afterAmount);//变动后余额
+        accountDetailsService.save(accountDetailsEntity);
         return true;
     }
 
@@ -129,10 +135,10 @@ public class AccountBalanceServiceImpl extends ServiceImpl<AccountBalanceDao, Ac
      * 保存账户流水
      */
     private AccountDetailsEntity saveAccountDetail(AccountBalanceDTO accountParam,
-                                                   AccountBalanceEntity accountBalanceEntity) {
+                                                   Integer accountId) {
         //插入流水表
         AccountDetailsEntity DetailsEntity = new AccountDetailsEntity();
-        DetailsEntity.setAccountId(accountBalanceEntity.getAccountId());
+        DetailsEntity.setAccountId(accountId);
         DetailsEntity.setSysUserId(accountParam.getSysUserId());
         DetailsEntity.setTransactionType(accountParam.getTransactionType());//交易类型
         DetailsEntity.setAmount(accountParam.getAmount());
@@ -140,7 +146,6 @@ public class AccountBalanceServiceImpl extends ServiceImpl<AccountBalanceDao, Ac
         DetailsEntity.setStatus(1);
         DetailsEntity.setTransactionDate(new Date());
         DetailsEntity.setOperationUserId(accountParam.getOperationUserId());
-        accountDetailsService.save(DetailsEntity);
         return DetailsEntity;
     }
 

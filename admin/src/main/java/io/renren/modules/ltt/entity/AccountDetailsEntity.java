@@ -73,4 +73,10 @@ public class AccountDetailsEntity implements Serializable {
 	@ApiModelProperty(required=false,value="操作人")
 	private Long operationUserId;
 
+	@ApiModelProperty(required=false,value="变更前余额")
+	private BigDecimal beforeAmount;
+
+	@ApiModelProperty(required=false,value="变动后余额")
+	private BigDecimal afterAmount;
+
 }

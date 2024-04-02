@@ -15,6 +15,7 @@
         </el-menu-item>
       </el-menu>
       <div class="port">
+        账户余额:<div style="color: #17B3A3;display: inline;">{{ accountBalance }}</div>
         端口总数:<div style="color: #17B3A3;display: inline">{{ portNumTotal }}</div>
         端口剩余:<div style="color: #17B3A3;display: inline">{{ portNumSurplus }}</div>
         过期时间:<div style="color: #17B3A3;display: inline">{{ expireTime }}</div>
@@ -67,7 +68,8 @@
         updatePassowrdVisible: false,
         portNumTotal: 0,
         expireTime: '无',
-        portNumSurplus: 0
+        portNumSurplus: 0,
+        accountBalance: 0
       }
     },
     components: {
@@ -91,6 +93,7 @@
     },
     created () {
       this.portDataSummary()
+      this.getAccountBalance()
     },
     methods: {
       // 修改密码
@@ -120,10 +123,23 @@
         }).catch(() => {})
       },
       /**
+       * 账户信息
+       */
+      getAccountBalance () {
+        this.$http({
+          url: this.$http.adornUrl(`/ltt/accountbalance/getBySysUserId`),
+          method: 'get',
+          params: this.$http.adornParams()
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.accountBalance = data.balance.balance
+          }
+        })
+      },
+      /**
        * 端口数据汇总
        */
       portDataSummary () {
-        console.log("((((((((((((((((((((((((((((((((")
         this.$http({
           url: this.$http.adornUrl(`/ltt/atuserport/portDataSummary`),
           method: 'get',
@@ -145,6 +161,7 @@
   flex: 1;
   text-align: right;
   margin: auto;
+  font-size: large;
 }
 .site-navbar__body {
   display: flex;

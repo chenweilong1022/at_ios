@@ -59,12 +59,6 @@
       @selection-change="selectionChangeHandle"
       style="width: 100%;">
       <el-table-column
-        prop="transactionId"
-        header-align="center"
-        align="center"
-        label="交易ID">
-      </el-table-column>
-      <el-table-column
         prop="sysUsername"
         header-align="center"
         align="center"
@@ -86,6 +80,18 @@
         header-align="center"
         align="center"
         label="交易金额">
+      </el-table-column>
+      <el-table-column
+        prop="beforeAmount"
+        header-align="center"
+        align="center"
+        label="变更前余额">
+      </el-table-column>
+      <el-table-column
+        prop="afterAmount"
+        header-align="center"
+        align="center"
+        label="变动后余额">
       </el-table-column>
       <el-table-column
         prop="status"

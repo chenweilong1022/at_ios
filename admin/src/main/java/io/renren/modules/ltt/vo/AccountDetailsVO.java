@@ -77,4 +77,10 @@ public class AccountDetailsVO implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="管理账户名称")
 	private String sysUsername;
+
+	@ApiModelProperty(required=false,value="变更前余额")
+	private BigDecimal beforeAmount;
+
+	@ApiModelProperty(required=false,value="变动后余额")
+	private BigDecimal afterAmount;
 }

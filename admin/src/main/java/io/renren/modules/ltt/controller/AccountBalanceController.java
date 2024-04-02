@@ -59,10 +59,10 @@ public class AccountBalanceController extends AbstractController {
     /**
      * 信息
      */
-    @RequestMapping("/getBySysUserId/{sysUserId}")
+    @RequestMapping("/getBySysUserId")
     @RequiresPermissions("ltt:accountbalance:info")
-    public R getBySysUserId(@PathVariable("sysUserId") Long sysUserId){
-		AccountBalanceVO accountBalance = accountBalanceService.getBySysUserId(sysUserId);
+    public R getBySysUserId(){
+		AccountBalanceVO accountBalance = accountBalanceService.getBySysUserId(getUserId());
 
         return R.ok().put("balance", accountBalance);
     }
