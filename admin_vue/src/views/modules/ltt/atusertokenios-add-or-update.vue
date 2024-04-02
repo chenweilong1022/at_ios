@@ -2,7 +2,7 @@
   <el-dialog
     :title="!dataForm.id ? '新增' : '修改'"
     :close-on-click-modal="false"
-    :visible.sync="visible">
+    :visible.sync="visible" append-to-body>
     <el-form :model="dataForm" :rules="dataRule" ref="dataForm" @keyup.enter.native="dataFormSubmit()" label-width="80px">
     <el-form-item label="deviceId" prop="deviceId">
       <el-input v-model="dataForm.deviceId" placeholder="deviceId"></el-input>

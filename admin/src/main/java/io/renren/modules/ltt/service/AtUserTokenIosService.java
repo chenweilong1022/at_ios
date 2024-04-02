@@ -3,6 +3,8 @@ package io.renren.modules.ltt.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import io.renren.common.utils.PageUtils;
 import io.renren.modules.ltt.dto.AtUserTokenIosDTO;
+import io.renren.modules.ltt.dto.AtUserTokenIosDeviceParamDTO;
+import io.renren.modules.ltt.dto.AtUserTokenIosDeviceResultDTO;
 import io.renren.modules.ltt.dto.IosTokenDTO;
 import io.renren.modules.ltt.vo.AtUserTokenIosVO;
 import io.renren.modules.ltt.entity.AtUserTokenIosEntity;
@@ -19,6 +21,13 @@ import java.util.Collection;
  * @date 2024-03-31 00:16:44
  */
 public interface AtUserTokenIosService extends IService<AtUserTokenIosEntity> {
+
+    /**
+     * 设备分页查询
+     * @param paramDTO
+     * @return
+     */
+    PageUtils<AtUserTokenIosDeviceResultDTO> queryDevicePage(AtUserTokenIosDeviceParamDTO paramDTO);
 
     /**
      * 分页查询
@@ -44,6 +53,14 @@ public interface AtUserTokenIosService extends IService<AtUserTokenIosEntity> {
      * @return
      */
     boolean updateById(AtUserTokenIosDTO atUserTokenIos);
+
+    /**
+     * 更改设备名称
+     * @param paramDTO
+     * @return
+     */
+    boolean updateDeviceName(AtUserTokenIosDeviceParamDTO paramDTO);
+
     /**
      * 根据id删除
      * @param id

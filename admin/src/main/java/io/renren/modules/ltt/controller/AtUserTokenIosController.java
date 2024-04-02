@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Queue;
 
 import com.github.benmanes.caffeine.cache.Cache;
+import io.renren.modules.ltt.dto.AtUserTokenIosDeviceParamDTO;
 import io.renren.modules.ltt.vo.IOSTaskVO;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,17 @@ import javax.annotation.Resource;
 public class AtUserTokenIosController {
     @Autowired
     private AtUserTokenIosService atUserTokenIosService;
+
+    /**
+     * 设备分页查询
+     */
+    @RequestMapping("/queryDevicePage")
+    @RequiresPermissions("ltt:atusertokenios:list")
+    public R queryDevicePage(AtUserTokenIosDeviceParamDTO paramDTO){
+        PageUtils page = atUserTokenIosService.queryDevicePage(paramDTO);
+
+        return R.ok().put("page", page);
+    }
 
     /**
      * 列表
@@ -99,6 +111,17 @@ public class AtUserTokenIosController {
     @RequiresPermissions("ltt:atusertokenios:update")
     public R update(@RequestBody AtUserTokenIosDTO atUserTokenIos){
 		atUserTokenIosService.updateById(atUserTokenIos);
+
+        return R.ok();
+    }
+
+    /**
+     * 更改设备名称
+     */
+    @RequestMapping("/updateDeviceName")
+    @RequiresPermissions("ltt:atusertokenios:update")
+    public R updateDeviceName(@RequestBody AtUserTokenIosDeviceParamDTO atUserTokenIos){
+		atUserTokenIosService.updateDeviceName(atUserTokenIos);
 
         return R.ok();
     }

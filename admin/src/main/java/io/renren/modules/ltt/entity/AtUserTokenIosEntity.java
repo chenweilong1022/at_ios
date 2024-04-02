@@ -76,6 +76,8 @@ public class AtUserTokenIosEntity implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="deviceId")
 	private String deviceId;
+	@ApiModelProperty(required=false,value="deviceName")
+	private String deviceName;
 	/**
 	 * 使用状态
 	 */

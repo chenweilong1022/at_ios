@@ -14,6 +14,8 @@
         <result property="mid" column="mid"/>
         <result property="token" column="token"/>
         <result property="iosToken" column="ios_token"/>
+        <result property="deviceId" column="device_id"/>
+        <result property="deviceName" column="device_name"/>
         <result property="useFlag" column="use_flag"/>
         <result property="deleteFlag" column="delete_flag"/>
         <result property="createTime" column="create_time"/>
@@ -21,6 +23,44 @@
         <result property="reductionFlag" column="reduction_flag"/>
         <result property="atUserTokenId" column="at_user_token_id"/>
     </resultMap>
+
+
+    <select id="queryDevicePageCount" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM(
+            SELECT
+            count(1)
+            FROM at_user_token_ios
+        <where>
+            <include refid="page_where_if"/>
+        </where>
+        )t
+    </select>
+
+    <select id="queryDevicePage" resultType="io.renren.modules.ltt.dto.AtUserTokenIosDeviceResultDTO">
+        SELECT
+            device_id as deviceId,
+            MIN(device_name) as deviceName,
+            count( 1 ) AS deviceCount
+        FROM
+            at_user_token_ios
+        <where>
+            <include refid="page_where_if"/>
+        </where>
+        GROUP BY
+            device_id
+        ORDER BY
+            deviceCount DESC
+        limit #{pageStart},#{limit}
+    </select>
+
+    <sql id="page_where_if">
+        <if test="deviceId != null and deviceId != ''">
+            and device_id = #{deviceId}
+        </if>
+        <if test="deviceName != null and deviceName.trim() != ''">
+            and device_name like concat(#{deviceName}, '%')
+        </if>
+    </sql>
 
 
 </mapper>

@@ -1,5 +1,8 @@
 <template>
-  <div class="mod-config">
+  <el-dialog
+    :title="'设置设备名称'"
+    :close-on-click-modal="false"
+    :visible.sync="visibleFlag">
     <el-form :inline="true" :model="dataForm" @keyup.enter.native="getDataList()">
       <el-form-item label="所属账号" prop="sysUserId">
         <el-select
@@ -46,7 +49,6 @@
       <el-form-item>
         <el-button @click="getDataList()">查询</el-button>
         <el-button v-if="isAuth('ltt:atusertokenios:save')" type="primary" @click="addOrUpdateHandle()">新增</el-button>
-        <el-button v-if="isAuth('ltt:atusertokenios:delete')" type="danger" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>
       </el-form-item>
     </el-form>
     <el-table
@@ -55,18 +57,6 @@
       v-loading="dataListLoading"
       @selection-change="selectionChangeHandle"
       style="width: 100%;">
-      <el-table-column
-        type="selection"
-        header-align="center"
-        align="center"
-        width="50">
-      </el-table-column>
-      <el-table-column
-        prop="id"
-        header-align="center"
-        align="center"
-        label="主键">
-      </el-table-column>
       <el-table-column
         prop="country"
         header-align="center"
@@ -143,7 +133,7 @@
     </el-pagination>
     <!-- 弹窗, 新增 / 修改 -->
     <add-or-update v-if="addOrUpdateVisible" ref="addOrUpdate" @refreshDataList="getDataList"></add-or-update>
-  </div>
+  </el-dialog>
 </template>
 
 <script>
@@ -151,6 +141,7 @@
   export default {
     data () {
       return {
+        visibleFlag: false,
         dataForm: {
           reductionFlag: null,
           sysUserId: null,
@@ -176,8 +167,15 @@
       this.getCountryCodes()
     },
     methods: {
+      init (deviceId, deviceName) {
+        this.visibleFlag = true
+        this.dataForm.deviceId = deviceId
+        this.dataForm.deviceName = deviceName
+        this.getDataList(deviceId)
+        this.getCountryCodes()
+      },
       // 获取数据列表
-      getDataList () {
+      getDataList (deviceId) {
         this.dataListLoading = true
         this.$http({
           url: this.$http.adornUrl('/ltt/atusertokenios/list'),
@@ -185,6 +183,7 @@
           params: this.$http.adornParams({
             'page': this.pageIndex,
             'limit': this.pageSize,
+            'deviceId': this.dataForm.deviceId,
             'reductionFlag': this.dataForm.reductionFlag,
             'sysUserId': this.dataForm.sysUserId,
             'country': this.dataForm.country

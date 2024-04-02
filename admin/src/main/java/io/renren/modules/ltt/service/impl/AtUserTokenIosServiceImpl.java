@@ -4,32 +4,32 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.json.JSONUtil;
-import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.benmanes.caffeine.cache.Cache;
+import io.renren.common.utils.PageUtils;
+import io.renren.common.utils.Query;
+import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
+import io.renren.modules.ltt.conver.AtUserTokenIosConver;
+import io.renren.modules.ltt.dao.AtUserTokenIosDao;
+import io.renren.modules.ltt.dto.AtUserTokenIosDTO;
+import io.renren.modules.ltt.dto.AtUserTokenIosDeviceParamDTO;
+import io.renren.modules.ltt.dto.AtUserTokenIosDeviceResultDTO;
 import io.renren.modules.ltt.dto.IosTokenDTO;
+import io.renren.modules.ltt.entity.AtUserTokenIosEntity;
 import io.renren.modules.ltt.entity.CdRegisterTaskEntity;
 import io.renren.modules.ltt.enums.DeleteFlag;
 import io.renren.modules.ltt.enums.UseFlag;
+import io.renren.modules.ltt.service.AtUserTokenIosService;
 import io.renren.modules.ltt.service.CdRegisterTaskService;
+import io.renren.modules.ltt.vo.AtUserTokenIosVO;
 import io.renren.modules.ltt.vo.IOSTaskVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import io.renren.common.utils.PageUtils;
-import io.renren.common.utils.Query;
-
-import io.renren.modules.ltt.dao.AtUserTokenIosDao;
-import io.renren.modules.ltt.entity.AtUserTokenIosEntity;
-import io.renren.modules.ltt.dto.AtUserTokenIosDTO;
-import io.renren.modules.ltt.vo.AtUserTokenIosVO;
-import io.renren.modules.ltt.service.AtUserTokenIosService;
-import io.renren.modules.ltt.conver.AtUserTokenIosConver;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
@@ -46,11 +46,23 @@ public class AtUserTokenIosServiceImpl extends ServiceImpl<AtUserTokenIosDao, At
     private CdRegisterTaskService cdRegisterTaskService;
 
     @Override
+    public PageUtils<AtUserTokenIosDeviceResultDTO> queryDevicePage(AtUserTokenIosDeviceParamDTO paramDTO) {
+        paramDTO.setPageStart((paramDTO.getPage() - 1) * paramDTO.getLimit());
+        Integer count = baseMapper.queryDevicePageCount(paramDTO);
+        List<AtUserTokenIosDeviceResultDTO> resultList = Collections.emptyList();
+        if (count > 0) {
+            resultList = baseMapper.queryDevicePage(paramDTO);
+        }
+        return new PageUtils(resultList, count, paramDTO.getLimit(), paramDTO.getPage());
+    }
+
+    @Override
     public PageUtils<AtUserTokenIosVO> queryPage(AtUserTokenIosDTO atUserTokenIos) {
         IPage<AtUserTokenIosEntity> page = baseMapper.selectPage(
                 new Query<AtUserTokenIosEntity>(atUserTokenIos).getPage(),
                 new QueryWrapper<AtUserTokenIosEntity>().lambda()
                         .eq(AtUserTokenIosEntity::getDeleteFlag, DeleteFlag.NO.getKey())
+                        .eq(StringUtils.isNotEmpty(atUserTokenIos.getDeviceId()), AtUserTokenIosEntity::getDeviceId, atUserTokenIos.getDeviceId())
                         .eq(StringUtils.isNotEmpty(atUserTokenIos.getCountry()), AtUserTokenIosEntity::getCountry, atUserTokenIos.getCountry())
                         .eq(StringUtils.isNotEmpty(atUserTokenIos.getUserName()), AtUserTokenIosEntity::getUserName, atUserTokenIos.getUserName())
                         .eq(ObjectUtil.isNotNull(atUserTokenIos.getReductionFlag()), AtUserTokenIosEntity::getReductionFlag, atUserTokenIos.getReductionFlag())
@@ -74,6 +86,18 @@ public class AtUserTokenIosServiceImpl extends ServiceImpl<AtUserTokenIosDao, At
     public boolean updateById(AtUserTokenIosDTO atUserTokenIos) {
         AtUserTokenIosEntity atUserTokenIosEntity = AtUserTokenIosConver.MAPPER.converDTO(atUserTokenIos);
         return this.updateById(atUserTokenIosEntity);
+    }
+
+    @Override
+    public boolean updateDeviceName(AtUserTokenIosDeviceParamDTO paramDTO) {
+        Assert.isTrue(StringUtils.isEmpty(paramDTO.getDeviceId()), "设备id不能为空");
+        Assert.isTrue(StringUtils.isEmpty(paramDTO.getDeviceName()), "设备名称不能为空");
+
+        AtUserTokenIosEntity updateEntity = new AtUserTokenIosEntity();
+        updateEntity.setDeviceName(paramDTO.getDeviceName());
+
+        return this.update(updateEntity, new QueryWrapper<AtUserTokenIosEntity>().lambda()
+                .eq(AtUserTokenIosEntity::getDeviceId, paramDTO.getDeviceId()));
     }
 
     @Override
