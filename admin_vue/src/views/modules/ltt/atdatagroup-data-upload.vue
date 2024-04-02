@@ -18,9 +18,9 @@
       >
         <el-option
           v-for="item in options"
-          :key="item.value"
-          :label="item.label"
-          :value="item.value"
+          :key="item.key"
+          :label="item.value"
+          :value="item.key"
         />
       </el-select>
     </el-form-item>
@@ -45,24 +45,7 @@
       return {
         groupType: null,
         uploadUrl: '',
-        options: [
-          {
-            value: 1,
-            label: '手机号'
-          },
-          {
-            value: 2,
-            label: '不封控地区普通uid模式'
-          },
-          {
-            value: 3,
-            label: '自定义id'
-          },
-          {
-            value: 4,
-            label: '日本，台湾专用uid模式'
-          }
-        ],
+        options: [],
         visible: false,
         dataForm: {
           id: 0,
@@ -93,6 +76,7 @@
         this.dataForm.txtUrl = res.data
       },
       init (id) {
+        this.getGroupType()
         this.dataForm.id = id || 0
         this.uploadUrl = this.$http.adornUrl(`/app/file/upload`)
         this.visible = true
@@ -113,6 +97,18 @@
                 this.groupType = this.dataForm.groupType
               }
             })
+          }
+        })
+      },
+      getGroupType () {
+        this.$http({
+          url: this.$http.adornUrl(`/app/enums/getGroupType`),
+          method: 'get'
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.options = data.data
+          } else {
+            this.$message.error(data.msg)
           }
         })
       },
