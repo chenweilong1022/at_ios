@@ -177,6 +177,24 @@ public class LineServiceImpl implements LineService {
         return null;
     }
 
+    @Override///work/searchUserId
+    public SearchUserIdVO searchUserId(SearchUserIdDTO searchPhoneDTO) {
+        try {
+            ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
+            String getPhoneHttp = String.format("%s/api/v1/work/searchUserId",projectWorkEntity.getLineBaseHttp());
+            String jsonStr = JSONUtil.toJsonStr(searchPhoneDTO);
+            String resp = HttpUtil.post(getPhoneHttp, jsonStr);
+            log.info("param = {},resp = {}", jsonStr, resp);
+            SearchUserIdVO searchPhoneVO = JSON.parseObject(resp, SearchUserIdVO.class);
+
+            extracted(jsonStr, resp);
+            return searchPhoneVO;
+        }catch (Exception e) {
+            log.error("err = {}",e.getMessage());
+        }
+        return null;
+    }
+
     @Override
     public LineRegisterVO createGroupMax(CreateGroupMax createGroupMax) {
         try {

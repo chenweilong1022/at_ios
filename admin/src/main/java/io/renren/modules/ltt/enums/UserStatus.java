@@ -13,6 +13,7 @@ public enum UserStatus implements BaseEnum {
     UserStatus4(4,"在线"),
     UserStatus5(5,"数据错误"),
     UserStatus6(6,"已使用"),
+    UserStatus7(7,"刷新token"),
     ;
 
     UserStatus(int key, String value) {

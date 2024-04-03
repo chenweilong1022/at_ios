@@ -25,6 +25,8 @@ public interface LineService {
 
     SearchPhoneVO searchPhone(SearchPhoneDTO searchPhoneDTO);
 
+    SearchUserIdVO searchUserId(SearchUserIdDTO searchPhoneDTO);
+
     LineRegisterVO createGroupMax(CreateGroupMax createGroupMax);
 
     SearchPhoneVO findAndAddContactsByPhone(SearchPhoneDTO searchPhoneDTO);

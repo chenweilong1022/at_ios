@@ -2,6 +2,7 @@ package io.renren.modules.task;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import io.renren.modules.client.LineService;
@@ -153,21 +154,22 @@ public class Data2Task {
                         if (200 == searchPhoneVO.getCode()) {
                             update.setTaskStatus(TaskStatus.TaskStatus8.getKey());
                         }else {
-                            update.setTaskStatus(TaskStatus.TaskStatus5.getKey());
                             UserStatus userStatus = UserStatus.UserStatus4;
+                            update.setTaskStatus(TaskStatus.TaskStatus13.getKey());
                             //需要刷新token
                             if (searchPhoneVO.getMsg().contains(UserStatusCode.UserStatusCode4.getValue())) {
-                                userStatus = UserStatus.UserStatus3;
+                                userStatus = UserStatus.UserStatus7;
                             } else if (searchPhoneVO.getMsg().contains(UserStatusCode.UserStatusCode6.getValue())) {
                                 userStatus = UserStatus.UserStatus3;
                             } else if (searchPhoneVO.getMsg().contains(UserStatusCode.UserStatusCode7.getValue())) {
                                 userStatus = UserStatus.UserStatus2;
+                                //如果失败，修改状态
+                                update.setTaskStatus(TaskStatus.TaskStatus5.getKey());
                             } else if (searchPhoneVO.getMsg().contains(UserStatusCode.UserStatusCode8.getValue())) {
-                                userStatus = UserStatus.UserStatus2;
+                                userStatus = UserStatus.UserStatus3;
                             }
 
-                            //如果失败，修改状态
-                            update.setTaskStatus(TaskStatus.TaskStatus5.getKey());
+
                             //任务失败
                             AtDataTaskEntity atDataTaskEntity = new AtDataTaskEntity();
                             atDataTaskEntity.setId(atDataSubtaskEntity.getDataTaskId());
@@ -181,16 +183,19 @@ public class Data2Task {
                                 atGroupService.updateById(atGroupEntity);
                             }
 
-                            update.setId(null);
-                            atDataSubtaskService.update(update,new QueryWrapper<AtDataSubtaskEntity>().lambda()
-                                    .eq(AtDataSubtaskEntity::getDataTaskId,atDataSubtaskEntity.getDataTaskId())
-                                    .eq(AtDataSubtaskEntity::getTaskStatus,TaskStatus.TaskStatus2.getKey())
-                            );
-                            atUserService.unlock(atDataSubtaskEntity.getUserId(),userStatus);
+                            if (TaskStatus.TaskStatus5.getKey().equals(update.getTaskStatus())) {
+                                update.setId(null);
+                                atDataSubtaskService.update(update,new QueryWrapper<AtDataSubtaskEntity>().lambda()
+                                        .eq(AtDataSubtaskEntity::getDataTaskId,atDataSubtaskEntity.getDataTaskId())
+                                        .eq(AtDataSubtaskEntity::getTaskStatus,TaskStatus.TaskStatus2.getKey())
+                                );
+                                atUserService.unlock(atDataSubtaskEntity.getUserId(),userStatus);
+                            }
                         }
                         update.setId(atDataSubtaskEntity.getId());
                         atDataSubtaskService.updateById(update);
-                        Thread.sleep(5000);
+                        int i = RandomUtil.randomInt(3, 5);
+                        Thread.sleep(i * 1000L);
                     } catch (InterruptedException e) {
                         log.error("err = ",e.getMessage());
                     } finally {

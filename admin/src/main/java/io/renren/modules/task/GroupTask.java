@@ -52,12 +52,6 @@ public class GroupTask {
     @Autowired
     private AtUserGroupService atUserGroupService;
 
-
-    static ReentrantLock task1Lock = new ReentrantLock();
-    static ReentrantLock task2Lock = new ReentrantLock();
-    static ReentrantLock task3Lock = new ReentrantLock();
-    static ReentrantLock task4Lock = new ReentrantLock();
-
     @Autowired
     private LineService lineService;
     @Autowired
