@@ -166,6 +166,16 @@ public class DataTask {
                     }
                     atDataTaskEntityList.add(update);
                 }
+
+                //如果拉群成功
+                if (TaskStatus.TaskStatus3.getKey().equals(update.getTaskStatus())) {
+                    if (ObjectUtil.isNotNull(atDataTaskEntity.getGroupId())) {
+                        AtGroupEntity atGroupEntity = new AtGroupEntity();
+                        atGroupEntity.setId(atDataTaskEntity.getGroupId());
+                        atGroupEntity.setGroupStatus(GroupStatus.GroupStatus7.getKey());
+                        atGroupService.updateById(atGroupEntity);
+                    }
+                }
             }
             if (CollUtil.isNotEmpty(atDataTaskEntityList)) {
                 synchronized (atAtDataTaskEntityObj) {

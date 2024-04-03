@@ -1,7 +1,7 @@
 <template>
-  <div class="mod-config">
+  <div class="mod-config" v-loading="isLoading">
     <el-form :model="dataForm" :rules="dataRule" ref="dataForm">
-      <div class="group-container">
+      <div class="group-container" v-if="dataFormGroupTask.taskStatus === 1 || dataFormGroupTask.taskStatus === 2">
 
         <div class="img-logo">
           <img src="~@/assets/250px-Bagua-name-earlier.svg.png">
@@ -159,20 +159,157 @@
 
         </div>
       </div>
+      <div v-else>
+        <el-form-item>
+          <el-button @click="getDataList()">查询</el-button>
+          <el-button type="primary" @click="nextGroup()">继续拉群</el-button>
+          <el-button type="danger" @click="exportHandle()" :disabled="dataListSelections.length <= 0">导出报表</el-button>
+          <el-button type="danger" @click="reallocateTokenHandle()" :disabled="dataListSelections.length <= 0">重新分配账号拉群</el-button>
+        </el-form-item>
+        <el-table
+          :data="dataList"
+          border
+          v-loading="dataListLoading"
+          @selection-change="selectionChangeHandle"
+          style="width: 100%;">
+          <el-table-column
+            type="selection"
+            header-align="center"
+            align="center"
+            width="50">
+          </el-table-column>
+          <el-table-column
+            prop="groupName"
+            header-align="center"
+            align="center"
+            label="群名称">
+          </el-table-column>
+          <el-table-column
+            prop="roomId"
+            header-align="center"
+            align="center"
+            label="群号">
+          </el-table-column>
+          <el-table-column
+            prop="chatRoomUrl"
+            header-align="center"
+            align="center"
+            label="群链接">
+          </el-table-column>
+          <el-table-column
+            prop="roomTicketId"
+            header-align="center"
+            align="center"
+            label="群二维码">
+          </el-table-column>
+          <el-table-column
+            prop="successfullyAttractGroupsNumber"
+            header-align="center"
+            align="center"
+            label="群人数">
+          </el-table-column>
+          <el-table-column
+            prop="groupStatusStr"
+            header-align="center"
+            align="center"
+            width="120"
+            label="拉群状态">
+            <template slot-scope="scope">
+              <el-tag  size="small" type="danger">{{ scope.row.groupStatusStr }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column
+            prop="createTime"
+            header-align="center"
+            align="center"
+            width="100"
+            label="时间">
+          </el-table-column>
+          <el-table-column
+            prop="addTotalQuantity"
+            header-align="center"
+            align="center"
+            label="加粉总数">
+          </el-table-column>
+          <el-table-column
+            prop="successfulQuantity"
+            header-align="center"
+            align="center"
+            label="成功数">
+          </el-table-column>
+          <el-table-column
+            prop="failuresQuantity"
+            header-align="center"
+            align="center"
+            label="失败数">
+          </el-table-column>
+          <el-table-column
+            prop="taskStatus"
+            header-align="center"
+            align="center"
+            width="120"
+            label="加粉状态">
+            <template slot-scope="scope">
+              <el-button v-if="scope.row.taskStatus === 5" type="success" plain>{{scope.row.taskStatusStr}}</el-button>
+              <el-button v-if="scope.row.taskStatus === 3" type="success" plain>{{scope.row.taskStatusStr}}</el-button>
+              <el-button v-if="scope.row.taskStatus === 2" type="warning" plain>{{scope.row.taskStatusStr}}</el-button>
+              <el-button v-if="scope.row.taskStatus === 1" type="primary" plain>{{scope.row.taskStatusStr}}</el-button>
+              <el-button v-if="scope.row.taskStatus === 0" type="primary" plain>{{scope.row.taskStatusStr}}</el-button>
+            </template>
+          </el-table-column>
+          <el-table-column
+            prop="schedule"
+            header-align="center"
+            align="center"
+            width="220"
+            label="加粉进度">
+            <template slot-scope="scope">
+              <el-progress :stroke-width="10" type="circle" :percentage="scope.row.scheduleFloat"></el-progress>
+            </template>
+          </el-table-column>
+          <el-table-column
+            fixed="right"
+            header-align="center"
+            align="center"
+            width="150"
+            label="操作">
+            <template slot-scope="scope">
+              <el-button type="text" size="small" @click="errLogsHandle(scope.row.dataGroupId)">错误日志</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <el-pagination
+          @size-change="sizeChangeHandle"
+          @current-change="currentChangeHandle"
+          :current-page="pageIndex"
+          :page-sizes="[10, 20, 50, 100]"
+          :page-size="pageSize"
+          :total="totalPage"
+          layout="total, sizes, prev, pager, next, jumper">
+        </el-pagination>
+      </div>
     </el-form>
-    <modal-box
-      :isVisible="isModalVisible"
-      :textContent="fileContent"
-      @update:isVisible="isModalVisible = $event"
-    />
+    <reallocate-token v-if="addOrUpdateVisible" ref="reallocateToken" @refreshDataList="getDataList"></reallocate-token>
+    <err-logs  v-if="errLogsVisible" ref="errLogs" @refreshDataList="getDataList"></err-logs>
   </div>
 </template>
 
 <script>
 import ModalBox from './modalbox.vue'
+import ReallocateToken from './atgrouptask-add-reallocate_token'
+import ErrLogs from "./atdatatask-err-logs.vue";
   export default {
     data () {
       return {
+        dataList: [],
+        pageIndex: 1,
+        pageSize: 10,
+        totalPage: 0,
+        errLogsVisible: false,
+        dataListLoading: false,
+        addOrUpdateVisible: false,
+        dataListSelections: [],
+        isLoading: false,
         groupType: null,
         uploadUrl: '',
         options: [],
@@ -187,6 +324,20 @@ import ModalBox from './modalbox.vue'
         countryCodes: [],
         dataRule: {
         },
+        dataFormGroupTask: {
+          id: 0,
+          taskName: '',
+          groupType: '',
+          addTotalQuantity: '',
+          successfulQuantity: '',
+          failuresQuantity: '',
+          taskStatus: '',
+          schedule: '',
+          updateTime: '',
+          deleteFlag: '',
+          createTime: '',
+          sysUserId: ''
+        },
         dataForm: {
           id: null,
           userGroupId: null,
@@ -200,7 +351,9 @@ import ModalBox from './modalbox.vue'
       }
     },
     components: {
-      ModalBox
+      ErrLogs,
+      ModalBox,
+      ReallocateToken
     },
     activated () {
       const groupTaskId = this.$route.query.id
@@ -209,8 +362,79 @@ import ModalBox from './modalbox.vue'
       this.getCountryCodeEnums()
       this.getUserGroupDataList()
       this.getGroupType()
+      this.infoById()
+      this.getDataList()
     },
     methods: {
+      // 每页数
+      sizeChangeHandle (val) {
+        this.pageSize = val
+        this.pageIndex = 1
+        this.getDataList()
+      },
+      // 当前页
+      currentChangeHandle (val) {
+        this.pageIndex = val
+        this.getDataList()
+      },
+      // 多选
+      selectionChangeHandle (val) {
+        this.dataListSelections = val
+      },
+      nextGroup () {
+        this.dataFormGroupTask.taskStatus = 2
+      },
+      getDataList () {
+        this.isLoading = true
+        this.$http({
+          url: this.$http.adornUrl('/ltt/atgroup/list'),
+          method: 'get',
+          params: this.$http.adornParams({
+            'page': this.pageIndex,
+            'limit': this.pageSize,
+            'groupTaskId': this.dataForm.id,
+            'key': this.dataForm.key
+          })
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.dataList = data.page.list
+            this.totalPage = data.page.totalCount
+          } else {
+            this.dataList = []
+            this.totalPage = 0
+          }
+        }).finally(() => {
+          this.isLoading = false
+        })
+      },
+      // 错误日志
+      errLogsHandle (id) {
+        this.errLogsVisible = true
+        this.$nextTick(() => {
+          this.$refs.errLogs.init(id)
+        })
+      },
+      infoById () {
+        this.$http({
+          url: this.$http.adornUrl(`/ltt/atgrouptask/info/${this.dataForm.id}`),
+          method: 'get',
+          params: this.$http.adornParams()
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.dataFormGroupTask.taskName = data.atGroupTask.taskName
+            this.dataFormGroupTask.groupType = data.atGroupTask.groupType
+            this.dataFormGroupTask.addTotalQuantity = data.atGroupTask.addTotalQuantity
+            this.dataFormGroupTask.successfulQuantity = data.atGroupTask.successfulQuantity
+            this.dataFormGroupTask.failuresQuantity = data.atGroupTask.failuresQuantity
+            this.dataFormGroupTask.taskStatus = data.atGroupTask.taskStatus
+            this.dataFormGroupTask.schedule = data.atGroupTask.schedule
+            this.dataFormGroupTask.updateTime = data.atGroupTask.updateTime
+            this.dataFormGroupTask.deleteFlag = data.atGroupTask.deleteFlag
+            this.dataFormGroupTask.createTime = data.atGroupTask.createTime
+            this.dataFormGroupTask.sysUserId = data.atGroupTask.sysUserId
+          }
+        })
+      },
       getGroupType () {
         this.$http({
           url: this.$http.adornUrl(`/app/enums/getGroupType`),
@@ -262,7 +486,35 @@ import ModalBox from './modalbox.vue'
       show () {
         this.tableDataFlag = true;
       },
+      reallocateTokenHandle (id) {
+        var ids = id ? [id] : this.dataListSelections.map(item => {
+          return item.id
+        })
+        this.$confirm(`确定对[id=${ids.join(',')}]进行[${id ? '重新分配账号' : '批量重新分配账号'}]操作?`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.addOrUpdateVisible = true
+          this.$nextTick(() => {
+            this.$refs.reallocateToken.init(ids)
+          })
+        })
+      },
+      exportHandle (id) {
+        var ids = id ? [id] : this.dataListSelections.map(item => {
+          return item.id
+        })
+        this.$confirm(`确定对[id=${ids.join(',')}]进行[${id ? '导出报表' : '批量导出报表'}]操作?`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          window.open(this.$http.adornUrl(`/ltt/atgroup/importZip?token=${this.$cookie.get('token')}&ids=${ids.join(',')}`))
+        })
+      },
       startGroupHandler () {
+        this.isLoading = true
         this.$http({
           url: this.$http.adornUrl('/ltt/atgrouptask/onGroupStart'),
           method: 'POST',
@@ -277,15 +529,14 @@ import ModalBox from './modalbox.vue'
             'groupCount': this.dataForm.groupCount
           })
         }).then(({data}) => {
-          if (data && data.code === 0) {
-
-          } else {
-            this.$message.error(data.msg)
-          }
+          this.infoById()
+        }).finally(() => {
+          this.isLoading = false
         })
       },
       onGroupPreHandler () {
         this.show()
+        this.isLoading = true
         this.dataForm.navyUrlList = []
         for (let i = 0; i < this.navyUrlFileList.length; i++) {
           let data = this.navyUrlFileList[i]
@@ -314,6 +565,8 @@ import ModalBox from './modalbox.vue'
           } else {
             this.$message.error(data.msg)
           }
+        }).finally(() => {
+          this.isLoading = false
         })
       },
       handleMaterialUrlListHanlder (uploadFile, response, uploadFiles) {
@@ -335,6 +588,7 @@ import ModalBox from './modalbox.vue'
         this.navyUrlFileList = uploadFiles
       },
       onMouseOver () {
+        this.isLoading = true
         this.$http({
           url: this.$http.adornUrl('/ltt/atgrouptask/getGroupNameList'),
           method: 'get',
@@ -348,6 +602,8 @@ import ModalBox from './modalbox.vue'
           } else {
             this.$message.error(data.msg)
           }
+        }).finally(() => {
+          this.isLoading = false
         })
       }
     }

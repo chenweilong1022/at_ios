@@ -1,6 +1,7 @@
 package io.renren.modules.client.dto;
 
 import lombok.Data;
+import java.util.List;
 
 /**
  * @author liuyuchan
@@ -14,4 +15,7 @@ public class ImportZipDTO {
      */
     Integer id;
 
+    List<Integer> ids;
+
+    String zipName;
 }

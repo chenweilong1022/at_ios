@@ -1,7 +1,11 @@
 package io.renren.modules.ltt.controller;
 
+import java.io.IOException;
 import java.util.Arrays;
 
+import io.renren.modules.client.dto.ImportZipDTO;
+import io.renren.modules.sys.controller.AbstractController;
+import org.apache.commons.io.IOUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,10 +19,11 @@ import io.renren.modules.ltt.service.AtGroupService;
 import io.renren.common.utils.PageUtils;
 import io.renren.common.utils.R;
 
+import javax.servlet.http.HttpServletResponse;
 
 
 /**
- * 
+ *
  *
  * @author chenweilong
  * @email chenweilong@qq.com
@@ -26,7 +31,7 @@ import io.renren.common.utils.R;
  */
 @RestController
 @RequestMapping("ltt/atgroup")
-public class AtGroupController {
+public class AtGroupController extends AbstractController {
     @Autowired
     private AtGroupService atGroupService;
 
@@ -34,7 +39,7 @@ public class AtGroupController {
      * 列表
      */
     @RequestMapping("/list")
-    @RequiresPermissions("ltt:atgroup:list")
+    @RequiresPermissions("ltt:atgrouptask:list")
     public R list(AtGroupDTO atGroup){
         PageUtils page = atGroupService.queryPage(atGroup);
 
@@ -42,11 +47,14 @@ public class AtGroupController {
     }
 
 
+
+
+
     /**
      * 信息
      */
     @RequestMapping("/info/{id}")
-    @RequiresPermissions("ltt:atgroup:info")
+    @RequiresPermissions("ltt:atgrouptask:info")
     public R info(@PathVariable("id") Integer id){
 		AtGroupVO atGroup = atGroupService.getById(id);
 
@@ -57,7 +65,7 @@ public class AtGroupController {
      * 保存
      */
     @RequestMapping("/save")
-    @RequiresPermissions("ltt:atgroup:save")
+    @RequiresPermissions("ltt:atgrouptask:save")
     public R save(@RequestBody AtGroupDTO atGroup){
 		atGroupService.save(atGroup);
 
@@ -65,10 +73,36 @@ public class AtGroupController {
     }
 
     /**
+     * 导出zip
+     */
+    @RequestMapping("importZip")
+    @RequiresPermissions("ltt:atgrouptask:save")
+    public void importZip(ImportZipDTO importZipDTO, HttpServletResponse response) throws IOException {
+        byte[] bytes = atGroupService.importZip(importZipDTO);
+
+        response.reset();
+        response.setHeader("Content-Disposition", String.format("attachment; filename=\"%s.zip\"",java.net.URLEncoder.encode(importZipDTO.getZipName(),"UTF-8")));
+        response.addHeader("Content-Length", "" + bytes.length);
+        response.setContentType("application/octet-stream; charset=UTF-8");
+        IOUtils.write(bytes, response.getOutputStream());
+    }
+
+    /**
+     * 导出zip
+     */
+    @RequestMapping("reallocateToken")
+    @RequiresPermissions("ltt:atgrouptask:save")
+    public R reallocateToken(@RequestBody AtGroupDTO atGroup) {
+        atGroup.setSysUserId(getAuthUserId());
+        atGroupService.reallocateToken(atGroup);
+        return R.ok();
+    }
+
+    /**
      * 修改
      */
     @RequestMapping("/update")
-    @RequiresPermissions("ltt:atgroup:update")
+    @RequiresPermissions("ltt:atgrouptask:update")
     public R update(@RequestBody AtGroupDTO atGroup){
 		atGroupService.updateById(atGroup);
 
@@ -79,7 +113,7 @@ public class AtGroupController {
      * 删除
      */
     @RequestMapping("/delete")
-    @RequiresPermissions("ltt:atgroup:delete")
+    @RequiresPermissions("ltt:atgrouptask:delete")
     public R delete(@RequestBody Integer[] ids){
 		atGroupService.removeByIds(Arrays.asList(ids));
 

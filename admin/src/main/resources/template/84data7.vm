@@ -1,0 +1,3 @@
+#foreach ($column in $columns)
+${column}
+#end

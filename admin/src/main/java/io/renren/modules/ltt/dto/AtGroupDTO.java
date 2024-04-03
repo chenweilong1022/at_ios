@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  *
@@ -31,6 +32,12 @@ public class AtGroupDTO extends PageParam implements Serializable {
 	@TableId(type = IdType.AUTO)
 	@ApiModelProperty(required=false,value="")
 	private Integer id;
+	/**
+	 *
+	 */
+	@TableId(type = IdType.AUTO)
+	@ApiModelProperty(required=false,value="")
+	private List<Integer> ids;
 	/**
 	 *
 	 */
@@ -126,5 +133,16 @@ public class AtGroupDTO extends PageParam implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="")
 	private String msg;
+	private int countryCode;
+	/**
+	 * 账户分组
+	 */
+	@ApiModelProperty(required=false,value="账户分组")
+	private Integer userGroupId;
+	/**
+	 * 管理账户id
+	 */
+	@ApiModelProperty(required=false,value="管理账户id")
+	private Long sysUserId;
 
 }

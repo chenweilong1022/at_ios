@@ -1,0 +1,8 @@
+群url： ${url}
+群名称: ${name}
+拉人数量: ${count}
+
+
+#foreach ($column in $columns)
++${column.contactKey}	${column.displayName}
+#end

@@ -78,13 +78,11 @@ public class GroupTask {
     @Autowired
     private AtDataSubtaskService atDataSubtaskService;
 
-    /**
-     * 更新头像结果返回
-     */
-    @Scheduled(fixedDelay = 5000)
-    @Transactional(rollbackFor = Exception.class)
-    @Async
-    public void task4() { }
+
+//    @Scheduled(fixedDelay = 5000)
+//    @Transactional(rollbackFor = Exception.class)
+//    @Async
+//    public void task4() { }
 
 
     /**
@@ -296,7 +294,7 @@ public class GroupTask {
 
                         List<AtDataSubtaskEntity> atDataSubtaskEntities = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
                                 .eq(AtDataSubtaskEntity::getGroupId,cdGroupTasksEntity.getId())
-                                .in(AtDataSubtaskEntity::getTaskStatus,TaskStatus.TaskStatus10.getKey())
+                                .in(AtDataSubtaskEntity::getTaskStatus,TaskStatus.TaskStatus10.getKey(),TaskStatus.TaskStatus8.getKey())
                         );
 
                         if (CollUtil.isEmpty(atDataSubtaskEntities)) {

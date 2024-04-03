@@ -2,6 +2,7 @@ package io.renren.modules.ltt.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import io.renren.common.utils.PageUtils;
+import io.renren.modules.client.dto.ImportZipDTO;
 import io.renren.modules.ltt.dto.AtGroupDTO;
 import io.renren.modules.ltt.vo.AtGroupVO;
 import io.renren.modules.ltt.entity.AtGroupEntity;
@@ -11,7 +12,7 @@ import java.util.Collection;
 
 
 /**
- * 
+ *
  *
  * @author chenweilong
  * @email chenweilong@qq.com
@@ -58,5 +59,17 @@ public interface AtGroupService extends IService<AtGroupEntity> {
      */
     @Override
     boolean removeByIds(Collection<? extends Serializable> ids);
+
+    /**
+     * 导出zip
+     * @param importZipDTO
+     */
+    byte[] importZip(ImportZipDTO importZipDTO);
+
+    /**
+     * 重新分配token
+     * @param atGroup
+     */
+    void reallocateToken(AtGroupDTO atGroup);
 }
 

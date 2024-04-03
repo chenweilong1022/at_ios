@@ -19,6 +19,7 @@ public enum TaskStatus implements BaseEnum {
     TaskStatus9(9,"同步通讯录发起"),
     TaskStatus10(10,"通讯录同步成功"),
     TaskStatus11(11,"拉群成功"),
+    TaskStatus12(12,"料子分组完成"),
     ;
 
     TaskStatus(int key, String value) {

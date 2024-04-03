@@ -19,11 +19,81 @@
         <result property="deleteFlag" column="delete_flag"/>
         <result property="createTime" column="create_time"/>
         <result property="taskId" column="task_id"/>
-        <result property="lineRegisterId" column="line_register_id"/>
         <result property="addType" column="add_type"/>
         <result property="materialId" column="material_id"/>
         <result property="materialPhoneType" column="material_phone_type"/>
     </resultMap>
+
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.renren.modules.ltt.vo.AtGroupVO" id="atGroupVO">
+        <result property="id" column="id"/>
+        <result property="groupName" column="group_name"/>
+        <result property="proxy" column="proxy"/>
+        <result property="intervals" column="intervals"/>
+        <result property="roomId" column="room_id"/>
+        <result property="chatRoomUrl" column="chat_room_url"/>
+        <result property="roomTicketId" column="room_ticket_id"/>
+        <result property="uploadGroupNumber" column="upload_group_number"/>
+        <result property="currentExecutionsNumber" column="current_executions_number"/>
+        <result property="successfullyAttractGroupsNumber" column="successfully_attract_groups_number"/>
+        <result property="groupStatus" column="group_status"/>
+        <result property="deleteFlag" column="delete_flag"/>
+        <result property="createTime" column="create_time"/>
+        <result property="taskId" column="task_id"/>
+        <result property="addType" column="add_type"/>
+        <result property="materialId" column="material_id"/>
+        <result property="materialPhoneType" column="material_phone_type"/>
+
+
+        <result property="taskName" column="task_name"/>
+        <result property="userGroupId" column="user_group_id"/>
+        <result property="dataGroupId" column="data_group_id"/>
+        <result property="groupType" column="group_type"/>
+        <result property="addTotalQuantity" column="add_total_quantity"/>
+        <result property="successfulQuantity" column="successful_quantity"/>
+        <result property="failuresQuantity" column="failures_quantity"/>
+        <result property="taskStatus" column="task_status"/>
+        <result property="schedule" column="schedule"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="addQuantityLimit" column="add_quantity_limit"/>
+        <result property="deleteFlag" column="delete_flag"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <select id="listPage" resultMap="atGroupVO">
+        SELECT
+            g.id,
+            g.group_name,
+            g.proxy,
+            g.intervals,
+            g.room_id,
+            g.chat_room_url,
+            g.room_ticket_id,
+            g.upload_group_number,
+            g.current_executions_number,
+            g.successfully_attract_groups_number,
+            g.group_status,
+            g.delete_flag,
+            g.create_time,
+            g.task_id,
+            g.group_task_id,
+            g.user_id,
+            g.add_type,
+            g.material_id,
+            g.material_phone_type,
+            g.msg,
+            t.add_total_quantity,
+            t.group_type,
+            t.successful_quantity,
+            t.failures_quantity,
+            t.task_status
+        FROM
+            at_group g
+                LEFT JOIN at_data_task t ON g.id = t.group_id
+        WHERE
+            g.group_task_id = #{dto.groupTaskId}
+    </select>
 
 
 </mapper>

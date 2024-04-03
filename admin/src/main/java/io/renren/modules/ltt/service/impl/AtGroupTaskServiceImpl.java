@@ -79,6 +79,10 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
     public boolean save(AtGroupTaskDTO atGroupTask) {
         atGroupTask.setDeleteFlag(DeleteFlag.NO.getKey());
         atGroupTask.setCreateTime(DateUtil.date());
+        atGroupTask.setSuccessfulQuantity(0);
+        atGroupTask.setAddTotalQuantity(0);
+        atGroupTask.setFailuresQuantity(0);
+        atGroupTask.setTaskStatus(TaskStatus.TaskStatus1.getKey());
         AtGroupTaskEntity atGroupTaskEntity = AtGroupTaskConver.MAPPER.converDTO(atGroupTask);
         return this.save(atGroupTaskEntity);
     }
@@ -316,6 +320,9 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
                 atDataSubtaskService.saveBatch(atDataSubtaskEntities);
             }
         }
+        atGroupTask.setTaskStatus(TaskStatus.TaskStatus12.getKey());
+        AtGroupTaskEntity atGroupTaskEntity = AtGroupTaskConver.MAPPER.converDTO(atGroupTask);
+        this.updateById(atGroupTaskEntity);
     }
 
     private static void checkCountry(AtUserVO poll, List<AtDataSubtaskEntity> atDataSubtaskEntities) {
