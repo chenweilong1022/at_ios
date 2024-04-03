@@ -58,6 +58,11 @@ public class AtGroupTaskDTO extends PageParam implements Serializable {
 	@ApiModelProperty(required=false,value="群数量")
 	private Integer groupCount;
 	/**
+	 * 群初始化下标
+	 */
+	@ApiModelProperty(required=false,value="群初始化下标")
+	private Integer groupCountStart;
+	/**
 	 * 剩余料子
 	 */
 	@ApiModelProperty(required=false,value="剩余料子")
@@ -112,6 +117,11 @@ public class AtGroupTaskDTO extends PageParam implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="删除标志")
 	private Integer deleteFlag;
+	/**
+	 * 删除标志
+	 */
+	@ApiModelProperty(required=false,value="删除标志")
+	private Integer groupCountTotal;
 	/**
 	 * 创建时间
 	 */

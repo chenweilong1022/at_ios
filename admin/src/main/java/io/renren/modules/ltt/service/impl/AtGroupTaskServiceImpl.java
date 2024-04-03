@@ -109,8 +109,11 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
         Assert.isNull(atGroupTask.getGroupCount(),"请输入拉群数量");
         Assert.isBlank(atGroupTask.getGroupName(),"请输入群名称");
         Integer groupCount = atGroupTask.getGroupCount();
+        if (ObjectUtil.isNull(atGroupTask.getGroupCountStart())) {
+            atGroupTask.setGroupCountStart(0);
+        }
         List<String> groupNames = new ArrayList<>();
-        for (Integer i = 0; i < groupCount; i++) {
+        for (Integer i = atGroupTask.getGroupCountStart(); i < atGroupTask.getGroupCountStart() + groupCount; i++) {
             String groupName = String.format("%s-%s", atGroupTask.getGroupName(), (i + 1));
             groupNames.add(groupName);
         }
@@ -119,13 +122,19 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
 
     @Override
     public List<OnGroupPreVO> onGroupPre(AtGroupTaskDTO atGroupTask) {
+
+        Integer groupCountTotal1 = atGroupTask.getGroupCountTotal();
+        if (ObjectUtil.isNull(groupCountTotal1)) {
+            atGroupTask.setGroupCountTotal(groupCountTotal);
+        }
+
         Integer groupCount = atGroupTask.getGroupCount();
         Assert.isNull(groupCount,"请输入拉群数量");
         Assert.isBlank(atGroupTask.getGroupName(),"请输入群名称");
         List<String> navyUrlList = atGroupTask.getNavyUrlList();
         List<String> materialUrlList = atGroupTask.getMaterialUrlList();
         Assert.isTrue(CollUtil.isEmpty(navyUrlList),"水军不能为空");
-        Assert.isTrue(CollUtil.isEmpty(materialUrlList),"料子不能为空");
+//        Assert.isTrue(CollUtil.isEmpty(materialUrlList),"料子不能为空");
 
         List<List<String>> navyTextListsList = new ArrayList<>();
         //获取所有的水军列表
@@ -159,7 +168,7 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
             onGroupPreVO.setNavyTextLists(strings);
             onGroupPreVO.setGroupName(groupName);
             List<String> materialUrls = new ArrayList<>();
-            for (int i1 = 0; i1 < groupCountTotal - strings.size(); i1++) {
+            for (int i1 = 0; i1 < atGroupTask.getGroupCountTotal() - strings.size(); i1++) {
                 if (!materialUrlsQueue.isEmpty()) {
                     String poll = materialUrlsQueue.poll();
                     materialUrls.add(poll);

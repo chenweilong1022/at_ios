@@ -46,6 +46,14 @@
             </el-select>
           </el-form-item>
 
+          <el-row>
+            <el-col :span="24">
+              <el-form-item label="群人数" prop="groupCountTotal">
+                <el-input v-model="dataForm.groupCountTotal" placeholder="群人数"></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+
         </div>
 
         <div class="group-content">
@@ -57,7 +65,13 @@
                 <el-input v-model="dataForm.groupName" placeholder="自定义群名"></el-input>
               </el-form-item>
             </el-col>
-            <el-col :span="12">
+
+            <el-col :span="6">
+              <el-form-item label="" prop="groupCountStart">
+                <el-input v-model="dataForm.groupCountStart" placeholder="从哪里开始"></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="6">
               <el-form-item label="" prop="groupCount">
                 <el-input v-model="dataForm.groupCount" placeholder="数量"></el-input>
               </el-form-item>
@@ -344,7 +358,9 @@ import ErrLogs from "./atdatatask-err-logs.vue";
           groupType: null,
           groupName: '',
           countryCode: 66,
+          groupCountTotal: 99,
           groupCount: null,
+          groupCountStart: 0,
           navyUrlList: [],
           materialUrlList: []
         }
@@ -524,12 +540,18 @@ import ErrLogs from "./atdatatask-err-logs.vue";
             'countryCode': this.dataForm.countryCode,
             'userGroupId': this.dataForm.userGroupId,
             'navyUrlList': this.dataForm.navyUrlList,
+            'groupCountStart': this.dataForm.groupCountStart,
+            'groupCountTotal': this.dataForm.groupCountTotal,
             'materialUrlList': this.dataForm.materialUrlList,
             'groupType': this.groupType,
             'groupCount': this.dataForm.groupCount
           })
         }).then(({data}) => {
-          this.infoById()
+          if (data && data.code === 0) {
+            this.infoById()
+          } else {
+            this.$message.error(data.msg)
+          }
         }).finally(() => {
           this.isLoading = false
         })
@@ -555,6 +577,8 @@ import ErrLogs from "./atdatatask-err-logs.vue";
           data: this.$http.adornData({
             'groupName': this.dataForm.groupName,
             'navyUrlList': this.dataForm.navyUrlList,
+            'groupCountStart': this.dataForm.groupCountStart,
+            'groupCountTotal': this.dataForm.groupCountTotal,
             'materialUrlList': this.dataForm.materialUrlList,
             'groupCount': this.dataForm.groupCount
           })
@@ -594,7 +618,9 @@ import ErrLogs from "./atdatatask-err-logs.vue";
           method: 'get',
           params: this.$http.adornParams({
             'groupName': this.dataForm.groupName,
-            'groupCount': this.dataForm.groupCount
+            'groupCountStart': this.dataForm.groupCountStart,
+            'groupCount': this.dataForm.groupCount,
+            'groupCountTotal': this.dataForm.groupCountTotal
           })
         }).then(({data}) => {
           if (data && data.code === 0) {
