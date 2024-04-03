@@ -249,7 +249,7 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
             dataTaskEntitiesUpdate.add(atDataTask);
 
             for (AtDataSubtaskEntity save : dataSubtaskEntities) {
-                save.setTaskStatus(TaskStatus.TaskStatus1.getKey());
+//                save.setTaskStatus(TaskStatus.TaskStatus1.getKey());
                 save.setUserId(poll.getId());
                 atDataSubtaskEntitiesUpdate.add(save);
             }
@@ -262,9 +262,9 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
             atUserService.updateBatchById(atUserEntityUpdates);
         }
 
-//        if (CollUtil.isNotEmpty(atDataSubtaskEntitiesUpdate)) {
-//            atDataSubtaskService.updateBatchById(atDataSubtaskEntitiesUpdate);
-//        }
+        if (CollUtil.isNotEmpty(atDataSubtaskEntitiesUpdate)) {
+            atDataSubtaskService.updateBatchById(atDataSubtaskEntitiesUpdate);
+        }
 
         if (CollUtil.isNotEmpty(dataTaskEntitiesUpdate)) {
             atDataTaskService.updateBatchById(dataTaskEntitiesUpdate);
