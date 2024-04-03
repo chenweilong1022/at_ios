@@ -122,8 +122,8 @@ public class Data4Task {
                 log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
                 if(triedLock) {
                     try{
-                        String mid = atDataSubtaskEntity.getMids();
-                        if (StrUtil.isEmpty(mid)) {
+                        AtDataSubtaskVO atDataSubtaskVO = atDataSubtaskService.getById(atDataSubtaskEntity.getId());
+                        if (ObjectUtil.isNull(atDataSubtaskVO)) {
                             return;
                         }
                         //获取用户token
@@ -142,7 +142,7 @@ public class Data4Task {
 
                         AddFriendsByHomeRecommendDTO addFriendsByHomeRecommendDTO = new AddFriendsByHomeRecommendDTO();
                         addFriendsByHomeRecommendDTO.setProxy(proxyIp);
-                        addFriendsByHomeRecommendDTO.setMid(mid);
+                        addFriendsByHomeRecommendDTO.setMid(atDataSubtaskVO.getMid());
                         addFriendsByHomeRecommendDTO.setToken(atUserTokenEntity.getToken());
 
                         SearchPhoneVO searchPhoneVO = lineService.addFriendsByFriendRecommend(addFriendsByHomeRecommendDTO);
@@ -150,6 +150,7 @@ public class Data4Task {
                         if (ObjectUtil.isNull(searchPhoneVO)) {
                             return;
                         }
+
                         update.setMsg(searchPhoneVO.getMsg());
                         if (200 == searchPhoneVO.getCode()) {
                             update.setTaskStatus(TaskStatus.TaskStatus8.getKey());

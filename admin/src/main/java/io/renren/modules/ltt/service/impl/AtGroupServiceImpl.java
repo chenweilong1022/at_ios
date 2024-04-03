@@ -262,9 +262,9 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
             atUserService.updateBatchById(atUserEntityUpdates);
         }
 
-        if (CollUtil.isNotEmpty(atDataSubtaskEntitiesUpdate)) {
-            atDataSubtaskService.updateBatchById(atDataSubtaskEntitiesUpdate);
-        }
+//        if (CollUtil.isNotEmpty(atDataSubtaskEntitiesUpdate)) {
+//            atDataSubtaskService.updateBatchById(atDataSubtaskEntitiesUpdate);
+//        }
 
         if (CollUtil.isNotEmpty(dataTaskEntitiesUpdate)) {
             atDataTaskService.updateBatchById(dataTaskEntitiesUpdate);
