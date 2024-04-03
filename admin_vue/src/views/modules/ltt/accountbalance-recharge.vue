@@ -8,7 +8,7 @@
       <el-select
         v-model="dataForm.sysUserId"
         filterable
-        remote :disabled="dataForm.sysUserId"
+        remote :disabled="userDisabled"
         placeholder="请选择账号"
         :remote-method="queryBySearchWord"
         :loading="loading">
@@ -36,6 +36,7 @@
     data () {
       return {
         visible: false,
+        userDisabled: false,
         sysUserAccountOptions: [],
         dataForm: {
           sysUserId: '',
@@ -59,19 +60,13 @@
           this.$refs['dataForm'].resetFields()
           if (sysUserId) {
             this.dataForm.sysUserId = sysUserId
+            this.userDisabled = true
             this.sysUserAccountOptions = [{
               userId: sysUserId,
               username: sysUserName
             }]
-            // this.$http({
-            //   url: this.$http.adornUrl(`/ltt/accountbalance/getBySysUserId/${this.dataForm.sysUserId}`),
-            //   method: 'get',
-            //   params: this.$http.adornParams()
-            // }).then(({data}) => {
-            //   if (data && data.code === 0) {
-            //     this.dataForm.sysUserId = data.accountbalance.sysUserId
-            //   }
-            // })
+          } else {
+            this.queryBySearchWord();
           }
         })
       },

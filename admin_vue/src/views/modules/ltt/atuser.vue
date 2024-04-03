@@ -5,7 +5,14 @@
         <el-input v-model="dataForm.nickName" placeholder="昵称" clearable></el-input>
       </el-form-item>
       <el-form-item>
-        <el-input v-model="dataForm.nation" placeholder="国家" clearable></el-input>
+        <el-select v-model="dataForm.nation" placeholder="拉群号国家" clearable>
+          <el-option
+            v-for="item in countryCodes"
+            :key="item.value"
+            :label="item.value"
+            :value="item.value">
+          </el-option>
+        </el-select>
       </el-form-item>
       <el-form-item>
         <el-input v-model="dataForm.telephone" placeholder="手机号" clearable></el-input>
@@ -244,6 +251,7 @@
       return {
         userGroupOptions: [],
         customerUserOptions: [],
+        countryCodes: [],
         statusOptions: [
           {
             value: 1,
@@ -312,8 +320,25 @@
     activated () {
       this.getDataList()
       this.getAtUserSource()
+      this.getCountryCodeEnums()
+    },
+    created() {
+      this.queryCustomerByFuzzyName('')
+      this.queryUserGroupBySearchWord('')
     },
     methods: {
+      getCountryCodeEnums () {
+        this.$http({
+          url: this.$http.adornUrl(`/app/enums/countryCodes`),
+          method: 'get'
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.countryCodes = data.data
+          } else {
+            this.$message.error(data.msg)
+          }
+        })
+      },
       // 获取数据列表
       getDataList () {
         this.dataListLoading = true

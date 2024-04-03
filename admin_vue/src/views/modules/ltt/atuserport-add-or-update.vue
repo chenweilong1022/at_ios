@@ -107,6 +107,8 @@ export default {
               }]
             }
           })
+        } else {
+          this.queryBySearchWord()
         }
       })
     },

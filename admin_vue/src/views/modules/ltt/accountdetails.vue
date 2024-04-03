@@ -7,7 +7,7 @@
       <el-form-item label="所属账号:" prop="sysUserId">
         <el-select
           v-model="dataForm.sysUserId"
-          filterable
+          filterable clearable
           remote
           placeholder="请选择账号"
           :remote-method="queryBySearchWord"
@@ -23,7 +23,7 @@
       <el-form-item label="交易类型:" prop="sysUserId">
         <el-select
           v-model="dataForm.transactionType"
-          filterable
+          filterable clearable
           placeholder="请选择交易类型">
           <el-option
             v-for="item in accountTransactionTypeCodes"
@@ -36,7 +36,7 @@
       <el-form-item label="交易状态:" prop="sysUserId">
         <el-select
           v-model="dataForm.status"
-          filterable
+          filterable clearable
           placeholder="请选择交易状态">
           <el-option
             v-for="item in accountTransactionStatusCodes"
@@ -172,6 +172,7 @@
       this.getDataList()
       this.getAccountTransactionTypeCodes()
       this.getAccountTransactionStatusCodes()
+      this.queryBySearchWord()
     },
     methods: {
       init() {

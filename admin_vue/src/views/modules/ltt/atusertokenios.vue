@@ -173,6 +173,7 @@
         this.dataForm.deviceName = deviceName
         this.getDataList(deviceId)
         this.getCountryCodes()
+        this.queryBySearchWord()
       },
       // 获取数据列表
       getDataList (deviceId) {

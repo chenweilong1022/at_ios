@@ -58,6 +58,7 @@ export default {
       this.visible = true
       this.ids = ids
       console.log(ids)
+      this.queryUserGroupBySearchWord()
     },
     // 表单提交
     dataFormSubmit () {

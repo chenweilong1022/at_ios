@@ -58,6 +58,7 @@ export default {
       this.visible = true
       this.ids = ids
       console.log(ids)
+      this.queryCustomerByFuzzyName()
     },
     // 表单提交
     dataFormSubmit () {

@@ -212,6 +212,7 @@
       this.getCountryCodes()
       this.getProductTypeCodes()
       this.getOrderStatus()
+      this.queryBySearchWord()
     },
     methods: {
       // 获取数据列表

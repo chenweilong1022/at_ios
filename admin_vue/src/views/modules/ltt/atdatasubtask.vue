@@ -223,6 +223,8 @@
     },
     activated () {
       this.getDataList()
+      this.queryUserGroupBySearchWord()
+      this.queryCustomerByFuzzyName()
     },
     methods: {
       // 获取数据列表
