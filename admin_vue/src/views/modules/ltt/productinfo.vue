@@ -63,12 +63,12 @@
         align="center"
         label="商品价格">
       </el-table-column>
-      <el-table-column
-        prop="stockQuantity"
-        header-align="center"
-        align="center"
-        label="库存数量">
-      </el-table-column>
+<!--      <el-table-column-->
+<!--        prop="stockQuantity"-->
+<!--        header-align="center"-->
+<!--        align="center"-->
+<!--        label="库存数量">-->
+<!--      </el-table-column>-->
       <el-table-column
         prop="status"
         header-align="center"

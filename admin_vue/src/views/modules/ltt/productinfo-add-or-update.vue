@@ -40,9 +40,9 @@
       <el-form-item label="商品价格" prop="price">
         <el-input v-model="dataForm.price" placeholder="商品价格"></el-input>
       </el-form-item>
-      <el-form-item label="库存数量" prop="stockQuantity">
-        <el-input v-model="dataForm.stockQuantity" placeholder="库存数量"></el-input>
-      </el-form-item>
+<!--      <el-form-item label="库存数量" prop="stockQuantity">-->
+<!--        <el-input v-model="dataForm.stockQuantity" placeholder="库存数量"></el-input>-->
+<!--      </el-form-item>-->
       <!--    <el-form-item label="商品状态（1上架 0下架）" prop="status">-->
       <!--      <el-input v-model="dataForm.status" placeholder="商品状态（1上架 0下架）"></el-input>-->
       <!--    </el-form-item>-->
@@ -89,9 +89,9 @@ export default {
         price: [
           {required: true, message: '商品价格不能为空', trigger: 'blur'}
         ],
-        stockQuantity: [
-          {required: true, message: '库存数量不能为空', trigger: 'blur'}
-        ],
+        // stockQuantity: [
+        //   {required: true, message: '库存数量不能为空', trigger: 'blur'}
+        // ],
         countryCode: [
           {required: true, message: '国号(区号)不能为空', trigger: 'blur'}
         ],
