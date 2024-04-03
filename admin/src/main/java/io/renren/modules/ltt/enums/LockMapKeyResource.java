@@ -37,6 +37,10 @@ public enum LockMapKeyResource implements BaseEnum {
         return String.format("%s_%s",lockMapKeyResource.getValue(),id);
     }
 
+    public static String getKeyByResource(LockMapKeyResource lockMapKeyResource,String id) {
+        return String.format("%s_%s",lockMapKeyResource.getValue(),id);
+    }
+
     public String getValue() {
         return value;
     }
