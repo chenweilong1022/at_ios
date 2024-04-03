@@ -516,14 +516,21 @@ public class RegisterTask {
     @Transactional(rollbackFor = Exception.class)
     @Async
     public void task2() {
-        //获取子任务
-        List<CdRegisterSubtasksVO> cdRegisterSubtasksVOS = cdRegisterSubtasksService.groupByTaskId();
-        if (CollUtil.isEmpty(cdRegisterSubtasksVOS)) {
-            log.info("RegisterTask task2 list isEmpty");
+
+        boolean b = task4Lock.tryLock();
+        if (!b) {
             return;
         }
-        for (CdRegisterSubtasksVO cdRegisterSubtasksEntity : cdRegisterSubtasksVOS) {
-            poolExecutor.execute(() -> {
+        try {
+
+            //获取子任务
+            List<CdRegisterSubtasksVO> cdRegisterSubtasksVOS = cdRegisterSubtasksService.groupByTaskId();
+            if (CollUtil.isEmpty(cdRegisterSubtasksVOS)) {
+                log.info("RegisterTask task2 list isEmpty");
+                return;
+            }
+            for (CdRegisterSubtasksVO cdRegisterSubtasksEntity : cdRegisterSubtasksVOS) {
+
                 String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource2, cdRegisterSubtasksEntity.getId());
                 Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
                 boolean triedLock = lock.tryLock();
@@ -577,8 +584,14 @@ public class RegisterTask {
                 }else {
                     log.info("keyByResource = {} 在执行",keyByResource);
                 }
-            });
+
+            }
+
+        }finally {
+            task4Lock.unlock();;
         }
+
+
     }
 
     /**
