@@ -327,7 +327,7 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
                 atUserService.updateBatchById(atUserEntityUpdates);
             }
             if (CollUtil.isNotEmpty(atDataSubtaskEntities)) {
-                atDataSubtaskService.saveBatch(atDataSubtaskEntities);
+                atDataSubtaskService.saveBatch(atDataSubtaskEntities,atDataSubtaskEntities.size());
             }
         }
         atGroupTask.setTaskStatus(TaskStatus.TaskStatus12.getKey());
