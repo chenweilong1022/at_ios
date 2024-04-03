@@ -251,10 +251,18 @@ public class Data5Task {
                 log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
                 if(triedLock) {
                     try{
-                        List<String> phoneList = atDataSubtaskEntity.getContactKeysToList();
+
+                        List<AtDataSubtaskEntity> list = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
+                                .eq(AtDataSubtaskEntity::getGroupId,atDataSubtaskEntity.getDataTaskId())
+                                .eq(AtDataSubtaskEntity::getGroupType,GroupType.GroupType5.getKey())
+                        );
+
+                        List<String> phoneList = list.stream().map(AtDataSubtaskEntity::getContactKey).collect(Collectors.toList());
+
                         if (CollUtil.isEmpty(phoneList)) {
                             return;
                         }
+
                         //获取用户token
                         AtUserTokenEntity atUserTokenEntity = userIdAtUserTokenEntityMap.get(atDataSubtaskEntity.getUserId());
                         if (ObjectUtil.isNull(atUserTokenEntity)) {
