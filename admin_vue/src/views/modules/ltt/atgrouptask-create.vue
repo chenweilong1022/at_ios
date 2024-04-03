@@ -132,6 +132,7 @@
               <el-button @click="onGroupPreHandler">预览</el-button>
               <el-button @click="hide">隐藏表格</el-button>
               <el-button @click="show">显示表格</el-button>
+              <el-button @click="onGroupPreExportHandler">导出剩余粉</el-button>
             </el-col>
           </el-row>
 
@@ -578,6 +579,22 @@ import ErrLogs from "./atdatatask-err-logs.vue";
         }).finally(() => {
           this.isLoading = false
         })
+      },
+      onGroupPreExportHandler () {
+        this.isLoading = true
+        this.dataForm.navyUrlList = []
+        for (let i = 0; i < this.navyUrlFileList.length; i++) {
+          let data = this.navyUrlFileList[i]
+          this.dataForm.navyUrlList.push(data.response.data)
+        }
+        console.log(this.dataForm.navyUrlList)
+        this.dataForm.materialUrlList = []
+        for (let i = 0; i < this.materialUrlFileList.length; i++) {
+          let data = this.materialUrlFileList[i]
+          this.dataForm.materialUrlList.push(data.response.data)
+        }
+        window.open(this.$http.adornUrl(`/ltt/atgrouptask/onGroupPreExport?groupName=${this.dataForm.groupName}&groupCountStart=${this.dataForm.groupCountStart}&groupCountTotal=${this.dataForm.groupCountTotal}&groupCount=${this.dataForm.groupCount}&navyUrlList=${this.dataForm.navyUrlList.join(',')}&materialUrlList=${this.dataForm.materialUrlList.join(',')}&token=${this.$cookie.get('token')}`))
+        this.isLoading = false
       },
       onGroupPreHandler () {
         this.show()

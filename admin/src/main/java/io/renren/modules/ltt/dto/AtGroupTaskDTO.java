@@ -11,6 +11,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Queue;
 
 /**
  * 拉群任务
@@ -132,5 +133,9 @@ public class AtGroupTaskDTO extends PageParam implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="管理账户id")
 	private Long sysUserId;
-
+	/**
+	 * 剩余
+	 */
+	@ApiModelProperty(required=false,value="剩余")
+	private Queue<String> materialUrlsQueue;
 }

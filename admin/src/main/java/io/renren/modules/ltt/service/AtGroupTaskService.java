@@ -79,5 +79,12 @@ public interface AtGroupTaskService extends IService<AtGroupTaskEntity> {
      * @param atGroupTask
      */
     void onGroupStart(AtGroupTaskDTO atGroupTask);
+
+    /**
+     * 导出剩余的
+     * @param atGroupTask
+     * @return
+     */
+    byte[] onGroupPreExport(AtGroupTaskDTO atGroupTask);
 }
 

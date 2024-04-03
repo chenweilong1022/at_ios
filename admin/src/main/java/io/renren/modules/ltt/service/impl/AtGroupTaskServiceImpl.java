@@ -180,6 +180,7 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
             onGroupPreVO.setMaterialUrls(materialUrls);
             onGroupPreVOS.add(onGroupPreVO);
         }
+        atGroupTask.setMaterialUrlsQueue(materialUrlsQueue);
         String remaining = String.format("共有群（%s）个，上传料子（%s）个，使用料子（%s）个，剩余料子（%s）个",groupNameList.size(),materialUrlsQueueSize,useCount,materialUrlsQueue.size());
         atGroupTask.setRemaining(remaining);
         return onGroupPreVOS;
@@ -250,7 +251,7 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
             atDataTask.setSuccessfulQuantity(0);
             atDataTask.setFailuresQuantity(0);
             atDataTask.setUpdateTime(DateUtil.date());
-            atDataTask.setTaskStatus(TaskStatus.TaskStatus1.getKey());
+            atDataTask.setTaskStatus(TaskStatus.TaskStatus0.getKey());
             atDataTask.setSysUserId(atGroupTask.getSysUserId());
             atDataTask.setGroupId(atGroupTaskEntity.getId());
             atDataTaskService.save(atDataTask);
@@ -332,6 +333,17 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
         atGroupTask.setTaskStatus(TaskStatus.TaskStatus12.getKey());
         AtGroupTaskEntity atGroupTaskEntity = AtGroupTaskConver.MAPPER.converDTO(atGroupTask);
         this.updateById(atGroupTaskEntity);
+    }
+
+    @Override
+    public byte[] onGroupPreExport(AtGroupTaskDTO atGroupTask) {
+        onGroupPre(atGroupTask);
+        //剩余的
+        Queue<String> materialUrlsQueue = atGroupTask.getMaterialUrlsQueue();
+
+        String newStr = materialUrlsQueue.stream().map(phone -> phone + "\n").collect(Collectors.joining());
+        return StrUtil.bytes(newStr);
+
     }
 
     private static void checkCountry(AtUserVO poll, List<AtDataSubtaskEntity> atDataSubtaskEntities) {

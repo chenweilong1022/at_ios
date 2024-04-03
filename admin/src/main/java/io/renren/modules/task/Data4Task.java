@@ -183,7 +183,7 @@ public class Data4Task {
                                 atGroupService.updateById(atGroupEntity);
                             }
 
-                            if (TaskStatus.TaskStatus5.getKey().equals(update.getTaskStatus())) {
+                            if (TaskStatus.TaskStatus5.getKey().equals(update.getTaskStatus()) || TaskStatus.TaskStatus13.getKey().equals(update.getTaskStatus())) {
                                 update.setId(null);
                                 atDataSubtaskService.update(update,new QueryWrapper<AtDataSubtaskEntity>().lambda()
                                         .eq(AtDataSubtaskEntity::getDataTaskId,atDataSubtaskEntity.getDataTaskId())

@@ -2,6 +2,7 @@ package io.renren.modules.ltt.controller;
 
 import io.renren.modules.ltt.vo.OnGroupPreVO;
 import io.renren.modules.sys.controller.AbstractController;
+import org.apache.commons.io.IOUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,6 +16,9 @@ import io.renren.modules.ltt.service.AtGroupTaskService;
 import io.renren.common.utils.PageUtils;
 import io.renren.common.utils.R;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -64,6 +68,20 @@ public class AtGroupTaskController extends AbstractController {
         List<OnGroupPreVO> onGroupPreVOS = atGroupTaskService.onGroupPre(atGroupTask);
 
         return R.ok().put("onGroupPreVOS",onGroupPreVOS).put("remaining",atGroupTask.getRemaining());
+    }
+
+    /**
+     * 列表
+     */
+    @RequestMapping("/onGroupPreExport")
+    @RequiresPermissions("ltt:atgrouptask:list")
+    public void onGroupPreExport(AtGroupTaskDTO atGroupTask, HttpServletResponse response) throws IOException {
+       byte[] bytes = atGroupTaskService.onGroupPreExport(atGroupTask);
+        response.reset();
+        response.setHeader("Content-Disposition", String.format("attachment; filename=\"%s.txt\"",java.net.URLEncoder.encode("剩余料子","UTF-8")));
+        response.addHeader("Content-Length", "" + bytes.length);
+        response.setContentType("application/octet-stream; charset=UTF-8");
+        IOUtils.write(bytes, response.getOutputStream());
     }
 
     /**
