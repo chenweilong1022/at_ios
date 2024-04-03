@@ -174,12 +174,28 @@
         </div>
       </div>
       <div v-else>
+        <el-form :inline="true" :model="dataForm" @keyup.enter.native="getDataList()">
+        <el-form-item label="拉群状态" prop="groupStatusList">
+          <el-select
+            v-model:group-type-list="groupStatusList"
+            multiple
+            placeholder="选择类型"
+            size="large">
+            <el-option
+              v-for="item in groupStatusCodes"
+              :key="item.key"
+              :label="item.value"
+              :value="item.key"
+            />
+          </el-select>
+        </el-form-item>
         <el-form-item>
           <el-button @click="getDataList()">查询</el-button>
           <el-button type="primary" @click="nextGroup()">继续拉群</el-button>
           <el-button type="danger" @click="exportHandle()" :disabled="dataListSelections.length <= 0">导出报表</el-button>
           <el-button type="danger" @click="reallocateTokenHandle()" :disabled="dataListSelections.length <= 0">重新分配账号拉群</el-button>
         </el-form-item>
+        </el-form>
         <el-table
           :data="dataList"
           border
@@ -325,8 +341,10 @@ import ErrLogs from "./atdatatask-err-logs.vue";
         dataListSelections: [],
         isLoading: false,
         groupType: null,
+        groupStatusList: [],
         uploadUrl: '',
         options: [],
+        groupStatusCodes: [],
         tableData: [],
         navyUrlFileList: [],
         dataUserGroupList: [],
@@ -380,6 +398,7 @@ import ErrLogs from "./atdatatask-err-logs.vue";
       this.getGroupType()
       this.infoById()
       this.getDataList()
+      this.getGroupStatusCodes()
     },
     methods: {
       // 每页数
@@ -401,15 +420,19 @@ import ErrLogs from "./atdatatask-err-logs.vue";
         this.dataFormGroupTask.taskStatus = 2
       },
       getDataList () {
+        console.log(111111111111111)
+        console.log(this.groupStatusList)
+
+        console.log()
         this.isLoading = true
         this.$http({
           url: this.$http.adornUrl('/ltt/atgroup/list'),
-          method: 'get',
-          params: this.$http.adornParams({
+          method: 'post',
+          data: this.$http.adornData({
             'page': this.pageIndex,
             'limit': this.pageSize,
             'groupTaskId': this.dataForm.id,
-            'key': this.dataForm.key
+            'groupStatusList': this.groupStatusList
           })
         }).then(({data}) => {
           if (data && data.code === 0) {
@@ -591,6 +614,18 @@ import ErrLogs from "./atdatatask-err-logs.vue";
           }
         }).finally(() => {
           this.isLoading = false
+        })
+      },
+      getGroupStatusCodes () {
+        this.$http({
+          url: this.$http.adornUrl(`/app/enums/getGroupStatus`),
+          method: 'get'
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.groupStatusCodes = data.data
+          } else {
+            this.$message.error(data.msg)
+          }
         })
       },
       handleMaterialUrlListHanlder (uploadFile, response, uploadFiles) {

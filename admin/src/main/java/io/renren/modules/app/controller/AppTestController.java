@@ -80,4 +80,10 @@ public class AppTestController {
         return R.data(enumVos);
     }
 
+    @GetMapping("enums/getGroupStatus")
+    public R getGroupStatus() {
+        List<EnumVo> enumVos = EnumUtil.enumToVo(GroupStatus.values());
+        return R.data(enumVos);
+    }
+
 }

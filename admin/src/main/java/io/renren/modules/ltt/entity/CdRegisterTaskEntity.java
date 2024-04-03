@@ -34,17 +34,17 @@ public class CdRegisterTaskEntity implements Serializable {
 	/**
 	 *
 	 */
-	@ApiModelProperty(required = false, value = "")
+	@ApiModelProperty(required = false, value = "总数量")
 	private Integer totalAmount;
 	/**
 	 *
 	 */
-	@ApiModelProperty(required = false, value = "")
+	@ApiModelProperty(required = false, value = "线程数")
 	private Integer numberThreads;
 	/**
 	 *
 	 */
-	@ApiModelProperty(required = false, value = "")
+	@ApiModelProperty(required = false, value = "注册数量")
 	private Integer numberRegistered;
 	/**
 	 *

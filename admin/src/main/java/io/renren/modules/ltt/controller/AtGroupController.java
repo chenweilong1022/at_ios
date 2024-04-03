@@ -40,7 +40,7 @@ public class AtGroupController extends AbstractController {
      */
     @RequestMapping("/list")
     @RequiresPermissions("ltt:atgrouptask:list")
-    public R list(AtGroupDTO atGroup){
+    public R list(@RequestBody AtGroupDTO atGroup){
         PageUtils page = atGroupService.queryPage(atGroup);
 
         return R.ok().put("page", page);

@@ -93,6 +93,12 @@
                 LEFT JOIN at_data_task t ON g.id = t.group_id
         WHERE
             g.group_task_id = #{dto.groupTaskId}
+        <if test="dto.groupStatusList != null and dto.groupStatusList.size>0">
+            and g.group_status in(
+            <foreach collection="dto.groupStatusList" item="item" index="index" separator=",">
+                #{item}
+            </foreach>)
+        </if>
     </select>
 
 
