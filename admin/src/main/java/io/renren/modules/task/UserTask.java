@@ -376,22 +376,15 @@ public class UserTask {
                             return;
                         }
                         update.setMsg(issueLiffViewVO.getMsg());
+                        update.setStatus(UserStatus.UserStatus4.getKey());
                         //号被封号了
                         if (201 == issueLiffViewVO.getCode()) {
                             //用户添加群过多 封号
-                            if (issueLiffViewVO.getMsg().contains(UserStatusCode.UserStatusCode1.getValue())) {
+                            if (issueLiffViewVO.getMsg().contains(UserStatusCode.UserStatusCode9.getValue())) {
                                 update.setStatus(UserStatus.UserStatus2.getKey());
-                            }else if (issueLiffViewVO.getMsg().contains(UserStatusCode.UserStatusCode2.getValue())) {
-                                update.setStatus(UserStatus.UserStatus4.getKey());
-                            }else if (issueLiffViewVO.getMsg().contains(UserStatusCode.UserStatusCode3.getValue())) {
-                                update.setStatus(UserStatus.UserStatus5.getKey());
-                            }else if (issueLiffViewVO.getMsg().contains(UserStatusCode.UserStatusCode5.getValue())) {
-                                update.setStatus(UserStatus.UserStatus4.getKey());
                             }
                         }else if(300 == issueLiffViewVO.getCode()) {
                             update.setStatus(UserStatus.UserStatus1.getKey());
-                        } else if (200 == issueLiffViewVO.getCode()) {
-                            update.setStatus(UserStatus.UserStatus4.getKey());
                         }
                         atUserService.updateById(update);
                     }finally {

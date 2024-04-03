@@ -15,6 +15,7 @@ public enum UserStatusCode implements BaseEnum {
     UserStatusCode6(6,"Protocol.LineContact"),
     UserStatusCode7(7,"ABUSE_BLOCK"),
     UserStatusCode8(8,"EXCESSIVE_ACCESS"),
+    UserStatusCode9(9,"Internal Server Error"),
     ;
 
     UserStatusCode(int key, String value) {
