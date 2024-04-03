@@ -1,12 +1,14 @@
 package io.renren.modules.ltt.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.apache.ibatis.annotations.Options;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -22,6 +24,7 @@ import java.util.Date;
 @TableName("at_data_subtask")
 @ApiModel("加粉任务子任务")
 @Accessors(chain = true)
+
 public class AtDataSubtaskEntity implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -30,6 +33,7 @@ public class AtDataSubtaskEntity implements Serializable {
 	 */
 	@TableId(type = IdType.AUTO)
 	@ApiModelProperty(required=false,value="主键")
+
 	private Integer id;
 	/**
 	 * 数据任务id

@@ -7,6 +7,7 @@ import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
+import com.google.common.collect.Lists;
 import io.renren.common.utils.EnumUtil;
 import io.renren.common.utils.PhoneUtil;
 import io.renren.common.utils.vo.PhoneCountryVO;
@@ -327,7 +328,10 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
                 atUserService.updateBatchById(atUserEntityUpdates);
             }
             if (CollUtil.isNotEmpty(atDataSubtaskEntities)) {
-                atDataSubtaskService.saveBatch(atDataSubtaskEntities,atDataSubtaskEntities.size()+1);
+                List<List<AtDataSubtaskEntity>> partition = Lists.partition(atDataSubtaskEntities, 999);
+                for (List<AtDataSubtaskEntity> atDataSubtaskEntityList : partition) {
+                    atDataSubtaskService.saveBatch(atDataSubtaskEntityList);
+                }
             }
         }
         atGroupTask.setTaskStatus(TaskStatus.TaskStatus12.getKey());
