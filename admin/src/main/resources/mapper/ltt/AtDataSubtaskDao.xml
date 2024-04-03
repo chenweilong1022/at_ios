@@ -43,6 +43,16 @@
         <result property="sysUserId" column="sys_user_id"/>
     </resultMap>
 
+
+    <insert id="saveBatchOnMe" parameterType="java.util.List" useGeneratedKeys="false">
+        INSERT INTO at_data_subtask
+        (data_task_id, user_id, task_status, group_type, contact_key, mid, display_name, delete_flag, create_time, sys_user_id, data_type, group_id)
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.dataTaskId}, #{item.userId}, #{item.taskStatus}, #{item.groupType}, #{item.contactKey}, #{item.mid}, #{item.displayName}, #{item.deleteFlag}, #{item.createTime}, #{item.sysUserId}, #{item.dataType}, #{item.groupId})
+        </foreach>
+    </insert>
+
     <select id="queryPageCount" resultType="java.lang.Integer">
         SELECT
         count(1)

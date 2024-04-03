@@ -86,4 +86,9 @@ public class AtDataSubtaskServiceImpl extends ServiceImpl<AtDataSubtaskDao, AtDa
         return baseMapper.groupByUserId(dto);
     }
 
+    @Override
+    public void saveBatchOnMe(List<AtDataSubtaskEntity> atDataSubtaskEntityList) {
+        baseMapper.saveBatchOnMe(atDataSubtaskEntityList);
+    }
+
 }

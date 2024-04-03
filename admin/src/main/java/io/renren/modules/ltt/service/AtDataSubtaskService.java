@@ -69,5 +69,11 @@ public interface AtDataSubtaskService extends IService<AtDataSubtaskEntity> {
     PageUtils listFriend(AtDataSubtaskParamPageDTO atDataSubtask);
 
     List<AtDataSubtaskVO> groupByUserId(AtDataSubtaskEntity dto);
+
+    /**
+     * 批量插入
+     * @param atDataSubtaskEntityList
+     */
+    void saveBatchOnMe(List<AtDataSubtaskEntity> atDataSubtaskEntityList);
 }
 

@@ -25,4 +25,7 @@ public interface AtDataSubtaskDao extends BaseMapper<AtDataSubtaskEntity> {
     List<AtDataSubtaskResultDto> queryPage(AtDataSubtaskParamPageDTO paramPageDto);
 
     List<AtDataSubtaskVO> groupByUserId(@Param("dto") AtDataSubtaskEntity dto);
+
+    void saveBatchOnMe(@Param("list") List<AtDataSubtaskEntity> atDataSubtaskEntityList);
+
 }
