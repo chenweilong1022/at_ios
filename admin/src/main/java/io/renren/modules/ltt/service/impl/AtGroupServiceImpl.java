@@ -249,7 +249,7 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
             dataTaskEntitiesUpdate.add(atDataTask);
 
             for (AtDataSubtaskEntity save : dataSubtaskEntities) {
-//                save.setTaskStatus(TaskStatus.TaskStatus1.getKey());
+                save.setTaskStatus(TaskStatus.TaskStatus1.getKey());
                 save.setUserId(poll.getId());
                 atDataSubtaskEntitiesUpdate.add(save);
             }
