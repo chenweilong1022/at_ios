@@ -105,6 +105,9 @@ public class RegisterTask {
 
     @Resource(name = "cardJpServiceImpl")
     private FirefoxService cardJpService;
+
+    @Resource(name = "firefoxServiceImpl")
+    private FirefoxService firefoxServiceImpl;
     @Resource(name = "caffeineCacheCode")
     private Cache<String, String> caffeineCacheCode;
 
@@ -223,6 +226,10 @@ public class RegisterTask {
                                     && CountryCode.CountryCode3.getValue().equals(cdGetPhoneEntity.getCountrycode())) {
                                 //日本
                                 b = cardJpService.setRel(cdGetPhoneEntity.getPkey());
+                            } else if (StringUtils.isNotEmpty(cdGetPhoneEntity.getCountrycode())
+                                    && CountryCode.CountryCode5.getValue().equals(cdGetPhoneEntity.getCountrycode())) {
+                                //香港
+                                b = firefoxServiceImpl.setRel(cdGetPhoneEntity.getPkey());
                             } else {
                                 b = firefoxService.setRel(cdGetPhoneEntity.getPkey());
                             }
@@ -240,12 +247,14 @@ public class RegisterTask {
                                 cdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus3.getKey());
                                 return;
                             }
-                            if (StrUtil.isEmpty(phoneCode)) {
-                                if (StringUtils.isNotEmpty(cdGetPhoneEntity.getCountrycode())
-                                        && CountryCode.CountryCode3.getValue().equals(cdGetPhoneEntity.getCountrycode())) {
+                            if (StrUtil.isEmpty(phoneCode) && StringUtils.isNotEmpty(cdGetPhoneEntity.getCountrycode())) {
+                                if (CountryCode.CountryCode3.getValue().equals(cdGetPhoneEntity.getCountrycode())) {
                                     //日本
                                     cardJpSms.put(ConfigConstant.CARD_JP_SMS, DateUtils.getTimestampMillis(cdGetPhoneEntity.getCreateTime()));
                                     phoneCode = cardJpService.getPhoneCode(cdGetPhoneEntity.getPkey());
+                                } else if (CountryCode.CountryCode5.getValue().equals(cdGetPhoneEntity.getCountrycode())) {
+                                    //香港
+                                    phoneCode = firefoxServiceImpl.getPhoneCode(cdGetPhoneEntity.getPkey());
                                 } else {
                                     phoneCode = firefoxService.getPhoneCode(cdGetPhoneEntity.getPkey());
                                 }

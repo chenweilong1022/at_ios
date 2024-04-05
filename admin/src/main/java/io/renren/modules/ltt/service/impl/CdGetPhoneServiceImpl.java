@@ -80,6 +80,9 @@ public class CdGetPhoneServiceImpl extends ServiceImpl<CdGetPhoneDao, CdGetPhone
     @Resource(name = "cardJpServiceImpl")
     private FirefoxService cardJpService;
 
+    @Resource(name = "firefoxServiceImpl")
+    private FirefoxService firefoxService;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public List<CdGetPhoneEntity> addCount(CdGetPhoneDTO cdGetPhone){
@@ -97,6 +100,9 @@ public class CdGetPhoneServiceImpl extends ServiceImpl<CdGetPhoneDao, CdGetPhone
             if (CountryCode.CountryCode3.getValue().equals(cdGetPhone.getCountrycode())) {
                 //日本
                 phone = cardJpService.getPhone();
+            } else if (CountryCode.CountryCode5.getValue().equals(cdGetPhone.getCountrycode())) {
+                //香港
+                phone = firefoxService.getPhone();
             } else {
                 phone = cardMeService.getPhone();
             }

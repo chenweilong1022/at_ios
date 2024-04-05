@@ -1,12 +1,19 @@
 package io.renren.modules.client.impl;
 
 import cn.hutool.http.HttpUtil;
+import com.alibaba.fastjson.JSON;
 import com.github.benmanes.caffeine.cache.Cache;
 import io.renren.common.utils.ConfigConstant;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.client.FirefoxService;
 import io.renren.modules.client.entity.ProjectWorkEntity;
 import io.renren.modules.client.vo.GetPhoneVO;
+import io.renren.modules.ltt.enums.CountryCode;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -18,6 +25,7 @@ import javax.annotation.Resource;
  */
 @Service("firefoxServiceImpl")
 @Game
+@Slf4j
 public class FirefoxServiceImpl implements FirefoxService {
 
     @Resource(name = "caffeineCacheProjectWorkEntity")
@@ -26,8 +34,14 @@ public class FirefoxServiceImpl implements FirefoxService {
     public GetPhoneVO getPhone(){
         try {
             ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
-            String getPhoneHttp = String.format("%s?act=getPhone&token=%s&iid=%s&did=&country=%s&operator=&provi=&city=&seq=0&mobile=",projectWorkEntity.getFirefoxBaseUrl(), projectWorkEntity.getFirefoxToken(), projectWorkEntity.getFirefoxIid(), projectWorkEntity.getFirefoxCountry());
+            String getPhoneHttp = String.format("%s?act=getPhone&token=%s&iid=%s&did=&country=%s&operator=&provi=&city=&seq=0&mobile=",
+                    projectWorkEntity.getFirefoxBaseUrl(), projectWorkEntity.getFirefoxToken(),
+                    projectWorkEntity.getFirefoxIid(), "hkg");
+
+            log.info("FirefoxService_getPhone param:{}", getPhoneHttp);
             String resp = HttpUtil.get(getPhoneHttp);
+            log.info("FirefoxService_getPhone result:{}", resp);
+
             String[] split = resp.split("\\|");
             if (split.length == 8) {
                 String number = split[0];
@@ -38,11 +52,17 @@ public class FirefoxServiceImpl implements FirefoxService {
                 String other = split[5];
                 String com = split[6];
                 String phone = split[7];
-                GetPhoneVO getPhoneVo = new GetPhoneVO().setNumber(number).setPkey(pkey).setTime(time).setCom(com).setCountry(country).setCountryCode(countryCode).setPhone(phone).setOther(other);
+                GetPhoneVO getPhoneVo = new GetPhoneVO().setNumber(number)
+                        .setPkey(pkey).setTime(time).setCom(com).setCountry(country)
+                        .setCountryCode(countryCode)
+                        .setPhone(String.format("%s%s", CountryCode.CountryCode5.getKey(), phone))
+                        .setOther(other);
                 return getPhoneVo;
             }
+            //{"com":"COM47","country":"hkg","countryCode":"852","number":"1","other":"","phone":"62783463",
+            // "pkey":"12D6A90AC0EABC6CDC1290CF7FF39A1365C1F525A1D0587D","time":"2024-04-05T21:39:16"}
         }catch (Exception e) {
-
+            log.info("FirefoxService_getPhone error:{}", e);
         }
         return null;
     }
@@ -51,13 +71,19 @@ public class FirefoxServiceImpl implements FirefoxService {
     public String getPhoneCode(String pKey) {
         try {
             ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
-            String getPhoneHttp = String.format("%s?act=getPhoneCode&token=%s&pkey=%s",projectWorkEntity.getFirefoxBaseUrl(),projectWorkEntity.getFirefoxToken(),pKey);
+            String getPhoneHttp = String.format("%s?act=getPhoneCode&token=%s&pkey=%s",
+                    projectWorkEntity.getFirefoxBaseUrl(),projectWorkEntity.getFirefoxToken(),pKey);
+
+            log.info("FirefoxService_getPhoneCode param:{}", getPhoneHttp);
             String resp = HttpUtil.get(getPhoneHttp);
+            log.info("FirefoxService_getPhoneCode result:{}", resp);
+
             String[] split = resp.split("\\|");
             if (split.length == 3) {
                 return split[1];
             }
         }catch (Exception e) {
+            log.info("FirefoxService_getPhoneCode error:{}", e);
 
         }
         return null;
@@ -67,8 +93,13 @@ public class FirefoxServiceImpl implements FirefoxService {
     public boolean setRel(String pKey) {
         try {
             ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
-            String getPhoneHttp = String.format("%s?act=setRel&token=%s&pkey=%s", projectWorkEntity.getFirefoxBaseUrl(),projectWorkEntity.getFirefoxToken(),pKey);
+            String getPhoneHttp = String.format("%s?act=setRel&token=%s&pkey=%s",
+                    projectWorkEntity.getFirefoxBaseUrl(),projectWorkEntity.getFirefoxToken(),pKey);
+
+            log.info("FirefoxService_setRel param:{}", getPhoneHttp);
             String resp = HttpUtil.get(getPhoneHttp);
+            log.info("FirefoxService_setRel result:{}", resp);
+
             String[] split = resp.split("\\|");
             if ("1".equals(split[0])) {
                 return true;
@@ -79,7 +110,7 @@ public class FirefoxServiceImpl implements FirefoxService {
                 }
             }
         }catch (Exception e) {
-
+            log.info("FirefoxService_setRel error:{}", e);
         }
         return false;
     }
