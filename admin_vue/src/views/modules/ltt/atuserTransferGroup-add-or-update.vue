@@ -51,7 +51,9 @@ export default {
   methods: {
     userGroupChangeHandler (id) {
       this.userGroupOptions.find((item) => {
+       if (item.id === id) {
         this.userGroupName = item.name
+       }
       })
     },
     init (ids) {

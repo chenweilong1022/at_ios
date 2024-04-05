@@ -51,7 +51,9 @@ export default {
   methods: {
     userCustomerChangeHandler (id) {
       this.customerUserOptions.find((item) => {
-        this.userCustomerName = item.nickname
+          if (item.id === id) {
+            this.userCustomerName = item.nickname
+          }
       })
     },
     init (ids) {
