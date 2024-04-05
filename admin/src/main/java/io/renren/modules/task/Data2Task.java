@@ -121,7 +121,7 @@ public class Data2Task {
                 log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
                 if(triedLock) {
                     try{
-                        int i = RandomUtil.randomInt(3, 5);
+                        int i = RandomUtil.randomInt(5, 7);
                         Thread.sleep(i * 1000L);
                         //查询mid
                         AtDataSubtaskVO atDataSubtaskVO = atDataSubtaskService.getById(atDataSubtaskEntity.getId());
