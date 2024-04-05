@@ -83,21 +83,21 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         return this.updateById(cdLineIpProxyEntity);
     }
 
-        public static void main(String[] args) throws IOException {
-
-            String format1 = String.format("curl -x %s -U user-lu9904136:Ch1433471850 myip.lunaproxy.io","43.159.18.174:20584");
-            List<String> strings = RuntimeUtil.execForLines(format1);
-            String s = strings.get(strings.size() - 1);
-            String[] split = s.split("\\|");
-            System.out.println(split.length);
-            if (split.length == 5) {
-                String ip = split[0];
-                String country = split[2];
-                System.out.println(ip);
-                System.out.println(country);
-            }
-
-        }
+//        public static void main(String[] args) throws IOException {
+//
+//            String format1 = String.format("curl -x %s -U user-lu9904136:Ch1433471850 myip.lunaproxy.io","43.159.18.174:20584");
+//            List<String> strings = RuntimeUtil.execForLines(format1);
+//            String s = strings.get(strings.size() - 1);
+//            String[] split = s.split("\\|");
+//            System.out.println(split.length);
+//            if (split.length == 5) {
+//                String ip = split[0];
+//                String country = split[2];
+//                System.out.println(ip);
+//                System.out.println(country);
+//            }
+//
+//        }
 
     @Override
     public boolean removeById(Serializable id) {
