@@ -114,7 +114,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
             //获取ip代理的国家
             PhoneCountryVO phoneNumberInfo = PhoneUtil.getPhoneNumberInfo(cdLineIpProxyDTO.getTokenPhone());
             Long countryCode = phoneNumberInfo.getCountryCode();
-            String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource3, countryCode.intValue());
+            String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource3, cdLineIpProxyDTO.getTokenPhone());
             Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
             boolean triedLock = lock.tryLock();
             log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
