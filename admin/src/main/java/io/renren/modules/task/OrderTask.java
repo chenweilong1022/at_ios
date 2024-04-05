@@ -56,6 +56,7 @@ public class OrderTask {
     @Transactional(rollbackFor = Exception.class)
     @Async
     public void tokenOrderRegister() {
+
         List<AtOrdersEntity> list = atOrdersService.list(new QueryWrapper<AtOrdersEntity>()
                 .lambda().in(AtOrdersEntity::getOrderStatus,
                         Arrays.asList(OrderStatus.OrderStatus1.getKey(), OrderStatus.OrderStatus2.getKey()))
@@ -66,7 +67,7 @@ public class OrderTask {
         }
         for (AtOrdersEntity atOrdersEntity : list) {
             poolExecutor.execute(() -> {
-                String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource6, atOrdersEntity.getOrderId());
+                String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource6, atOrdersEntity.getCountryCode());
                 Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
                 boolean triedLock = lock.tryLock();
                 log.info("tokenOrderRegister keyByResource = {} 获取的锁为 = {}", keyByResource, triedLock);
