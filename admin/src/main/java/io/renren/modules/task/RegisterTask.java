@@ -397,7 +397,7 @@ public class RegisterTask {
     /**
      *
      */
-    @Scheduled(fixedDelay = 5000)
+    @Scheduled(fixedDelay = 10000)
     @Transactional(rollbackFor = Exception.class)
     @Async
     public void task3() {
@@ -414,73 +414,88 @@ public class RegisterTask {
 
         //所有注册的任务
         for (CdRegisterTaskEntity cdRegisterTaskEntity : cdRegisterTaskEntities) {
-            //获取所有子任务
-            List<CdRegisterSubtasksEntity> cdRegisterSubtasksEntities = cdRegisterSubtasksService.list(new QueryWrapper<CdRegisterSubtasksEntity>().lambda()
-                    .eq(CdRegisterSubtasksEntity::getTaskId,cdRegisterTaskEntity.getId())
-            );
-            //获取所有的子任务Ids
-            List<Integer> registerSubtasksIds = cdRegisterSubtasksEntities.stream().map(CdRegisterSubtasksEntity::getId).collect(Collectors.toList());
-            if (CollUtil.isEmpty(registerSubtasksIds)) {
-                return;
-            }
-            List<GetCountBySubTaskIdVO> getCountBySubTaskIdVOS = cdLineRegisterService.getCountBySubTaskId(registerSubtasksIds);
-            Map<Integer, GetCountBySubTaskIdVO> integerGetCountBySubTaskIdVOMap = getCountBySubTaskIdVOS.stream().collect(Collectors.toMap(GetCountBySubTaskIdVO::getSubtasksId, item -> item));
-
-            Integer successTotal = 0;
-            Integer registerSuccessCount = 0;
-            Integer errorTotal = 0;
-            Integer totalNumber = 0;
-            for (CdRegisterSubtasksEntity cdRegisterSubtasksEntity : cdRegisterSubtasksEntities) {
-                GetCountBySubTaskIdVO getCountBySubTaskIdVO = integerGetCountBySubTaskIdVOMap.get(cdRegisterSubtasksEntity.getId());
-                if (ObjectUtil.isNull(getCountBySubTaskIdVO)) {
-                    continue;
-                }
-                //设置成功数量
-                cdRegisterSubtasksEntity.setNumberSuccesses(getCountBySubTaskIdVO.getSuccessCount());
-                //设置失败数量
-                cdRegisterSubtasksEntity.setNumberFailures(getCountBySubTaskIdVO.getErrorCount());
-                errorTotal = errorTotal + cdRegisterSubtasksEntity.getNumberFailures();
-                successTotal = successTotal + cdRegisterSubtasksEntity.getNumberSuccesses();
-                registerSuccessCount = registerSuccessCount + getCountBySubTaskIdVO.getRegisterSuccessCount();
-                totalNumber = totalNumber + cdRegisterSubtasksEntity.getNumberRegistrations();
-            }
-            //如果 注册成功了，去修改状态
-            if (registerSuccessCount >= cdRegisterTaskEntity.getNumberRegistered()) {
-                cdRegisterTaskEntity.setRegistrationStatus(RegistrationStatus.RegistrationStatus7.getKey());
-            }else {
-                Integer count = cdRegisterTaskService.sumByTaskId(cdRegisterTaskEntity.getId());
-                //说明都已经去注册了，注册剩余的数量去
-                if (successTotal + errorTotal >= count) {
-                    CdRegisterTaskEntity newCdRegisterTaskEntity = new CdRegisterTaskEntity();
-                    Integer newTotalAmount = cdRegisterTaskEntity.getTotalAmount() - successTotal;
-                    if (newTotalAmount > 0) {
-                        newCdRegisterTaskEntity.setTotalAmount(newTotalAmount);
-                        newCdRegisterTaskEntity.setNumberThreads(cdRegisterTaskEntity.getNumberThreads());
-                        newCdRegisterTaskEntity.setNumberRegistered(0);
-                        newCdRegisterTaskEntity.setNumberSuccesses(0);
-                        newCdRegisterTaskEntity.setNumberFailures(0);
-                        newCdRegisterTaskEntity.setRegistrationStatus(RegistrationStatus.RegistrationStatus1.getKey());
-                        newCdRegisterTaskEntity.setDeleteFlag(DeleteFlag.NO.getKey());
-                        newCdRegisterTaskEntity.setCountryCode(cdRegisterTaskEntity.getCountryCode());
-                        newCdRegisterTaskEntity.setFillUp(cdRegisterTaskEntity.getFillUp());
-                        newCdRegisterTaskEntity.setFillUpRegisterTaskId(cdRegisterTaskEntity.getId());
-                        newCdRegisterTaskEntity.setCreateTime(DateUtil.date());
-                        synchronized (lockCdRegisterTaskEntity) {
-                            cdRegisterTaskService.save(newCdRegisterTaskEntity);
+            poolExecutor.execute(() -> {
+                String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource1, cdRegisterTaskEntity.getId());
+                Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
+                boolean triedLock = lock.tryLock();
+                log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
+                if(triedLock) {
+                    try{
+                        //获取所有子任务
+                        List<CdRegisterSubtasksEntity> cdRegisterSubtasksEntities = cdRegisterSubtasksService.list(new QueryWrapper<CdRegisterSubtasksEntity>().lambda()
+                                .eq(CdRegisterSubtasksEntity::getTaskId,cdRegisterTaskEntity.getId())
+                        );
+                        //获取所有的子任务Ids
+                        List<Integer> registerSubtasksIds = cdRegisterSubtasksEntities.stream().map(CdRegisterSubtasksEntity::getId).collect(Collectors.toList());
+                        if (CollUtil.isEmpty(registerSubtasksIds)) {
+                            return;
                         }
+                        List<GetCountBySubTaskIdVO> getCountBySubTaskIdVOS = cdLineRegisterService.getCountBySubTaskId(registerSubtasksIds);
+                        Map<Integer, GetCountBySubTaskIdVO> integerGetCountBySubTaskIdVOMap = getCountBySubTaskIdVOS.stream().collect(Collectors.toMap(GetCountBySubTaskIdVO::getSubtasksId, item -> item));
+
+                        Integer successTotal = 0;
+                        Integer registerSuccessCount = 0;
+                        Integer errorTotal = 0;
+                        Integer totalNumber = 0;
+                        for (CdRegisterSubtasksEntity cdRegisterSubtasksEntity : cdRegisterSubtasksEntities) {
+                            GetCountBySubTaskIdVO getCountBySubTaskIdVO = integerGetCountBySubTaskIdVOMap.get(cdRegisterSubtasksEntity.getId());
+                            if (ObjectUtil.isNull(getCountBySubTaskIdVO)) {
+                                continue;
+                            }
+                            //设置成功数量
+                            cdRegisterSubtasksEntity.setNumberSuccesses(getCountBySubTaskIdVO.getSuccessCount());
+                            //设置失败数量
+                            cdRegisterSubtasksEntity.setNumberFailures(getCountBySubTaskIdVO.getErrorCount());
+                            errorTotal = errorTotal + cdRegisterSubtasksEntity.getNumberFailures();
+                            successTotal = successTotal + cdRegisterSubtasksEntity.getNumberSuccesses();
+                            registerSuccessCount = registerSuccessCount + getCountBySubTaskIdVO.getRegisterSuccessCount();
+                            totalNumber = totalNumber + cdRegisterSubtasksEntity.getNumberRegistrations();
+                        }
+                        //如果 注册成功了，去修改状态
+                        if (registerSuccessCount >= cdRegisterTaskEntity.getNumberRegistered()) {
+                            cdRegisterTaskEntity.setRegistrationStatus(RegistrationStatus.RegistrationStatus7.getKey());
+                        }else {
+                            Integer count = cdRegisterTaskService.sumByTaskId(cdRegisterTaskEntity.getId());
+                            //说明都已经去注册了，注册剩余的数量去
+                            if (successTotal + errorTotal >= count) {
+                                CdRegisterTaskEntity newCdRegisterTaskEntity = new CdRegisterTaskEntity();
+                                Integer newTotalAmount = cdRegisterTaskEntity.getTotalAmount() - successTotal;
+                                if (newTotalAmount > 0) {
+                                    newCdRegisterTaskEntity.setTotalAmount(newTotalAmount);
+                                    newCdRegisterTaskEntity.setNumberThreads(cdRegisterTaskEntity.getNumberThreads());
+                                    newCdRegisterTaskEntity.setNumberRegistered(0);
+                                    newCdRegisterTaskEntity.setNumberSuccesses(0);
+                                    newCdRegisterTaskEntity.setNumberFailures(0);
+                                    newCdRegisterTaskEntity.setRegistrationStatus(RegistrationStatus.RegistrationStatus1.getKey());
+                                    newCdRegisterTaskEntity.setDeleteFlag(DeleteFlag.NO.getKey());
+                                    newCdRegisterTaskEntity.setCountryCode(cdRegisterTaskEntity.getCountryCode());
+                                    newCdRegisterTaskEntity.setFillUp(cdRegisterTaskEntity.getFillUp());
+                                    newCdRegisterTaskEntity.setFillUpRegisterTaskId(cdRegisterTaskEntity.getId());
+                                    newCdRegisterTaskEntity.setCreateTime(DateUtil.date());
+                                    synchronized (lockCdRegisterTaskEntity) {
+                                        cdRegisterTaskService.save(newCdRegisterTaskEntity);
+                                    }
+                                }
+                            }
+                        }
+                        //成功数量
+                        cdRegisterTaskEntity.setNumberSuccesses(successTotal);
+                        //失败数量
+                        cdRegisterTaskEntity.setNumberFailures(errorTotal);
+                        synchronized (lockCdRegisterTaskEntity) {
+                            cdRegisterTaskService.updateById(cdRegisterTaskEntity);
+                        }
+                        synchronized (lockCdRegisterSubtasksEntity) {
+                            cdRegisterSubtasksService.updateBatchById(cdRegisterSubtasksEntities);
+                        }
+                    }finally {
+                        lock.unlock();
                     }
+                }else {
+                    log.info("keyByResource = {} 在执行",keyByResource);
                 }
-            }
-            //成功数量
-            cdRegisterTaskEntity.setNumberSuccesses(successTotal);
-            //失败数量
-            cdRegisterTaskEntity.setNumberFailures(errorTotal);
-            synchronized (lockCdRegisterTaskEntity) {
-                cdRegisterTaskService.updateById(cdRegisterTaskEntity);
-            }
-            synchronized (lockCdRegisterSubtasksEntity) {
-                cdRegisterSubtasksService.updateBatchById(cdRegisterSubtasksEntities);
-            }
+            });
+
         }
     }
 

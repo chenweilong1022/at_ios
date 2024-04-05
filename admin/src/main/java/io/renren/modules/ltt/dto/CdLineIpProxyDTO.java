@@ -57,5 +57,17 @@ public class CdLineIpProxyDTO extends PageParam implements Serializable {
 	@ApiModelProperty(required=false,value="")
 	private String lzCountry;
 	private String lzPhone;
+	/**
+	 *
+	 */
+	@ApiModelProperty(required=false,value="")
+	private String outIpv4;
+	/**
+	 *
+	 */
+	@ApiModelProperty(required=false,value="")
+	private String country;
+
+	private boolean newIp = false;
 
 }
