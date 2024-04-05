@@ -1,15 +1,18 @@
 package io.renren.modules.ltt.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RuntimeUtil;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSON;
 import com.github.benmanes.caffeine.cache.Cache;
 import io.renren.common.utils.*;
 import io.renren.common.utils.vo.PhoneCountryVO;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.client.entity.ProjectWorkEntity;
+import io.renren.modules.client.vo.CurlVO;
 import io.renren.modules.ltt.enums.CountryCode;
 import io.renren.modules.ltt.enums.LockMapKeyResource;
 import lombok.extern.slf4j.Slf4j;
@@ -33,8 +36,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 @Service("cdLineIpProxyService")
@@ -94,59 +100,99 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                 return null;
             }
             //获取ip代理的国家
-            PhoneCountryVO phoneNumberInfo = PhoneUtil.getPhoneNumberInfo(cdLineIpProxyDTO.getLzPhone());
+            PhoneCountryVO phoneNumberInfo = PhoneUtil.getPhoneNumberInfo(cdLineIpProxyDTO.getTokenPhone());
             Long countryCode = phoneNumberInfo.getCountryCode();
-            String regions = EnumUtil.queryValueByKey(countryCode.intValue(), CountryCode.values());
-            //查询是否已经有这个国家的ip了
-            CdLineIpProxyEntity one = this.getOne(new QueryWrapper<CdLineIpProxyEntity>().lambda()
-                    .eq(CdLineIpProxyEntity::getTokenPhone,cdLineIpProxyDTO.getTokenPhone())
-                    .eq(CdLineIpProxyEntity::getLzCountry,String.valueOf(countryCode))
-            );
-            //如果有直接返回
-            if (ObjectUtil.isNotNull(one)) {
-                String ip = one.getIp();
-                boolean proxyUse = isProxyUse(ip,regions);
-                if (proxyUse) {
-                    return socks5Pre(ip);
-                }
-            }
             String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource3, countryCode.intValue());
             Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
             boolean triedLock = lock.tryLock();
             log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
+
+            String keyByResource1 = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource3, countryCode.intValue());
+            Lock lock1 = lockMap.computeIfAbsent(keyByResource1, k -> new ReentrantLock());
+
             if(triedLock) {
                 try{
-                    Queue<String> getflowip = caffeineCacheListString.getIfPresent(regions);
-                    String ip = null;
-                    if (CollUtil.isEmpty(getflowip)) {
-                        String getPhoneHttp = String.format("https://tq.lunaproxy.com/getflowip?neek=1136881&num=500&type=1&sep=1&regions=%s&ip_si=1&level=1&sb=",regions);
-                        String resp = HttpUtil.get(getPhoneHttp);
-                        if (JSONUtil.isJson(resp)) {
-                            return null;
+                    String regions = EnumUtil.queryValueByKey(countryCode.intValue(), CountryCode.values());
+                    if (!cdLineIpProxyDTO.isNewIp()) {
+                        //查询是否已经有这个国家的ip了
+                        CdLineIpProxyEntity one = this.getOne(new QueryWrapper<CdLineIpProxyEntity>().lambda()
+                                .eq(CdLineIpProxyEntity::getTokenPhone,cdLineIpProxyDTO.getTokenPhone())
+                                .eq(CdLineIpProxyEntity::getLzCountry,String.valueOf(countryCode))
+                                .orderByDesc(CdLineIpProxyEntity::getId)
+                                .last("limit 1")
+                        );
+                        //如果有直接返回
+                        if (ObjectUtil.isNotNull(one)) {
+                            String ip = one.getIp();
+                            CurlVO proxyUse = isProxyUse(ip, regions);
+                            if (proxyUse.isProxyUse()) {
+                                //如果ip相同并且国家一样
+                                if (proxyUse.getIp().equals(one.getOutIpv4()) && regions.toLowerCase().equals(proxyUse.getCountry().toLowerCase())) {
+                                    return socks5Pre(ip);
+                                    //如果ip不相同相同并且国家一样
+                                }else if (regions.toLowerCase().equals(proxyUse.getCountry().toLowerCase())) {
+                                    CdLineIpProxyEntity save = new CdLineIpProxyEntity();
+                                    save.setIp(ip);
+                                    save.setTokenPhone(cdLineIpProxyDTO.getTokenPhone());
+                                    save.setLzCountry(String.valueOf(countryCode));
+                                    save.setOutIpv4(proxyUse.getIp());
+                                    save.setCountry(proxyUse.getCountry());
+                                    save.setCreateTime(DateUtil.date());
+                                    try {
+                                        this.save(save);
+                                        return socks5Pre(ip);
+                                    }catch (Exception e) {
+
+                                    }
+
+                                }
+                            }
                         }
-                        String[] split = resp.split("\r\n");
-                        Queue<String> getflowipNew = new LinkedList<>();
-                        for (String s : split) {
-                            getflowipNew.offer(s);
-                        }
-                        ip = getflowipNew.poll();
-                        caffeineCacheListString.put(regions,getflowipNew);
-                    }else {
-                        ip = getflowip.poll();
-                        caffeineCacheListString.put(regions,getflowip);
                     }
 
-                    if (ObjectUtil.isNull(one)) {
-                        CdLineIpProxyEntity save = new CdLineIpProxyEntity();
-                        save.setIp(ip);
-                        save.setTokenPhone(cdLineIpProxyDTO.getTokenPhone());
-                        save.setLzCountry(String.valueOf(countryCode));
-                        this.save(save);
-                    }else {
-                        one.setIp(ip);
-                        this.updateById(one);
+                    Queue<String> getflowip = caffeineCacheListString.getIfPresent(regions);
+                    String ip = null;
+
+
+                    boolean triedLock2 = lock1.tryLock(5, TimeUnit.SECONDS);
+                    log.info("keyByResource = {} 获取的锁为 = {}",keyByResource1,triedLock2);
+                    if(triedLock2) {
+                        if (CollUtil.isEmpty(getflowip)) {
+                            String getPhoneHttp = String.format("https://tq.lunaproxy.com/getflowip?neek=1136881&num=500&type=1&sep=1&regions=%s&ip_si=1&level=1&sb=",regions);
+                            String resp = HttpUtil.get(getPhoneHttp);
+                            if (JSONUtil.isJson(resp)) {
+                                return null;
+                            }
+                            String[] split = resp.split("\r\n");
+                            Queue<String> getflowipNew = new LinkedList<>();
+                            for (String s : split) {
+                                getflowipNew.offer(s);
+                            }
+                            ip = getflowipNew.poll();
+                            caffeineCacheListString.put(regions,getflowipNew);
+                        }else {
+                            ip = getflowip.poll();
+                            caffeineCacheListString.put(regions,getflowip);
+                        }
                     }
-                    return socks5Pre(ip);
+                    lock1.unlock();
+
+                    CurlVO proxyUse = isProxyUse(ip, regions);
+                    if (proxyUse.isProxyUse()) {
+                        //如果国家一样
+                       if (regions.toLowerCase().equals(proxyUse.getCountry().toLowerCase())) {
+                            CdLineIpProxyEntity save = new CdLineIpProxyEntity();
+                            save.setIp(ip);
+                            save.setTokenPhone(cdLineIpProxyDTO.getTokenPhone());
+                            save.setLzCountry(String.valueOf(countryCode));
+                            save.setOutIpv4(proxyUse.getIp());
+                            save.setCountry(proxyUse.getCountry());
+                            save.setCreateTime(DateUtil.date());
+                            this.save(save);
+                            return socks5Pre(ip);
+                        }
+                        return null;
+                    }
                 }finally {
                     lock.unlock();
                 }
@@ -166,19 +212,54 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         return String.format("socks5://%s", ip);
     }
 
-    private boolean isProxyUse(String ip,String country) {
+    //43.159.18.174:24496 curl --socks5 43.159.18.174:24496 ipinfo.io
+    private CurlVO isProxyUse(String ip,String country) {
+        CurlVO falseCurlVO = new CurlVO().setProxyUse(false);
         try {
-            String format = String.format("curl --socks5 %s ipinfo.io",ip);
-            List<String> strings = RuntimeUtil.execForLines(format);
-            for (String string : strings) {
-                if (string.toLowerCase().contains("country") && string.toLowerCase().contains(country)) {
-                    return true;
-                }
+            String format1 = String.format("curl --socks5 %s ipinfo.io",ip);
+
+            List<String> strings = RuntimeUtil.execForLines(format1);
+//            for (String string : strings) {
+//                if (string.toLowerCase().contains("country") && string.toLowerCase().contains(country)) {
+//                    return true;
+//                }
+//            }
+
+            String join = CollUtil.join(strings, "");
+
+            String jsonPattern = "\\{[^\\{\\}]*\\}";
+            Pattern pattern = Pattern.compile(jsonPattern);
+            Matcher matcher = pattern.matcher(join);
+
+            if (matcher.find()) {
+                String jsonStr = matcher.group(0);
+                log.info("ip = {} country = {} format = {}",ip,country,jsonStr);
+                CurlVO curlVO = JSON.parseObject(jsonStr, CurlVO.class);
+                return curlVO.setProxyUse(true);
+            } else {
+                log.info("ip = {} country = {} format = {}",ip,country,"没有找到JSON数据");
             }
-            return false;
+            return falseCurlVO;
         }catch (Exception e) {
 
         }
-        return false;
+        return falseCurlVO;
+    }
+
+    public static void main(String[] args) {
+        String text = "这是一段文本，其中包含JSON数据: {\"name\": \"张三\", \"age\": 30, \"city\": \"北京\"}。后面还有更多文本。";
+
+        // 定义一个正则表达式来查找JSON对象
+        // 这个正则表达式假设JSON数据简单且不含嵌套结构
+        String jsonPattern = "\\{[^\\{\\}]*\\}";
+        Pattern pattern = Pattern.compile(jsonPattern);
+        Matcher matcher = pattern.matcher(text);
+
+        if (matcher.find()) {
+            String jsonStr = matcher.group(0);
+            System.out.println("找到的JSON数据: " + jsonStr);
+        } else {
+            System.out.println("没有找到JSON数据");
+        }
     }
 }

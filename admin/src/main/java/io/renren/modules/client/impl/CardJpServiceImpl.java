@@ -163,68 +163,68 @@ public class CardJpServiceImpl implements FirefoxService {
 
     @Override
     public boolean setRel(String pKey) {
-        try {
-            HashMap<String, String> paramMap = new HashMap<>();
-            paramMap.put("user_code", systemConstant.getJpSmsConfigUserCode());//必填，用户号
-            paramMap.put("take_ids", pKey);//必填，取号ID,多个ID请用英文半角逗号分隔
-            paramMap.put("timestamp", DateUtils.getTimestampMillis());//必填，请求时间戳(秒)
-            paramMap.put("sign", getSign(paramMap));//必填，签名
-
-            String paramStr = JSONUtil.toJsonStr(paramMap);
-            log.info("CardJpServiceImpl_setRel_param {}", paramStr);
-
-            String url = String.format("%s/CancelTake", systemConstant.getJpSmsConfigInterfaceUrl());
-            String resp = HttpUtil.post(url, paramStr);
-            log.info("CardJpServiceImpl_setRel_result {}", resp);
-
-            CardJpGetPhoneCancelVO resultDto = JSON.parseObject(resp, CardJpGetPhoneCancelVO.class);
-            log.error("CardJpServiceImpl_setRel_resultDto {}", resultDto);
-
-            if (resultDto.getCode() != 1 || resultDto.getData() == null) {
-                log.error("CardJpServiceImpl_setRel_error {}, result :{}", paramStr, resultDto);
-                return false;
-            }
-            List<String> takeIds = resultDto.getData().getTake_ids();
-            if (CollectionUtil.isNotEmpty(takeIds) && takeIds.contains(pKey)) {
-                return true;
-            }
-        } catch (Exception e) {
-            log.error("CardJpServiceImpl_setRel_error {}", e);
-        }
-        return false;
+//        try {
+//            HashMap<String, String> paramMap = new HashMap<>();
+//            paramMap.put("user_code", systemConstant.getJpSmsConfigUserCode());//必填，用户号
+//            paramMap.put("take_ids", pKey);//必填，取号ID,多个ID请用英文半角逗号分隔
+//            paramMap.put("timestamp", DateUtils.getTimestampMillis());//必填，请求时间戳(秒)
+//            paramMap.put("sign", getSign(paramMap));//必填，签名
+//
+//            String paramStr = JSONUtil.toJsonStr(paramMap);
+//            log.info("CardJpServiceImpl_setRel_param {}", paramStr);
+//
+//            String url = String.format("%s/CancelTake", systemConstant.getJpSmsConfigInterfaceUrl());
+//            String resp = HttpUtil.post(url, paramStr);
+//            log.info("CardJpServiceImpl_setRel_result {}", resp);
+//
+//            CardJpGetPhoneCancelVO resultDto = JSON.parseObject(resp, CardJpGetPhoneCancelVO.class);
+//            log.error("CardJpServiceImpl_setRel_resultDto {}", resultDto);
+//
+//            if (resultDto.getCode() != 1 || resultDto.getData() == null) {
+//                log.error("CardJpServiceImpl_setRel_error {}, result :{}", paramStr, resultDto);
+//                return false;
+//            }
+//            List<String> takeIds = resultDto.getData().getTake_ids();
+//            if (CollectionUtil.isNotEmpty(takeIds) && takeIds.contains(pKey)) {
+//                return true;
+//            }
+//        } catch (Exception e) {
+//            log.error("CardJpServiceImpl_setRel_error {}", e);
+//        }
+        return true;
     }
 
     @Override
     public boolean withBlackMobile(String pKey) {
-        try {
-            HashMap<String, String> paramMap = new HashMap<>();
-            paramMap.put("user_code", systemConstant.getJpSmsConfigUserCode());//必填，用户号
-            paramMap.put("take_ids", pKey);//必填，取号ID,多个ID请用英文半角逗号分隔
-            paramMap.put("timestamp", DateUtils.getTimestampMillis());//必填，请求时间戳(秒)
-            paramMap.put("sign", getSign(paramMap));//必填，签名
-
-            String paramStr = JSONUtil.toJsonStr(paramMap);
-            log.info("CardJpServiceImpl_withBlackMobile_param {}", paramStr);
-
-            String url = String.format("%s/Blocking", systemConstant.getJpSmsConfigInterfaceUrl());
-            String resp = HttpUtil.post(url, paramStr);
-            log.info("CardJpServiceImpl_withBlackMobile_result {}", resp);
-
-            CardJpGetPhoneCancelVO resultDto = JSON.parseObject(resp, CardJpGetPhoneCancelVO.class);
-            log.error("CardJpServiceImpl_withBlackMobile_resultDto {}", resultDto);
-
-            if (resultDto.getCode() != 1 || resultDto.getData() == null) {
-                log.error("CardJpServiceImpl_withBlackMobile_error {}, result :{}", paramStr, resultDto);
-                return false;
-            }
-            List<String> takeIds = resultDto.getData().getTake_ids();
-            if (CollectionUtil.isNotEmpty(takeIds) && takeIds.contains(pKey)) {
-                return true;
-            }
-        } catch (Exception e) {
-            log.error("CardJpServiceImpl_setRel_error {}", e);
-        }
-        return false;
+//        try {
+//            HashMap<String, String> paramMap = new HashMap<>();
+//            paramMap.put("user_code", systemConstant.getJpSmsConfigUserCode());//必填，用户号
+//            paramMap.put("take_ids", pKey);//必填，取号ID,多个ID请用英文半角逗号分隔
+//            paramMap.put("timestamp", DateUtils.getTimestampMillis());//必填，请求时间戳(秒)
+//            paramMap.put("sign", getSign(paramMap));//必填，签名
+//
+//            String paramStr = JSONUtil.toJsonStr(paramMap);
+//            log.info("CardJpServiceImpl_withBlackMobile_param {}", paramStr);
+//
+//            String url = String.format("%s/Blocking", systemConstant.getJpSmsConfigInterfaceUrl());
+//            String resp = HttpUtil.post(url, paramStr);
+//            log.info("CardJpServiceImpl_withBlackMobile_result {}", resp);
+//
+//            CardJpGetPhoneCancelVO resultDto = JSON.parseObject(resp, CardJpGetPhoneCancelVO.class);
+//            log.error("CardJpServiceImpl_withBlackMobile_resultDto {}", resultDto);
+//
+//            if (resultDto.getCode() != 1 || resultDto.getData() == null) {
+//                log.error("CardJpServiceImpl_withBlackMobile_error {}, result :{}", paramStr, resultDto);
+//                return false;
+//            }
+//            List<String> takeIds = resultDto.getData().getTake_ids();
+//            if (CollectionUtil.isNotEmpty(takeIds) && takeIds.contains(pKey)) {
+//                return true;
+//            }
+//        } catch (Exception e) {
+//            log.error("CardJpServiceImpl_setRel_error {}", e);
+//        }
+        return true;
     }
 
     /**

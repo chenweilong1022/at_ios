@@ -3,12 +3,15 @@ package io.renren.modules.ltt.service.impl;
 import cn.hutool.core.util.ObjectUtil;
 import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
+import io.renren.modules.ltt.dto.CdLineIpProxyDTO;
 import io.renren.modules.ltt.entity.CdGetPhoneEntity;
 import io.renren.modules.ltt.enums.PhoneStatus;
 import io.renren.modules.ltt.enums.RegisterStatus;
 import io.renren.modules.ltt.service.CdGetPhoneService;
+import io.renren.modules.ltt.service.CdLineIpProxyService;
 import io.renren.modules.ltt.vo.CdGetPhoneVO;
 import io.renren.modules.ltt.vo.GetCountBySubTaskIdVO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -108,6 +111,9 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
         return CdLineRegisterConver.MAPPER.conver(list);
     }
 
+    @Autowired
+    private CdLineIpProxyService cdLineIpProxyService;
+
     @Override
     public boolean registerRetry(Integer id) {
         CdLineRegisterEntity cdLineRegisterEntity = baseMapper.selectById(id);
@@ -126,6 +132,13 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
         updateCdGetPhoneEntity.setCode("");
         updateCdGetPhoneEntity.setCreateTime(new Date());
         getPhoneService.updateById(updateCdGetPhoneEntity);
+
+        //获取代理
+        CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
+        cdLineIpProxyDTO.setTokenPhone(cdGetPhone.getPhone());
+        cdLineIpProxyDTO.setLzPhone(cdGetPhone.getPhone());
+        cdLineIpProxyDTO.setNewIp(true);
+        cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO);
 
         //删除line注册此条记录
         return baseMapper.deleteById(cdLineRegisterEntity.getId()) > 0;
