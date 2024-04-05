@@ -38,7 +38,7 @@ public class CdPhoneFilterController {
      * 列表
      */
     @RequestMapping("/list")
-    @RequiresPermissions("ltt:cdphonefilter:list")
+    @RequiresPermissions("ltt:atmessagerecord:list")
     public R list(CdPhoneFilterDTO cdPhoneFilter){
         PageUtils page = cdPhoneFilterService.queryPage(cdPhoneFilter);
 
@@ -50,7 +50,7 @@ public class CdPhoneFilterController {
      * 列表
      */
     @RequestMapping("/recordList")
-    @RequiresPermissions("ltt:cdphonefilter:list")
+    @RequiresPermissions("ltt:atmessagerecord:list")
     public R list(CdPhoneFilterRecordDTO recordDTO){
         PageUtils page = cdPhoneFilterRecordService.queryPage(recordDTO);
 
@@ -62,7 +62,7 @@ public class CdPhoneFilterController {
      * 信息
      */
     @RequestMapping("/info/{id}")
-    @RequiresPermissions("ltt:cdphonefilter:info")
+    @RequiresPermissions("ltt:atmessagerecord:info")
     public R info(@PathVariable("id") Integer id){
         CdPhoneFilterVO cdPhoneFilter = cdPhoneFilterService.getById(id);
 
@@ -73,7 +73,7 @@ public class CdPhoneFilterController {
      * 保存
      */
     @RequestMapping("/save")
-    @RequiresPermissions("ltt:cdphonefilter:save")
+    @RequiresPermissions("ltt:atmessagerecord:save")
     public R save(@RequestBody CdPhoneFilterDTO cdPhoneFilter){
         cdPhoneFilterService.save(cdPhoneFilter);
 
@@ -84,7 +84,7 @@ public class CdPhoneFilterController {
      * 保存
      */
     @RequestMapping("/exportSJ")
-    @RequiresPermissions("ltt:cdphonefilter:save")
+    @RequiresPermissions("ltt:atmessagerecord:save")
     public void exportSJ(@RequestParam Long recordId,
                          HttpServletResponse response) throws IOException {
         byte[] bytes = cdPhoneFilterService.exportSJ(recordId);
@@ -99,7 +99,7 @@ public class CdPhoneFilterController {
      * 修改
      */
     @RequestMapping("/update")
-    @RequiresPermissions("ltt:cdphonefilter:update")
+    @RequiresPermissions("ltt:atmessagerecord:update")
     public R update(@RequestBody CdPhoneFilterDTO cdPhoneFilter){
         cdPhoneFilterService.updateById(cdPhoneFilter);
 
@@ -110,7 +110,7 @@ public class CdPhoneFilterController {
      * 删除
      */
     @RequestMapping("/delete")
-    @RequiresPermissions("ltt:cdphonefilter:delete")
+    @RequiresPermissions("ltt:atmessagerecord:delete")
     public R delete(@RequestBody Integer[] ids){
         cdPhoneFilterService.removeByIds(Arrays.asList(ids));
 
