@@ -21,6 +21,7 @@ public enum TaskStatus implements BaseEnum {
     TaskStatus11(11,"拉群成功"),
     TaskStatus12(12,"料子分组完成"),
     TaskStatus13(13,"暂停执行"),
+    TaskStatus14(14,"uid不对"),
     ;
 
     TaskStatus(int key, String value) {

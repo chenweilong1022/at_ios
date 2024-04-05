@@ -166,6 +166,8 @@ public class Data3Task {
                                 update.setTaskStatus(TaskStatus.TaskStatus5.getKey());
                             } else if (searchPhoneVO.getMsg().contains(UserStatusCode.UserStatusCode8.getValue())) {
                                 userStatus = UserStatus.UserStatus3;
+                            } else if (searchPhoneVO.getMsg().contains(UserStatusCode.UserStatusCode10.getValue())) {
+                                userStatus = UserStatus.UserStatus4;
                             }
 
 

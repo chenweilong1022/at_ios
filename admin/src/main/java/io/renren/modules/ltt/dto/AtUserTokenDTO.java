@@ -75,4 +75,9 @@ public class AtUserTokenDTO extends PageParam implements Serializable {
 
 	@ApiModelProperty(required=false,value="token类型 1协议token 2真机token'")
 	private Integer tokenType;
+	/**
+	 *
+	 */
+	@ApiModelProperty(required=false,value="")
+	private String taskId;
 }

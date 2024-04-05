@@ -72,6 +72,11 @@ public class AtUserTokenVO implements Serializable {
 
 	@ApiModelProperty(required=false,value="token类型 1协议token 2真机token'")
 	private Integer tokenType;
+	/**
+	 *
+	 */
+	@ApiModelProperty(required=false,value="")
+	private String taskId;
 	public String getUseFlag() {
 		return EnumUtil.queryValueByKey(this.useFlag, UseFlag.values());
 	}
