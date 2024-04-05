@@ -86,4 +86,10 @@ public class AppTestController {
         return R.data(enumVos);
     }
 
+    @GetMapping("enums/getRegisterStatus")
+    public R getRegisterStatus() {
+        List<EnumVo> enumVos = EnumUtil.enumToVo(RegisterStatus.values());
+        return R.data(enumVos);
+    }
+
 }

@@ -1,8 +1,28 @@
 <template>
   <div class="mod-config">
     <el-form :inline="true" :model="dataForm" @keyup.enter.native="getDataList()">
-      <el-form-item>
-        <el-input v-model="dataForm.key" placeholder="参数名" clearable></el-input>
+      <el-form-item label="注册国家">
+        <el-select v-model="dataForm.countryCode" placeholder="注册国家" clearable>
+          <el-option
+            v-for="item in countryCodes"
+            :key="item.key"
+            :label="item.value"
+            :value="item.key">
+          </el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="注册状态" prop="registrationStatus">
+        <el-select
+          v-model="dataForm.registrationStatus"
+          filterable clearable
+          placeholder="请选择注册状态">
+          <el-option
+            v-for="item in registrationStatusCodes"
+            :key="item.key"
+            :label="item.value"
+            :value="item.key">
+          </el-option>
+        </el-select>
       </el-form-item>
       <el-form-item>
         <el-button @click="getDataList()">查询</el-button>
@@ -78,6 +98,7 @@
         label="注册状态">
         <template slot-scope="scope">
           <el-button v-if="scope.row.registrationStatus === 7" type="success" plain>{{scope.row.registrationStatusStr}}</el-button>
+          <el-button v-if="scope.row.registrationStatus === 3" type="info" plain>{{scope.row.registrationStatusStr}}</el-button>
           <el-button v-if="scope.row.registrationStatus === 1" type="warning" plain>{{scope.row.registrationStatusStr}}</el-button>
           <el-button v-if="scope.row.registrationStatus === 2" type="warning" plain>{{scope.row.registrationStatusStr}}</el-button>
           <el-button v-if="scope.row.registrationStatus === 6" type="warning" plain>{{scope.row.registrationStatusStr}}</el-button>
@@ -93,6 +114,7 @@
         <template slot-scope="scope">
           <el-button type="text" size="small" @click="cdregistertaskAccountListHandle(scope.row.id)">注册详情</el-button>
           <el-button v-if="scope.row.registrationStatus === 9" type="text" size="small" @click="deleteHandle(scope.row.id)">停止真机任务</el-button>
+          <el-button v-if="scope.row.registrationStatus != 3 && scope.row.registrationStatus != 7&& scope.row.registrationStatus != 9" type="text" size="small" @click="stopRegisterTask(scope.row.id)">暂停任务</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -118,7 +140,8 @@ export default {
   data () {
     return {
       dataForm: {
-        key: ''
+        countryCode: null,
+        registrationStatus: null
       },
       countryCodes: [],
       dataList: [],
@@ -127,6 +150,7 @@ export default {
       totalPage: 0,
       dataListLoading: false,
       dataListSelections: [],
+      registrationStatusCodes: [{key: 1, value: '新注册'}, {key: 2, value: '注册中'}, {key: 3, value: '暂停注册'}, {key: 7, value: '注册完成'}, {key: 9, value: '真机注册任务'}],
       addOrUpdateVisible: false,
       cdregistertaskAccountListVisible: false
     }
@@ -149,7 +173,8 @@ export default {
         params: this.$http.adornParams({
           'page': this.pageIndex,
           'limit': this.pageSize,
-          'key': this.dataForm.key
+          'countryCode': this.dataForm.countryCode,
+          'registrationStatus': this.dataForm.registrationStatus
         })
       }).then(({data}) => {
         if (data && data.code === 0) {
@@ -217,6 +242,35 @@ export default {
           url: this.$http.adornUrl('/ltt/cdregistertask/delete'),
           method: 'post',
           data: this.$http.adornData(ids, false)
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.$message({
+              message: '操作成功',
+              type: 'success',
+              duration: 1500,
+              onClose: () => {
+                this.getDataList()
+              }
+            })
+          } else {
+            this.$message.error(data.msg)
+          }
+        })
+      })
+    },
+    // 暂停注册任务
+    stopRegisterTask (id) {
+      this.$confirm(`确定暂停注册任务?`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$http({
+          url: this.$http.adornUrl('/ltt/cdregistertask/stopRegisterTask'),
+          method: 'post',
+          params: this.$http.adornParams({
+            'taskId': id
+          })
         }).then(({data}) => {
           if (data && data.code === 0) {
             this.$message({

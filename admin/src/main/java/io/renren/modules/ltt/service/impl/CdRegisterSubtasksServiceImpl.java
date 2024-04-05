@@ -51,6 +51,15 @@ public class CdRegisterSubtasksServiceImpl extends ServiceImpl<CdRegisterSubtask
     }
 
     @Override
+    public boolean updateStatusByTaskId(Integer taskId, Integer registrationStatus) {
+        CdRegisterSubtasksEntity cdRegisterSubtasksEntity = new CdRegisterSubtasksEntity();
+        cdRegisterSubtasksEntity.setTaskId(taskId);
+        cdRegisterSubtasksEntity.setRegistrationStatus(registrationStatus);
+        return baseMapper.update(cdRegisterSubtasksEntity, new QueryWrapper<CdRegisterSubtasksEntity>().lambda()
+                .eq(CdRegisterSubtasksEntity::getTaskId, taskId)) > 0;
+    }
+
+    @Override
     public boolean removeById(Serializable id) {
         return super.removeById(id);
     }

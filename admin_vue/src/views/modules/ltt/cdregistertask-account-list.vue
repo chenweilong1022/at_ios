@@ -9,10 +9,10 @@
         <el-form-item>
           <el-select v-model="registerStatus" placeholder="注册状态" clearable>
             <el-option
-              v-for="item in workOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value">
+              v-for="item in registerStatusCodes"
+              :key="item.key"
+              :label="item.value"
+              :value="item.key">
             </el-option>
           </el-select>
         </el-form-item>
@@ -63,8 +63,8 @@
           align="center"
           label="注册状态">
           <template slot-scope="scope">
-            <el-tag v-for="item in workOptions" :key="item.value" v-if="scope.row.registerStatus === item.value">
-              {{ item.label }}
+            <el-tag v-for="item in registerStatusCodes" :key="item.value" v-if="scope.row.registerStatus === item.key">
+              {{ item.value }}
             </el-tag>
           </template>
         </el-table-column>
@@ -117,32 +117,7 @@
     data () {
       return {
         registerStatus: 4,
-        workOptions: [
-          {
-            value: 1,
-            label: '发起注册'
-          },
-          {
-            value: 2,
-            label: '等待验证码'
-          },
-          {
-            value: 3,
-            label: '提交验证码'
-          },
-          {
-            value: 4,
-            label: '注册成功'
-          },
-          {
-            value: 5,
-            label: '注册出现问题'
-          },
-          {
-            value: 7,
-            label: '已经拉过群了'
-          }
-        ],
+        registerStatusCodes: [],
         dataList: [],
         pageIndex: 1,
         pageSize: 10,
@@ -221,6 +196,7 @@
       init (id) {
         this.dataForm.id = id || 0
         this.visible = true
+        this.getRegisterStatus();
         this.getDataList();
       },
       // 每页数
@@ -263,6 +239,18 @@
               this.$message.error(data.msg)
             }
           })
+        })
+      },
+      getRegisterStatus () {
+        this.$http({
+          url: this.$http.adornUrl(`/app/enums/getRegisterStatus`),
+          method: 'get'
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.registerStatusCodes = data.data
+          } else {
+            this.$message.error(data.msg)
+          }
         })
       },
       // 表单提交

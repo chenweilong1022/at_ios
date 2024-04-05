@@ -45,6 +45,8 @@ public interface CdRegisterTaskService extends IService<CdRegisterTaskEntity> {
      */
     void createRegisterTask(Integer registerCount, Integer countryCode);
 
+    boolean stopRegisterTask(Integer taskId);
+
     /**
      * 根据id修改
      * @param cdRegisterTask

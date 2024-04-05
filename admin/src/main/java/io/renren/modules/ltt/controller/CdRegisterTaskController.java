@@ -4,10 +4,7 @@ import java.util.Arrays;
 
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import io.renren.modules.ltt.dto.CdRegisterTaskDTO;
 import io.renren.modules.ltt.vo.CdRegisterTaskVO;
@@ -71,6 +68,13 @@ public class CdRegisterTaskController {
     @RequiresPermissions("ltt:cdregistertask:update")
     public R update(@RequestBody CdRegisterTaskDTO cdRegisterTask){
 		cdRegisterTaskService.updateById(cdRegisterTask);
+
+        return R.ok();
+    }
+    @RequestMapping("/stopRegisterTask")
+    @RequiresPermissions("ltt:cdregistertask:update")
+    public R stopRegisterTask(@RequestParam Integer taskId){
+		cdRegisterTaskService.stopRegisterTask(taskId);
 
         return R.ok();
     }

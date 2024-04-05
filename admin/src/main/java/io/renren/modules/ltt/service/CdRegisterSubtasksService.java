@@ -44,6 +44,9 @@ public interface CdRegisterSubtasksService extends IService<CdRegisterSubtasksEn
      * @return
      */
     boolean updateById(CdRegisterSubtasksDTO cdRegisterSubtasks);
+
+    boolean updateStatusByTaskId(Integer taskId, Integer registrationStatus);
+
     /**
      * 根据id删除
      * @param id
