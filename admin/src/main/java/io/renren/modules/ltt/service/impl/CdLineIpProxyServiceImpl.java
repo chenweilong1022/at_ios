@@ -16,6 +16,7 @@ import io.renren.modules.client.vo.CurlVO;
 import io.renren.modules.ltt.enums.CountryCode;
 import io.renren.modules.ltt.enums.LockMapKeyResource;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpHost;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -28,8 +29,9 @@ import io.renren.modules.ltt.dto.CdLineIpProxyDTO;
 import io.renren.modules.ltt.vo.CdLineIpProxyVO;
 import io.renren.modules.ltt.service.CdLineIpProxyService;
 import io.renren.modules.ltt.conver.CdLineIpProxyConver;
-
+import org.apache.http.client.fluent.*;
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -80,6 +82,22 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         CdLineIpProxyEntity cdLineIpProxyEntity = CdLineIpProxyConver.MAPPER.converDTO(cdLineIpProxy);
         return this.updateById(cdLineIpProxyEntity);
     }
+
+        public static void main(String[] args) throws IOException {
+
+            String format1 = String.format("curl -x %s -U user-lu9904136:Ch1433471850 myip.lunaproxy.io","43.159.18.174:20584");
+            List<String> strings = RuntimeUtil.execForLines(format1);
+            String s = strings.get(strings.size() - 1);
+            String[] split = s.split("\\|");
+            System.out.println(split.length);
+            if (split.length == 5) {
+                String ip = split[0];
+                String country = split[2];
+                System.out.println(ip);
+                System.out.println(country);
+            }
+
+        }
 
     @Override
     public boolean removeById(Serializable id) {
@@ -216,29 +234,18 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
     private CurlVO isProxyUse(String ip,String country) {
         CurlVO falseCurlVO = new CurlVO().setProxyUse(false);
         try {
-            String format1 = String.format("curl --socks5 %s ipinfo.io",ip);
-
+            String format1 = String.format("curl -x %s -U user-lu9904136:Ch1433471850 myip.lunaproxy.io",ip);
             List<String> strings = RuntimeUtil.execForLines(format1);
-//            for (String string : strings) {
-//                if (string.toLowerCase().contains("country") && string.toLowerCase().contains(country)) {
-//                    return true;
-//                }
-//            }
-
-            String join = CollUtil.join(strings, "");
-
-            String jsonPattern = "\\{[^\\{\\}]*\\}";
-            Pattern pattern = Pattern.compile(jsonPattern);
-            Matcher matcher = pattern.matcher(join);
-
-            if (matcher.find()) {
-                String jsonStr = matcher.group(0);
-                log.info("ip = {} country = {} format = {}",ip,country,jsonStr);
-                CurlVO curlVO = JSON.parseObject(jsonStr, CurlVO.class);
-                return curlVO.setProxyUse(true);
-            } else {
-                log.info("ip = {} country = {} format = {}",ip,country,"没有找到JSON数据");
+            String s = strings.get(strings.size() - 1);
+            String[] split = s.split("\\|");
+            System.out.println(split.length);
+            if (split.length == 5) {
+                String outIp = split[0];
+                String outCountry = split[2];
+                log.info("ip = {} country = {} format = {}",ip,country,s);
+                return falseCurlVO.setProxyUse(true).setIp(outIp).setCountry(outCountry);
             }
+            log.info("ip = {} country = {} format = {}",ip,country,"没有找到JSON数据");
             return falseCurlVO;
         }catch (Exception e) {
 
@@ -246,20 +253,20 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         return falseCurlVO;
     }
 
-    public static void main(String[] args) {
-        String text = "这是一段文本，其中包含JSON数据: {\"name\": \"张三\", \"age\": 30, \"city\": \"北京\"}。后面还有更多文本。";
-
-        // 定义一个正则表达式来查找JSON对象
-        // 这个正则表达式假设JSON数据简单且不含嵌套结构
-        String jsonPattern = "\\{[^\\{\\}]*\\}";
-        Pattern pattern = Pattern.compile(jsonPattern);
-        Matcher matcher = pattern.matcher(text);
-
-        if (matcher.find()) {
-            String jsonStr = matcher.group(0);
-            System.out.println("找到的JSON数据: " + jsonStr);
-        } else {
-            System.out.println("没有找到JSON数据");
-        }
-    }
+//    public static void main(String[] args) {
+//        String text = "这是一段文本，其中包含JSON数据: {\"name\": \"张三\", \"age\": 30, \"city\": \"北京\"}。后面还有更多文本。";
+//
+//        // 定义一个正则表达式来查找JSON对象
+//        // 这个正则表达式假设JSON数据简单且不含嵌套结构
+//        String jsonPattern = "\\{[^\\{\\}]*\\}";
+//        Pattern pattern = Pattern.compile(jsonPattern);
+//        Matcher matcher = pattern.matcher(text);
+//
+//        if (matcher.find()) {
+//            String jsonStr = matcher.group(0);
+//            System.out.println("找到的JSON数据: " + jsonStr);
+//        } else {
+//            System.out.println("没有找到JSON数据");
+//        }
+//    }
 }
