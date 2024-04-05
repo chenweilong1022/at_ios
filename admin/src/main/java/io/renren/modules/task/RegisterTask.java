@@ -393,26 +393,6 @@ public class RegisterTask {
 
     }
 
-//
-//    /**
-//     *
-//     */
-//    @Scheduled(fixedDelay = 5000)
-//    @Transactional(rollbackFor = Exception.class)
-//    @Async
-//    public void task4() {
-//        boolean b = task4Lock.tryLock();
-//        if (!b) {
-//            return;
-//        }
-//        try {
-//        }catch (Exception e) {
-//            log.error("err = {}",e.getMessage());
-//        }finally {
-//            task4Lock.unlock();
-//        }
-//    }
-//
 
     /**
      *
