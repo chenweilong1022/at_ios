@@ -63,13 +63,13 @@ spring:
             datasource:
                 # admin 数据源配置
                 admin:
-                    url: jdbc:mysql://${project.admin.mysql.url}/at_ios3?useUnicode=true&characterEncoding=UTF-8&useSSL=false&useTimezone=true&serverTimezone=GMT%2B8&allowPublicKeyRetrieval=true
+                    url: jdbc:mysql://${project.admin.mysql.url}/at_ios?useUnicode=true&characterEncoding=UTF-8&useSSL=false&useTimezone=true&serverTimezone=GMT%2B8&allowPublicKeyRetrieval=true
                     driver-class-name: com.mysql.cj.jdbc.Driver
                     username: ${project.admin.mysql.username}
                     password: ${project.admin.mysql.password}
                 # game 数据源配置
                 game:
-                    url: jdbc:mysql://${project.game.mysql.url}/at_ios3?useUnicode=true&characterEncoding=UTF-8&useSSL=false&useTimezone=true&serverTimezone=GMT%2B8&allowPublicKeyRetrieval=true
+                    url: jdbc:mysql://${project.game.mysql.url}/at_ios?useUnicode=true&characterEncoding=UTF-8&useSSL=false&useTimezone=true&serverTimezone=GMT%2B8&allowPublicKeyRetrieval=true
                     driver-class-name: com.mysql.cj.jdbc.Driver
                     username: ${project.game.mysql.username}
                     password: ${project.game.mysql.password}
