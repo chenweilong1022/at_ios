@@ -16,47 +16,27 @@ import java.util.Date;
  *
  * @author chenweilong
  * @email chenweilong@qq.com
- * @date 2024-04-03 22:09:23
+ * @date 2024-04-04 16:13:39
  */
 @Data
-@TableName("cd_phone_filter")
+@TableName("cd_phone_filter_record")
 @ApiModel("手机号筛选")
 @Accessors(chain = true)
-public class CdPhoneFilterDTO extends PageParam implements Serializable {
+public class CdPhoneFilterRecordDTO extends PageParam implements Serializable {
 	private static final long serialVersionUID = 1L;
-
 
 	/**
 	 * 主键
 	 */
 	@TableId(type = IdType.AUTO)
 	@ApiModelProperty(required=false,value="主键")
-	private Integer id;
-	/**
-	 * 主键
-	 */
-	@ApiModelProperty(required=false,value="记录id")
 	private Integer recordId;
 	/**
 	 * 任务状态
 	 */
 	@ApiModelProperty(required=false,value="任务状态")
 	private Integer taskStatus;
-	/**
-	 *
-	 */
-	@ApiModelProperty(required=false,value="")
-	private String contactKey;
-	/**
-	 *
-	 */
-	@ApiModelProperty(required=false,value="")
-	private String mid;
-	/**
-	 *
-	 */
-	@ApiModelProperty(required=false,value="")
-	private String displayName;
+
 	/**
 	 * 删除标志
 	 */
@@ -72,11 +52,15 @@ public class CdPhoneFilterDTO extends PageParam implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="修改时间")
 	private Date updateTime;
-	/**
-	 * line的协议返回信息
-	 */
-	@ApiModelProperty(required=false,value="line的协议返回信息")
-	private String msg;
-	@ApiModelProperty(required=false,value="")
-	private String textUrl;
+
+
+	@ApiModelProperty(required=false,value="总数数量")
+	private Long totalCount;
+
+
+	@ApiModelProperty(required=false,value="成功数量")
+	private Long successCount;
+
+	@ApiModelProperty(required=false,value="失败数量")
+	private Long failCount;
 }

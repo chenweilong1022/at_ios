@@ -9,7 +9,7 @@ import lombok.Getter;
 @Getter
 public enum PhoneFilterStatus implements BaseEnum {
 
-    PhoneFilterStatus1(1,"初始化"),
+//    PhoneFilterStatus1(1,"初始化"),
     PhoneFilterStatus2(2,"查询中"),
     PhoneFilterStatus3(3,"查询完成"),
     PhoneFilterStatus4(4,"查询失败"),

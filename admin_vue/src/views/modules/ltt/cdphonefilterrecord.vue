@@ -1,8 +1,4 @@
 <template>
-  <el-dialog
-    :title="'手机号筛选详情列表'"
-    :close-on-click-modal="false"
-    :visible.sync="visibleFlag">
   <div class="mod-config">
     <el-form :inline="true" :model="dataForm" @keyup.enter.native="getDataList()">
       <el-form-item label="任务状态" prop="taskStatus">
@@ -20,8 +16,7 @@
       </el-form-item>
       <el-form-item>
         <el-button @click="getDataList()">查询</el-button>
-<!--        <el-button v-if="isAuth('ltt:cdphonefilter:save')" type="primary" @click="addOrUpdateHandle()">新增</el-button>-->
-<!--        <el-button v-if="isAuth('ltt:cdphonefilter:delete')" type="danger" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>-->
+        <el-button v-if="isAuth('ltt:cdphonefilter:save')" type="primary" @click="addOrUpdateHandle()">新增</el-button>
       </el-form-item>
     </el-form>
     <el-table
@@ -30,6 +25,12 @@
       v-loading="dataListLoading"
       @selection-change="selectionChangeHandle"
       style="width: 100%;">
+      <el-table-column
+        prop="recordId"
+        header-align="center"
+        align="center"
+        label="记录编号">
+      </el-table-column>
       <el-table-column
         prop="taskStatus"
         header-align="center"
@@ -42,46 +43,42 @@
         </template>
       </el-table-column>
       <el-table-column
-        prop="contactKey"
+        prop="totalCount"
         header-align="center"
         align="center"
-        label="手机号">
+        label="总数量">
       </el-table-column>
       <el-table-column
-        prop="mid"
+        prop="successCount"
         header-align="center"
         align="center"
-        label="mid">
+        label="成功数量">
       </el-table-column>
       <el-table-column
-        prop="displayName"
+        prop="failCount"
         header-align="center"
         align="center"
-        label="名称">
+        label="失败数量">
       </el-table-column>
       <el-table-column
-        prop="msg"
-        header-align="center"
-        align="center"
-        label="失败备注">
-      </el-table-column>
-      <el-table-column
-        prop="createdTime"
+        prop="createTime"
         header-align="center"
         align="center"
         label="创建时间">
       </el-table-column>
-<!--      <el-table-column-->
-<!--        fixed="right"-->
-<!--        header-align="center"-->
-<!--        align="center"-->
-<!--        width="150"-->
-<!--        label="操作">-->
-<!--        <template slot-scope="scope">-->
-<!--          <el-button type="text" size="small" @click="addOrUpdateHandle(scope.row.id)">修改</el-button>-->
-<!--          <el-button type="text" size="small" @click="deleteHandle(scope.row.id)">删除</el-button>-->
-<!--        </template>-->
-<!--      </el-table-column>-->
+      <el-table-column
+        fixed="right"
+        header-align="center"
+        align="center"
+        width="150"
+        label="操作">
+        <template slot-scope="scope">
+<!--          <el-button type="text" size="small" @click="addOrUpdateHandle(scope.row.recordId)">修改</el-button>-->
+<!--          <el-button type="text" size="small" @click="deleteHandle(scope.row.recordId)">删除</el-button>-->
+          <el-button type="text" size="small" @click="exportTxt(scope.row.recordId)">导出token</el-button>
+          <el-button type="text" size="small" @click="detailList(scope.row.recordId)">详情</el-button>
+        </template>
+      </el-table-column>
     </el-table>
     <el-pagination
       @size-change="sizeChangeHandle"
@@ -94,23 +91,25 @@
     </el-pagination>
     <!-- 弹窗, 新增 / 修改 -->
     <add-or-update v-if="addOrUpdateVisible" ref="addOrUpdate" @refreshDataList="getDataList"></add-or-update>
+    <detail-list v-if="detailListVisible" ref="detailList" @refreshDataList="getDataList"></detail-list>
+
   </div>
-  </el-dialog>
 </template>
 
 <script>
-  import AddOrUpdate from './cdphonefilter-add-or-update'
+import AddOrUpdate from './cdphonefilter-add-or-update'
+import DetailList from "./cdphonefilter";
   export default {
     data () {
       return {
-        visibleFlag: false,
         dataForm: {
-          key: ''
+          taskStatus: null
         },
         dataList: [],
         pageIndex: 1,
         pageSize: 10,
         totalPage: 0,
+        detailListVisible: false,
         dataListLoading: false,
         dataListSelections: [],
         taskStatusCodes: [{ key: 2, value: "查询中"}, { key: 3, value: "查询完成"}, { key: 4, value: "查询失败"}],
@@ -118,28 +117,22 @@
       }
     },
     components: {
+      DetailList,
       AddOrUpdate
     },
     activated () {
       this.getDataList()
     },
     methods: {
-      init (recordId) {
-        this.pageIndex =1
-        this.visibleFlag = true
-        this.dataForm.recordId = recordId
-        this.getDataList(recordId)
-      },
       // 获取数据列表
-      getDataList (recordId) {
+      getDataList () {
         this.dataListLoading = true
         this.$http({
-          url: this.$http.adornUrl('/ltt/cdphonefilter/list'),
+          url: this.$http.adornUrl('/ltt/cdphonefilter/recordList'),
           method: 'get',
           params: this.$http.adornParams({
             'page': this.pageIndex,
             'limit': this.pageSize,
-            'recordId': this.dataForm.recordId,
             'taskStatus': this.dataForm.taskStatus
           })
         }).then(({data}) => {
@@ -178,7 +171,7 @@
       // 删除
       deleteHandle (id) {
         var ids = id ? [id] : this.dataListSelections.map(item => {
-          return item.id
+          return item.recordId
         })
         this.$confirm(`确定对[id=${ids.join(',')}]进行[${id ? '删除' : '批量删除'}]操作?`, '提示', {
           confirmButtonText: '确定',
@@ -186,7 +179,7 @@
           type: 'warning'
         }).then(() => {
           this.$http({
-            url: this.$http.adornUrl('/ltt/cdphonefilter/delete'),
+            url: this.$http.adornUrl('/ltt/cdphonefilterrecord/delete'),
             method: 'post',
             data: this.$http.adornData(ids, false)
           }).then(({data}) => {
@@ -204,6 +197,18 @@
             }
           })
         })
+      },
+      exportTxt (recordId) {
+        window.open(this.$http.adornUrl(`/ltt/cdphonefilter/exportSJ?recordId=${recordId}&token=${this.$cookie.get('token')}`));
+      },
+      detailList (recordId) {
+        this.detailListVisible = true
+        this.$nextTick(() => {
+          this.$refs.detailList.init(recordId)
+        })
+        // this.$nextTick(() => {
+        //   this.$router.push({name: 'ltt-accountdetails', query: { sysUserId: sysUserId, sysUsername: sysUsername}})
+        // })
       }
     }
   }

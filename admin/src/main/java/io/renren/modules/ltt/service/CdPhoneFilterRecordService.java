@@ -2,12 +2,13 @@ package io.renren.modules.ltt.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import io.renren.common.utils.PageUtils;
-import io.renren.modules.ltt.dto.CdPhoneFilterDTO;
-import io.renren.modules.ltt.vo.CdPhoneFilterVO;
-import io.renren.modules.ltt.entity.CdPhoneFilterEntity;
+import io.renren.modules.ltt.dto.CdPhoneFilterRecordDTO;
+import io.renren.modules.ltt.vo.CdPhoneFilterRecordVO;
+import io.renren.modules.ltt.entity.CdPhoneFilterRecordEntity;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -15,34 +16,37 @@ import java.util.Collection;
  *
  * @author chenweilong
  * @email chenweilong@qq.com
- * @date 2024-03-25 00:55:11
+ * @date 2024-04-04 16:29:58
  */
-public interface CdPhoneFilterService extends IService<CdPhoneFilterEntity> {
+public interface CdPhoneFilterRecordService extends IService<CdPhoneFilterRecordEntity> {
 
     /**
      * 分页查询
-     * @param cdPhoneFilter
+     * @param cdPhoneFilterRecord
      * @return
      */
-    PageUtils queryPage(CdPhoneFilterDTO cdPhoneFilter);
+    PageUtils queryPage(CdPhoneFilterRecordDTO cdPhoneFilterRecord);
     /**
      * 根据id查询
-     * @param id
+     * @param recordId
      * @return
      */
-    CdPhoneFilterVO getById(Integer id);
+    CdPhoneFilterRecordVO getById(Integer recordId);
+
+    List<CdPhoneFilterRecordVO> getByIds(List<Integer> recordIdList);
+
     /**
      * 保存
-     * @param cdPhoneFilter
+     * @param cdPhoneFilterRecord
      * @return
      */
-    boolean save(CdPhoneFilterDTO cdPhoneFilter);
+    boolean save(CdPhoneFilterRecordDTO cdPhoneFilterRecord);
     /**
      * 根据id修改
-     * @param cdPhoneFilter
+     * @param cdPhoneFilterRecord
      * @return
      */
-    boolean updateById(CdPhoneFilterDTO cdPhoneFilter);
+    boolean updateById(CdPhoneFilterRecordDTO cdPhoneFilterRecord);
     /**
      * 根据id删除
      * @param id
@@ -58,8 +62,5 @@ public interface CdPhoneFilterService extends IService<CdPhoneFilterEntity> {
      */
     @Override
     boolean removeByIds(Collection<? extends Serializable> ids);
-
-    byte[] exportSJ(Long recordId);
-
 }
 

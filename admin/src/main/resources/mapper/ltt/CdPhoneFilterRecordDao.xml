@@ -1,20 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="io.renren.modules.ltt.dao.CdPhoneFilterDao">
+<mapper namespace="io.renren.modules.ltt.dao.CdPhoneFilterRecordDao">
 
 	<!-- 可根据自己的需求，是否要使用 -->
-    <resultMap type="io.renren.modules.ltt.entity.CdPhoneFilterEntity" id="cdPhoneFilterMap">
-        <result property="id" column="id"/>
+    <resultMap type="io.renren.modules.ltt.entity.CdPhoneFilterRecordEntity" id="cdPhoneFilterRecordMap">
         <result property="recordId" column="record_id"/>
         <result property="taskStatus" column="task_status"/>
-        <result property="contactKey" column="contact_key"/>
-        <result property="mid" column="mid"/>
-        <result property="displayName" column="display_name"/>
         <result property="deleteFlag" column="delete_flag"/>
         <result property="createTime" column="create_time"/>
         <result property="updateTime" column="update_time"/>
-        <result property="msg" column="msg"/>
     </resultMap>
 
 
