@@ -2,6 +2,7 @@ package io.renren.modules.ltt.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import io.renren.common.utils.PageUtils;
+import io.renren.modules.client.vo.GroupCountByDataTaskIdVO;
 import io.renren.modules.ltt.dto.AtDataTaskDTO;
 import io.renren.modules.ltt.vo.AtDataTaskVO;
 import io.renren.modules.ltt.entity.AtDataTaskEntity;
@@ -72,5 +73,12 @@ public interface AtDataTaskService extends IService<AtDataTaskEntity> {
      * @param ids
      */
     void errRetry(List<Integer> ids);
+
+    /**
+     * 统计数量根据分组
+     * @return
+     */
+    List<GroupCountByDataTaskIdVO> groupCountByDataTaskId();
+
 }
 

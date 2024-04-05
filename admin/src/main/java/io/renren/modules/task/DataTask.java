@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import io.renren.modules.client.LineService;
 import io.renren.modules.client.dto.AddFriendsByMid;
 import io.renren.modules.client.dto.SearchPhoneDTO;
+import io.renren.modules.client.vo.GroupCountByDataTaskIdVO;
 import io.renren.modules.client.vo.SearchPhoneVO;
 import io.renren.modules.client.vo.The818051863582;
 import io.renren.modules.ltt.dto.CdLineIpProxyDTO;
@@ -80,89 +81,65 @@ public class DataTask {
     private AtDataSubtaskService atDataSubtaskService;
 
 
-
-    @Scheduled(fixedDelay = 5000)
+    @Scheduled(fixedDelay = 20000)
     @Transactional(rollbackFor = Exception.class)
     @Async
-    public void task4() {
+    public void task5() {
         boolean b = task4Lock.tryLock();
         if (!b) {
             return;
         }
         try {
-            //需要更换头像的任务
-            List<AtDataTaskEntity> atDataTaskEntities = atDataTaskService.list(new QueryWrapper<AtDataTaskEntity>().lambda()
-                    .eq(AtDataTaskEntity::getTaskStatus, TaskStatus.TaskStatus2.getKey())
-                    .last("limit 5")
-            );
-
-            if (CollUtil.isEmpty(atDataTaskEntities)) {
+            List<GroupCountByDataTaskIdVO> groupCountByDataTaskIdVOS = atDataTaskService.groupCountByDataTaskId();
+            if (CollUtil.isEmpty(groupCountByDataTaskIdVOS)) {
                 log.info("DataTask task4 atDataTaskEntities isEmpty");
                 return;
             }
-
-            List<Integer> ids = atDataTaskEntities.stream().map(AtDataTaskEntity::getId).collect(Collectors.toList());
-            //需要更换头像的任务
-            List<AtDataSubtaskEntity> atDataSubtaskEntities = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
-                    .in(AtDataSubtaskEntity::getTaskStatus,TaskStatus.TaskStatus4.getKey(),TaskStatus.TaskStatus5.getKey(),TaskStatus.TaskStatus8.getKey(),TaskStatus.TaskStatus10.getKey())
-                    .in(AtDataSubtaskEntity::getDataTaskId,ids)
-            );
-            if (CollUtil.isEmpty(atDataSubtaskEntities)) {
-                log.info("DataTask task4 atDataSubtaskEntities isEmpty");
-                return;
-            }
-
-            Map<Integer, List<AtDataSubtaskEntity>> integerListMap = atDataSubtaskEntities.stream().collect(Collectors.groupingBy(AtDataSubtaskEntity::getDataTaskId));
             List<AtDataTaskEntity> atDataTaskEntityList = new ArrayList<>();
-            for (AtDataTaskEntity atDataTaskEntity : atDataTaskEntities) {
-                //获取所有子任务
-                List<AtDataSubtaskEntity> DataSubtaskEntities = integerListMap.get(atDataTaskEntity.getId());
-                if (CollUtil.isEmpty(DataSubtaskEntities)) {
-                    continue;
-                }
+            for (GroupCountByDataTaskIdVO groupCountByDataTaskIdVO : groupCountByDataTaskIdVOS) {
                 //成功的任务
-                long fail = DataSubtaskEntities.stream().filter(item -> TaskStatus.TaskStatus5.getKey().equals(item.getTaskStatus())).count();
+                long fail = groupCountByDataTaskIdVO.getFail5();
                 //失败的任务
-                long success8 = DataSubtaskEntities.stream().filter(item -> TaskStatus.TaskStatus8.getKey().equals(item.getTaskStatus())).count();
-                long success10 = DataSubtaskEntities.stream().filter(item -> TaskStatus.TaskStatus10.getKey().equals(item.getTaskStatus())).count();
+                long success8 = groupCountByDataTaskIdVO.getSuccess8();
+                long success10 = groupCountByDataTaskIdVO.getSuccess10();
                 AtDataTaskEntity update = new AtDataTaskEntity();
-                if (GroupType.GroupType1.getKey().equals(atDataTaskEntity.getGroupType())) {
+                if (GroupType.GroupType1.getKey().equals(groupCountByDataTaskIdVO.getGroupType())) {
                     update.setSuccessfulQuantity((int) success8);
                     update.setFailuresQuantity((int) fail);
-                    update.setId(atDataTaskEntity.getId());
-                    if (success8 + fail == atDataTaskEntity.getAddTotalQuantity()) {
+                    update.setId(groupCountByDataTaskIdVO.getDataTaskId());
+                    if (success8 + fail == groupCountByDataTaskIdVO.getAddTotalQuantity()) {
                         update.setTaskStatus(TaskStatus.TaskStatus3.getKey());
                     }
                     atDataTaskEntityList.add(update);
-                }else if (GroupType.GroupType5.getKey().equals(atDataTaskEntity.getGroupType())) {
+                }else if (GroupType.GroupType5.getKey().equals(groupCountByDataTaskIdVO.getGroupType())) {
                     update.setSuccessfulQuantity((int) success10);
                     update.setFailuresQuantity((int) fail);
-                    update.setId(atDataTaskEntity.getId());
-                    if (success10 + fail == atDataTaskEntity.getAddTotalQuantity()) {
+                    update.setId(groupCountByDataTaskIdVO.getDataTaskId());
+                    if (success10 + fail == groupCountByDataTaskIdVO.getAddTotalQuantity()) {
                         update.setTaskStatus(TaskStatus.TaskStatus3.getKey());
                     }
                     atDataTaskEntityList.add(update);
-                }else if (GroupType.GroupType2.getKey().equals(atDataTaskEntity.getGroupType())) {
+                }else if (GroupType.GroupType2.getKey().equals(groupCountByDataTaskIdVO.getGroupType())) {
                     update.setSuccessfulQuantity((int) success8);
                     update.setFailuresQuantity((int) fail);
-                    update.setId(atDataTaskEntity.getId());
-                    if (success8 + fail == atDataTaskEntity.getAddTotalQuantity()) {
+                    update.setId(groupCountByDataTaskIdVO.getDataTaskId());
+                    if (success8 + fail == groupCountByDataTaskIdVO.getAddTotalQuantity()) {
                         update.setTaskStatus(TaskStatus.TaskStatus3.getKey());
                     }
                     atDataTaskEntityList.add(update);
-                }else if (GroupType.GroupType3.getKey().equals(atDataTaskEntity.getGroupType())) {
+                }else if (GroupType.GroupType3.getKey().equals(groupCountByDataTaskIdVO.getGroupType())) {
                     update.setSuccessfulQuantity((int) success8);
                     update.setFailuresQuantity((int) fail);
-                    update.setId(atDataTaskEntity.getId());
-                    if (success8 + fail == atDataTaskEntity.getAddTotalQuantity()) {
+                    update.setId(groupCountByDataTaskIdVO.getDataTaskId());
+                    if (success8 + fail == groupCountByDataTaskIdVO.getAddTotalQuantity()) {
                         update.setTaskStatus(TaskStatus.TaskStatus3.getKey());
                     }
                     atDataTaskEntityList.add(update);
-                }else if (GroupType.GroupType4.getKey().equals(atDataTaskEntity.getGroupType())) {
+                }else if (GroupType.GroupType4.getKey().equals(groupCountByDataTaskIdVO.getGroupType())) {
                     update.setSuccessfulQuantity((int) success8);
                     update.setFailuresQuantity((int) fail);
-                    update.setId(atDataTaskEntity.getId());
-                    if (success8 + fail == atDataTaskEntity.getAddTotalQuantity()) {
+                    update.setId(groupCountByDataTaskIdVO.getDataTaskId());
+                    if (success8 + fail == groupCountByDataTaskIdVO.getAddTotalQuantity()) {
                         update.setTaskStatus(TaskStatus.TaskStatus3.getKey());
                     }
                     atDataTaskEntityList.add(update);
@@ -170,9 +147,9 @@ public class DataTask {
 
                 //如果拉群成功
                 if (TaskStatus.TaskStatus3.getKey().equals(update.getTaskStatus())) {
-                    if (ObjectUtil.isNotNull(atDataTaskEntity.getGroupId())) {
+                    if (ObjectUtil.isNotNull(groupCountByDataTaskIdVO.getGroupId())) {
                         AtGroupEntity atGroupEntity = new AtGroupEntity();
-                        atGroupEntity.setId(atDataTaskEntity.getGroupId());
+                        atGroupEntity.setId(groupCountByDataTaskIdVO.getGroupId());
                         atGroupEntity.setGroupStatus(GroupStatus.GroupStatus7.getKey());
                         atGroupService.updateById(atGroupEntity);
                     }
@@ -183,12 +160,125 @@ public class DataTask {
                     atDataTaskService.updateBatchById(atDataTaskEntityList);
                 }
             }
-        }catch (Exception e) {
+        }
+        catch (Exception e) {
             log.error("err = {}",e.getMessage());
         }finally {
             task4Lock.unlock();
         }
+
+
     }
+
+
+//    @Scheduled(fixedDelay = 5000)
+//    @Transactional(rollbackFor = Exception.class)
+//    @Async
+//    public void task4() {
+//        boolean b = task4Lock.tryLock();
+//        if (!b) {
+//            return;
+//        }
+//        try {
+//            //需要更换头像的任务
+//            List<AtDataTaskEntity> atDataTaskEntities = atDataTaskService.list(new QueryWrapper<AtDataTaskEntity>().lambda()
+//                    .eq(AtDataTaskEntity::getTaskStatus, TaskStatus.TaskStatus2.getKey())
+//                    .last("limit 5")
+//            );
+//
+//            if (CollUtil.isEmpty(atDataTaskEntities)) {
+//                log.info("DataTask task4 atDataTaskEntities isEmpty");
+//                return;
+//            }
+//
+//            List<Integer> ids = atDataTaskEntities.stream().map(AtDataTaskEntity::getId).collect(Collectors.toList());
+//            //需要更换头像的任务
+//            List<AtDataSubtaskEntity> atDataSubtaskEntities = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
+//                    .in(AtDataSubtaskEntity::getTaskStatus,TaskStatus.TaskStatus4.getKey(),TaskStatus.TaskStatus5.getKey(),TaskStatus.TaskStatus8.getKey(),TaskStatus.TaskStatus10.getKey())
+//                    .in(AtDataSubtaskEntity::getDataTaskId,ids)
+//            );
+//            if (CollUtil.isEmpty(atDataSubtaskEntities)) {
+//                log.info("DataTask task4 atDataSubtaskEntities isEmpty");
+//                return;
+//            }
+//
+//            Map<Integer, List<AtDataSubtaskEntity>> integerListMap = atDataSubtaskEntities.stream().collect(Collectors.groupingBy(AtDataSubtaskEntity::getDataTaskId));
+//            List<AtDataTaskEntity> atDataTaskEntityList = new ArrayList<>();
+//            for (AtDataTaskEntity atDataTaskEntity : atDataTaskEntities) {
+//                //获取所有子任务
+//                List<AtDataSubtaskEntity> DataSubtaskEntities = integerListMap.get(atDataTaskEntity.getId());
+//                if (CollUtil.isEmpty(DataSubtaskEntities)) {
+//                    continue;
+//                }
+//                //成功的任务
+//                long fail = DataSubtaskEntities.stream().filter(item -> TaskStatus.TaskStatus5.getKey().equals(item.getTaskStatus())).count();
+//                //失败的任务
+//                long success8 = DataSubtaskEntities.stream().filter(item -> TaskStatus.TaskStatus8.getKey().equals(item.getTaskStatus())).count();
+//                long success10 = DataSubtaskEntities.stream().filter(item -> TaskStatus.TaskStatus10.getKey().equals(item.getTaskStatus())).count();
+//                AtDataTaskEntity update = new AtDataTaskEntity();
+//                if (GroupType.GroupType1.getKey().equals(atDataTaskEntity.getGroupType())) {
+//                    update.setSuccessfulQuantity((int) success8);
+//                    update.setFailuresQuantity((int) fail);
+//                    update.setId(atDataTaskEntity.getId());
+//                    if (success8 + fail == atDataTaskEntity.getAddTotalQuantity()) {
+//                        update.setTaskStatus(TaskStatus.TaskStatus3.getKey());
+//                    }
+//                    atDataTaskEntityList.add(update);
+//                }else if (GroupType.GroupType5.getKey().equals(atDataTaskEntity.getGroupType())) {
+//                    update.setSuccessfulQuantity((int) success10);
+//                    update.setFailuresQuantity((int) fail);
+//                    update.setId(atDataTaskEntity.getId());
+//                    if (success10 + fail == atDataTaskEntity.getAddTotalQuantity()) {
+//                        update.setTaskStatus(TaskStatus.TaskStatus3.getKey());
+//                    }
+//                    atDataTaskEntityList.add(update);
+//                }else if (GroupType.GroupType2.getKey().equals(atDataTaskEntity.getGroupType())) {
+//                    update.setSuccessfulQuantity((int) success8);
+//                    update.setFailuresQuantity((int) fail);
+//                    update.setId(atDataTaskEntity.getId());
+//                    if (success8 + fail == atDataTaskEntity.getAddTotalQuantity()) {
+//                        update.setTaskStatus(TaskStatus.TaskStatus3.getKey());
+//                    }
+//                    atDataTaskEntityList.add(update);
+//                }else if (GroupType.GroupType3.getKey().equals(atDataTaskEntity.getGroupType())) {
+//                    update.setSuccessfulQuantity((int) success8);
+//                    update.setFailuresQuantity((int) fail);
+//                    update.setId(atDataTaskEntity.getId());
+//                    if (success8 + fail == atDataTaskEntity.getAddTotalQuantity()) {
+//                        update.setTaskStatus(TaskStatus.TaskStatus3.getKey());
+//                    }
+//                    atDataTaskEntityList.add(update);
+//                }else if (GroupType.GroupType4.getKey().equals(atDataTaskEntity.getGroupType())) {
+//                    update.setSuccessfulQuantity((int) success8);
+//                    update.setFailuresQuantity((int) fail);
+//                    update.setId(atDataTaskEntity.getId());
+//                    if (success8 + fail == atDataTaskEntity.getAddTotalQuantity()) {
+//                        update.setTaskStatus(TaskStatus.TaskStatus3.getKey());
+//                    }
+//                    atDataTaskEntityList.add(update);
+//                }
+//
+//                //如果拉群成功
+//                if (TaskStatus.TaskStatus3.getKey().equals(update.getTaskStatus())) {
+//                    if (ObjectUtil.isNotNull(atDataTaskEntity.getGroupId())) {
+//                        AtGroupEntity atGroupEntity = new AtGroupEntity();
+//                        atGroupEntity.setId(atDataTaskEntity.getGroupId());
+//                        atGroupEntity.setGroupStatus(GroupStatus.GroupStatus7.getKey());
+//                        atGroupService.updateById(atGroupEntity);
+//                    }
+//                }
+//            }
+//            if (CollUtil.isNotEmpty(atDataTaskEntityList)) {
+//                synchronized (atAtDataTaskEntityObj) {
+//                    atDataTaskService.updateBatchById(atDataTaskEntityList);
+//                }
+//            }
+//        }catch (Exception e) {
+//            log.error("err = {}",e.getMessage());
+//        }finally {
+//            task4Lock.unlock();
+//        }
+//    }
 
 //
 //    /**

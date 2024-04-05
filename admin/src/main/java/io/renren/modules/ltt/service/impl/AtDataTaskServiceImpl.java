@@ -10,6 +10,7 @@ import io.renren.common.utils.PhoneUtil;
 import io.renren.common.utils.vo.PhoneCountryVO;
 import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
+import io.renren.modules.client.vo.GroupCountByDataTaskIdVO;
 import io.renren.modules.ltt.dto.AtUserDTO;
 import io.renren.modules.ltt.entity.*;
 import io.renren.modules.ltt.enums.*;
@@ -233,6 +234,11 @@ public class AtDataTaskServiceImpl extends ServiceImpl<AtDataTaskDao, AtDataTask
         if (CollUtil.isNotEmpty(taskEntities)) {
             this.updateBatchById(taskEntities);
         }
+    }
+
+    @Override
+    public List<GroupCountByDataTaskIdVO> groupCountByDataTaskId() {
+        return baseMapper.groupCountByDataTaskId();
     }
 
 }

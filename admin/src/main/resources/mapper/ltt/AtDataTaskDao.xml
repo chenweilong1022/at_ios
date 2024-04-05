@@ -22,5 +22,21 @@
         <result property="sysUserId" column="sys_user_id"/>
     </resultMap>
 
+    <select id="groupCountByDataTaskId" resultType="io.renren.modules.client.vo.GroupCountByDataTaskIdVO">
+        SELECT
+            SUM(IF(ds.task_status = 8,1,0)) success8,
+            SUM(IF(ds.task_status = 5,1,0)) fail5,
+            SUM(IF(ds.task_status = 10,1,0)) success10,
+            ds.data_task_id dataTaskId,
+            MIN(ds.group_type) groupType,
+            MIN(t.add_total_quantity) addTotalQuantity,
+            MIN(ds.group_id) groupId
+        FROM
+            at_data_subtask ds LEFT JOIN at_data_task t ON t.id = ds.data_task_id
+        WHERE t.task_status = 2
+        GROUP BY
+            ds.data_task_id
+    </select>
+
 
 </mapper>
