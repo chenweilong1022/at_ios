@@ -96,6 +96,7 @@ public class AtDataTaskServiceImpl extends ServiceImpl<AtDataTaskDao, AtDataTask
 
         //获取分组下所有的用户
         List<AtUserVO> atUserEntities = pageUtils.getList();
+        List<AtUserEntity> atUserEntitiesUpdates = new ArrayList<>();
         Assert.isTrue(CollUtil.isEmpty(atUserEntities),String.format("分组下%s国家账号不足",regions));
         Integer addQuantityLimit = atDataTask.getAddQuantityLimit();
         Integer limit = addQuantityLimit * atUserEntities.size();
@@ -121,6 +122,10 @@ public class AtDataTaskServiceImpl extends ServiceImpl<AtDataTaskDao, AtDataTask
             if (addQuantityLimit > atDataEntityList.size()) {
                 break;
             }
+            AtUserEntity atUserEntityUpdate = new AtUserEntity();
+            atUserEntityUpdate.setId(atUserEntity.getId());
+            atUserEntityUpdate.setStatus(UserStatus.UserStatus6.getKey());
+            atUserEntitiesUpdates.add(atUserEntityUpdate);
             addTotalQuantity = addTotalQuantity + atDataEntityList.size();
             for (AtDataEntity atDataEntity : atDataEntityList) {
                 String data = atDataEntity.getData();
@@ -160,6 +165,7 @@ public class AtDataTaskServiceImpl extends ServiceImpl<AtDataTaskDao, AtDataTask
         this.updateById(update);
         atDataSubtaskService.saveBatch(atDataSubtaskEntities);
         atDataService.updateBatchById(updates);
+        atUserService.updateBatchById(atUserEntitiesUpdates);
         return save;
     }
 
