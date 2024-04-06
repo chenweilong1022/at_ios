@@ -61,7 +61,7 @@ public class AtDataController extends AbstractController {
     @RequestMapping("/save")
     @RequiresPermissions("ltt:atdata:save")
     public R save(@RequestBody AtDataDTO atData){
-        atData.setSysUserId(getUserId());
+        atData.setSysUserId(getAuthUserId());
 		atDataService.save(atData);
 
         return R.ok();

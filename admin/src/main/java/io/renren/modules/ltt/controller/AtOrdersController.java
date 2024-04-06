@@ -59,7 +59,7 @@ public class AtOrdersController extends AbstractController {
     @PostMapping("/createOrderToken")
     @RequiresPermissions("ltt:atorders:save")
     public R createOrderToken(@RequestBody AtOrdersTokenParamDTO atOrders){
-        atOrders.setSysUserId(getUserId());
+        atOrders.setSysUserId(getAuthUserId());
 		atOrdersService.createOrderToken(atOrders);
 
         return R.ok();

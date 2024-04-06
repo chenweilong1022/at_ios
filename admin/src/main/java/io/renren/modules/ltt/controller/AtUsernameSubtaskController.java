@@ -61,7 +61,7 @@ public class AtUsernameSubtaskController extends AbstractController {
     @RequestMapping("/save")
     @RequiresPermissions("ltt:atusernamesubtask:save")
     public R save(@RequestBody AtUsernameSubtaskDTO atUsernameSubtask){
-        atUsernameSubtask.setSysUserId(getUserId());
+        atUsernameSubtask.setSysUserId(getAuthUserId());
 		atUsernameSubtaskService.save(atUsernameSubtask);
 
         return R.ok();

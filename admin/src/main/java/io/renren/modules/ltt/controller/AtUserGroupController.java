@@ -68,7 +68,7 @@ public class AtUserGroupController extends AbstractController {
     @RequestMapping("/save")
     @RequiresPermissions("ltt:atusergroup:save")
     public R save(@RequestBody AtUserGroupDTO atUserGroup){
-        atUserGroup.setSysUserId(getUserId());
+        atUserGroup.setSysUserId(getAuthUserId());
 		atUserGroupService.save(atUserGroup);
 
         return R.ok();

@@ -60,7 +60,7 @@ public class AtAvatarGroupController extends AbstractController {
     @RequestMapping("/save")
     @RequiresPermissions("ltt:atavatargroup:save")
     public R save(@RequestBody AtAvatarGroupDTO atAvatarGroup){
-        atAvatarGroup.setSysUserId(getUserId());
+        atAvatarGroup.setSysUserId(getAuthUserId());
 		atAvatarGroupService.save(atAvatarGroup);
 
         return R.ok();

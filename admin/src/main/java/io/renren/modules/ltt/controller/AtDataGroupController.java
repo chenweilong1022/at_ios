@@ -61,7 +61,7 @@ public class AtDataGroupController extends AbstractController {
     @RequestMapping("/save")
     @RequiresPermissions("ltt:atdatagroup:save")
     public R save(@RequestBody AtDataGroupDTO atDataGroup){
-        atDataGroup.setSysUserId(getUserId());
+        atDataGroup.setSysUserId(getAuthUserId());
 		atDataGroupService.save(atDataGroup);
 
         return R.ok();
@@ -84,7 +84,7 @@ public class AtDataGroupController extends AbstractController {
     @RequestMapping("/updateBatchGroup")
     @RequiresPermissions("ltt:atdatagroup:update")
     public R updateBatchGroup(@RequestBody AtDataGroupDTO atDataGroup){
-        atDataGroup.setSysUserId(getUserId());
+        atDataGroup.setSysUserId(getAuthUserId());
 		atDataGroupService.updateBatchGroup(atDataGroup);
 
         return R.ok();

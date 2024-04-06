@@ -90,7 +90,7 @@ public class AtGroupTaskController extends AbstractController {
     @RequestMapping("/onGroupStart")
     @RequiresPermissions("ltt:atgrouptask:list")
     public R onGroupStart(@RequestBody AtGroupTaskDTO atGroupTask){
-        atGroupTask.setSysUserId(getUserId());
+        atGroupTask.setSysUserId(getAuthUserId());
         atGroupTaskService.onGroupStart(atGroupTask);
         return R.ok();
     }
@@ -113,7 +113,7 @@ public class AtGroupTaskController extends AbstractController {
     @RequestMapping("/save")
     @RequiresPermissions("ltt:atgrouptask:save")
     public R save(@RequestBody AtGroupTaskDTO atGroupTask){
-        atGroupTask.setSysUserId(getUserId());
+        atGroupTask.setSysUserId(getAuthUserId());
 		atGroupTaskService.save(atGroupTask);
 
         return R.ok();

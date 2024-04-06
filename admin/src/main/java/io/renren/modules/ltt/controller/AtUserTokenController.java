@@ -61,7 +61,7 @@ public class AtUserTokenController extends AbstractController {
     @RequestMapping("/save")
     @RequiresPermissions("ltt:atusertoken:save")
     public R save(@RequestBody AtUserTokenDTO atUserToken){
-        atUserToken.setSysUserId(getUserId());
+        atUserToken.setSysUserId(getAuthUserId());
 		atUserTokenService.save(atUserToken);
 
         return R.ok();

@@ -61,7 +61,7 @@ public class AtAvatarController extends AbstractController {
     @RequestMapping("/save")
     @RequiresPermissions("ltt:atavatar:save")
     public R save(@RequestBody AtAvatarDTO atAvatar){
-        atAvatar.setSysUserId(getUserId());
+        atAvatar.setSysUserId(getAuthUserId());
 		atAvatarService.save(atAvatar);
 
         return R.ok();

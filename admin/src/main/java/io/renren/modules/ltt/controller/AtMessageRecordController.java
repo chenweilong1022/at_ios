@@ -61,7 +61,7 @@ public class AtMessageRecordController extends AbstractController {
     @RequestMapping("/save")
     @RequiresPermissions("ltt:atmessagerecord:save")
     public R save(@RequestBody AtMessageRecordDTO atMessageRecord){
-        atMessageRecord.setSysUserId(getUserId());
+        atMessageRecord.setSysUserId(getAuthUserId());
 		atMessageRecordService.save(atMessageRecord);
 
         return R.ok();
