@@ -156,7 +156,11 @@ public class Data4Task {
                         update.setMsg(searchPhoneVO.getMsg());
                         if (200 == searchPhoneVO.getCode()) {
                             update.setTaskStatus(TaskStatus.TaskStatus8.getKey());
-                        }else {
+                        } else if (201 == searchPhoneVO.getCode()) {
+                            if (searchPhoneVO.getMsg().contains(UserStatusCode.UserStatusCode10.getValue())) {
+                                update.setTaskStatus(TaskStatus.TaskStatus5.getKey());
+                            }
+                        } else {
                             UserStatus userStatus = UserStatus.UserStatus4;
                             update.setTaskStatus(TaskStatus.TaskStatus13.getKey());
                             //需要刷新token
