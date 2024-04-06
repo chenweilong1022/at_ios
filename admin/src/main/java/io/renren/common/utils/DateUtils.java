@@ -225,7 +225,7 @@ public class DateUtils {
         long timestamp2 = Long.parseLong(timestampStr2);
 
         // 比较这两个时间戳
-        if (timestamp1 > timestamp2) {
+        if (timestamp1 >= timestamp2) {
             return true;
         }
         return false;

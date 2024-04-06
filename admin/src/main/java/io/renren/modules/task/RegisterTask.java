@@ -250,7 +250,7 @@ public class RegisterTask {
                             if (StrUtil.isEmpty(phoneCode) && StringUtils.isNotEmpty(cdGetPhoneEntity.getCountrycode())) {
                                 if (CountryCode.CountryCode3.getValue().equals(cdGetPhoneEntity.getCountrycode())) {
                                     //日本
-                                    cardJpSms.put(ConfigConstant.CARD_JP_SMS, DateUtils.getTimestampMillis(cdGetPhoneEntity.getCreateTime()));
+                                    cardJpSms.put(cdGetPhoneEntity.getPkey(), DateUtils.getTimestampMillis(cdGetPhoneEntity.getCreateTime()));
                                     phoneCode = cardJpService.getPhoneCode(cdGetPhoneEntity.getPkey());
                                 } else if (CountryCode.CountryCode5.getValue().equals(cdGetPhoneEntity.getCountrycode())) {
                                     //香港

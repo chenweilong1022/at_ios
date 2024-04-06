@@ -93,25 +93,26 @@ public class CardJpServiceImpl implements FirefoxService {
     }
 
     public static void main(String[] args) {
-        String resp = "{\n" +
-                "  \"code\": 1,\n" +
-                "  \"msg\": \"SUCCESS\",\n" +
-                "  \"time\": \"1709050984\",\n" +
-                "  \"data\": {\n" +
-                "    \"take_ids\": [\n" +
-                "      18199\n" +
-                "    ]\n" +
-                "  }\n" +
-                "}";
-        CardJpGetPhoneCancelVO resultDto = JSON.parseObject(resp, CardJpGetPhoneCancelVO.class);
-        log.error("CardJpServiceImpl_setRel_resultDto {}", resultDto);
+        String resp = "{\"code\":1,\"msg\":\"SUCCESS\",\"time\":\"1712394634\",\"data\":{\"ret\":[{\"take_id\":146107,\"state\":1,\"phone_number\":\"08013881651\",\"take_time\":1712391241,\"sms\":[{\"recv_time\":1712393514,\"content\":\"認証番号「255982」をLINEで入力して下で下さい。30分間有効です。\"},{\"recv_time\":1712394272,\"content\":\"認証番号「514325」をLINEで入力して下さい。\\n他人には教えないで下さい。30分間有効です。\"}]}]}}";
+        CardJpGetPhoneSmsVO resultDto = JSON.parseObject(resp, CardJpGetPhoneSmsVO.class);
+        log.info("CardJpServiceImpl_getPhoneCode_resultDto {}", resultDto);
 
         if (resultDto.getCode() != 1 || resultDto.getData() == null) {
-            System.out.println(false);
+            log.error("CardJpServiceImpl_getPhoneCode_error {}, result :{}", resultDto);
+            System.out.println("null");
         }
-        List<String> takeIds = resultDto.getData().getTake_ids();
-        if (CollectionUtil.isNotEmpty(takeIds) && takeIds.contains("18200")) {
-            System.out.println(true);
+        List<CardJpGetPhoneSmsVO.Data.Ret> ret = resultDto.getData().getRet();
+        if (CollectionUtil.isNotEmpty(ret)) {
+            CardJpGetPhoneSmsVO.Data.Ret ret1 = ret.stream().filter(i -> CollectionUtil.isNotEmpty(i.getSms())).findFirst().orElse(null);
+            if (ObjectUtil.isNotNull(ret1) && CollectionUtil.isNotEmpty(ret1.getSms())) {
+                CardJpGetPhoneSmsVO.Data.Ret.Sm sms = ret1.getSms().stream()
+                        .filter(i -> DateUtils.comparisonTime(i.getRecvTime(), "1712394271"))
+                        .findFirst().orElse(null);
+                System.out.println("ObjectUtil.isNotNull(sms)"+ObjectUtil.isNotNull(sms));
+                System.out.println(sms);
+                System.out.println(sms.getContent());
+                System.out.println(extractVerificationCode(sms.getContent()));
+            }
         }
     }
 
@@ -119,8 +120,8 @@ public class CardJpServiceImpl implements FirefoxService {
     public String getPhoneCode(String pKey) {
         try {
             //发起操作时间
-            String createTimestamp = cardJpSms.getIfPresent(ConfigConstant.CARD_JP_SMS);
-            System.out.println("createTimestamp" +createTimestamp);
+            String createTimestamp = cardJpSms.getIfPresent(pKey);
+            log.info("CardJpServiceImpl_getPhoneCode_createTimestamp {}", createTimestamp);
 
             HashMap<String, String> paramMap = new HashMap<>();
             paramMap.put("user_code", systemConstant.getJpSmsConfigUserCode());//必填，用户号
