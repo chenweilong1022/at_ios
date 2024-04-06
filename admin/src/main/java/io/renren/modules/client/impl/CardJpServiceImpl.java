@@ -61,31 +61,31 @@ public class CardJpServiceImpl implements FirefoxService {
     @Override
     public GetPhoneVO getPhone() {
         try {
-//            HashMap<String, String> paramMap = new HashMap<>();
-//            paramMap.put("user_code", systemConstant.getJpSmsConfigUserCode());//必填，用户号
-//            paramMap.put("platform_id", "4");//必填，平台ID {"platform_id":4,"platform_name":"line","price":50,"repeat_price":0}
-//            paramMap.put("take_count", "1");//必填，取号数量
-//            paramMap.put("notify_url", "123");//必填，回调地址,取号成功将会回调该地址
-//            paramMap.put("timestamp", DateUtils.getTimestampMillis());//必填，请求时间戳(秒)
-//            paramMap.put("sign", getSign(paramMap));//必填，签名
-//
-//            String paramStr = JSONUtil.toJsonStr(paramMap);
-//            log.info("CardJpServiceImpl_getPhone_param {}", paramStr);
-//
-//            String url = String.format("%s/TakePhoneNumberEx", systemConstant.getJpSmsConfigInterfaceUrl());
-//            String resp = HttpUtil.post(url, paramStr);
-//            log.info("CardJpServiceImpl_getPhone_result {}", resp);
-//
-//            CardJpGetPhoneVO resultDto = JSON.parseObject(resp, CardJpGetPhoneVO.class);
-//            if (ObjectUtil.isNotNull(resultDto)
-//                    && CollectionUtil.isNotEmpty(resultDto.getData())) {
-//                CardJpGetPhoneVO.Data data = resultDto.getData().get(0);
-//                GetPhoneVO getPhoneVo = new GetPhoneVO()
-//                        .setPkey(data.getTake_id())
-//                        .setPhone(String.format("%s%s", CountryCode.CountryCode3.getKey(), data.getPhone_number()))
-//                        .setNumber("").setTime(null).setCom("").setCountry("").setCountryCode("").setOther("");
-//                return getPhoneVo;
-//            }
+            HashMap<String, String> paramMap = new HashMap<>();
+            paramMap.put("user_code", systemConstant.getJpSmsConfigUserCode());//必填，用户号
+            paramMap.put("platform_id", "4");//必填，平台ID {"platform_id":4,"platform_name":"line","price":50,"repeat_price":0}
+            paramMap.put("take_count", "1");//必填，取号数量
+            paramMap.put("notify_url", "123");//必填，回调地址,取号成功将会回调该地址
+            paramMap.put("timestamp", DateUtils.getTimestampMillis());//必填，请求时间戳(秒)
+            paramMap.put("sign", getSign(paramMap));//必填，签名
+
+            String paramStr = JSONUtil.toJsonStr(paramMap);
+            log.info("CardJpServiceImpl_getPhone_param {}", paramStr);
+
+            String url = String.format("%s/TakePhoneNumberEx", systemConstant.getJpSmsConfigInterfaceUrl());
+            String resp = HttpUtil.post(url, paramStr);
+            log.info("CardJpServiceImpl_getPhone_result {}", resp);
+
+            CardJpGetPhoneVO resultDto = JSON.parseObject(resp, CardJpGetPhoneVO.class);
+            if (ObjectUtil.isNotNull(resultDto)
+                    && CollectionUtil.isNotEmpty(resultDto.getData())) {
+                CardJpGetPhoneVO.Data data = resultDto.getData().get(0);
+                GetPhoneVO getPhoneVo = new GetPhoneVO()
+                        .setPkey(data.getTake_id())
+                        .setPhone(String.format("%s%s", CountryCode.CountryCode3.getKey(), data.getPhone_number()))
+                        .setNumber("").setTime(null).setCom("").setCountry("").setCountryCode("").setOther("");
+                return getPhoneVo;
+            }
         } catch (Exception e) {
             log.error("CardJpServiceImpl_getPhone_error {}", e);
         }
