@@ -41,7 +41,7 @@ public enum CountryCode implements BaseEnum {
             return null;
         }
         for (CountryCode typeEnum : CountryCode.values()) {
-            if (typeEnum.getValue().equals(value)) {
+            if (typeEnum.getValue().equalsIgnoreCase(value)) {
                 return typeEnum.getKey();
             }
         }
@@ -65,7 +65,7 @@ public enum CountryCode implements BaseEnum {
             return null;
         }
         for (CountryCode typeEnum : CountryCode.values()) {
-            if (typeEnum.getValue().equals(value)) {
+            if (typeEnum.getValue().equalsIgnoreCase(value)) {
                 return typeEnum;
             }
         }

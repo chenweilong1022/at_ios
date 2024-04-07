@@ -4,7 +4,6 @@ import cn.hutool.core.util.ObjectUtil;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.ltt.dto.AtDataSubtaskParamPageDTO;
 import io.renren.modules.ltt.dto.AtDataSubtaskResultDto;
-import io.renren.modules.ltt.dto.CustomerUserResultDto;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -43,6 +42,13 @@ public class AtDataSubtaskServiceImpl extends ServiceImpl<AtDataSubtaskDao, AtDa
     @Override
     public AtDataSubtaskVO getById(Integer id) {
         return AtDataSubtaskConver.MAPPER.conver(baseMapper.selectById(id));
+    }
+
+    @Override
+    public List<AtDataSubtaskVO> getByDataTaskIds(Integer dataTaskId) {
+        List<AtDataSubtaskEntity> list = baseMapper.selectList(new QueryWrapper<AtDataSubtaskEntity>().lambda()
+                .eq(AtDataSubtaskEntity::getDataTaskId, dataTaskId));
+        return AtDataSubtaskConver.MAPPER.conver(list);
     }
 
     @Override

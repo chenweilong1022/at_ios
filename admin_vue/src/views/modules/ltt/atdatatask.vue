@@ -106,6 +106,9 @@
 <!--          <el-button type="text" size="small" @click="addOrUpdateHandle(scope.row.id)">修改</el-button>-->
           <el-button type="text" size="small" @click="deleteHandle(scope.row.id)">删除</el-button>
           <el-button type="text" size="small" @click="errLogsHandle(scope.row.id)">错误日志</el-button>
+          <el-button type="text" size="small"
+                     @click="importTokenHandle(scope.row.id)">token导出
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -259,6 +262,15 @@
               this.$message.error(data.msg)
             }
           })
+        })
+      },
+      importTokenHandle (id) {
+        this.$confirm(`确定要对勾选账户token导出?`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          window.open(this.$http.adornUrl(`/ltt/atdatatask/importDataToken?token=${this.$cookie.get('token')}&dataTaskId=${id}`))
         })
       },
       // 删除

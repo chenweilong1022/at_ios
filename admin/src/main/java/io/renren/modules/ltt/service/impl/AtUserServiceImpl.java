@@ -1,20 +1,27 @@
 package io.renren.modules.ltt.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.app.service.FileService;
+import io.renren.modules.client.dto.LineTokenJson;
 import io.renren.modules.ltt.dao.UpdateAtUserCustomerParamDto;
 import io.renren.modules.ltt.dao.UpdateUserGroupParamDto;
 import io.renren.modules.ltt.dao.ValidateAtUserStatusParamDto;
 import io.renren.modules.ltt.entity.AtUserTokenEntity;
+import io.renren.modules.ltt.enums.CountryCode;
 import io.renren.modules.ltt.enums.DeleteFlag;
 import io.renren.modules.ltt.enums.UserStatus;
 import io.renren.modules.ltt.service.AtUserTokenService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.velocity.Template;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.Velocity;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -28,13 +35,18 @@ import io.renren.modules.ltt.dto.AtUserDTO;
 import io.renren.modules.ltt.vo.AtUserVO;
 import io.renren.modules.ltt.service.AtUserService;
 import io.renren.modules.ltt.conver.AtUserConver;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.StringWriter;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import static io.renren.modules.ltt.enums.UserStatus.UserStatus1;
 
@@ -166,32 +178,159 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
 
     @Override
     public String downloadUserTokenTxt(List<Integer> ids) {
+//        Assert.isTrue(CollectionUtils.isEmpty(ids), "选择的数据不能为空");
+//
+//        //查询对应的token
+//        List<AtUserEntity> userList = baseMapper.selectBatchIds(ids);
+//        Assert.isTrue(CollectionUtils.isEmpty(userList), "数据为空，请刷新重试");
+//
+//        List<Integer> userTokenIdList = userList.stream()
+//                .filter(i -> i.getUserTokenId() != null)
+//                .map(AtUserEntity::getUserTokenId).distinct()
+//                .collect(Collectors.toList());
+//        Assert.isTrue(CollectionUtils.isEmpty(userTokenIdList), "下载账户数据为空");
+//
+//        //查询token数据
+//        List<AtUserTokenEntity> tokenList = atUserTokenService.selectBatchIds(userTokenIdList);
+//        Assert.isTrue(CollectionUtils.isEmpty(tokenList), "下载账户数据为空");
+//
+//        //处理下载数据
+//        List<String> tokenTextList = tokenList.stream().filter(i -> StringUtils.isNotEmpty(i.getToken()))
+//                .map(AtUserTokenEntity::getToken).collect(Collectors.toList());
+//        Assert.isTrue(CollectionUtils.isEmpty(tokenTextList), "下载账户数据为空");
+//        try {
+//            return fileService.writeTxtFile(String.valueOf(System.currentTimeMillis()), tokenTextList);
+//        } catch (IOException e) {
+//            Assert.isTrue(true, "下载异常，请稍后再试");
+//        }
+        return null;
+    }
+
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public byte[] importToken(List<Integer> ids) {
         Assert.isTrue(CollectionUtils.isEmpty(ids), "选择的数据不能为空");
 
         //查询对应的token
         List<AtUserEntity> userList = baseMapper.selectBatchIds(ids);
         Assert.isTrue(CollectionUtils.isEmpty(userList), "数据为空，请刷新重试");
 
-        List<Integer> userTokenIdList = userList.stream()
-                .filter(i -> i.getUserTokenId() != null)
-                .map(AtUserEntity::getUserTokenId).distinct()
-                .collect(Collectors.toList());
+        List<Integer> userTokenIdList = userList.stream().filter(i -> i.getUserTokenId() != null)
+                .map(AtUserEntity::getUserTokenId).distinct().collect(Collectors.toList());
         Assert.isTrue(CollectionUtils.isEmpty(userTokenIdList), "下载账户数据为空");
 
         //查询token数据
         List<AtUserTokenEntity> tokenList = atUserTokenService.selectBatchIds(userTokenIdList);
         Assert.isTrue(CollectionUtils.isEmpty(tokenList), "下载账户数据为空");
+        Map<Integer, String> tokenMap = tokenList.stream().collect(Collectors.toMap(AtUserTokenEntity::getId, AtUserTokenEntity::getToken));
 
-        //处理下载数据
-        List<String> tokenTextList = tokenList.stream().filter(i -> StringUtils.isNotEmpty(i.getToken()))
-                .map(AtUserTokenEntity::getToken).collect(Collectors.toList());
-        Assert.isTrue(CollectionUtils.isEmpty(tokenTextList), "下载账户数据为空");
-        try {
-            return fileService.writeTxtFile(String.valueOf(System.currentTimeMillis()), tokenTextList);
-        } catch (IOException e) {
-            Assert.isTrue(true, "下载异常，请稍后再试");
+        init();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        ZipOutputStream zip = new ZipOutputStream(outputStream);
+
+        List<String> tokens = new ArrayList<>();
+        List<String> tokenss = new ArrayList<>();
+        List<String> tokens7 = new ArrayList<>();
+
+        String token;
+        for (AtUserEntity atUserEntity : userList) {
+            token = tokenMap.get(atUserEntity.getUserTokenId());
+            //封装模板数据
+            Map<String, Object> map = new HashMap<>();
+            map.put("token", token);
+            VelocityContext context = new VelocityContext(map);
+            //渲染模板
+            StringWriter sw = new StringWriter();
+            Template tpl = Velocity.getTemplate("template/token.txt.vm", "UTF-8" );
+            tpl.merge(context, sw);
+
+            //国家
+            Integer countryCode = CountryCode.getKeyByValue(atUserEntity.getNation());
+            try {
+                LineTokenJson lineTokenJson = JSON.parseObject(token, LineTokenJson.class);
+                String format = String.format("%s----%s----%s----%s----%s----%s\n",
+                        countryCode, lineTokenJson.getPhone().replaceFirst(countryCode+"",""),
+                        lineTokenJson.getPassword(), lineTokenJson.getMid(), lineTokenJson.getAccessToken(),
+                        lineTokenJson.getRefreshToken());
+                tokens.add(format);
+
+                tokenss.add(token);
+
+                String format7 = String.format("%s----%s----%s----%s----%s----%s----%s\n",
+                        countryCode, lineTokenJson.getPhone().replaceFirst(countryCode+"",""),
+                        lineTokenJson.getPassword(), lineTokenJson.getMid(), lineTokenJson.getAccessToken(),
+                        lineTokenJson.getRefreshToken(),lineTokenJson.getAuthToken());
+                tokens7.add(format7);
+
+                String packagePath = String.format("token/%s.txt",atUserEntity.getTelephone());
+                zip.putNextEntry(new ZipEntry(packagePath));
+                IOUtils.write(sw.toString(), zip, "UTF-8");
+                IOUtils.closeQuietly(sw);
+                zip.closeEntry();
+            } catch (IOException e) {
+            }
         }
-        return null;
+
+        try{
+            //封装模板数据
+            Map<String, Object> map = new HashMap<>();
+            map.put("columns", tokens);
+            VelocityContext context = new VelocityContext(map);
+            //渲染模板
+            StringWriter sw = new StringWriter();
+            Template tpl = Velocity.getTemplate("template/84data.vm", "UTF-8" );
+            tpl.merge(context, sw);
+
+            String packagePath = String.format("token/%s.txt","data");
+            zip.putNextEntry(new ZipEntry(packagePath));
+            IOUtils.write(sw.toString(), zip, "UTF-8");
+            IOUtils.closeQuietly(sw);
+            zip.closeEntry();
+
+            //封装模板数据
+            Map<String, Object> map7 = new HashMap<>();
+            map7.put("columns", tokens7);
+            VelocityContext context7 = new VelocityContext(map7);
+            //渲染模板
+            StringWriter sw7 = new StringWriter();
+            Template tpl7 = Velocity.getTemplate("template/84data.vm", "UTF-8" );
+            tpl7.merge(context7, sw7);
+
+            String packagePath7 = String.format("token/%s.txt","data7");
+            zip.putNextEntry(new ZipEntry(packagePath7));
+            IOUtils.write(sw7.toString(), zip, "UTF-8");
+            IOUtils.closeQuietly(sw7);
+            zip.closeEntry();
+
+
+
+            //封装模板数据
+            Map<String, Object> mapTokenss = new HashMap<>();
+            mapTokenss.put("columns", tokenss);
+            VelocityContext contextTokens = new VelocityContext(mapTokenss);
+            //渲染模板
+            StringWriter swTokens = new StringWriter();
+            Template tplTokens = Velocity.getTemplate("template/tokens.txt.vm", "UTF-8" );
+            tplTokens.merge(contextTokens, swTokens);
+
+            String packagePathTokens = String.format("token/%s.txt","tokenss");
+            zip.putNextEntry(new ZipEntry(packagePathTokens));
+            IOUtils.write(swTokens.toString(), zip, "UTF-8");
+            IOUtils.closeQuietly(swTokens);
+            zip.closeEntry();
+        }catch (IOException e) {
+        }
+        IOUtils.closeQuietly(zip);
+        byte[] byteArray = outputStream.toByteArray();
+        return byteArray;
+    }
+
+    private static void init() {
+        //设置velocity资源加载器
+        Properties prop = new Properties();
+        prop.put("file.resource.loader.class", "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader" );
+        Velocity.init(prop);
     }
 
     @Override

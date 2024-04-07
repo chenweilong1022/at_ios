@@ -3,7 +3,6 @@ package io.renren.modules.ltt.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Lists;
 import io.renren.common.utils.EnumUtil;
 import io.renren.common.utils.PhoneUtil;
@@ -17,6 +16,7 @@ import io.renren.modules.ltt.enums.*;
 import io.renren.modules.ltt.service.AtDataService;
 import io.renren.modules.ltt.service.AtDataSubtaskService;
 import io.renren.modules.ltt.service.AtUserService;
+import io.renren.modules.ltt.vo.AtDataSubtaskVO;
 import io.renren.modules.ltt.vo.AtUserVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +38,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service("atDataTaskService")
@@ -245,6 +246,19 @@ public class AtDataTaskServiceImpl extends ServiceImpl<AtDataTaskDao, AtDataTask
     @Override
     public List<GroupCountByDataTaskIdVO> groupCountByDataTaskId() {
         return baseMapper.groupCountByDataTaskId();
+    }
+
+    @Override
+    public byte[] importDataToken(Integer dataTaskId) {
+        List<AtDataSubtaskVO> subtaskVOList = atDataSubtaskService.getByDataTaskIds(dataTaskId);
+        Assert.isTrue(CollUtil.isEmpty(subtaskVOList), "数据为空");
+
+        List<Integer> userIdList = subtaskVOList.stream().filter(i -> ObjectUtil.isNotNull(i.getUserId()))
+                .map(AtDataSubtaskVO::getUserId).distinct().collect(Collectors.toList());
+        Assert.isTrue(CollUtil.isEmpty(userIdList), "数据为空");
+
+        byte[] bytes = atUserService.importToken(userIdList);
+        return bytes;
     }
 
 }

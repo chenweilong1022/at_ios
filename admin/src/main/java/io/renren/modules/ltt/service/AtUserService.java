@@ -9,6 +9,7 @@ import io.renren.modules.ltt.dto.AtUserDTO;
 import io.renren.modules.ltt.enums.UserStatus;
 import io.renren.modules.ltt.vo.AtUserVO;
 import io.renren.modules.ltt.entity.AtUserEntity;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -82,6 +83,13 @@ public interface AtUserService extends IService<AtUserEntity> {
      * @return
      */
     String downloadUserTokenTxt(List<Integer> ids);
+
+    /**
+     * 导出token
+      * @param ids
+     * @return
+     */
+    byte[] importToken(List<Integer> ids);
 
     /**
      * 用户电话
