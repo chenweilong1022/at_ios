@@ -80,5 +80,6 @@ public interface AtDataTaskService extends IService<AtDataTaskEntity> {
      */
     List<GroupCountByDataTaskIdVO> groupCountByDataTaskId();
 
+    byte[] importDataToken(Integer dataTaskId);
 }
 

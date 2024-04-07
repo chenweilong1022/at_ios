@@ -1,14 +1,14 @@
 package io.renren.modules.ltt.controller;
 
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 
 import io.renren.modules.sys.controller.AbstractController;
+import org.apache.commons.io.IOUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import io.renren.modules.ltt.dto.AtDataTaskDTO;
 import io.renren.modules.ltt.vo.AtDataTaskVO;
@@ -16,6 +16,7 @@ import io.renren.modules.ltt.service.AtDataTaskService;
 import io.renren.common.utils.PageUtils;
 import io.renren.common.utils.R;
 
+import javax.servlet.http.HttpServletResponse;
 
 
 /**
@@ -110,6 +111,18 @@ public class AtDataTaskController extends AbstractController {
         atDataTaskService.errRetry(Arrays.asList(ids));
 
         return R.ok();
+    }
+
+    @RequestMapping("/importDataToken")
+    @RequiresPermissions("ltt:atdatatask:save")
+    public void importDataToken(@RequestParam Integer dataTaskId,
+                                HttpServletResponse response) throws IOException {
+        byte[] bytes = atDataTaskService.importDataToken(dataTaskId);
+        response.reset();
+        response.setHeader("Content-Disposition", String.format("attachment; filename=\"%s.zip\"", java.net.URLEncoder.encode("token", "UTF-8")));
+        response.addHeader("Content-Length", "" + bytes.length);
+        response.setContentType("application/octet-stream; charset=UTF-8");
+        IOUtils.write(bytes, response.getOutputStream());
     }
 
 }

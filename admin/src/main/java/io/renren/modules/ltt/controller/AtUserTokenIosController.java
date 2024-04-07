@@ -39,7 +39,7 @@ public class AtUserTokenIosController {
      * 设备分页查询
      */
     @RequestMapping("/queryDevicePage")
-    @RequiresPermissions("ltt:atusertokenios:list")
+//    @RequiresPermissions("ltt:atusertokenios:list")
     public R queryDevicePage(AtUserTokenIosDeviceParamDTO paramDTO){
         PageUtils page = atUserTokenIosService.queryDevicePage(paramDTO);
 
@@ -50,7 +50,7 @@ public class AtUserTokenIosController {
      * 列表
      */
     @RequestMapping("/list")
-    @RequiresPermissions("ltt:atusertokenios:list")
+//    @RequiresPermissions("ltt:atusertokenios:list")
     public R list(AtUserTokenIosDTO atUserTokenIos){
         PageUtils page = atUserTokenIosService.queryPage(atUserTokenIos);
 
@@ -62,7 +62,7 @@ public class AtUserTokenIosController {
      * 信息
      */
     @RequestMapping("/info/{id}")
-    @RequiresPermissions("ltt:atusertokenios:info")
+//    @RequiresPermissions("ltt:atusertokenios:info")
     public R info(@PathVariable("id") Integer id){
 		AtUserTokenIosVO atUserTokenIos = atUserTokenIosService.getById(id);
 
@@ -76,7 +76,7 @@ public class AtUserTokenIosController {
      * 去找手机
      */
     @RequestMapping("/taskIosFind")
-    @RequiresPermissions("ltt:atusertokenios:save")
+//    @RequiresPermissions("ltt:atusertokenios:save")
     public R taskIosFind(@RequestBody Integer[] ids){
         atUserTokenIosService.taskIosFind(ids);
         return R.ok();
@@ -86,7 +86,7 @@ public class AtUserTokenIosController {
      * 备份
      */
     @RequestMapping("/backUp")
-    @RequiresPermissions("ltt:atusertokenios:save")
+//    @RequiresPermissions("ltt:atusertokenios:save")
     public R backUp(@RequestBody AtUserTokenIosDTO atUserTokenIos){
         atUserTokenIosService.backUp(atUserTokenIos);
         return R.ok();
@@ -97,7 +97,7 @@ public class AtUserTokenIosController {
      * 保存
      */
     @RequestMapping("/save")
-    @RequiresPermissions("ltt:atusertokenios:save")
+//    @RequiresPermissions("ltt:atusertokenios:save")
     public R save(@RequestBody AtUserTokenIosDTO atUserTokenIos){
 		atUserTokenIosService.save(atUserTokenIos);
 
@@ -108,7 +108,7 @@ public class AtUserTokenIosController {
      * 修改
      */
     @RequestMapping("/update")
-    @RequiresPermissions("ltt:atusertokenios:update")
+//    @RequiresPermissions("ltt:atusertokenios:update")
     public R update(@RequestBody AtUserTokenIosDTO atUserTokenIos){
 		atUserTokenIosService.updateById(atUserTokenIos);
 
@@ -119,7 +119,7 @@ public class AtUserTokenIosController {
      * 更改设备名称
      */
     @RequestMapping("/updateDeviceName")
-    @RequiresPermissions("ltt:atusertokenios:update")
+//    @RequiresPermissions("ltt:atusertokenios:update")
     public R updateDeviceName(@RequestBody AtUserTokenIosDeviceParamDTO atUserTokenIos){
 		atUserTokenIosService.updateDeviceName(atUserTokenIos);
 
@@ -130,7 +130,7 @@ public class AtUserTokenIosController {
      * 删除
      */
     @RequestMapping("/delete")
-    @RequiresPermissions("ltt:atusertokenios:delete")
+//    @RequiresPermissions("ltt:atusertokenios:delete")
     public R delete(@RequestBody Integer[] ids){
 		atUserTokenIosService.removeByIds(Arrays.asList(ids));
 

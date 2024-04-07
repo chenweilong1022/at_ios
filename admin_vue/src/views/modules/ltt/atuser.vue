@@ -100,8 +100,8 @@
                    :disabled="dataListSelections.length <= 0">转移分组
         </el-button>
         <el-button v-if="isAuth('ltt:atuser:save')" type="primary"
-                   @click="downloadUserTokenTxtHandle()"
-                   :disabled="dataListSelections.length <= 0">下载账户txt
+                   @click="importTokenHandle()"
+                   :disabled="dataListSelections.length <= 0">token导出
         </el-button>
         <el-button v-if="isAuth('ltt:atuser:save')" type="primary"
                    @click="userCustomerHandle()"
@@ -476,42 +476,45 @@
         })
       },
       // 下载账户txt
-      downloadUserTokenTxtHandle () {
+      importTokenHandle () {
         var ids = this.dataListSelections.map(item => {return item.id})
-        this.$confirm(`确定要对勾选账户进行账户下载操作?`, '提示', {
+        this.$confirm(`确定要对勾选账户token导出?`, '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          this.$http({
-            url: this.$http.adornUrl('/ltt/atuser/downloadUserTokenTxt'),
-            method: 'post',
-            data: this.$http.adornData(ids, false)
-          }).then(({data}) => {
-            if (data && data.code === 0) {
-              /**
-               * 下载的文件的名字
-               */
-              var fileName = this.getFilename(data.fileUrl)
-              console.log(data.fileUrl)
-              var link = document.createElement('a')
-              // 这里是将url转成blob地址，
-              fetch(data.fileUrl).then((res) => res.blob())
-                .then((blob) => {
-                  // 将链接地址字符内容转变成blob地址
-                  link.href = URL.createObjectURL(blob)
-                  console.log(link.href)
-                  /**
-                   * 下载的文件的名字
-                   */
-                  link.download = fileName
-                  document.body.appendChild(link)
-                  link.click()
-                })
-            } else {
-              this.$message.error(data.msg)
-            }
-          })
+          window.open(this.$http.adornUrl(`/ltt/atuser/importToken?token=${this.$cookie.get('token')}&ids=${ids}`))
+
+          // this.$http({
+          //   url: this.$http.adornUrl('/ltt/atuser/importToken'),
+          //   method: 'post',
+          //   data: this.$http.adornData(ids, false)
+          // }).then(({data}) => {
+          //   console.log("----------------")
+          //   if (data && data.code === 0) {
+          //     /**
+          //      * 下载的文件的名字
+          //      */
+          //     var fileName = this.getFilename(data.fileUrl)
+          //     console.log(data.fileUrl)
+          //     var link = document.createElement('a')
+          //     // 这里是将url转成blob地址，
+          //     fetch(data.fileUrl).then((res) => res.blob())
+          //       .then((blob) => {
+          //         // 将链接地址字符内容转变成blob地址
+          //         link.href = URL.createObjectURL(blob)
+          //         console.log(link.href)
+          //         /**
+          //          * 下载的文件的名字
+          //          */
+          //         link.download = fileName
+          //         document.body.appendChild(link)
+          //         link.click()
+          //       })
+          //   } else {
+          //     this.$message.error(data.msg)
+          //   }
+          // })
         })
       },
       getFilename(url) {

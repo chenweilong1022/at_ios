@@ -1,5 +1,6 @@
 package io.renren.modules.ltt.controller;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -8,6 +9,7 @@ import io.renren.modules.ltt.dao.UpdateAtUserCustomerParamDto;
 import io.renren.modules.ltt.dao.UpdateUserGroupParamDto;
 import io.renren.modules.ltt.dao.ValidateAtUserStatusParamDto;
 import io.renren.modules.sys.controller.AbstractController;
+import org.apache.commons.io.IOUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +20,7 @@ import io.renren.modules.ltt.service.AtUserService;
 import io.renren.common.utils.PageUtils;
 import io.renren.common.utils.R;
 
+import javax.servlet.http.HttpServletResponse;
 
 
 /**
@@ -113,11 +116,21 @@ public class AtUserController extends AbstractController {
         return R.ok();
     }
 
-    @RequestMapping("/downloadUserTokenTxt")
+    /**
+     * 导出token
+     * @param ids
+     * @return
+     */
+    @RequestMapping("/importToken")
     @RequiresPermissions("ltt:atuser:save")
-    public R downloadUserTokenTxt(@RequestBody List<Integer> ids) {
-        String fileUrl = atUserService.downloadUserTokenTxt(ids);
-        return R.ok().put("fileUrl", fileUrl);
+    public void importToken(@RequestParam List<Integer> ids,
+                         HttpServletResponse response) throws IOException {
+        byte[] bytes = atUserService.importToken(ids);
+        response.reset();
+        response.setHeader("Content-Disposition", String.format("attachment; filename=\"%s.zip\"",java.net.URLEncoder.encode("token","UTF-8")));
+        response.addHeader("Content-Length", "" + bytes.length);
+        response.setContentType("application/octet-stream; charset=UTF-8");
+        IOUtils.write(bytes, response.getOutputStream());
     }
 
     /**

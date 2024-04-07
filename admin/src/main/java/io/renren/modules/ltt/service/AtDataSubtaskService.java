@@ -33,6 +33,9 @@ public interface AtDataSubtaskService extends IService<AtDataSubtaskEntity> {
      * @return
      */
     AtDataSubtaskVO getById(Integer id);
+
+    List<AtDataSubtaskVO> getByDataTaskIds(Integer dataTaskId);
+
     /**
      * 保存
      * @param atDataSubtask
