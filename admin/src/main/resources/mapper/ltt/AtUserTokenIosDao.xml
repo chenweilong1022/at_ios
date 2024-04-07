@@ -33,6 +33,8 @@
         <where>
             <include refid="page_where_if"/>
         </where>
+            GROUP BY
+            device_id
         )t
     </select>
 
