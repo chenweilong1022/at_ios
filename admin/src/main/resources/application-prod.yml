@@ -11,7 +11,7 @@ project:
         mysql:
             hostname: ${PROJECT_ADMIN_MYSQL_HOSTNAME:${project.mysql.hostname}}
             port: ${PROJECT_ADMIN_MYSQL_PORT:${project.mysql.port}}
-            url: ${project.admin.mysql.hostname}:${project.admin.mysql.port}/
+            url: ${project.admin.mysql.hostname}:${project.admin.mysql.port}
             username: ${PROJECT_ADMIN_MYSQL_USERNAME:${project.mysql.username}}
             password: ${PROJECT_ADMIN_MYSQL_PASSWORD:${project.mysql.password}}
     game:
