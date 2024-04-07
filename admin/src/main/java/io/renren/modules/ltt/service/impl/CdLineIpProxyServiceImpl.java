@@ -26,6 +26,7 @@ import io.renren.modules.ltt.vo.CdLineIpProxyVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.io.Serializable;
@@ -104,6 +105,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public String getProxyIp(CdLineIpProxyDTO cdLineIpProxyDTO) {
         try {
             //获取缓存
@@ -154,7 +156,9 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                                         this.save(save);
                                         return socks5Pre(ip);
                                     }catch (Exception e) {
-
+                                        log.info("e = {}",e.getMessage());
+                                        log.info("e = {}",e.getLocalizedMessage());
+                                        log.info("e = {}",e.toString());
                                     }
 
                                 }
@@ -212,7 +216,9 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                 log.info("keyByResource = {} 在执行",keyByResource);
             }
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error("e = {}",e.getMessage());
+            log.error("e = {}",e.getLocalizedMessage());
+            log.error("e = {}",e.toString());
         }
         return null;
     }
