@@ -10,13 +10,18 @@ import org.apache.commons.lang.StringUtils;
 
 @Getter
 public enum CountryCode implements BaseEnum {
-
     CountryCode1(66,"th"),
     CountryCode2(886,"tw"),
-    CountryCode3(81,"jp"),
+    CountryCode3(81,"kr"),
     CountryCode4(82,"kr"),
     CountryCode5(852,"hk"),
     CountryCode6(855,"kh"),
+//    CountryCode1(66,"th"),
+//    CountryCode2(886,"tw"),
+//    CountryCode3(81,"jp"),
+//    CountryCode4(82,"kr"),
+//    CountryCode5(852,"hk"),
+//    CountryCode6(855,"kh"),
     ;
 
     CountryCode(int key, String value) {

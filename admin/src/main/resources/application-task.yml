@@ -30,7 +30,7 @@ logging:
     file: ${project.log.file}/logs.log
 file:
     upload:
-        baseurl: https://${project.host.name}/file/
+        baseurl: http://${project.host.name}/file/
         saveurl: ${project.file.saveurl}/images/
 spring:
     datasource:
