@@ -1,36 +1,36 @@
 project:
     host:
-        name: ${PROJECT_HOST_NAME:127.0.0.1}
+        name: ${PROJECT_HOST_NAME:127.0.0.1:8880}
     mysql:
         hostname: ${PROJECT_MYSQL_HOSTNAME:127.0.0.1}
-        port: ${PROJECT_MYSQL_PORT:3306}
+        port: ${PROJECT_MYSQL_PORT:3308}
         url: ${project.mysql.hostname}:${project.mysql.port}
         username: ${PROJECT_MYSQL_USERNAME:root}
-        password: ${PROJECT_MYSQL_PASSWORD:123456}
+        password: ${PROJECT_MYSQL_PASSWORD:SEW2018!}
     admin:
         mysql:
             hostname: ${PROJECT_ADMIN_MYSQL_HOSTNAME:${project.mysql.hostname}}
             port: ${PROJECT_ADMIN_MYSQL_PORT:${project.mysql.port}}
-            url: ${project.admin.mysql.hostname}:${project.admin.mysql.port}
+            url: ${project.admin.mysql.hostname}:${project.admin.mysql.port}/at_ios4
             username: ${PROJECT_ADMIN_MYSQL_USERNAME:${project.mysql.username}}
             password: ${PROJECT_ADMIN_MYSQL_PASSWORD:${project.mysql.password}}
-    auth:
+    game:
         mysql:
-            hostname: ${PROJECT_AUTH_MYSQL_HOSTNAME:${project.mysql.hostname}}
-            #            port: ${PROJECT_AUTH_MYSQL_PORT:${project.mysql.port}}
-            port: ${PROJECT_AUTH_MYSQL_PORT:23306}
-            url: ${project.auth.mysql.hostname}:${project.auth.mysql.port}
-            username: ${PROJECT_AUTH_MYSQL_USERNAME:${project.mysql.username}}
-            password: ${PROJECT_AUTH_MYSQL_PASSWORD:${project.mysql.password}}
+            hostname: ${PROJECT_GAME_MYSQL_HOSTNAME:${project.mysql.hostname}}
+            port: ${PROJECT_GAME_MYSQL_PORT:${project.mysql.port}}
+            #            port: ${PROJECT_GAME_MYSQL_PORT:23306}
+            url: ${project.game.mysql.hostname}:${project.game.mysql.port}/at_ios4
+            username: ${PROJECT_GAME_MYSQL_USERNAME:${project.mysql.username}}
+            password: ${PROJECT_GAME_MYSQL_PASSWORD:${project.mysql.password}}
     log:
-        file: ${PROJECT_LOG_PATH:/home/web/same_bpool/logs/}
+        file: ${PROJECT_LOG_PATH:/Users/chenweilong/Desktop/java代码/at_ios/file/logs/}
     file:
-        saveurl: ${PROJECT_FILE_SAVEURL:/home/web/same_bpool/file/}
+        saveurl: ${PROJECT_FILE_SAVEURL:/Users/chenweilong/Desktop/java代码/at_ios/file}
 logging:
     file: ${project.log.file}/logs.log
 file:
     upload:
-        baseurl: http://${project.host.name}/file/
+        baseurl: https://${project.host.name}/file/
         saveurl: ${project.file.saveurl}/images/
 spring:
     datasource:
@@ -63,13 +63,28 @@ spring:
             datasource:
                 # admin 数据源配置
                 admin:
-                    url: jdbc:mysql://${project.admin.mysql.url}/admin?useUnicode=true&characterEncoding=UTF-8&useSSL=false&useTimezone=true&serverTimezone=GMT%2B8
+                    url: jdbc:mysql://${project.admin.mysql.url}?useUnicode=true&characterEncoding=UTF-8&useSSL=false&useTimezone=true&serverTimezone=GMT%2B8&allowPublicKeyRetrieval=true
                     driver-class-name: com.mysql.cj.jdbc.Driver
                     username: ${project.admin.mysql.username}
                     password: ${project.admin.mysql.password}
-                # auth 数据源配置
-                auth:
-                    url: jdbc:mysql://${project.auth.mysql.url}/auth?useUnicode=true&characterEncoding=UTF-8&useSSL=false&useTimezone=true&serverTimezone=GMT%2B8
+                # game 数据源配置
+                game:
+                    url: jdbc:mysql://${project.game.mysql.url}?useUnicode=true&characterEncoding=UTF-8&useSSL=false&useTimezone=true&serverTimezone=GMT%2B8&allowPublicKeyRetrieval=true
                     driver-class-name: com.mysql.cj.jdbc.Driver
-                    username: ${project.auth.mysql.username}
-                    password: ${project.auth.mysql.password}
+                    username: ${project.game.mysql.username}
+                    password: ${project.game.mysql.password}
+
+#客服角色id
+customer:
+    roleId: 2
+
+#获取token
+magicServer:
+    url: http://146.190.167.155:8808
+
+#jp-sms配置
+jpSmsConfig:
+    userCode: 431657
+    interfaceKey: 1e1824c7c39d44cab61817fed90776bf
+    interfaceUrl: https://api.yamadamms.com/api/Request/
+

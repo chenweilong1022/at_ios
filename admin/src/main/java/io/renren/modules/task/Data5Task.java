@@ -21,6 +21,7 @@ import io.renren.modules.ltt.service.*;
 import io.renren.modules.ltt.vo.AtDataSubtaskVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -43,6 +44,7 @@ import java.util.stream.Collectors;
 @Component
 @Slf4j
 @EnableAsync
+@Profile({"prod"})
 public class Data5Task {
 
 

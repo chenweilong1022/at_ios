@@ -31,6 +31,7 @@ import io.renren.modules.ltt.vo.GetCountBySubTaskIdVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -57,6 +58,7 @@ import static io.renren.modules.ltt.enums.PhoneStatus.PhoneStatus6;
  */
 @Component
 @Slf4j
+@Profile({"prod"})
 public class RegisterTask {
 
 
