@@ -15,6 +15,7 @@ import io.renren.modules.ltt.service.*;
 import io.renren.modules.ltt.vo.AtDataSubtaskVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -37,6 +38,7 @@ import java.util.stream.Collectors;
 @Component
 @Slf4j
 @EnableAsync
+@Profile({"prod"})
 public class Data3Task {
 
 
@@ -155,44 +157,46 @@ public class Data3Task {
                         } else if (201 == searchPhoneVO.getCode()) {
                             if (searchPhoneVO.getMsg().contains(UserStatusCode.UserStatusCode10.getValue())) {
                                 update.setTaskStatus(TaskStatus.TaskStatus5.getKey());
-                            }
-                        } else {
-                            UserStatus userStatus = UserStatus.UserStatus4;
-                            update.setTaskStatus(TaskStatus.TaskStatus13.getKey());
-                            //需要刷新token
-                            if (searchPhoneVO.getMsg().contains(UserStatusCode.UserStatusCode4.getValue())) {
-                                userStatus = UserStatus.UserStatus7;
-                            } else if (searchPhoneVO.getMsg().contains(UserStatusCode.UserStatusCode6.getValue())) {
-                                userStatus = UserStatus.UserStatus3;
-                            } else if (searchPhoneVO.getMsg().contains(UserStatusCode.UserStatusCode7.getValue())) {
-                                userStatus = UserStatus.UserStatus2;
-                                //如果失败，修改状态
+                            } else if (searchPhoneVO.getMsg().contains(UserStatusCode.UserStatusCode5.getValue())) {
                                 update.setTaskStatus(TaskStatus.TaskStatus5.getKey());
-                            } else if (searchPhoneVO.getMsg().contains(UserStatusCode.UserStatusCode8.getValue())) {
-                                userStatus = UserStatus.UserStatus3;
-                            }
+                            } else {
+                                UserStatus userStatus = UserStatus.UserStatus4;
+                                update.setTaskStatus(TaskStatus.TaskStatus13.getKey());
+                                //需要刷新token
+                                if (searchPhoneVO.getMsg().contains(UserStatusCode.UserStatusCode4.getValue())) {
+                                    userStatus = UserStatus.UserStatus7;
+                                } else if (searchPhoneVO.getMsg().contains(UserStatusCode.UserStatusCode6.getValue())) {
+                                    userStatus = UserStatus.UserStatus3;
+                                } else if (searchPhoneVO.getMsg().contains(UserStatusCode.UserStatusCode7.getValue())) {
+                                    userStatus = UserStatus.UserStatus2;
+                                    //如果失败，修改状态
+                                    update.setTaskStatus(TaskStatus.TaskStatus5.getKey());
+                                } else if (searchPhoneVO.getMsg().contains(UserStatusCode.UserStatusCode8.getValue())) {
+                                    userStatus = UserStatus.UserStatus3;
+                                }
 
 
-                            //任务失败
-                            AtDataTaskEntity atDataTaskEntity = new AtDataTaskEntity();
-                            atDataTaskEntity.setId(atDataSubtaskEntity.getDataTaskId());
-                            atDataTaskEntity.setTaskStatus(TaskStatus.TaskStatus5.getKey());
-                            atDataTaskService.updateById(atDataTaskEntity);
-                            if (ObjectUtil.isNotNull(atDataSubtaskEntity.getGroupId())) {
-                                //拉群改状态
-                                AtGroupEntity atGroupEntity = new AtGroupEntity();
-                                atGroupEntity.setId(atDataSubtaskEntity.getGroupId());
-                                atGroupEntity.setGroupStatus(GroupStatus.GroupStatus11.getKey());
-                                atGroupService.updateById(atGroupEntity);
-                            }
+                                //任务失败
+                                AtDataTaskEntity atDataTaskEntity = new AtDataTaskEntity();
+                                atDataTaskEntity.setId(atDataSubtaskEntity.getDataTaskId());
+                                atDataTaskEntity.setTaskStatus(TaskStatus.TaskStatus5.getKey());
+                                atDataTaskService.updateById(atDataTaskEntity);
+                                if (ObjectUtil.isNotNull(atDataSubtaskEntity.getGroupId())) {
+                                    //拉群改状态
+                                    AtGroupEntity atGroupEntity = new AtGroupEntity();
+                                    atGroupEntity.setId(atDataSubtaskEntity.getGroupId());
+                                    atGroupEntity.setGroupStatus(GroupStatus.GroupStatus11.getKey());
+                                    atGroupService.updateById(atGroupEntity);
+                                }
 
-                            if (TaskStatus.TaskStatus5.getKey().equals(update.getTaskStatus()) || TaskStatus.TaskStatus13.getKey().equals(update.getTaskStatus())) {
-                                update.setId(null);
-                                atDataSubtaskService.update(update,new QueryWrapper<AtDataSubtaskEntity>().lambda()
-                                        .eq(AtDataSubtaskEntity::getDataTaskId,atDataSubtaskEntity.getDataTaskId())
-                                        .eq(AtDataSubtaskEntity::getTaskStatus,TaskStatus.TaskStatus2.getKey())
-                                );
-                                atUserService.unlock(atDataSubtaskEntity.getUserId(),userStatus);
+                                if (TaskStatus.TaskStatus5.getKey().equals(update.getTaskStatus()) || TaskStatus.TaskStatus13.getKey().equals(update.getTaskStatus())) {
+                                    update.setId(null);
+                                    atDataSubtaskService.update(update,new QueryWrapper<AtDataSubtaskEntity>().lambda()
+                                            .eq(AtDataSubtaskEntity::getDataTaskId,atDataSubtaskEntity.getDataTaskId())
+                                            .eq(AtDataSubtaskEntity::getTaskStatus,TaskStatus.TaskStatus2.getKey())
+                                    );
+                                    atUserService.unlock(atDataSubtaskEntity.getUserId(),userStatus);
+                                }
                             }
                         }
                         update.setId(atDataSubtaskEntity.getId());

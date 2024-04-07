@@ -12,6 +12,7 @@ import io.renren.modules.ltt.service.CdLineRegisterService;
 import io.renren.modules.ltt.vo.CdLineRegisterVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -34,6 +35,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 @Component
 @Slf4j
+@Profile({"prod"})
 public class OrderTask {
 
     @Autowired

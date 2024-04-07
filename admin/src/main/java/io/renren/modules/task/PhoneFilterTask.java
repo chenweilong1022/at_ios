@@ -18,6 +18,7 @@ import io.renren.modules.ltt.vo.AtDataSubtaskVO;
 import io.renren.modules.ltt.vo.CdPhoneFilterRecordVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -40,6 +41,7 @@ import static io.renren.modules.ltt.enums.PhoneFilterStatus.PhoneFilterStatus4;
 @Component
 @Slf4j
 @EnableAsync
+@Profile({"prod"})
 public class PhoneFilterTask {
 
 
