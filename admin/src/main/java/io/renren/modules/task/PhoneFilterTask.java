@@ -97,7 +97,7 @@ public class PhoneFilterTask {
             List<Integer> userTokenIds = atUserEntities.stream().map(AtUserEntity::getUserTokenId).collect(Collectors.toList());
             List<AtUserTokenEntity> tokenEntities = atUserTokenService.listByIds(userTokenIds);
             Map<Integer, AtUserTokenEntity> atUserTokenEntityMap = tokenEntities.stream().collect(Collectors.toMap(AtUserTokenEntity::getId, item -> item));
-            Map<Integer, AtUserTokenEntity> userIdAtUserTokenEntityMap = atUserEntities.stream().collect(Collectors.toMap(AtUserEntity::getId, item -> atUserTokenEntityMap.get(item.getUserTokenId()).setTelephone(item.getTelephone())));
+            Map<Integer, AtUserTokenEntity> userIdAtUserTokenEntityMap = atUserEntities.stream().filter(item -> ObjectUtil.isNotNull(atUserTokenEntityMap.get(item.getUserTokenId()))).collect(Collectors.toMap(AtUserEntity::getId, item -> atUserTokenEntityMap.get(item.getUserTokenId()).setTelephone(item.getTelephone())));
 
 
             Queue<AtUserEntity> cdLineRegisterEntityQueue = new LinkedList<>(atUserEntities);
