@@ -290,12 +290,14 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
 
                 }
             }
+
             if (CollUtil.isNotEmpty(atDataSubtaskEntityListSave)) {
                 for (AtDataSubtaskEntity atDataSubtaskEntity : atDataSubtaskEntityListSave) {
                     atDataSubtaskEntity.setUserId(atGroupEntity.getUserId());
                 }
                 atDataSubtaskService.saveBatch(atDataSubtaskEntityListSave);
             }
+
         }
 
         if (CollUtil.isNotEmpty(atUserEntityUpdates)) {

@@ -1,6 +1,8 @@
 package io.renren.modules.ltt.vo;
 
 import cn.hutool.core.collection.CollUtil;
+import io.renren.modules.ltt.entity.AtDataTaskEntity;
+import io.renren.modules.ltt.entity.AtGroupEntity;
 import lombok.Data;
 
 import java.util.List;
@@ -17,6 +19,9 @@ public class OnGroupPreVO {
     private List<String> materialUrls;
 
     private String groupName;
+
+    private AtGroupEntity atGroupTaskEntity;
+    private AtDataTaskEntity atDataTask;
 
     public String getNavyTextListsStr() {
         if (CollUtil.isNotEmpty(navyTextLists)) {

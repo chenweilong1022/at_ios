@@ -210,7 +210,7 @@ public class GroupTask {
                 .eq(AtGroupEntity::getGroupStatus,GroupStatus.GroupStatus3.getKey())
         );
         if (CollUtil.isEmpty(cdGroupTasksEntities)) {
-            log.info("GroupTask task8 list isEmpty");
+            log.info("GroupTask task2 list isEmpty");
             return;
         }
 
@@ -300,7 +300,7 @@ public class GroupTask {
                 .eq(AtGroupEntity::getGroupStatus,GroupStatus.GroupStatus7.getKey())
         );
         if (CollUtil.isEmpty(cdGroupTasksEntities)) {
-            log.info("GroupTask task8 list isEmpty");
+            log.info("GroupTask task1 list isEmpty");
             return;
         }
 

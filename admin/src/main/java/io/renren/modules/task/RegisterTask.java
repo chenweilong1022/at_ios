@@ -81,10 +81,10 @@ public class RegisterTask {
 
     @Autowired
     private ConcurrentHashMap<String, Lock> lockMap;
-    public static final Object lockCdRegisterSubtasksEntity = new Object();
-    public static final Object lockCdRegisterTaskEntity = new Object();
-    public static final Object lockCdGetPhoneEntity = new Object();
-    public static final Object lockCdLineRegisterEntity = new Object();
+//    public static final Object lockCdRegisterSubtasksEntity = new Object();
+//    public static final Object lockCdRegisterTaskEntity = new Object();
+//    public static final Object lockCdGetPhoneEntity = new Object();
+//    public static final Object lockCdLineRegisterEntity = new Object();
     @Autowired
     private AsyncService asyncService;
     @Autowired
@@ -127,7 +127,7 @@ public class RegisterTask {
                 .in(CdLineRegisterEntity::getRegisterStatus,RegisterStatus.RegisterStatus3.getKey(),RegisterStatus.RegisterStatus1.getKey())
         );
         if (CollUtil.isEmpty(cdLineRegisterEntities)) {
-            log.info("task7 cdLineRegisterEntities isEmpty");
+            log.info("RegisterTask task7 cdLineRegisterEntities isEmpty");
             return;
         }
         for (CdLineRegisterEntity cdLineRegisterEntity : cdLineRegisterEntities) {
@@ -140,7 +140,7 @@ public class RegisterTask {
                 }
                 if (200 == registerResultVO.getCode()) {
                     Long status = registerResultVO.getData().getStatus();
-                    if (2 == status || 1 == status || Long.valueOf(20001).equals(status)) {
+                    if (2 == status || 1 == status || 0 == status || Long.valueOf(20001).equals(status)) {
                         if (2 == status) {
                             SyncLineTokenDTO syncLineTokenDTO = new SyncLineTokenDTO();
                             syncLineTokenDTO.setTaskId(cdLineRegisterEntity.getTaskId());
@@ -160,9 +160,7 @@ public class RegisterTask {
                                     cdLineRegisterEntity.setAccountExistStatus(AccountExistStatus.AccountExistStatus1.getKey());
                                 }
                                 cdLineRegisterEntity.setToken(token);
-                                synchronized (lockCdLineRegisterEntity) {
-                                    cdLineRegisterService.updateById(cdLineRegisterEntity);
-                                }
+                                cdLineRegisterService.updateById(cdLineRegisterEntity);
                             }
                         }
                         return;
@@ -183,12 +181,10 @@ public class RegisterTask {
                         }
                         cdGetPhoneEntity.setPhoneStatus(PhoneStatus6.getKey());
                     }
-                    synchronized (lockCdLineRegisterEntity) {
-                        cdLineRegisterService.updateById(cdLineRegisterEntity);
-                    }
-                    synchronized (lockCdGetPhoneEntity) {
-                        cdGetPhoneService.updateById(cdGetPhoneEntity);
-                    }
+
+                    cdLineRegisterService.updateById(cdLineRegisterEntity);
+
+                    cdGetPhoneService.updateById(cdGetPhoneEntity);
                 }
             });
         }
@@ -208,7 +204,7 @@ public class RegisterTask {
                 .in(CdGetPhoneEntity::getPhoneStatus, PhoneStatus.PhoneStatus2.getKey(), PhoneStatus5.getKey())
         );
         if (CollUtil.isEmpty(list)) {
-            log.info("task2 list isEmpty");
+            log.info("RegisterTask task6 list isEmpty");
             return;
         }
         for (CdGetPhoneEntity cdGetPhoneEntity : list) {
@@ -292,13 +288,9 @@ public class RegisterTask {
                             }
                         }
                     }finally {
-                        synchronized (lockCdGetPhoneEntity) {
-                            cdGetPhoneService.updateById(cdGetPhoneEntity);
-                        }
-                        synchronized (lockCdLineRegisterEntity) {
-                            if (ObjectUtil.isNotNull(update)) {
-                                cdLineRegisterService.updateById(update);
-                            }
+                        cdGetPhoneService.updateById(cdGetPhoneEntity);
+                        if (ObjectUtil.isNotNull(update)) {
+                            cdLineRegisterService.updateById(update);
                         }
                         lock.unlock();
                     }
@@ -327,7 +319,7 @@ public class RegisterTask {
                 .last("limit 50")
         );
         if (CollUtil.isEmpty(list)) {
-            log.info("task1 list isEmpty");
+            log.info("RegisterTask task5 list isEmpty");
             return;
         }
         for (CdGetPhoneEntity cdGetPhoneEntity : list) {
@@ -383,15 +375,11 @@ public class RegisterTask {
                             CdGetPhoneEntity update = new CdGetPhoneEntity();
                             update.setId(cdGetPhoneEntity.getId());
                             update.setPhoneStatus(PhoneStatus.PhoneStatus2.getKey());
-                            //注册
-                            synchronized (lockCdLineRegisterEntity) {
-                                cdLineRegisterService.save(cdLineRegisterDTO);
-                            }
-                            //修改注册
-                            synchronized (lockCdGetPhoneEntity) {
-                                update.setLineRegisterId(cdLineRegisterDTO.getId());
-                                cdGetPhoneService.updateById(update);
-                            }
+
+                            cdLineRegisterService.save(cdLineRegisterDTO);
+
+                            update.setLineRegisterId(cdLineRegisterDTO.getId());
+                            cdGetPhoneService.updateById(update);
                         }
                     }finally {
                         lock.unlock();
@@ -419,7 +407,7 @@ public class RegisterTask {
                 .or(item -> item.eq(CdRegisterTaskEntity::getFillUp,FillUp.YES.getKey()))
         );
         if (CollUtil.isEmpty(cdRegisterTaskEntities)) {
-            log.info("RegisterTask task2 list isEmpty");
+            log.info("RegisterTask task3 list isEmpty");
             return;
         }
 
@@ -483,9 +471,7 @@ public class RegisterTask {
                                     newCdRegisterTaskEntity.setFillUp(cdRegisterTaskEntity.getFillUp());
                                     newCdRegisterTaskEntity.setFillUpRegisterTaskId(cdRegisterTaskEntity.getId());
                                     newCdRegisterTaskEntity.setCreateTime(DateUtil.date());
-                                    synchronized (lockCdRegisterTaskEntity) {
-                                        cdRegisterTaskService.save(newCdRegisterTaskEntity);
-                                    }
+                                    cdRegisterTaskService.save(newCdRegisterTaskEntity);
                                 }
                             }
                         }
@@ -493,12 +479,10 @@ public class RegisterTask {
                         cdRegisterTaskEntity.setNumberSuccesses(successTotal);
                         //失败数量
                         cdRegisterTaskEntity.setNumberFailures(errorTotal);
-                        synchronized (lockCdRegisterTaskEntity) {
-                            cdRegisterTaskService.updateById(cdRegisterTaskEntity);
-                        }
-                        synchronized (lockCdRegisterSubtasksEntity) {
-                            cdRegisterSubtasksService.updateBatchById(cdRegisterSubtasksEntities);
-                        }
+
+                        cdRegisterTaskService.updateById(cdRegisterTaskEntity);
+
+                        cdRegisterSubtasksService.updateBatchById(cdRegisterSubtasksEntities);
                     }finally {
                         lock.unlock();
                     }
@@ -551,9 +535,7 @@ public class RegisterTask {
                                         CdRegisterSubtasksEntity update = new CdRegisterSubtasksEntity();
                                         update.setId(cdRegisterSubtasksEntity.getId());
                                         update.setRegistrationStatus(RegistrationStatus.RegistrationStatus6.getKey());
-                                        synchronized (lockCdRegisterSubtasksEntity) {
-                                            cdRegisterSubtasksService.updateById(update);
-                                        }
+                                        cdRegisterSubtasksService.updateById(update);
                                     }
                                 }
                                 return;
@@ -571,9 +553,7 @@ public class RegisterTask {
                                 if (cdRegisterSubtasksEntity.getNumberRegistrations().equals(cdGetPhoneEntities.size())) {
                                     update.setRegistrationStatus(RegistrationStatus.RegistrationStatus6.getKey());
                                 }
-                                synchronized (lockCdRegisterSubtasksEntity) {
-                                    cdRegisterSubtasksService.updateById(update);
-                                }
+                                cdRegisterSubtasksService.updateById(update);
                             }
                         }finally {
                             lock.unlock();
@@ -651,9 +631,9 @@ public class RegisterTask {
                                 //设置主表注册数量
                                 cdRegisterTaskEntity.setNumberRegistered(cdRegisterTaskEntity.getNumberRegistered() + newNumberRegistrations);
                             }
-                            synchronized (lockCdRegisterSubtasksEntity) {
-                                cdRegisterSubtasksService.saveBatch(cdRegisterSubtasksEntities,cdRegisterSubtasksEntities.size());
-                            }
+                            //保存子任务
+                            cdRegisterSubtasksService.saveBatch(cdRegisterSubtasksEntities,cdRegisterSubtasksEntities.size());
+                            //修改状态
                             cdRegisterTaskService.updateById(cdRegisterTaskEntity);
                         }
                     }finally {

@@ -2,7 +2,7 @@ project:
     host:
         name: ${PROJECT_HOST_NAME:127.0.0.1:8880}
     mysql:
-        hostname: ${PROJECT_MYSQL_HOSTNAME:127.0.0.1}
+        hostname: ${PROJECT_MYSQL_HOSTNAME:143.92.40.151}
         port: ${PROJECT_MYSQL_PORT:3308}
         url: ${project.mysql.hostname}:${project.mysql.port}
         username: ${PROJECT_MYSQL_USERNAME:root}
@@ -11,7 +11,7 @@ project:
         mysql:
             hostname: ${PROJECT_ADMIN_MYSQL_HOSTNAME:${project.mysql.hostname}}
             port: ${PROJECT_ADMIN_MYSQL_PORT:${project.mysql.port}}
-            url: ${project.admin.mysql.hostname}:${project.admin.mysql.port}/at_ios4
+            url: ${project.admin.mysql.hostname}:${project.admin.mysql.port}
             username: ${PROJECT_ADMIN_MYSQL_USERNAME:${project.mysql.username}}
             password: ${PROJECT_ADMIN_MYSQL_PASSWORD:${project.mysql.password}}
     game:
@@ -19,7 +19,7 @@ project:
             hostname: ${PROJECT_GAME_MYSQL_HOSTNAME:${project.mysql.hostname}}
             port: ${PROJECT_GAME_MYSQL_PORT:${project.mysql.port}}
             #            port: ${PROJECT_GAME_MYSQL_PORT:23306}
-            url: ${project.game.mysql.hostname}:${project.game.mysql.port}/at_ios4
+            url: ${project.game.mysql.hostname}:${project.game.mysql.port}
             username: ${PROJECT_GAME_MYSQL_USERNAME:${project.mysql.username}}
             password: ${PROJECT_GAME_MYSQL_PASSWORD:${project.mysql.password}}
     log:
@@ -30,7 +30,7 @@ logging:
     file: ${project.log.file}/logs.log
 file:
     upload:
-        baseurl: https://${project.host.name}/file/
+        baseurl: http://${project.host.name}/file/
         saveurl: ${project.file.saveurl}/images/
 spring:
     datasource:
@@ -63,13 +63,13 @@ spring:
             datasource:
                 # admin 数据源配置
                 admin:
-                    url: jdbc:mysql://${project.admin.mysql.url}?useUnicode=true&characterEncoding=UTF-8&useSSL=false&useTimezone=true&serverTimezone=GMT%2B8&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true
+                    url: jdbc:mysql://${project.admin.mysql.url}/at_ios?useUnicode=true&characterEncoding=UTF-8&useSSL=false&useTimezone=true&serverTimezone=GMT%2B8&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true
                     driver-class-name: com.mysql.cj.jdbc.Driver
                     username: ${project.admin.mysql.username}
                     password: ${project.admin.mysql.password}
                 # game 数据源配置
                 game:
-                    url: jdbc:mysql://${project.game.mysql.url}?useUnicode=true&characterEncoding=UTF-8&useSSL=false&useTimezone=true&serverTimezone=GMT%2B8&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true
+                    url: jdbc:mysql://${project.game.mysql.url}/at_ios?useUnicode=true&characterEncoding=UTF-8&useSSL=false&useTimezone=true&serverTimezone=GMT%2B8&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true
                     driver-class-name: com.mysql.cj.jdbc.Driver
                     username: ${project.game.mysql.username}
                     password: ${project.game.mysql.password}

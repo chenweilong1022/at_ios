@@ -221,12 +221,17 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
         Queue<AtUserVO> atUserVOQueue = new LinkedList<>(atUserVOS);
         List<AtUserEntity> atUserEntityUpdates = new ArrayList<>();
         List<AtDataSubtaskEntity> atDataSubtaskEntityListNew = new ArrayList<>();
-        for (OnGroupPreVO onGroupPreVO : onGroupPreVOS) {
 
-            List<AtDataSubtaskEntity> atDataSubtaskEntities = new ArrayList<>();
+
+        //保存分组
+        List<AtGroupEntity> atGroupEntitiesSave = new ArrayList<>();
+        List<AtDataTaskEntity> atDataTaskEntitiesSave = new ArrayList<>();
+        for (OnGroupPreVO onGroupPreVO : onGroupPreVOS) {
             //料子
             List<String> materialUrls = onGroupPreVO.getMaterialUrls();
-            //保存群分组
+            //水军
+            List<String> navyTextLists = onGroupPreVO.getNavyTextLists();
+
             AtGroupEntity atGroupTaskEntity = new AtGroupEntity();
             atGroupTaskEntity.setGroupTaskId(atGroupTask.getId());
             atGroupTaskEntity.setGroupName(onGroupPreVO.getGroupName());
@@ -236,12 +241,25 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
             atGroupTaskEntity.setGroupStatus(GroupStatus.GroupStatus1.getKey());
             atGroupTaskEntity.setDeleteFlag(DeleteFlag.NO.getKey());
             atGroupTaskEntity.setCreateTime(DateUtil.date());
-            atGroupService.save(atGroupTaskEntity);
+            onGroupPreVO.setAtGroupTaskEntity(atGroupTaskEntity);
+            atGroupEntitiesSave.add(atGroupTaskEntity);
+        }
+
+        //分组
+        atGroupService.saveBatch(atGroupEntitiesSave,atGroupEntitiesSave.size());
+
+        for (OnGroupPreVO onGroupPreVO : onGroupPreVOS) {
+            //料子
+            List<String> materialUrls = onGroupPreVO.getMaterialUrls();
             //水军
             List<String> navyTextLists = onGroupPreVO.getNavyTextLists();
             //群类型
             Integer groupType = atGroupTask.getGroupType();
             GroupType groupType4 = GroupType.getGroupTypeByKey(groupType);
+
+            //分组
+            AtGroupEntity atGroupTaskEntity = onGroupPreVO.getAtGroupTaskEntity();
+
             AtDataTaskEntity atDataTask = new AtDataTaskEntity();
             atDataTask.setUserGroupId(atGroupTask.getUserGroupId());
             atDataTask.setTaskName(String.format("%s加粉-%s",onGroupPreVO.getGroupName(),groupType4.getValue()));
@@ -255,7 +273,25 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
             atDataTask.setTaskStatus(TaskStatus.TaskStatus0.getKey());
             atDataTask.setSysUserId(atGroupTask.getSysUserId());
             atDataTask.setGroupId(atGroupTaskEntity.getId());
-            atDataTaskService.save(atDataTask);
+            onGroupPreVO.setAtDataTask(atDataTask);
+            atDataTaskEntitiesSave.add(atDataTask);
+        }
+        //data任务
+        atDataTaskService.saveBatch(atDataTaskEntitiesSave,atDataTaskEntitiesSave.size());
+
+        for (OnGroupPreVO onGroupPreVO : onGroupPreVOS) {
+
+            List<AtDataSubtaskEntity> atDataSubtaskEntities = new ArrayList<>();
+            //料子
+            List<String> materialUrls = onGroupPreVO.getMaterialUrls();
+            //水军
+            List<String> navyTextLists = onGroupPreVO.getNavyTextLists();
+            //群类型
+            Integer groupType = atGroupTask.getGroupType();
+            GroupType groupType4 = GroupType.getGroupTypeByKey(groupType);
+            //分组
+            AtGroupEntity atGroupTaskEntity = onGroupPreVO.getAtGroupTaskEntity();
+            AtDataTaskEntity atDataTask = onGroupPreVO.getAtDataTask();
 
 
             for (String navyTextList : navyTextLists) {
@@ -331,7 +367,7 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
                 if (ObjectUtil.isNull(pollFirst)) {
                     pollFirst = poll;
                     atGroupTaskEntity.setUserId(pollFirst.getId());
-                    atGroupService.updateById(atGroupTaskEntity);
+
                 }else {
                     AtUserTokenVO atUserTokenVO = atUserTokenService.getById(poll.getUserTokenId());
                     String token = atUserTokenVO.getToken();
@@ -369,6 +405,9 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
 
 
         }
+        //分组任务
+        atGroupService.updateBatchById(atGroupEntitiesSave);
+
         if (CollUtil.isNotEmpty(atUserEntityUpdates)) {
             atUserService.updateBatchById(atUserEntityUpdates);
         }

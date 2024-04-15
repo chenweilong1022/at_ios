@@ -330,18 +330,18 @@ public class UserTask {
         //获取用户未验证的状态
         List<AtUserEntity> atUserEntities = atUserService.list(new QueryWrapper<AtUserEntity>().lambda()
                 .eq(AtUserEntity::getStatus,UserStatus.UserStatus1.getKey())
-                .last("limit 0,100")
+                .last("limit 20")
                 .orderByAsc(AtUserEntity::getStatus)
         );
         if (CollUtil.isEmpty(atUserEntities)) {
-            log.info("GroupTask task2 atUserEntities isEmpty");
+            log.info("UserTask task2 atUserEntities isEmpty");
             return;
         }
         //用户tokenIds
         List<Integer> userTokenIds = atUserEntities.stream().map(AtUserEntity::getUserTokenId).collect(Collectors.toList());
         List<AtUserTokenEntity> atUserTokenEntities = atUserTokenService.listByIds(userTokenIds);
         if (CollUtil.isEmpty(atUserEntities)) {
-            log.info("GroupTask task2 atUserTokenEntities isEmpty");
+            log.info("UserTask task2 atUserTokenEntities isEmpty");
             return;
         }
         //用户tokenMap
@@ -415,10 +415,10 @@ public class UserTask {
         //获取刚导入的token去转化为账号
         List<AtUserTokenEntity> atUserTokenEntities = atUserTokenService.list(new QueryWrapper<AtUserTokenEntity>().lambda()
                 .eq(AtUserTokenEntity::getUseFlag, UseFlag.NO.getKey())
-                .last("limit 100")
+                .last("limit 20")
         );
         if (CollUtil.isEmpty(atUserTokenEntities)) {
-            log.info("GroupTask task1 atUserTokenEntities isEmpty");
+            log.info("UserTask task1 atUserTokenEntities isEmpty");
             return;
         }
 
