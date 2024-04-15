@@ -2,7 +2,7 @@ project:
     host:
         name: ${PROJECT_HOST_NAME:127.0.0.1:8880}
     mysql:
-        hostname: ${PROJECT_MYSQL_HOSTNAME:127.0.0.1}
+        hostname: ${PROJECT_MYSQL_HOSTNAME:143.92.40.151}
         port: ${PROJECT_MYSQL_PORT:3308}
         url: ${project.mysql.hostname}:${project.mysql.port}
         username: ${PROJECT_MYSQL_USERNAME:root}
@@ -11,17 +11,16 @@ project:
         mysql:
             hostname: ${PROJECT_ADMIN_MYSQL_HOSTNAME:${project.mysql.hostname}}
             port: ${PROJECT_ADMIN_MYSQL_PORT:${project.mysql.port}}
-            url: ${project.admin.mysql.hostname}:${project.admin.mysql.port}/at_ios4
+            url: ${project.admin.mysql.hostname}:${project.admin.mysql.port}/at_ios
             username: ${PROJECT_ADMIN_MYSQL_USERNAME:${project.mysql.username}}
             password: ${PROJECT_ADMIN_MYSQL_PASSWORD:${project.mysql.password}}
     game:
         mysql:
-            hostname: ${PROJECT_GAME_MYSQL_HOSTNAME:${project.mysql.hostname}}
-            port: ${PROJECT_GAME_MYSQL_PORT:${project.mysql.port}}
-            #            port: ${PROJECT_GAME_MYSQL_PORT:23306}
-            url: ${project.game.mysql.hostname}:${project.game.mysql.port}/at_ios4
-            username: ${PROJECT_GAME_MYSQL_USERNAME:${project.mysql.username}}
-            password: ${PROJECT_GAME_MYSQL_PASSWORD:${project.mysql.password}}
+            hostname: ${PROJECT_MYSQL_HOSTNAME:143.92.40.151}
+            port: ${PROJECT_MYSQL_PORT:3308}
+            url: ${project.mysql.hostname}:${project.mysql.port}
+            username: ${PROJECT_MYSQL_USERNAME:root}
+            password: ${PROJECT_MYSQL_PASSWORD:SEW2018!}
     log:
         file: ${PROJECT_LOG_PATH:/Users/chenweilong/Desktop/java代码/at_ios/file/logs/}
     file:
