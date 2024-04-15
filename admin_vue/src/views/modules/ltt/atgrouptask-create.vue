@@ -45,14 +45,12 @@
               />
             </el-select>
           </el-form-item>
-
-          <el-row>
-            <el-col :span="24">
-              <el-form-item label="群人数" prop="groupCountTotal">
-                <el-input v-model="dataForm.groupCountTotal" placeholder="群人数"></el-input>
-              </el-form-item>
-            </el-col>
-          </el-row>
+          <el-form-item label="群人数" prop="groupCountTotal">
+            <el-input v-model="dataForm.groupCountTotal" placeholder="群人数"></el-input>
+          </el-form-item>
+          <el-form-item label="拉群号数量" prop="pullGroupNumber">
+            <el-input v-model="dataForm.pullGroupNumber" placeholder="拉群号数量"></el-input>
+          </el-form-item>
 
         </div>
 
@@ -195,6 +193,7 @@
           <el-button type="primary" @click="nextGroup()">继续拉群</el-button>
           <el-button type="danger" @click="exportHandle()" :disabled="dataListSelections.length <= 0">导出报表</el-button>
           <el-button type="danger" @click="reallocateTokenHandle()" :disabled="dataListSelections.length <= 0">重新分配账号拉群</el-button>
+          <el-button type="danger" @click="startTaskHandle()" :disabled="dataListSelections.length <= 0">启动任务</el-button>
         </el-form-item>
         </el-form>
         <el-table
@@ -378,6 +377,7 @@ import ErrLogs from "./atdatatask-err-logs.vue";
           groupName: '',
           countryCode: 66,
           groupCountTotal: 99,
+          pullGroupNumber: 1,
           groupCount: null,
           groupCountStart: 0,
           navyUrlList: [],
@@ -421,10 +421,6 @@ import ErrLogs from "./atdatatask-err-logs.vue";
         this.dataFormGroupTask.taskStatus = 2
       },
       getDataList () {
-        console.log(111111111111111)
-        console.log(this.groupStatusList)
-
-        console.log()
         this.isLoading = true
         this.$http({
           url: this.$http.adornUrl('/ltt/atgroup/list'),
@@ -541,6 +537,42 @@ import ErrLogs from "./atdatatask-err-logs.vue";
           })
         })
       },
+      startTaskHandle (id) {
+        var ids = id ? [id] : this.dataListSelections.map(item => {
+          return item.id
+        })
+        this.$confirm(`确定对[id=${ids.join(',')}]进行[${id ? '启动任务' : '批量启动任务'}]操作?`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.isLoading = true
+          this.$nextTick(() => {
+            this.$http({
+              url: this.$http.adornUrl('/ltt/atgroup/startTask'),
+              method: 'post',
+              data: this.$http.adornData({
+                'ids':ids
+              })
+            }).then(({data}) => {
+              if (data && data.code === 0) {
+                this.$message({
+                  message: '操作成功',
+                  type: 'success',
+                  duration: 1500,
+                  onClose: () => {
+                    this.getDataList()
+                  }
+                })
+              } else {
+                this.$message.error(data.msg)
+              }
+            }).finally(() => {
+              this.isLoading = false
+            })
+          })
+        })
+      },
       exportHandle (id) {
         var ids = id ? [id] : this.dataListSelections.map(item => {
           return item.id
@@ -565,6 +597,7 @@ import ErrLogs from "./atdatatask-err-logs.vue";
             'userGroupId': this.dataForm.userGroupId,
             'navyUrlList': this.dataForm.navyUrlList,
             'groupCountStart': this.dataForm.groupCountStart,
+            'pullGroupNumber': this.dataForm.pullGroupNumber,
             'groupCountTotal': this.dataForm.groupCountTotal,
             'materialUrlList': this.dataForm.materialUrlList,
             'groupType': this.groupType,
@@ -619,6 +652,7 @@ import ErrLogs from "./atdatatask-err-logs.vue";
             'navyUrlList': this.dataForm.navyUrlList,
             'groupCountStart': this.dataForm.groupCountStart,
             'groupCountTotal': this.dataForm.groupCountTotal,
+            'pullGroupNumber': this.dataForm.pullGroupNumber,
             'materialUrlList': this.dataForm.materialUrlList,
             'groupCount': this.dataForm.groupCount
           })
@@ -672,6 +706,7 @@ import ErrLogs from "./atdatatask-err-logs.vue";
             'groupName': this.dataForm.groupName,
             'groupCountStart': this.dataForm.groupCountStart,
             'groupCount': this.dataForm.groupCount,
+            'pullGroupNumber': this.dataForm.pullGroupNumber,
             'groupCountTotal': this.dataForm.groupCountTotal
           })
         }).then(({data}) => {

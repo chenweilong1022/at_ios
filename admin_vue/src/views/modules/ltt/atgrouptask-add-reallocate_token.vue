@@ -24,6 +24,9 @@
           </el-option>
         </el-select>
       </el-form-item>
+      <el-form-item label="拉群号数量" prop="pullGroupNumber">
+        <el-input v-model="dataForm.pullGroupNumber" placeholder="拉群号数量"></el-input>
+      </el-form-item>
     </el-form>
     <span slot="footer" class="dialog-footer">
       <el-button @click="visible = false">取消</el-button>
@@ -43,6 +46,7 @@
           id: 0,
           countryCode: null,
           userGroupId: null,
+          pullGroupNumber: 2,
           ids: [],
           taskName: '',
           groupType: '',
@@ -140,6 +144,7 @@
               data: this.$http.adornData({
                 'ids': this.dataForm.ids,
                 'userGroupId': this.dataForm.userGroupId,
+                'pullGroupNumber': this.dataForm.pullGroupNumber,
                 'countryCode': this.dataForm.countryCode
               })
             }).then(({data}) => {

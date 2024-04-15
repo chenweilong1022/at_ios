@@ -2,6 +2,7 @@ package io.renren.modules.ltt.controller;
 
 import java.util.Arrays;
 
+import cn.hutool.core.util.ObjectUtil;
 import io.renren.modules.ltt.dto.AtOrdersTokenParamDTO;
 import io.renren.modules.sys.controller.AbstractController;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
@@ -60,6 +61,9 @@ public class AtOrdersController extends AbstractController {
     @RequiresPermissions("ltt:atorders:save")
     public R createOrderToken(@RequestBody AtOrdersTokenParamDTO atOrders){
         atOrders.setSysUserId(getAuthUserId());
+        if (ObjectUtil.isNull(atOrders.getSysUserId())) {
+            atOrders.setSysUserId(getUserId());
+        }
 		atOrdersService.createOrderToken(atOrders);
 
         return R.ok();

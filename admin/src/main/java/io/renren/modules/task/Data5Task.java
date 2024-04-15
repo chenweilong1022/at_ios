@@ -44,7 +44,7 @@ import java.util.stream.Collectors;
 @Component
 @Slf4j
 @EnableAsync
-@Profile({"prod"})
+@Profile({"prod","task"})
 public class Data5Task {
 
 
@@ -173,8 +173,9 @@ public class Data5Task {
                                     }
                                     atDataSubtaskEntity.setMsg(syncContentsResultVO.getMsg());
                                 }
+                                long count = atDataSubtaskEntityList.stream().filter(item -> item.getTaskStatus().equals(TaskStatus.TaskStatus10.getKey())).count();
                                 atDataSubtaskService.updateBatchById(atDataSubtaskEntityList);
-                                if (ObjectUtil.isNotNull(atDataSubtaskVO.getGroupId())) {
+                                if (ObjectUtil.isNotNull(atDataSubtaskVO.getGroupId()) && count > 0) {
                                     //拉群改状态
                                     AtGroupEntity atGroupEntity = new AtGroupEntity();
                                     atGroupEntity.setId(atDataSubtaskVO.getGroupId());

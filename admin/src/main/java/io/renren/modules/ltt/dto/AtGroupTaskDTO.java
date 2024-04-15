@@ -104,6 +104,11 @@ public class AtGroupTaskDTO extends PageParam implements Serializable {
 	@ApiModelProperty(required=false,value="国家")
 	private Integer countryCode;
 	/**
+	 * 拉群号数量
+	 */
+	@ApiModelProperty(required=false,value="拉群号数量")
+	private Integer pullGroupNumber;
+	/**
 	 * 用户分组id
 	 */
 	@ApiModelProperty(required=false,value="用户分组id")

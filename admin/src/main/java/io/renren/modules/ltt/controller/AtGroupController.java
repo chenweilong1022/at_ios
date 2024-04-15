@@ -88,13 +88,24 @@ public class AtGroupController extends AbstractController {
     }
 
     /**
-     * 导出zip
+     * 更换token
      */
     @RequestMapping("reallocateToken")
     @RequiresPermissions("ltt:atgrouptask:save")
     public R reallocateToken(@RequestBody AtGroupDTO atGroup) {
         atGroup.setSysUserId(getAuthUserId());
         atGroupService.reallocateToken(atGroup);
+        return R.ok();
+    }
+
+    /**
+     * 启动任务
+     */
+    @RequestMapping("startTask")
+    @RequiresPermissions("ltt:atgrouptask:save")
+    public R startTask(@RequestBody AtGroupDTO atGroup) {
+        atGroup.setSysUserId(getAuthUserId());
+        atGroupService.startTask(atGroup);
         return R.ok();
     }
 

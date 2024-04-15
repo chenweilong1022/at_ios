@@ -177,6 +177,24 @@ public class LineServiceImpl implements LineService {
         return null;
     }
 
+    @Override
+    public getUserTicketVO getUserTicket(getUserTicketDTO searchPhoneDTO) {
+        try {
+            ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
+            String getPhoneHttp = String.format("%s/api/v1/account/getUserTicket",projectWorkEntity.getLineBaseHttp());
+            String jsonStr = JSONUtil.toJsonStr(searchPhoneDTO);
+            String resp = HttpUtil.post(getPhoneHttp, jsonStr);
+            log.info("param = {},resp = {}", jsonStr, resp);
+            getUserTicketVO searchPhoneVO = JSON.parseObject(resp, getUserTicketVO.class);
+
+            extracted(jsonStr, resp);
+            return searchPhoneVO;
+        }catch (Exception e) {
+            log.error("err = {}",e.getMessage());
+        }
+        return null;
+    }
+
     @Override///work/searchUserId
     public SearchUserIdVO searchUserId(SearchUserIdDTO searchPhoneDTO) {
         try {
@@ -247,6 +265,23 @@ public class LineServiceImpl implements LineService {
     }
 
     @Override
+    public SearchPhoneVO addFriendsByUserTicket(AddFriendsByUserTicket addFriendsByMid) {
+        try {
+            ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
+            String getPhoneHttp = String.format("%s/api/v1/work/addFriendsByUserTicket",projectWorkEntity.getLineBaseHttp());
+            String jsonStr = JSONUtil.toJsonStr(addFriendsByMid);
+            String resp = HttpUtil.post(getPhoneHttp, jsonStr);
+            SearchPhoneVO searchPhoneVO = JSON.parseObject(resp, SearchPhoneVO.class);
+
+            extracted(jsonStr, resp);
+            return searchPhoneVO;
+        }catch (Exception e) {
+            log.error("err = {}",e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
     public SearchPhoneVO addFriendsByReference(AddFriendsByMid addFriendsByMid) {
         try {
             ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
@@ -275,7 +310,7 @@ public class LineServiceImpl implements LineService {
             extracted(jsonStr, resp);
             return searchPhoneVO;
         }catch (Exception e) {
-            log.error("err = {}",e.getMessage());
+            log.error("reqp = {} err = {}",JSONUtil.toJsonStr(addFriendsByHomeRecommendDTO),e.getMessage());
         }
         return null;
     }
@@ -322,6 +357,23 @@ public class LineServiceImpl implements LineService {
             String jsonStr = JSONUtil.toJsonStr(registerResultDTO);
             String resp = HttpUtil.post(getPhoneHttp, jsonStr);
             CreateGroupResultVO createGroupResultVO = JSON.parseObject(resp, CreateGroupResultVO.class);
+
+            extracted(jsonStr, resp);
+            return createGroupResultVO;
+        }catch (Exception e) {
+            log.error("err = {}",e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public LineRegisterVO inviteIntoChat(InviteIntoChatDTO registerResultDTO) {
+        try {
+            ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
+            String getPhoneHttp = String.format("%s/api/v1/work/inviteIntoChat",projectWorkEntity.getLineBaseHttp());
+            String jsonStr = JSONUtil.toJsonStr(registerResultDTO);
+            String resp = HttpUtil.post(getPhoneHttp, jsonStr);
+            LineRegisterVO createGroupResultVO = JSON.parseObject(resp, LineRegisterVO.class);
 
             extracted(jsonStr, resp);
             return createGroupResultVO;

@@ -140,6 +140,11 @@ public class AtGroupDTO extends PageParam implements Serializable {
 	@ApiModelProperty(required=false,value="账户分组")
 	private Integer userGroupId;
 	/**
+	 * 拉群号数量
+	 */
+	@ApiModelProperty(required=false,value="拉群号数量")
+	private Integer pullGroupNumber;
+	/**
 	 * 管理账户id
 	 */
 	@ApiModelProperty(required=false,value="管理账户id")

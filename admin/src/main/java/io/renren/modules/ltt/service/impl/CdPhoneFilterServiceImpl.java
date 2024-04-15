@@ -94,6 +94,8 @@ public class CdPhoneFilterServiceImpl extends ServiceImpl<CdPhoneFilterDao, CdPh
             }
             PhoneCountryVO phoneNumberInfo = null;
             try {
+                s = StrUtil.cleanBlank(s);
+                s = s.replace("-","");
                 phoneNumberInfo = PhoneUtil.getPhoneNumberInfo(s);
             } catch (Exception e) {
 
@@ -152,7 +154,7 @@ public class CdPhoneFilterServiceImpl extends ServiceImpl<CdPhoneFilterDao, CdPh
                 .eq(CdPhoneFilterEntity::getRecordId, recordEntity.getRecordId())
         );
         Map<String, CdPhoneFilterEntity> collect = list.stream()
-                .collect(Collectors.toMap(CdPhoneFilterEntity::getContactKey, item -> item));
+                .collect(Collectors.toMap(CdPhoneFilterEntity::getContactKey, item -> item,(s1,s2) -> s1));
 
         List<String> newJS = new ArrayList<>();
         for (CdPhoneFilterEntity cdPhoneFilterEntity : list) {
@@ -164,10 +166,10 @@ public class CdPhoneFilterServiceImpl extends ServiceImpl<CdPhoneFilterDao, CdPh
                     String format = String.format("%s   %s  %s", trim.replace("\r","").replace("\n",""), cdPhoneFilterEntity.getMid(), cdPhoneFilterEntity.getDisplayName());
                     newJS.add(format);
                 }else {
-                    newJS.add(trim);
+                    newJS.add(cdPhoneFilterEntity.getContactKey());
                 }
             } catch (Exception e) {
-                log.error("exportSJ_error {}", e);
+                newJS.add(cdPhoneFilterEntity.getContactKey());
             }
         }
         String newStr = newJS.stream().map(phone -> phone + "\n").collect(Collectors.joining());

@@ -109,7 +109,7 @@ public class DataTask {
                     update.setSuccessfulQuantity((int) success8);
                     update.setFailuresQuantity((int) fail);
                     update.setId(groupCountByDataTaskIdVO.getDataTaskId());
-                    if (success8 + fail == groupCountByDataTaskIdVO.getAddTotalQuantity()) {
+                    if (success8 + fail >= groupCountByDataTaskIdVO.getAddTotalQuantity()) {
                         update.setTaskStatus(TaskStatus.TaskStatus3.getKey());
                     }
                     atDataTaskEntityList.add(update);
@@ -117,7 +117,7 @@ public class DataTask {
                     update.setSuccessfulQuantity((int) success10);
                     update.setFailuresQuantity((int) fail);
                     update.setId(groupCountByDataTaskIdVO.getDataTaskId());
-                    if (success10 + fail == groupCountByDataTaskIdVO.getAddTotalQuantity()) {
+                    if (success10 + fail >= groupCountByDataTaskIdVO.getAddTotalQuantity() && success10 > 0) {
                         update.setTaskStatus(TaskStatus.TaskStatus3.getKey());
                     }
                     atDataTaskEntityList.add(update);
@@ -125,7 +125,7 @@ public class DataTask {
                     update.setSuccessfulQuantity((int) success8);
                     update.setFailuresQuantity((int) fail);
                     update.setId(groupCountByDataTaskIdVO.getDataTaskId());
-                    if (success8 + fail == groupCountByDataTaskIdVO.getAddTotalQuantity()) {
+                    if (success8 + fail >= groupCountByDataTaskIdVO.getAddTotalQuantity()) {
                         update.setTaskStatus(TaskStatus.TaskStatus3.getKey());
                     }
                     atDataTaskEntityList.add(update);
@@ -133,7 +133,7 @@ public class DataTask {
                     update.setSuccessfulQuantity((int) success8);
                     update.setFailuresQuantity((int) fail);
                     update.setId(groupCountByDataTaskIdVO.getDataTaskId());
-                    if (success8 + fail == groupCountByDataTaskIdVO.getAddTotalQuantity()) {
+                    if (success8 + fail >= groupCountByDataTaskIdVO.getAddTotalQuantity()) {
                         update.setTaskStatus(TaskStatus.TaskStatus3.getKey());
                     }
                     atDataTaskEntityList.add(update);
@@ -141,7 +141,7 @@ public class DataTask {
                     update.setSuccessfulQuantity((int) success8);
                     update.setFailuresQuantity((int) fail);
                     update.setId(groupCountByDataTaskIdVO.getDataTaskId());
-                    if (success8 + fail == groupCountByDataTaskIdVO.getAddTotalQuantity()) {
+                    if (success8 + fail >= groupCountByDataTaskIdVO.getAddTotalQuantity()) {
                         update.setTaskStatus(TaskStatus.TaskStatus3.getKey());
                     }
                     atDataTaskEntityList.add(update);
@@ -543,7 +543,7 @@ public class DataTask {
             //需要添加好友的任务
             List<AtDataTaskEntity> atDataTaskEntities = atDataTaskService.list(new QueryWrapper<AtDataTaskEntity>().lambda()
                     .eq(AtDataTaskEntity::getTaskStatus, TaskStatus.TaskStatus1.getKey())
-                    .last("limit 5")
+                    .last("limit 15")
             );
             if (CollUtil.isEmpty(atDataTaskEntities)) {
                 log.info("DataTask task1 atDataTaskEntities isEmpty");

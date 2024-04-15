@@ -16,6 +16,7 @@ public enum CountryCode implements BaseEnum {
     CountryCode4(82,"kr"),
     CountryCode5(852,"hk"),
     CountryCode6(855,"kh"),
+    CountryCode7(1,"us"),
 //    CountryCode1(66,"th"),
 //    CountryCode2(886,"tw"),
 //    CountryCode3(81,"jp"),
