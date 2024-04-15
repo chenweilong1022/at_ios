@@ -530,7 +530,7 @@ public class RegisterTask {
                 Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
                 boolean triedLock = false;
                 try {
-                    triedLock = lock.tryLock();
+                    triedLock = lock.tryLock(5, TimeUnit.SECONDS);
                     log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
                     if(triedLock) {
                         try{
