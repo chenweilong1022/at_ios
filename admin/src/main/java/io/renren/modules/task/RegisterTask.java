@@ -176,6 +176,9 @@ public class RegisterTask {
                                 && CountryCode.CountryCode3.getValue().equals(cdGetPhoneEntity.getCountrycode())) {
                             //日本
                             cardJpService.withBlackMobile(cdLineRegisterEntity.getPkey());
+                        } else if (StringUtils.isNotEmpty(cdGetPhoneEntity.getCountrycode())
+                                && CountryCode.CountryCode5.getValue().equals(cdGetPhoneEntity.getCountrycode())) {
+                            firefoxServiceImpl.withBlackMobile(cdLineRegisterEntity.getPkey());
                         } else {
                             firefoxService.withBlackMobile(cdLineRegisterEntity.getPkey());
                         }
@@ -240,9 +243,9 @@ public class RegisterTask {
                             String phoneCode = cdGetPhoneEntity.getCode();
                             //超过20分
                             long between = DateUtil.between(cdGetPhoneEntity.getCreateTime(), DateUtil.date(), DateUnit.MINUTE);
-                            if (between > 7) {
+                            if (between > 3) {
                                 cdGetPhoneEntity.setCode("验证码超时");
-                                cdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus3.getKey());
+                                cdGetPhoneEntity.setPhoneStatus(PhoneStatus5.getKey());
                                 return;
                             }
                             if (StrUtil.isEmpty(phoneCode) && StringUtils.isNotEmpty(cdGetPhoneEntity.getCountrycode())) {
