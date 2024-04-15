@@ -547,7 +547,7 @@ public class RegisterTask {
                                     cdGetPhoneDTO.setCountrycode(CountryCode.getValueByKey(cdRegisterSubtasksEntity.getCountryCode()));
                                     List<CdGetPhoneEntity> cdGetPhoneEntities = cdGetPhoneService.addCount(cdGetPhoneDTO);
                                     //如果数量相等
-                                    if (cdGetPhoneDTO.getCount().equals(cdGetPhoneEntities.size() + count)) {
+                                    if (cdRegisterSubtasksEntity.getNumberRegistrations().equals(cdGetPhoneEntities.size() + count)) {
                                         CdRegisterSubtasksEntity update = new CdRegisterSubtasksEntity();
                                         update.setId(cdRegisterSubtasksEntity.getId());
                                         update.setRegistrationStatus(RegistrationStatus.RegistrationStatus6.getKey());
