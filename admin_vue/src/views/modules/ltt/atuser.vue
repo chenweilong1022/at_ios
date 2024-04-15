@@ -226,7 +226,7 @@
       @size-change="sizeChangeHandle"
       @current-change="currentChangeHandle"
       :current-page="pageIndex"
-      :page-sizes="[10, 20, 50, 100]"
+      :page-sizes="[10, 20, 50, 100,500, 1000]"
       :page-size="pageSize"
       :total="totalPage"
       layout="total, sizes, prev, pager, next, jumper">
@@ -272,6 +272,14 @@
           {
             value: 5,
             label: '数据错误'
+          },
+          {
+            value: 6,
+            label: '已使用'
+          },
+          {
+            value: 7,
+            label: '需要刷新token'
           }
         ],
         validateOptions: [

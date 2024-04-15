@@ -24,6 +24,7 @@ public interface LineService {
     SyncLineTokenVO SyncLineTokenDTO(SyncLineTokenDTO syncLineTokenDTO);
 
     SearchPhoneVO searchPhone(SearchPhoneDTO searchPhoneDTO);
+    getUserTicketVO getUserTicket(getUserTicketDTO searchPhoneDTO);
 
     SearchUserIdVO searchUserId(SearchUserIdDTO searchPhoneDTO);
 
@@ -33,6 +34,8 @@ public interface LineService {
 
     SearchPhoneVO addFriendsByMid(AddFriendsByMid addFriendsByMid);
 
+    SearchPhoneVO addFriendsByUserTicket(AddFriendsByUserTicket addFriendsByMid);
+
     SearchPhoneVO addFriendsByReference(AddFriendsByMid addFriendsByMid);
     SearchPhoneVO addFriendsByHomeRecommend(AddFriendsByHomeRecommendDTO addFriendsByHomeRecommendDTO);
 
@@ -40,6 +43,9 @@ public interface LineService {
     SearchPhoneVO addFriendsBySearchV3(AddFriendsByHomeRecommendDTO addFriendsByHomeRecommendDTO);
 
     CreateGroupResultVO createGroupResult(RegisterResultDTO registerResultDTO);
+
+    ///work/inviteIntoChat
+    LineRegisterVO inviteIntoChat(InviteIntoChatDTO registerResultDTO);
 
     LineRegisterVO openApp(OpenApp openApp);
 

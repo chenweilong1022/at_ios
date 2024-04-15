@@ -7,21 +7,21 @@ import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
+import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import io.renren.common.utils.EnumUtil;
 import io.renren.common.utils.PhoneUtil;
 import io.renren.common.utils.vo.PhoneCountryVO;
 import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
+import io.renren.modules.client.dto.LineTokenJson;
 import io.renren.modules.ltt.conver.AtDataTaskConver;
 import io.renren.modules.ltt.dto.AtDataTaskDTO;
 import io.renren.modules.ltt.dto.AtUserDTO;
 import io.renren.modules.ltt.entity.*;
 import io.renren.modules.ltt.enums.*;
 import io.renren.modules.ltt.service.*;
-import io.renren.modules.ltt.vo.AccountBalanceVO;
-import io.renren.modules.ltt.vo.AtUserVO;
-import io.renren.modules.ltt.vo.OnGroupPreVO;
+import io.renren.modules.ltt.vo.*;
 import io.renren.modules.sys.service.SysUserService;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.api.WxConsts;
@@ -35,7 +35,6 @@ import io.renren.common.utils.Query;
 
 import io.renren.modules.ltt.dao.AtGroupTaskDao;
 import io.renren.modules.ltt.dto.AtGroupTaskDTO;
-import io.renren.modules.ltt.vo.AtGroupTaskVO;
 import io.renren.modules.ltt.conver.AtGroupTaskConver;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -195,6 +194,8 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
     private AtGroupService atGroupService;
     @Autowired
     private AtUserService atUserService;
+    @Autowired
+    private AtUserTokenService atUserTokenService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -208,21 +209,21 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
         String regions = EnumUtil.queryValueByKey(atGroupTask.getCountryCode(), CountryCode.values());
         atUserDTO.setNation(regions.toUpperCase());
         atUserDTO.setUserGroupId(atGroupTask.getUserGroupId());
-        atUserDTO.setLimit(onGroupPreVOS.size());
+        atUserDTO.setLimit(onGroupPreVOS.size() * atGroupTask.getPullGroupNumber());
         atUserDTO.setStatus(UserStatus.UserStatus4.getKey());
         atUserDTO.setUserSource(AtUserSourceEnum.AtUserSource1.getKey());
         //获取符合账号的号码
         PageUtils pageUtils = atUserService.queryPage(atUserDTO);
         List<AtUserVO> atUserVOS = pageUtils.getList();
-        Assert.isTrue(onGroupPreVOS.size()>atUserVOS.size(),"拉群号不足，请增加拉群号");
+
+        Assert.isTrue(onGroupPreVOS.size()*atGroupTask.getPullGroupNumber()>atUserVOS.size(),"拉群号不足，请增加拉群号");
+
         Queue<AtUserVO> atUserVOQueue = new LinkedList<>(atUserVOS);
         List<AtUserEntity> atUserEntityUpdates = new ArrayList<>();
+        List<AtDataSubtaskEntity> atDataSubtaskEntityListNew = new ArrayList<>();
         for (OnGroupPreVO onGroupPreVO : onGroupPreVOS) {
-            AtUserVO poll = atUserVOQueue.poll();
-            AtUserEntity atUserEntity = new AtUserEntity();
-            atUserEntity.setId(poll.getId());
-            atUserEntity.setStatus(UserStatus.UserStatus6.getKey());
-            atUserEntityUpdates.add(atUserEntity);
+
+            List<AtDataSubtaskEntity> atDataSubtaskEntities = new ArrayList<>();
             //料子
             List<String> materialUrls = onGroupPreVO.getMaterialUrls();
             //保存群分组
@@ -235,7 +236,6 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
             atGroupTaskEntity.setGroupStatus(GroupStatus.GroupStatus1.getKey());
             atGroupTaskEntity.setDeleteFlag(DeleteFlag.NO.getKey());
             atGroupTaskEntity.setCreateTime(DateUtil.date());
-            atGroupTaskEntity.setUserId(poll.getId());
             atGroupService.save(atGroupTaskEntity);
             //水军
             List<String> navyTextLists = onGroupPreVO.getNavyTextLists();
@@ -248,7 +248,7 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
             atDataTask.setGroupType(groupType4.getKey());
             atDataTask.setCreateTime(DateUtil.date());
             atDataTask.setDeleteFlag(DeleteFlag.NO.getKey());
-            atDataTask.setAddTotalQuantity(navyTextLists.size() + materialUrls.size());
+            atDataTask.setAddTotalQuantity(navyTextLists.size() + materialUrls.size() + atGroupTask.getPullGroupNumber() - 1);
             atDataTask.setSuccessfulQuantity(0);
             atDataTask.setFailuresQuantity(0);
             atDataTask.setUpdateTime(DateUtil.date());
@@ -257,7 +257,7 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
             atDataTask.setGroupId(atGroupTaskEntity.getId());
             atDataTaskService.save(atDataTask);
 
-            List<AtDataSubtaskEntity> atDataSubtaskEntities = new ArrayList<>();
+
             for (String navyTextList : navyTextLists) {
                 String[] parts = navyTextList.split("\\s+");
                 AtDataSubtaskEntity save = new AtDataSubtaskEntity();
@@ -267,7 +267,6 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
                 save.setSysUserId(atGroupTask.getSysUserId());
                 save.setDataType(DataType.DataType2.getKey());
                 save.setTaskStatus(TaskStatus.TaskStatus1.getKey());
-                save.setUserId(poll.getId());
                 if (parts.length > 2) {
                     save.setContactKey(parts[0].trim());
                     save.setMid(parts[1].trim());
@@ -298,7 +297,6 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
                 save.setDataTaskId(atDataTask.getId());
                 save.setSysUserId(atGroupTask.getSysUserId());
                 save.setDataType(DataType.DataType1.getKey());
-                save.setUserId(poll.getId());
                 if (parts.length > 2) {
                     save.setContactKey(parts[0].trim());
                     save.setMid(parts[1].trim());
@@ -320,16 +318,62 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
                 atDataSubtaskEntities.add(save);
             }
 
+
+            //将加粉数据分组
+            List<List<AtDataSubtaskEntity>> partition = Lists.partition(atDataSubtaskEntities, atDataSubtaskEntities.size() / atGroupTask.getPullGroupNumber() + 1);
+
+
+
+            AtUserVO pollFirst = null;
+            //给加粉数据分组
+            for (List<AtDataSubtaskEntity> atDataSubtaskEntityList : partition) {
+                AtUserVO poll = atUserVOQueue.poll();
+                if (ObjectUtil.isNull(pollFirst)) {
+                    pollFirst = poll;
+                    atGroupTaskEntity.setUserId(pollFirst.getId());
+                    atGroupService.updateById(atGroupTaskEntity);
+                }else {
+                    AtUserTokenVO atUserTokenVO = atUserTokenService.getById(poll.getUserTokenId());
+                    String token = atUserTokenVO.getToken();
+                    LineTokenJson lineTokenJson = JSON.parseObject(token, LineTokenJson.class);
+
+                    AtDataSubtaskEntity save = new AtDataSubtaskEntity();
+                    save.setGroupId(atGroupTaskEntity.getId());
+                    save.setGroupType(groupType4.getKey());
+                    save.setTaskStatus(TaskStatus.TaskStatus1.getKey());
+                    save.setDataTaskId(atDataTask.getId());
+                    save.setSysUserId(atGroupTask.getSysUserId());
+                    save.setDataType(DataType.DataType3.getKey());
+                    save.setContactKey(lineTokenJson.getPhone());
+                    save.setMid(lineTokenJson.getMid());
+                    save.setDisplayName(lineTokenJson.getNickName());
+                    save.setUserId(pollFirst.getId());
+                    atDataSubtaskEntityListNew.add(save);
+                }
+                AtUserEntity atUserEntity = new AtUserEntity();
+                atUserEntity.setId(poll.getId());
+                atUserEntity.setStatus(UserStatus.UserStatus6.getKey());
+                atUserEntityUpdates.add(atUserEntity);
+                for (AtDataSubtaskEntity atDataSubtaskEntity : atDataSubtaskEntityList) {
+                    if (ObjectUtil.isNull(atDataSubtaskEntity.getUserId())) {
+                        atDataSubtaskEntity.setUserId(poll.getId());
+                        atDataSubtaskEntityListNew.add(atDataSubtaskEntity);
+                    }
+                }
+            }
+
             //校验通讯录模式的国家
             if (GroupType.GroupType5.getKey().equals(groupType4.getKey())) {
-                checkCountry(poll, atDataSubtaskEntities);
+                checkCountry(pollFirst, atDataSubtaskEntityListNew);
             }
-            if (CollUtil.isNotEmpty(atUserEntityUpdates)) {
-                atUserService.updateBatchById(atUserEntityUpdates);
-            }
-            if (CollUtil.isNotEmpty(atDataSubtaskEntities)) {
-                atDataSubtaskService.saveBatchOnMe(atDataSubtaskEntities);
-            }
+
+
+        }
+        if (CollUtil.isNotEmpty(atUserEntityUpdates)) {
+            atUserService.updateBatchById(atUserEntityUpdates);
+        }
+        if (CollUtil.isNotEmpty(atDataSubtaskEntityListNew)) {
+            atDataSubtaskService.saveBatchOnMe(atDataSubtaskEntityListNew);
         }
         atGroupTask.setTaskStatus(TaskStatus.TaskStatus12.getKey());
         AtGroupTaskEntity atGroupTaskEntity = AtGroupTaskConver.MAPPER.converDTO(atGroupTask);

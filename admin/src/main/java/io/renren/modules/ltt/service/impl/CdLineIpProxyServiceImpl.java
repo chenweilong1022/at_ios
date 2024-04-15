@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RuntimeUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -107,103 +108,107 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
     @Override
     @Transactional(rollbackFor = Exception.class)
     public String getProxyIp(CdLineIpProxyDTO cdLineIpProxyDTO) {
+        //获取缓存
+        ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
+        if (ObjectUtil.isNull(projectWorkEntity)) {
+            return null;
+        }
+        //获取ip代理的国家
+        PhoneCountryVO phoneNumberInfo = null;
         try {
-            //获取缓存
-            ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
-            if (ObjectUtil.isNull(projectWorkEntity)) {
-                return null;
-            }
-            //获取ip代理的国家
-            PhoneCountryVO phoneNumberInfo = PhoneUtil.getPhoneNumberInfo(cdLineIpProxyDTO.getTokenPhone());
-            Long countryCode = phoneNumberInfo.getCountryCode();
-            String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource3, cdLineIpProxyDTO.getTokenPhone());
-            Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
-            boolean triedLock = lock.tryLock();
-            log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
-            if(triedLock) {
-                try{
-                    String regions = EnumUtil.queryValueByKey(countryCode.intValue(), CountryCode.values());
-                    if (!cdLineIpProxyDTO.isNewIp()) {
-                        //查询是否已经有这个国家的ip了
-                        CdLineIpProxyEntity one = this.getOne(new QueryWrapper<CdLineIpProxyEntity>().lambda()
-                                .eq(CdLineIpProxyEntity::getTokenPhone,cdLineIpProxyDTO.getTokenPhone())
-                                .eq(CdLineIpProxyEntity::getLzCountry,String.valueOf(countryCode))
-                                .orderByDesc(CdLineIpProxyEntity::getId)
-                                .last("limit 1")
-                        );
-                        //如果有直接返回
-                        if (ObjectUtil.isNotNull(one)) {
-                            String ip = one.getIp();
-                            CurlVO proxyUse = isProxyUse(ip, regions);
-                            if (proxyUse.isProxyUse()) {
-                                //如果ip相同并且国家一样
-                                if (proxyUse.getIp().equals(one.getOutIpv4()) && regions.toLowerCase().equals(proxyUse.getCountry().toLowerCase())) {
-                                    return socks5Pre(ip);
-                                    //如果ip不相同相同并且国家一样
-                                }else if (regions.toLowerCase().equals(proxyUse.getCountry().toLowerCase())) {
-                                    CdLineIpProxyEntity save = new CdLineIpProxyEntity();
-                                    save.setIp(ip);
-                                    save.setTokenPhone(cdLineIpProxyDTO.getTokenPhone());
-                                    save.setLzCountry(String.valueOf(countryCode));
-                                    save.setOutIpv4(proxyUse.getIp());
-                                    save.setCountry(proxyUse.getCountry());
-                                    save.setCreateTime(DateUtil.date());
-                                    try {
-                                        this.save(save);
-                                        return socks5Pre(ip);
-                                    }catch (Exception e) {
-                                        log.info("e = {}",e.getMessage());
-                                        log.info("e = {}",e.getLocalizedMessage());
-                                        log.info("e = {}",e.toString());
-                                    }
+            phoneNumberInfo = PhoneUtil.getPhoneNumberInfo(cdLineIpProxyDTO.getTokenPhone());
+        } catch (Exception e) {
+            return null;
+        }
+        Long countryCode = phoneNumberInfo.getCountryCode();
+//        String keyByResource1 = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource3, countryCode.intValue());
+//        Lock lock1 = lockMap.computeIfAbsent(keyByResource1, k -> new ReentrantLock());
 
+        String ip = getIp(cdLineIpProxyDTO, countryCode);
+//        if (StrUtil.isEmpty(ip)) {
+//            ip = getIp(cdLineIpProxyDTO,82L);
+//            if (StrUtil.isEmpty(ip)) {
+//                ip = getIp(cdLineIpProxyDTO,1L);
+//            }
+//        }
+        return ip;
+    }
+
+    private String getIp(CdLineIpProxyDTO cdLineIpProxyDTO, Long countryCode) {
+        String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource3, cdLineIpProxyDTO.getTokenPhone());
+        Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
+        boolean triedLock = lock.tryLock();
+        log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
+        if(triedLock) {
+            try{
+                String regions = EnumUtil.queryValueByKey(countryCode.intValue(), CountryCode.values());
+                if (!cdLineIpProxyDTO.isNewIp()) {
+                    //查询是否已经有这个国家的ip了
+                    CdLineIpProxyEntity one = this.getOne(new QueryWrapper<CdLineIpProxyEntity>().lambda()
+                            .eq(CdLineIpProxyEntity::getTokenPhone, cdLineIpProxyDTO.getTokenPhone())
+                            .eq(CdLineIpProxyEntity::getLzCountry,String.valueOf(countryCode))
+                            .orderByDesc(CdLineIpProxyEntity::getId)
+                            .last("limit 1")
+                    );
+                    //如果有直接返回
+                    if (ObjectUtil.isNotNull(one)) {
+                        String ip = one.getIp();
+                        CurlVO proxyUse = isProxyUse(ip, regions);
+                        if (proxyUse.isProxyUse()) {
+                            //如果ip相同并且国家一样
+                            if (proxyUse.getIp().equals(one.getOutIpv4()) && regions.toLowerCase().equals(proxyUse.getCountry().toLowerCase())) {
+                                return socks5Pre(ip);
+                                //如果ip不相同相同并且国家一样
+                            }else if (regions.toLowerCase().equals(proxyUse.getCountry().toLowerCase())) {
+                                CdLineIpProxyEntity save = new CdLineIpProxyEntity();
+                                save.setIp(ip);
+                                save.setTokenPhone(cdLineIpProxyDTO.getTokenPhone());
+                                save.setLzCountry(String.valueOf(countryCode));
+                                save.setOutIpv4(proxyUse.getIp());
+                                save.setCountry(proxyUse.getCountry());
+                                save.setCreateTime(DateUtil.date());
+                                try {
+                                    this.save(save);
+                                    return socks5Pre(ip);
+                                }catch (Exception e) {
+                                    log.info("e = {}",e.getMessage());
+                                    log.info("e = {}",e.getLocalizedMessage());
+                                    log.info("e = {}",e.toString());
                                 }
+
                             }
                         }
                     }
+                }
 
+                boolean flag = true;
+                int i = 0;
+                while(i < 10) {
+                    i++;
                     String ip = null;
-                    Queue<String> getflowip = caffeineCacheListString.getIfPresent(regions);
-
-                    String keyByResource1 = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource3, countryCode.intValue());
-                    Lock lock1 = lockMap.computeIfAbsent(keyByResource1, k -> new ReentrantLock());
-                    boolean triedLock2 = lock1.tryLock();
-                    log.info("keyByResource = {} 获取的锁为 = {}",keyByResource1,triedLock2);
-                    try {
-                        if(triedLock2) {
-                            if (CollUtil.isEmpty(getflowip)) {
-                                String getPhoneHttp = String.format("https://tq.lunaproxy.com/getflowip?neek=1136881&num=500&type=1&sep=1&regions=%s&ip_si=1&level=1&sb=",regions);
-                                String resp = HttpUtil.get(getPhoneHttp);
-                                if (JSONUtil.isJson(resp)) {
-                                    return null;
-                                }
-                                String[] split = resp.split("\r\n");
-                                Queue<String> getflowipNew = new LinkedList<>();
-                                for (String s : split) {
-                                    getflowipNew.offer(s);
-                                }
-                                ip = getflowipNew.poll();
-                                caffeineCacheListString.put(regions,getflowipNew);
-                            }else {
-                                ip = getflowip.poll();
-                                caffeineCacheListString.put(regions,getflowip);
-                            }
-                        }else {
+                    Queue<String> getflowip = caffeineCacheListString.getIfPresent(cdLineIpProxyDTO.getTokenPhone());
+                    if (CollUtil.isEmpty(getflowip)) {
+                        String getPhoneHttp = String.format("https://tq.lunaproxy.com/getflowip?neek=1136881&num=500&type=1&sep=1&regions=%s&ip_si=1&level=1&sb=",regions);
+                        String resp = HttpUtil.get(getPhoneHttp);
+                        if (JSONUtil.isJson(resp)) {
                             return null;
                         }
-                    } catch (Exception e) {
-                        log.error("e = {}",e.getMessage());
-                        log.error("e = {}",e.getLocalizedMessage());
-                        log.error("e = {}",e.toString());
-                    }finally {
-                        lock1.unlock();
+                        String[] split = resp.split("\r\n");
+                        Queue<String> getflowipNew = new LinkedList<>();
+                        for (String s : split) {
+                            getflowipNew.offer(s);
+                        }
+                        ip = getflowipNew.poll();
+                        caffeineCacheListString.put(cdLineIpProxyDTO.getTokenPhone(),getflowipNew);
+                    }else {
+                        ip = getflowip.poll();
+                        caffeineCacheListString.put(cdLineIpProxyDTO.getTokenPhone(),getflowip);
                     }
-
 
                     CurlVO proxyUse = isProxyUse(ip, regions);
                     if (proxyUse.isProxyUse()) {
                         //如果国家一样
-                       if (regions.toLowerCase().equals(proxyUse.getCountry().toLowerCase())) {
+                        if (regions.toLowerCase().equals(proxyUse.getCountry().toLowerCase())) {
                             CdLineIpProxyEntity save = new CdLineIpProxyEntity();
                             save.setIp(ip);
                             save.setTokenPhone(cdLineIpProxyDTO.getTokenPhone());
@@ -211,21 +216,26 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                             save.setOutIpv4(proxyUse.getIp());
                             save.setCountry(proxyUse.getCountry());
                             save.setCreateTime(DateUtil.date());
-                            this.save(save);
+                            try {
+                                this.save(save);
+                                flag = false;
+                            }catch (Exception e) {
+                                continue;
+                            }
                             return socks5Pre(ip);
                         }
-                        return null;
                     }
-                }finally {
-                    lock.unlock();
+
                 }
-            }else {
-                log.info("keyByResource = {} 在执行",keyByResource);
+            }finally {
+                try {
+                    lock.unlock();
+                }catch (Exception e) {
+                    log.error("lock = {}","没有上锁");
+                }
             }
-        } catch (Exception e) {
-            log.error("e = {}",e.getMessage());
-            log.error("e = {}",e.getLocalizedMessage());
-            log.error("e = {}",e.toString());
+        }else {
+            log.info("keyByResource = {} 在执行",keyByResource);
         }
         return null;
     }

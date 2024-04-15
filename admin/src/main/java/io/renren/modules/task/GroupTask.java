@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import io.renren.modules.client.LineService;
 import io.renren.modules.client.dto.CreateGroupMax;
 import io.renren.modules.client.dto.GetChatsDTO;
+import io.renren.modules.client.dto.InviteIntoChatDTO;
 import io.renren.modules.client.dto.RegisterResultDTO;
 import io.renren.modules.client.vo.CreateGroupResultVO;
 import io.renren.modules.client.vo.GetChatsVO;
@@ -21,6 +22,8 @@ import io.renren.modules.ltt.enums.LockMapKeyResource;
 import io.renren.modules.ltt.enums.TaskStatus;
 import io.renren.modules.ltt.enums.UserStatus;
 import io.renren.modules.ltt.service.*;
+import io.renren.modules.ltt.vo.AtUserTokenVO;
+import io.renren.modules.ltt.vo.AtUserVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
@@ -96,7 +99,7 @@ public class GroupTask {
 
         //获取当前需要同步通讯的任务
         List<AtGroupEntity> cdGroupTasksEntities = atGroupService.list(new QueryWrapper<AtGroupEntity>().lambda()
-                .last("limit 150")
+                .last("limit 20")
                 .eq(AtGroupEntity::getGroupStatus,GroupStatus.GroupStatus5.getKey())
         );
         if (CollUtil.isEmpty(cdGroupTasksEntities)) {
@@ -203,7 +206,7 @@ public class GroupTask {
 
         //获取当前需要同步通讯的任务
         List<AtGroupEntity> cdGroupTasksEntities = atGroupService.list(new QueryWrapper<AtGroupEntity>().lambda()
-                .last("limit 150")
+                .last("limit 15")
                 .eq(AtGroupEntity::getGroupStatus,GroupStatus.GroupStatus3.getKey())
         );
         if (CollUtil.isEmpty(cdGroupTasksEntities)) {
@@ -222,13 +225,44 @@ public class GroupTask {
                         RegisterResultDTO registerResultDTO = new RegisterResultDTO();
                         registerResultDTO.setTaskId(cdGroupTasksEntity.getTaskId());
                         CreateGroupResultVO groupResult = lineService.createGroupResult(registerResultDTO);
+                        cdGroupTasksEntity.setMsg(groupResult.getMsg());
                         if (ObjectUtil.isNotNull(groupResult) && 200 == groupResult.getCode()) {
                             if (2 == groupResult.getData().getStatus()) {
                                 cdGroupTasksEntity.setRoomId(groupResult.getData().getGroupInfo().getRoomId());
                                 cdGroupTasksEntity.setChatRoomUrl(groupResult.getData().getGroupInfo().getChatRoomUrl());
                                 cdGroupTasksEntity.setRoomTicketId(groupResult.getData().getGroupInfo().getRoomTicketId());
                                 cdGroupTasksEntity.setGroupStatus(GroupStatus.GroupStatus5.getKey());
+                                //如果拉群成功
+                                List<AtDataSubtaskEntity> atDataSubtaskEntities = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
+                                        .eq(AtDataSubtaskEntity::getGroupId,cdGroupTasksEntity.getId())
+                                        .notIn(AtDataSubtaskEntity::getUserId,cdGroupTasksEntity.getUserId())
+                                        .in(AtDataSubtaskEntity::getTaskStatus,TaskStatus.TaskStatus10.getKey(),TaskStatus.TaskStatus8.getKey())
+                                );
+                                if (CollUtil.isNotEmpty(atDataSubtaskEntities)) {
+                                    Integer userId = atDataSubtaskEntities.get(0).getUserId();
+                                    AtUserVO atUserVO = atUserService.getById(userId);
+                                    AtUserTokenVO atUserTokenVO = atUserTokenService.getById(atUserVO.getUserTokenId());
 
+                                    //获取代理
+                                    CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
+                                    cdLineIpProxyDTO.setTokenPhone(atUserVO.getTelephone());
+                                    cdLineIpProxyDTO.setLzPhone(atUserVO.getTelephone());
+                                    String proxyIp = cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO);
+                                    if (StrUtil.isEmpty(proxyIp)) {
+                                        return;
+                                    }
+                                    // 邀请好友
+                                    List<String> userMids = atDataSubtaskEntities.stream().map(AtDataSubtaskEntity::getMid).collect(Collectors.toList());
+                                    InviteIntoChatDTO inviteIntoChatDTO = new InviteIntoChatDTO();
+                                    inviteIntoChatDTO.setProxy(proxyIp);
+                                    inviteIntoChatDTO.setChatRoomId(cdGroupTasksEntity.getRoomId());
+                                    inviteIntoChatDTO.setUserMids(userMids);
+                                    inviteIntoChatDTO.setToken(atUserTokenVO.getToken());
+                                    LineRegisterVO lineRegisterVO = lineService.inviteIntoChat(inviteIntoChatDTO);
+                                    if (200 != lineRegisterVO.getCode()) {
+                                        cdGroupTasksEntity.setMsg(StrUtil.concat(true,groupResult.getMsg(),lineRegisterVO.getMsg()));
+                                    }
+                                }
                             }else if (-1 == groupResult.getData().getStatus()) {
                                 cdGroupTasksEntity.setGroupStatus(GroupStatus.GroupStatus4.getKey());
                                 atUserService.unlock(cdGroupTasksEntity.getUserId(),UserStatus.UserStatus2);
@@ -239,7 +273,7 @@ public class GroupTask {
                             cdGroupTasksEntity.setRoomId(groupResult.getMsg());
                             cdGroupTasksEntity.setGroupStatus(GroupStatus.GroupStatus4.getKey());
                         }
-                        cdGroupTasksEntity.setMsg(StrUtil.concat(true,cdGroupTasksEntity.getMsg(),groupResult.getMsg()));
+                        cdGroupTasksEntity.setMsg(StrUtil.concat(true,cdGroupTasksEntity.getMsg(),groupResult.getMsg(),groupResult.getData().getRemark()));
                         atGroupService.updateById(cdGroupTasksEntity);
                     }finally {
                         lock.unlock();
@@ -262,7 +296,7 @@ public class GroupTask {
 
         //获取当前需要同步通讯的任务
         List<AtGroupEntity> cdGroupTasksEntities = atGroupService.list(new QueryWrapper<AtGroupEntity>().lambda()
-                .last("limit 150")
+                .last("limit 20")
                 .eq(AtGroupEntity::getGroupStatus,GroupStatus.GroupStatus7.getKey())
         );
         if (CollUtil.isEmpty(cdGroupTasksEntities)) {
@@ -294,6 +328,7 @@ public class GroupTask {
 
                         List<AtDataSubtaskEntity> atDataSubtaskEntities = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
                                 .eq(AtDataSubtaskEntity::getGroupId,cdGroupTasksEntity.getId())
+                                .eq(AtDataSubtaskEntity::getUserId,cdGroupTasksEntity.getUserId())
                                 .in(AtDataSubtaskEntity::getTaskStatus,TaskStatus.TaskStatus10.getKey(),TaskStatus.TaskStatus8.getKey())
                         );
 

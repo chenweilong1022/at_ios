@@ -29,7 +29,7 @@ public class CacheConfig {
     public Cache<String, Queue<String>> caffeineCacheListString() {
         return Caffeine.newBuilder()
                 // 设置最后一次写入或访问后两个小时后过期
-                .expireAfterWrite(5, TimeUnit.MINUTES)
+                .expireAfterWrite(100, TimeUnit.MINUTES)
                 // 初始的缓存空间大小
                 .initialCapacity(100)
                 // 缓存的最大条数

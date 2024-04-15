@@ -71,5 +71,11 @@ public interface AtGroupService extends IService<AtGroupEntity> {
      * @param atGroup
      */
     void reallocateToken(AtGroupDTO atGroup);
+
+    /**
+     * 启动任务
+     * @param atGroup
+     */
+    void startTask(AtGroupDTO atGroup);
 }
 
