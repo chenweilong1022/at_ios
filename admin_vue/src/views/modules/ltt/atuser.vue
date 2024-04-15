@@ -113,6 +113,9 @@
         <el-button style="margin-top: 15px;" v-if="isAuth('ltt:atuser:delete')" type="danger" @click="deleteHandle()"
                    :disabled="dataListSelections.length <= 0">批量删除
         </el-button>
+        <el-button style="margin-top: 15px;" v-if="isAuth('ltt:atuser:save')" type="danger"
+                   @click="cleanBlockData()">清理封号
+        </el-button>
       </el-form-item>
     </el-form>
     <el-table
@@ -543,6 +546,32 @@
             url: this.$http.adornUrl('/ltt/atuser/delete'),
             method: 'post',
             data: this.$http.adornData(ids, false)
+          }).then(({data}) => {
+            if (data && data.code === 0) {
+              this.$message({
+                message: '操作成功',
+                type: 'success',
+                duration: 1500,
+                onClose: () => {
+                  this.getDataList()
+                }
+              })
+            } else {
+              this.$message.error(data.msg)
+            }
+          })
+        })
+      },
+      // 清理封号账号
+      cleanBlockData () {
+        this.$confirm(`确定对封号数据进行清理?`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$http({
+            url: this.$http.adornUrl('/ltt/atuser/cleanBlockData'),
+            method: 'post'
           }).then(({data}) => {
             if (data && data.code === 0) {
               this.$message({

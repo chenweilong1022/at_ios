@@ -117,6 +117,17 @@ public class AtUserController extends AbstractController {
     }
 
     /**
+     * 清理封号数据
+     */
+    @RequestMapping("/cleanBlockData")
+    @RequiresPermissions("ltt:atuser:update")
+    public R cleanBlockData(){
+		atUserService.cleanBlockData(getAuthUserId());
+
+        return R.ok();
+    }
+
+    /**
      * 导出token
      * @param ids
      * @return

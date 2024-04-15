@@ -356,4 +356,28 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
         return super.removeByIds(ids);
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void cleanBlockData(Long sysUserId) {
+        List<AtUserEntity> userList = baseMapper
+                .selectList(new QueryWrapper<AtUserEntity>().lambda()
+                .eq(AtUserEntity::getStatus, UserStatus.UserStatus2.getKey())
+                .eq(ObjectUtil.isNotNull(sysUserId), AtUserEntity::getSysUserId, sysUserId)
+                );
+        Assert.isTrue(CollectionUtils.isEmpty(userList), "无需要清理的数据！");
+
+        //清理封号数据
+        List<Integer> ids = userList.stream().map(AtUserEntity::getId).distinct().collect(Collectors.toList());
+        baseMapper.deleteBatchIds(ids);
+
+        List<Integer> userTokenIdList = userList.stream()
+                .filter(i -> i.getUserTokenId() != null)
+                .map(AtUserEntity::getUserTokenId).distinct()
+                .collect(Collectors.toList());
+        //清理token
+        if (CollectionUtils.isNotEmpty(userTokenIdList)) {
+            atUserTokenService.removeByIds(userTokenIdList);
+        }
+    }
+
 }

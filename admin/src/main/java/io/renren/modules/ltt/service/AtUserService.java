@@ -113,5 +113,10 @@ public interface AtUserService extends IService<AtUserEntity> {
      */
     @Override
     boolean removeByIds(Collection<? extends Serializable> ids);
+
+    /**
+     * 清理封号数据
+     */
+    void cleanBlockData(Long sysUserId);
 }
 
