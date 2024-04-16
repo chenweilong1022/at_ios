@@ -99,7 +99,7 @@ public class GroupTask {
 
         //获取当前需要同步通讯的任务
         List<AtGroupEntity> cdGroupTasksEntities = atGroupService.list(new QueryWrapper<AtGroupEntity>().lambda()
-                .last("limit 20")
+                .last("limit 50")
                 .eq(AtGroupEntity::getGroupStatus,GroupStatus.GroupStatus5.getKey())
         );
         if (CollUtil.isEmpty(cdGroupTasksEntities)) {
@@ -206,7 +206,7 @@ public class GroupTask {
 
         //获取当前需要同步通讯的任务
         List<AtGroupEntity> cdGroupTasksEntities = atGroupService.list(new QueryWrapper<AtGroupEntity>().lambda()
-                .last("limit 15")
+                .last("limit 50")
                 .eq(AtGroupEntity::getGroupStatus,GroupStatus.GroupStatus3.getKey())
         );
         if (CollUtil.isEmpty(cdGroupTasksEntities)) {
@@ -296,7 +296,7 @@ public class GroupTask {
 
         //获取当前需要同步通讯的任务
         List<AtGroupEntity> cdGroupTasksEntities = atGroupService.list(new QueryWrapper<AtGroupEntity>().lambda()
-                .last("limit 20")
+                .last("limit 50")
                 .eq(AtGroupEntity::getGroupStatus,GroupStatus.GroupStatus7.getKey())
         );
         if (CollUtil.isEmpty(cdGroupTasksEntities)) {
