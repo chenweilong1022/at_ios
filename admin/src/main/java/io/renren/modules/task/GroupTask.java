@@ -336,7 +336,7 @@ public class GroupTask {
                             return;
                         }
 
-                        List<String> mids = atDataSubtaskEntities.stream().map(AtDataSubtaskEntity::getMid).collect(Collectors.toList());
+                        List<String> mids = atDataSubtaskEntities.stream().map(AtDataSubtaskEntity::getMid).distinct().collect(Collectors.toList());
 
                         //获取代理
                         CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
