@@ -2,17 +2,13 @@
 
 package io.renren.modules.ltt.vo;
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 import java.util.List;
 
 @Data
+@Accessors(chain = true)
 public class IssueLiffViewVO {
     private String msg;
     private long code;
-
-    public String getMsg() { return msg; }
-    public void setMsg(String value) { this.msg = value; }
-
-    public long getCode() { return code; }
-    public void setCode(long value) { this.code = value; }
 }

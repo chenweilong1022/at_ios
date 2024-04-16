@@ -4,10 +4,12 @@
 
 package io.renren.modules.client.vo;
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 import java.util.List;
 
 @Data
+@Accessors(chain = true)
 public class SearchUserIdVO {
     private String msg;
     private long code;

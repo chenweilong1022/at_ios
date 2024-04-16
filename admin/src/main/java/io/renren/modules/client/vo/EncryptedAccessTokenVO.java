@@ -1,6 +1,7 @@
 package io.renren.modules.client.vo;
 
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 /**
  * @author liuyuchan
@@ -8,6 +9,7 @@ import lombok.Data;
  * @date 2024/1/30 01:49
  */
 @Data
+@Accessors(chain = true)
 public class EncryptedAccessTokenVO {
     private String msg;
     private long code;

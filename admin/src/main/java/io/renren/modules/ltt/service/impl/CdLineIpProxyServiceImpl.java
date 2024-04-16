@@ -16,6 +16,7 @@ import io.renren.common.utils.vo.PhoneCountryVO;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.client.entity.ProjectWorkEntity;
 import io.renren.modules.client.vo.CurlVO;
+import io.renren.modules.client.vo.IPWorldRespCurl;
 import io.renren.modules.ltt.conver.CdLineIpProxyConver;
 import io.renren.modules.ltt.dao.CdLineIpProxyDao;
 import io.renren.modules.ltt.dto.CdLineIpProxyDTO;
@@ -31,14 +32,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 @Service("cdLineIpProxyService")
@@ -188,11 +188,8 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                     String ip = null;
                     Queue<String> getflowip = caffeineCacheListString.getIfPresent(cdLineIpProxyDTO.getTokenPhone());
                     if (CollUtil.isEmpty(getflowip)) {
-                        String getPhoneHttp = String.format("https://tq.lunaproxy.com/getflowip?neek=1136881&num=500&type=1&sep=1&regions=%s&ip_si=1&level=1&sb=",regions);
-                        String resp = HttpUtil.get(getPhoneHttp);
-                        if (JSONUtil.isJson(resp)) {
-                            return null;
-                        }
+                        String resp = getLunaIpResp(regions);
+                        if (resp == null) return null;
                         String[] split = resp.split("\r\n");
                         Queue<String> getflowipNew = new LinkedList<>();
                         for (String s : split) {
@@ -240,6 +237,43 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         return null;
     }
 
+    private static String getLunaIpResp(String regions) {
+        String getPhoneHttp = String.format("https://tq.lunaproxy.com/getflowip?neek=1136881&num=500&type=1&sep=1&regions=%s&ip_si=1&level=1&sb=", regions);
+        String resp = HttpUtil.get(getPhoneHttp);
+        if (JSONUtil.isJson(resp)) {
+            return null;
+        }
+        return resp;
+    }
+
+    private static String getIp2World(String regions) {
+        String getPhoneHttp = String.format("http://api.proxy.ip2world.com/getProxyIp?return_type=txt&protocol=http&num=500&regions=%s&lb=1", regions);
+        String resp = HttpUtil.get(getPhoneHttp);
+        if (JSONUtil.isJson(resp)) {
+            return null;
+        }
+        return resp;
+    }
+
+
+    public static void main(String[] args) {
+        String format1 = String.format("curl -x socks5://%s ipinfo.io?token=1b1e3410f2b88e","43.152.113.218:19212");
+        List<String> strings = RuntimeUtil.execForLines(format1);
+
+        boolean flag = false;
+
+        List<String> newStr = new ArrayList<>();
+        for (String string : strings) {
+            if (string.contains("{") || flag) {
+                flag = true;
+                newStr.add(string);
+            }
+        }
+
+    }
+
+
+
     private static String socks5Pre(String ip) {
         if (ip.contains("socks5://")) {
             return ip;
@@ -264,6 +298,33 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
             }
             log.info("ip = {} country = {} format = {}",ip,country,"没有找到JSON数据");
             return falseCurlVO;
+        }catch (Exception e) {
+
+        }
+        return falseCurlVO;
+    }
+
+    private CurlVO isProxyUseIp2World(String ip,String country) {
+        CurlVO falseCurlVO = new CurlVO().setProxyUse(false);
+        try {
+            String format1 = String.format("curl -x socks5://%s ipinfo.io?token=1b1e3410f2b88e",ip);
+
+            List<String> strings = RuntimeUtil.execForLines(format1);
+            log.info("curl resp = {}",CollUtil.join(strings,""));
+            boolean flag = false;
+
+            List<String> newStr = new ArrayList<>();
+            for (String string : strings) {
+                if (string.contains("{") || flag) {
+                    flag = true;
+                    newStr.add(string);
+                }
+            }
+
+            String resp = CollUtil.join(newStr, "");
+            log.info("ip = {} country = {} format = {}",ip,country,resp);
+            IPWorldRespCurl curlVO = JSONUtil.toBean(resp, IPWorldRespCurl.class);
+            return falseCurlVO.setProxyUse(true).setIp(curlVO.getIp()).setCountry(curlVO.getCountry());
         }catch (Exception e) {
 
         }

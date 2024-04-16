@@ -1,6 +1,7 @@
 package io.renren.modules.client.vo;
 
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 /**
  * @author liuyuchan
@@ -8,6 +9,7 @@ import lombok.Data;
  * @date 2024/3/11 23:09
  */
 @Data
+@Accessors(chain = true)
 public class UpdateProfileImageVO {
     private String msg;
     private long code;

@@ -1,6 +1,7 @@
 package io.renren.modules.client.vo;
 
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 /**
  * @author liuyuchan
@@ -8,6 +9,7 @@ import lombok.Data;
  * @date 2023/12/8 12:36
  */
 @Data
+@Accessors(chain = true)
 public class RefreshAccessTokenVO {
     private String msg;
     private long code;

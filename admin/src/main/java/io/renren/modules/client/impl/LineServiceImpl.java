@@ -14,8 +14,10 @@ import io.renren.modules.client.LineService;
 import io.renren.modules.client.dto.*;
 import io.renren.modules.client.entity.ProjectWorkEntity;
 import io.renren.modules.client.vo.*;
+import io.renren.modules.ltt.entity.CdLineIpProxyEntity;
 import io.renren.modules.ltt.enums.DeleteFlag;
 import io.renren.modules.ltt.enums.ProxyStatus;
+import io.renren.modules.ltt.service.CdLineIpProxyService;
 import io.renren.modules.ltt.vo.IssueLiffViewVO;
 import io.renren.modules.sys.entity.SysConfigEntity;
 import io.renren.modules.sys.service.SysConfigService;
@@ -54,6 +56,8 @@ public class LineServiceImpl implements LineService {
             String getPhoneHttp = String.format("%s/api/v1/account/lineRegister",projectWorkEntity.getLineBaseHttp());
             String jsonStr = JSONUtil.toJsonStr(lineRegisterDTO);
             String resp = HttpUtil.post(getPhoneHttp, jsonStr);
+            if (code300(lineRegisterDTO.getProxy(), jsonStr, resp)) return new LineRegisterVO().setCode(300L).setMsg("网络异常");
+
             LineRegisterVO lineRegisterVO = JSON.parseObject(resp, LineRegisterVO.class);
 
             extracted(jsonStr, resp);
@@ -72,6 +76,7 @@ public class LineServiceImpl implements LineService {
             String jsonStr = JSONUtil.toJsonStr(issueLiffViewDTO);
             String resp = HttpUtil.post(getPhoneHttp, jsonStr);
             log.info("param = {},resp = {}", jsonStr, resp);
+            if (code300(issueLiffViewDTO.getProxy(), jsonStr, resp)) return new IssueLiffViewVO().setCode(300L).setMsg("网络异常");
             IssueLiffViewVO issueLiffViewVO = JSON.parseObject(resp, IssueLiffViewVO.class);
             extracted(jsonStr, resp);
             return issueLiffViewVO;
@@ -88,6 +93,8 @@ public class LineServiceImpl implements LineService {
             String getPhoneHttp = String.format("%s/api/v1/account/refreshAccessToken",projectWorkEntity.getLineBaseHttp());
             String jsonStr = JSONUtil.toJsonStr(issueLiffViewDTO);
             String resp = HttpUtil.post(getPhoneHttp, jsonStr,20000);
+            if (code300(issueLiffViewDTO.getProxy(), jsonStr, resp)) return new RefreshAccessTokenVO().setCode(300L).setMsg("网络异常");
+
             RefreshAccessTokenVO registerResultVO = JSON.parseObject(resp, RefreshAccessTokenVO.class);
             extracted(jsonStr, resp);
             return registerResultVO;
@@ -132,6 +139,7 @@ public class LineServiceImpl implements LineService {
             String getPhoneHttp = String.format("%s/api/v1/account/smsCode",projectWorkEntity.getLineBaseHttp());
             String jsonStr = JSONUtil.toJsonStr(smsCodeDTO);
             String resp = HttpUtil.post(getPhoneHttp, jsonStr);
+
             SMSCodeVO smsCodeVO = JSON.parseObject(resp, SMSCodeVO.class);
 
             extracted(jsonStr, resp);
@@ -166,7 +174,7 @@ public class LineServiceImpl implements LineService {
             String getPhoneHttp = String.format("%s/api/v1/work/searchPhone",projectWorkEntity.getLineBaseHttp());
             String jsonStr = JSONUtil.toJsonStr(searchPhoneDTO);
             String resp = HttpUtil.post(getPhoneHttp, jsonStr);
-            log.info("param = {},resp = {}", jsonStr, resp);
+            if (code300(searchPhoneDTO.getProxy(), jsonStr, resp)) return new SearchPhoneVO().setCode(300).setMsg("网络异常");
             SearchPhoneVO searchPhoneVO = JSON.parseObject(resp, SearchPhoneVO.class);
 
             extracted(jsonStr, resp);
@@ -177,6 +185,20 @@ public class LineServiceImpl implements LineService {
         return null;
     }
 
+    private boolean code300(String proxy, String jsonStr, String resp) {
+        log.info("param = {},resp = {}", jsonStr, resp);
+        if (resp.contains("网络异常")) {
+            CdLineIpProxyEntity cdLineIpProxyEntity = new CdLineIpProxyEntity();
+            cdLineIpProxyEntity.setTokenPhone("");
+            cdLineIpProxyService.update(cdLineIpProxyEntity,new QueryWrapper<CdLineIpProxyEntity>().lambda().eq(CdLineIpProxyEntity::getIp, proxy.replace("socks5://","")));
+            return true;
+        }
+        return false;
+    }
+
+    @Autowired
+    private CdLineIpProxyService cdLineIpProxyService;
+
     @Override
     public getUserTicketVO getUserTicket(getUserTicketDTO searchPhoneDTO) {
         try {
@@ -185,6 +207,7 @@ public class LineServiceImpl implements LineService {
             String jsonStr = JSONUtil.toJsonStr(searchPhoneDTO);
             String resp = HttpUtil.post(getPhoneHttp, jsonStr);
             log.info("param = {},resp = {}", jsonStr, resp);
+            if (code300(searchPhoneDTO.getProxy(), jsonStr, resp)) return new getUserTicketVO().setCode(300).setMsg("网络异常");
             getUserTicketVO searchPhoneVO = JSON.parseObject(resp, getUserTicketVO.class);
 
             extracted(jsonStr, resp);
@@ -203,6 +226,7 @@ public class LineServiceImpl implements LineService {
             String jsonStr = JSONUtil.toJsonStr(searchPhoneDTO);
             String resp = HttpUtil.post(getPhoneHttp, jsonStr);
             log.info("param = {},resp = {}", jsonStr, resp);
+            if (code300(searchPhoneDTO.getProxy(), jsonStr, resp)) return new SearchUserIdVO().setCode(300).setMsg("网络异常");
             SearchUserIdVO searchPhoneVO = JSON.parseObject(resp, SearchUserIdVO.class);
 
             extracted(jsonStr, resp);
@@ -214,12 +238,14 @@ public class LineServiceImpl implements LineService {
     }
 
     @Override
+
     public LineRegisterVO createGroupMax(CreateGroupMax createGroupMax) {
         try {
             ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
             String getPhoneHttp = String.format("%s/api/v1/work/createGroupMax",projectWorkEntity.getLineBaseHttp());
             String jsonStr = JSONUtil.toJsonStr(createGroupMax);
             String resp = HttpUtil.post(getPhoneHttp, jsonStr,20000);
+            if (code300(createGroupMax.getProxy(), jsonStr, resp)) return new LineRegisterVO().setCode(300).setMsg("网络异常");
             LineRegisterVO lineRegisterVO = JSON.parseObject(resp, LineRegisterVO.class);
 
             extracted(jsonStr, resp);
@@ -237,6 +263,7 @@ public class LineServiceImpl implements LineService {
             String getPhoneHttp = String.format("%s/api/v1/work/findAndAddContactsByPhone",projectWorkEntity.getLineBaseHttp());
             String jsonStr = JSONUtil.toJsonStr(searchPhoneDTO);
             String resp = HttpUtil.post(getPhoneHttp, jsonStr);
+            if (code300(searchPhoneDTO.getProxy(), jsonStr, resp)) return new SearchPhoneVO().setCode(300).setMsg("网络异常");
             SearchPhoneVO searchPhoneVO = JSON.parseObject(resp, SearchPhoneVO.class);
 
             extracted(jsonStr, resp);
@@ -254,6 +281,7 @@ public class LineServiceImpl implements LineService {
             String getPhoneHttp = String.format("%s/api/v1/work/addFriendsByMid",projectWorkEntity.getLineBaseHttp());
             String jsonStr = JSONUtil.toJsonStr(addFriendsByMid);
             String resp = HttpUtil.post(getPhoneHttp, jsonStr);
+            if (code300(addFriendsByMid.getProxy(), jsonStr, resp)) return new SearchPhoneVO().setCode(300).setMsg("网络异常");
             SearchPhoneVO searchPhoneVO = JSON.parseObject(resp, SearchPhoneVO.class);
 
             extracted(jsonStr, resp);
@@ -271,6 +299,7 @@ public class LineServiceImpl implements LineService {
             String getPhoneHttp = String.format("%s/api/v1/work/addFriendsByUserTicket",projectWorkEntity.getLineBaseHttp());
             String jsonStr = JSONUtil.toJsonStr(addFriendsByMid);
             String resp = HttpUtil.post(getPhoneHttp, jsonStr);
+            if (code300(addFriendsByMid.getProxy(), jsonStr, resp)) return new SearchPhoneVO().setCode(300).setMsg("网络异常");
             SearchPhoneVO searchPhoneVO = JSON.parseObject(resp, SearchPhoneVO.class);
 
             extracted(jsonStr, resp);
@@ -288,6 +317,7 @@ public class LineServiceImpl implements LineService {
             String getPhoneHttp = String.format("%s/api/v1/work/addFriendsByReference",projectWorkEntity.getLineBaseHttp());
             String jsonStr = JSONUtil.toJsonStr(addFriendsByMid);
             String resp = HttpUtil.post(getPhoneHttp, jsonStr);
+            if (code300(addFriendsByMid.getProxy(), jsonStr, resp)) return new SearchPhoneVO().setCode(300).setMsg("网络异常");
             SearchPhoneVO searchPhoneVO = JSON.parseObject(resp, SearchPhoneVO.class);
 
             extracted(jsonStr, resp);
@@ -305,6 +335,7 @@ public class LineServiceImpl implements LineService {
             String getPhoneHttp = String.format("%s/api/v1/work/addFriendsByHomeRecommend",projectWorkEntity.getLineBaseHttp());
             String jsonStr = JSONUtil.toJsonStr(addFriendsByHomeRecommendDTO);
             String resp = HttpUtil.post(getPhoneHttp, jsonStr);
+            if (code300(addFriendsByHomeRecommendDTO.getProxy(), jsonStr, resp)) return new SearchPhoneVO().setCode(300).setMsg("网络异常");
             SearchPhoneVO searchPhoneVO = JSON.parseObject(resp, SearchPhoneVO.class);
 
             extracted(jsonStr, resp);
@@ -322,6 +353,7 @@ public class LineServiceImpl implements LineService {
             String getPhoneHttp = String.format("%s/api/v1/work/addFriendsByFriendRecommend",projectWorkEntity.getLineBaseHttp());
             String jsonStr = JSONUtil.toJsonStr(addFriendsByHomeRecommendDTO);
             String resp = HttpUtil.post(getPhoneHttp, jsonStr);
+            if (code300(addFriendsByHomeRecommendDTO.getProxy(), jsonStr, resp)) return new SearchPhoneVO().setCode(300).setMsg("网络异常");
             SearchPhoneVO searchPhoneVO = JSON.parseObject(resp, SearchPhoneVO.class);
 
             extracted(jsonStr, resp);
@@ -339,6 +371,7 @@ public class LineServiceImpl implements LineService {
             String getPhoneHttp = String.format("%s/api/v1/work/addFriendsBySearchV3",projectWorkEntity.getLineBaseHttp());
             String jsonStr = JSONUtil.toJsonStr(addFriendsByHomeRecommendDTO);
             String resp = HttpUtil.post(getPhoneHttp, jsonStr);
+            if (code300(addFriendsByHomeRecommendDTO.getProxy(), jsonStr, resp)) return new SearchPhoneVO().setCode(300).setMsg("网络异常");
             SearchPhoneVO searchPhoneVO = JSON.parseObject(resp, SearchPhoneVO.class);
 
             extracted(jsonStr, resp);
@@ -373,6 +406,7 @@ public class LineServiceImpl implements LineService {
             String getPhoneHttp = String.format("%s/api/v1/work/inviteIntoChat",projectWorkEntity.getLineBaseHttp());
             String jsonStr = JSONUtil.toJsonStr(registerResultDTO);
             String resp = HttpUtil.post(getPhoneHttp, jsonStr);
+            if (code300(registerResultDTO.getProxy(), jsonStr, resp)) return new LineRegisterVO().setCode(300).setMsg("网络异常");
             LineRegisterVO createGroupResultVO = JSON.parseObject(resp, LineRegisterVO.class);
 
             extracted(jsonStr, resp);
@@ -390,6 +424,7 @@ public class LineServiceImpl implements LineService {
             String getPhoneHttp = String.format("%s/api/v1/account/openApp",projectWorkEntity.getLineBaseHttp());
             String jsonStr = JSONUtil.toJsonStr(openApp);
             String resp = HttpUtil.post(getPhoneHttp, jsonStr);
+            if (code300(openApp.getProxy(), jsonStr, resp)) return new LineRegisterVO().setCode(300).setMsg("网络异常");
             LineRegisterVO lineRegisterVO = JSON.parseObject(resp, LineRegisterVO.class);
 
             extracted(jsonStr, resp);
@@ -425,7 +460,7 @@ public class LineServiceImpl implements LineService {
             String getPhoneHttp = String.format("%s/api/v1/work/syncContents",projectWorkEntity.getLineBaseHttp());
             String jsonStr = JSONUtil.toJsonStr(syncContentsDTO);
             String resp = HttpUtil.post(getPhoneHttp,jsonStr,20000);
-
+            if (code300(syncContentsDTO.getProxy(), jsonStr, resp)) return new LineRegisterVO().setCode(300).setMsg("网络异常");
             LineRegisterVO lineRegisterVO = JSON.parseObject(resp, LineRegisterVO.class);
             extracted(jsonStr, resp);
             return lineRegisterVO;
@@ -462,6 +497,7 @@ public class LineServiceImpl implements LineService {
             String getPhoneHttp = String.format("%s/api/v1/work/getChats",projectWorkEntity.getLineBaseHttp());
             String jsonStr = JSONUtil.toJsonStr(getChatsDTO);
             String resp = HttpUtil.post(getPhoneHttp,jsonStr);
+            if (code300(getChatsDTO.getProxy(), jsonStr, resp)) return new GetChatsVO().setCode(300).setMsg("网络异常");
 
             GetChatsVO getChatsVO = JSON.parseObject(resp, GetChatsVO.class);
             extracted(jsonStr, resp);
@@ -479,6 +515,7 @@ public class LineServiceImpl implements LineService {
             String getPhoneHttp = String.format("%s/api/v1/msg/createThread",projectWorkEntity.getLineBaseHttp());
             String jsonStr = JSONUtil.toJsonStr(createThreadDTO);
             String resp = HttpUtil.post(getPhoneHttp,jsonStr,20000);
+            if (code300(createThreadDTO.getProxy(), jsonStr, resp)) return new RegisterResultVO().setCode(300L).setMsg("网络异常");
 
             RegisterResultVO syncContentsResultVO = JSON.parseObject(resp, RegisterResultVO.class);
             extracted(jsonStr, resp);
@@ -513,6 +550,7 @@ public class LineServiceImpl implements LineService {
             String getPhoneHttp = String.format("%s/api/v1/msg/shareTextMsg",projectWorkEntity.getLineBaseHttp());
             String jsonStr = JSONUtil.toJsonStr(shareTextMsgDTO);
             String resp = HttpUtil.post(getPhoneHttp,jsonStr,20000);
+            if (code300(shareTextMsgDTO.getProxy(), jsonStr, resp)) return new ShareTextMsgVO().setCode(300L).setMsg("网络异常");
 
             ShareTextMsgVO syncContentsResultVO = JSON.parseObject(resp, ShareTextMsgVO.class);
             extracted(jsonStr, resp);
@@ -530,6 +568,7 @@ public class LineServiceImpl implements LineService {
             String getPhoneHttp = String.format("%s/api/v1/msg/encryptedAccessToken",projectWorkEntity.getLineBaseHttp());
             String jsonStr = JSONUtil.toJsonStr(dto);
             String resp = HttpUtil.post(getPhoneHttp,jsonStr,20000);
+            if (code300(dto.getProxy(), jsonStr, resp)) return new EncryptedAccessTokenVO().setCode(300L).setMsg("网络异常");
 
             EncryptedAccessTokenVO syncContentsResultVO = JSON.parseObject(resp, EncryptedAccessTokenVO.class);
             extracted(jsonStr, resp);
@@ -547,7 +586,7 @@ public class LineServiceImpl implements LineService {
             String getPhoneHttp = String.format("%s/api/v1/msg/shareImgMsg",projectWorkEntity.getLineBaseHttp());
             String jsonStr = JSONUtil.toJsonStr(shareImgMsgDTO);
             String resp = HttpUtil.post(getPhoneHttp,jsonStr,20000);
-
+            if (code300(shareImgMsgDTO.getProxy(), jsonStr, resp)) return new ShareImgMsgVO().setCode(300L).setMsg("网络异常");
             shareImgMsgDTO.setImgData("");
             String jsonStr1 = JSONUtil.toJsonStr(shareImgMsgDTO);
             ShareImgMsgVO syncContentsResultVO = JSON.parseObject(resp, ShareImgMsgVO.class);
@@ -566,6 +605,8 @@ public class LineServiceImpl implements LineService {
             String getPhoneHttp = String.format("%s/api/v1/account/updateProfileImage",projectWorkEntity.getLineBaseHttp());
             String jsonStr = JSONUtil.toJsonStr(updateProfileImageDTO);
             String resp = HttpUtil.post(getPhoneHttp,jsonStr,20000);
+            if (code300(updateProfileImageDTO.getProxy(), jsonStr, resp)) return new UpdateProfileImageVO().setCode(300L).setMsg("网络异常");
+
             UpdateProfileImageVO updateProfileImageVO = JSON.parseObject(resp, UpdateProfileImageVO.class);
             extracted(jsonStr, resp);
             return updateProfileImageVO;
@@ -582,6 +623,7 @@ public class LineServiceImpl implements LineService {
             String getPhoneHttp = String.format("%s/api/v1/account/updateProfileImageResult",projectWorkEntity.getLineBaseHttp());
             String jsonStr = JSONUtil.toJsonStr(updateProfileImageResultDTO);
             String resp = HttpUtil.post(getPhoneHttp,jsonStr,20000);
+
             UpdateProfileImageResultVO updateProfileImageResultVO = JSON.parseObject(resp, UpdateProfileImageResultVO.class);
             extracted(jsonStr, resp);
             return updateProfileImageResultVO;
@@ -598,6 +640,8 @@ public class LineServiceImpl implements LineService {
             String getPhoneHttp = String.format("%s/api/v1/work/getAllContactIds",projectWorkEntity.getLineBaseHttp());
             String jsonStr = JSONUtil.toJsonStr(getAllContactIdsDTO);
             String resp = HttpUtil.post(getPhoneHttp,jsonStr,20000);
+            if (code300(getAllContactIdsDTO.getProxy(), jsonStr, resp)) return new GetAllContactIdsVO().setCode(300L).setMsg("网络异常");
+
             GetAllContactIdsVO updateProfileImageVO = JSON.parseObject(resp, GetAllContactIdsVO.class);
             extracted(jsonStr, resp);
             return updateProfileImageVO;
@@ -621,6 +665,8 @@ public class LineServiceImpl implements LineService {
             }
             String jsonStr = JSONUtil.toJsonStr(getContactsInfoV3DTO);
             String resp = HttpUtil.post(getPhoneHttp,jsonStr,20000);
+            if (code300(getContactsInfoV3DTO.getProxy(), jsonStr, resp)) return new GetContactsInfoV3VO().setCode(300L).setMsg("网络异常");
+
             GetContactsInfoV3VO updateProfileImageVO = JSON.parseObject(resp, GetContactsInfoV3VO.class);
             extracted(jsonStr, resp);
             return updateProfileImageVO;
@@ -637,6 +683,8 @@ public class LineServiceImpl implements LineService {
             String getPhoneHttp = String.format("%s/api/v1/account/updateProfileName",projectWorkEntity.getLineBaseHttp());
             String jsonStr = JSONUtil.toJsonStr(updateProfileNameDTO);
             String resp = HttpUtil.post(getPhoneHttp,jsonStr,20000);
+            if (code300(updateProfileNameDTO.getProxy(), jsonStr, resp)) return new UpdateProfileNameVO().setCode(300L).setMsg("网络异常");
+
             UpdateProfileNameVO updateProfileImageVO = JSON.parseObject(resp, UpdateProfileNameVO.class);
             extracted(jsonStr, resp);
             return updateProfileImageVO;

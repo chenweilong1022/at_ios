@@ -1,6 +1,7 @@
 package io.renren.modules.client.vo;
 
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 
@@ -10,6 +11,7 @@ import java.io.Serializable;
  * @date 2023/11/30 23:19
  */
 @Data
+@Accessors(chain = true)
 public class LineRegisterVO implements Serializable {
     private String msg;
     private long code;

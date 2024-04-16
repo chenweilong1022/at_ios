@@ -1,6 +1,7 @@
 package io.renren.modules.client.vo;
 
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 import java.util.Map;
 
@@ -10,6 +11,7 @@ import java.util.Map;
  * @date 2023/12/3 16:35
  */
 @Data
+@Accessors(chain = true)
 public class SearchPhoneVO {
     private String msg;
     private long code;

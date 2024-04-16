@@ -1,6 +1,7 @@
 package io.renren.modules.client.vo;
 
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 import java.util.Map;
 
@@ -10,6 +11,7 @@ import java.util.Map;
  * @date 2024/3/20 17:05
  */
 @Data
+@Accessors(chain = true)
 public class GetContactsInfoV3VO {
     private String msg;
     private long code;

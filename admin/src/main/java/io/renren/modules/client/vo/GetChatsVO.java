@@ -2,6 +2,7 @@ package io.renren.modules.client.vo;
 
 
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,7 @@ import java.util.Map;
  * @date 2023/12/13 02:02
  */
 @Data
+@Accessors(chain = true)
 public class GetChatsVO {
 
     private String msg;
