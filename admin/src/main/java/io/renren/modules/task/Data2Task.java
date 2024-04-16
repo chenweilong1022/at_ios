@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 @Component
 @Slf4j
 @EnableAsync
-@Profile({"prod","task"})
+@Profile({"prod","task2"})
 public class Data2Task {
 
 
@@ -201,6 +201,8 @@ public class Data2Task {
                             if (searchPhoneVO.getMsg().contains(UserStatusCode.UserStatusCode10.getValue())) {
                                 update.setTaskStatus(TaskStatus.TaskStatus5.getKey());
                             } else if (searchPhoneVO.getMsg().contains(UserStatusCode.UserStatusCode5.getValue())) {
+                                update.setTaskStatus(TaskStatus.TaskStatus5.getKey());
+                            } else if (searchPhoneVO.getMsg().contains(UserStatusCode.UserStatusCode11.getValue())) {
                                 update.setTaskStatus(TaskStatus.TaskStatus5.getKey());
                             } else {
                                 UserStatus userStatus = UserStatus.UserStatus4;

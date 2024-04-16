@@ -44,7 +44,7 @@ import java.util.stream.Collectors;
 @Component
 @Slf4j
 @EnableAsync
-@Profile({"prod","task5"})
+@Profile({"prod","task"})
 public class Data5Task {
 
 
