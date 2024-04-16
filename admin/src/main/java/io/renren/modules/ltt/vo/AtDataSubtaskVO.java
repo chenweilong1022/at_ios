@@ -70,21 +70,21 @@ public class AtDataSubtaskVO implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="")
 	private String contactKey;
-	/**
-	 *
-	 */
-	@ApiModelProperty(required=false,value="")
-	private String contactKeys;
+//	/**
+//	 *
+//	 */
+//	@ApiModelProperty(required=false,value="")
+//	private String contactKeys;
 	/**
 	 *
 	 */
 	@ApiModelProperty(required=false,value="")
 	private String mid;
-	/**
-	 *
-	 */
-	@ApiModelProperty(required=false,value="")
-	private String mids;
+//	/**
+//	 *
+//	 */
+//	@ApiModelProperty(required=false,value="")
+//	private String mids;
 	/**
 	 *
 	 */
@@ -237,27 +237,27 @@ public class AtDataSubtaskVO implements Serializable {
 	@ApiModelProperty(required=false,value="群id")
 	private Integer groupId;
 
-	public String getContactKeys() {
-		String[] split = contactKeys.split(",");
-		if (ArrayUtil.isNotEmpty(split)) {
-			return split[0];
-		}
-		return null;
-	}
-
-	public List<String> getContactKeysToList() {
-		String[] split = contactKeys.split(",");
-		if (ArrayUtil.isNotEmpty(split)) {
-			return Arrays.asList(split);
-		}
-		return CollUtil.newArrayList();
-	}
-
-	public String getMids() {
-		String[] split = mids.split(",");
-		if (ArrayUtil.isNotEmpty(split)) {
-			return split[0];
-		}
-		return null;
-	}
+//	public String getContactKeys() {
+//		String[] split = contactKeys.split(",");
+//		if (ArrayUtil.isNotEmpty(split)) {
+//			return split[0];
+//		}
+//		return null;
+//	}
+//
+//	public List<String> getContactKeysToList() {
+//		String[] split = contactKeys.split(",");
+//		if (ArrayUtil.isNotEmpty(split)) {
+//			return Arrays.asList(split);
+//		}
+//		return CollUtil.newArrayList();
+//	}
+//
+//	public String getMids() {
+//		String[] split = mids.split(",");
+//		if (ArrayUtil.isNotEmpty(split)) {
+//			return split[0];
+//		}
+//		return null;
+//	}
 }
