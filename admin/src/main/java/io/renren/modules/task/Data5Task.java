@@ -173,16 +173,15 @@ public class Data5Task {
                                     }
                                     atDataSubtaskEntity.setMsg(syncContentsResultVO.getMsg());
                                 }
-                                long count = atDataSubtaskEntityList.stream().filter(item -> item.getTaskStatus().equals(TaskStatus.TaskStatus10.getKey())).count();
-                                atDataSubtaskService.updateBatchById(atDataSubtaskEntityList);
-                                if (ObjectUtil.isNotNull(atDataSubtaskVO.getGroupId()) && count > 0) {
-                                    //拉群改状态
-                                    AtGroupEntity atGroupEntity = new AtGroupEntity();
-                                    atGroupEntity.setId(atDataSubtaskVO.getGroupId());
-                                    atGroupEntity.setGroupStatus(GroupStatus.GroupStatus7.getKey());
-                                    atGroupService.updateById(atGroupEntity);
-                                }
-                                //失败
+//                                long count = atDataSubtaskEntityList.stream().filter(item -> item.getTaskStatus().equals(TaskStatus.TaskStatus10.getKey())).count();
+//                                atDataSubtaskService.updateBatchById(atDataSubtaskEntityList);
+//                                if (ObjectUtil.isNotNull(atDataSubtaskVO.getGroupId()) && count > 0) {
+//                                    //拉群改状态
+//                                    AtGroupEntity atGroupEntity = new AtGroupEntity();
+//                                    atGroupEntity.setId(atDataSubtaskVO.getGroupId());
+//                                    atGroupEntity.setGroupStatus(GroupStatus.GroupStatus7.getKey());
+//                                    atGroupService.updateById(atGroupEntity);
+//                                }
                             }else if (-1 == data.getStatus()) {
                                 for (AtDataSubtaskEntity atDataSubtaskEntity : atDataSubtaskEntityList) {
                                     atDataSubtaskEntity.setId(atDataSubtaskEntity.getId());
