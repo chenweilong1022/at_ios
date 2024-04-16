@@ -435,11 +435,17 @@ public class UserTask {
                 log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
                 if(triedLock) {
                     try{
+
+
+
                         //格式化token
                         LineTokenJson lineTokenJson = JSON.parseObject(atUserTokenEntity.getToken(), LineTokenJson.class);
                         AtUserEntity atUserEntity = new AtUserEntity();
                         atUserEntity.setNation(lineTokenJson.getCountryCode());
                         String telephone = StrUtil.cleanBlank(lineTokenJson.getPhone()).replaceAll("-", "");
+                        AtUserEntity one = atUserService.getOne(new QueryWrapper<AtUserEntity>().lambda()
+                                .eq(AtUserEntity::getTelephone,telephone)
+                        );
                         atUserEntity.setTelephone(telephone);
                         atUserEntity.setNickName(lineTokenJson.getNickName());
                         atUserEntity.setPassword(lineTokenJson.getPassword());
@@ -457,7 +463,12 @@ public class UserTask {
                                 && AtUserTokenType2.getKey().equals(atUserTokenEntity.getTokenType())) {
                             atUserEntity.setUserSource(AtUserSourceEnum.AtUserSource2.getKey());
                         }
-                        atUserService.save(atUserEntity);
+                        if (ObjectUtil.isNotNull(one)) {
+                            atUserEntity.setId(one.getId());
+                            atUserService.updateById(atUserEntity);
+                        }else {
+                            atUserService.save(atUserEntity);
+                        }
                         //修改数据使用状态
                         AtUserTokenEntity update = new AtUserTokenEntity();
                         update.setId(atUserTokenEntity.getId());
