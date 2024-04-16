@@ -304,7 +304,7 @@
             width="150"
             label="操作">
             <template slot-scope="scope">
-              <el-button type="text" size="small" @click="errLogsHandle(scope.row.dataGroupId)">错误日志</el-button>
+              <el-button type="text" size="small" @click="errLogsHandle(scope.row.id)">错误日志</el-button>
             </template>
           </el-table-column>
         </el-table>

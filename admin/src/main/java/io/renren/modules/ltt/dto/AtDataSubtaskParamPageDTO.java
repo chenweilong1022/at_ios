@@ -11,6 +11,7 @@ import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 加粉任务子任务
@@ -56,4 +57,11 @@ public class AtDataSubtaskParamPageDTO extends PageParam implements Serializable
     private Integer dataTaskId;
     @ApiModelProperty(required=false,value="任务状态")
     private Integer taskStatus;
+    @ApiModelProperty(required=false,value="任务状态")
+    private List<Integer> taskStatusList;
+    /**
+     * 群id
+     */
+    @ApiModelProperty(required=false,value="群id")
+    private Integer groupId;
 }

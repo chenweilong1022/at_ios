@@ -50,9 +50,11 @@
 
         dataForm: {
           key: '',
+          groupId: '',
           id: ''
         },
         dataList: [],
+        errorTaskStatusList: [5, 13, 14],
         pageIndex: 1,
         pageSize: 10,
         totalPage: 0,
@@ -72,12 +74,12 @@
         this.dataListLoading = true
         this.$http({
           url: this.$http.adornUrl('/ltt/atdatasubtask/list'),
-          method: 'get',
-          params: this.$http.adornParams({
+          method: 'post',
+          data: this.$http.adornData({
             'page': this.pageIndex,
             'limit': this.pageSize,
-            'taskStatus': 5,
-            'dataTaskId': this.dataForm.id
+            'taskStatusList': this.errorTaskStatusList,
+            'groupId': this.dataForm.groupId
           })
         }).then(({data}) => {
           if (data && data.code === 0) {
@@ -112,8 +114,8 @@
           this.$refs.addOrUpdate.init(id)
         })
       },
-      init (id) {
-        this.dataForm.id = id || 0
+      init (groupId) {
+        this.dataForm.groupId = groupId || 0
         this.visible = true
         this.getDataList()
       },

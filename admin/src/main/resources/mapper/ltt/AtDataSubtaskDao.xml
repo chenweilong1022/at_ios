@@ -117,6 +117,9 @@
         <if test="contactKey != null and contactKey != ''">
             AND s.contact_key = #{contactKey}
         </if>
+        <if test="groupId != null and groupId != ''">
+            AND s.group_id = #{groupId}
+        </if>
         <if test="telephone != null and telephone != ''">
             AND u.telephone = #{telephone}
         </if>
@@ -128,6 +131,12 @@
         </if>
         <if test="taskStatus != null and taskStatus != ''">
             AND s.task_status = #{taskStatus}
+        </if>
+        <if test="taskStatusList != null and taskStatusList.size>0">
+            and  s.task_status in(
+            <foreach collection="taskStatusList" item="item" index="index" separator=",">
+                #{item}
+            </foreach>)
         </if>
         <if test="userStatus != null and userStatus != ''">
             AND u.status = #{userStatus}
