@@ -341,7 +341,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         CurlVO falseCurlVO = new CurlVO().setProxyUse(false);
         try {
             String format1 = String.format("curl -x socks5://%s ipinfo.io?token=1b1e3410f2b88e",ip);
-
+            log.info("format1 = {}",format1);
             List<String> strings = RuntimeUtil.execForLines(format1);
             log.info("curl resp = {}",CollUtil.join(strings,""));
             boolean flag = false;
