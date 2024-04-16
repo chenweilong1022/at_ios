@@ -107,7 +107,7 @@ public class Data2Task {
 
         //任务为空
         if (CollUtil.isEmpty(atDataSubtaskEntities)) {
-            log.info("Data3Task task2 atDataSubtaskEntities isEmpty");
+            log.info("Data2Task task2 atDataSubtaskEntities isEmpty");
             return;
         }
 
