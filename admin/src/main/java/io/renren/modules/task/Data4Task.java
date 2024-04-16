@@ -203,7 +203,9 @@ public class Data4Task {
                                 update.setTaskStatus(TaskStatus.TaskStatus5.getKey());
                             } else if (searchPhoneVO.getMsg().contains(UserStatusCode.UserStatusCode5.getValue())) {
                                 update.setTaskStatus(TaskStatus.TaskStatus5.getKey());
-                            } else {
+                            } else if (searchPhoneVO.getMsg().contains(UserStatusCode.UserStatusCode11.getValue())) {
+                                update.setTaskStatus(TaskStatus.TaskStatus5.getKey());
+                            }else {
                                 UserStatus userStatus = UserStatus.UserStatus4;
                                 update.setTaskStatus(TaskStatus.TaskStatus13.getKey());
                                 //需要刷新token

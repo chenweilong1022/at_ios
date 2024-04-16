@@ -17,6 +17,7 @@ public enum UserStatusCode implements BaseEnum {
     UserStatusCode8(8,"EXCESSIVE_ACCESS"),
     UserStatusCode9(9,"Internal Server Error"),
     UserStatusCode10(10,"AUTHENTICATION_FAILED"),
+    UserStatusCode11(11,"INVALID_STATE"),
     ;
 
     UserStatusCode(int key, String value) {
