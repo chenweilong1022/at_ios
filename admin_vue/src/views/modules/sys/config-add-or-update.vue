@@ -16,6 +16,17 @@
         </el-select>
       </el-form-item>
 
+      <el-form-item label="ip服务">
+        <el-select v-model="ip" @change="changeIpHandler" placeholder="ip服务" clearable>
+          <el-option
+            v-for="item in ipOptions"
+            :key="item.label"
+            :label="item.label"
+            :value="item.label">
+          </el-option>
+        </el-select>
+      </el-form-item>
+
       <el-form-item label="代理">
         <el-select v-model="proxy" placeholder="代理" clearable>
           <el-option
@@ -72,9 +83,24 @@ export default {
     return {
       proxy: null,
       type: 2,
+      ip: 'web服务器',
       platform: 1,
       visible: false,
       projectDataList: [],
+      ipOptions: [
+        {
+          value: 1,
+          label: 'web服务器'
+        },
+        {
+          value: 2,
+          label: 'http://202.79.171.146:8880/'
+        },
+        {
+          value: 3,
+          label: 'http://216.83.53.90:8880/'
+        }
+      ],
       proxyOptions: [
         {
           value: 1,
@@ -126,14 +152,18 @@ export default {
     }
   },
   methods: {
+    changeIpHandler (){
+      this.init(this.dataForm.id)
+    },
     init (id) {
       this.dataForm.id = id || 0
       this.visible = true
+      var ipPre = this.ip === 'web服务器' ? null : this.ip
       this.$nextTick(() => {
         this.$refs['dataForm'].resetFields()
         if (this.dataForm.id) {
           this.$http({
-            url: this.$http.adornUrl(`/sys/config/info/${this.dataForm.id}`),
+            url: this.$http.adornUrl(`/sys/config/info/${this.dataForm.id}`, ipPre),
             method: 'get',
             params: this.$http.adornParams()
           }).then(({data}) => {
@@ -161,8 +191,9 @@ export default {
     dataFormSubmit () {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
+          var ipPre = this.ip === 'web服务器' ? null : this.ip
           this.$http({
-            url: this.$http.adornUrl(`/sys/config/${!this.dataForm.id ? 'save' : 'update'}`),
+            url: this.$http.adornUrl(`/sys/config/${!this.dataForm.id ? 'save' : 'update'}`,ipPre),
             method: 'post',
             data: this.$http.adornData({
               'id': this.dataForm.id || undefined,
