@@ -106,7 +106,7 @@
           AND group_type = #{dto.groupType}
         GROUP BY
             user_id
-        limit 15
+        limit 60
     </select>
 
     <sql id="page_where_if">
