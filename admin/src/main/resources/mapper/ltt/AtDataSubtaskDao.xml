@@ -104,7 +104,7 @@
           AND group_type = #{dto.groupType}
         GROUP BY
             user_id
-        limit 20s
+        limit 20
     </select>
 
     <sql id="page_where_if">
