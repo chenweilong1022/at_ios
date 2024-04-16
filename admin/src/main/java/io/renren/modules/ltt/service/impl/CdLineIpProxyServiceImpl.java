@@ -124,7 +124,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 //        String keyByResource1 = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource3, countryCode.intValue());
 //        Lock lock1 = lockMap.computeIfAbsent(keyByResource1, k -> new ReentrantLock());
 
-        String ip = getIp(cdLineIpProxyDTO, countryCode);
+        String ip = getIp(cdLineIpProxyDTO, countryCode, projectWorkEntity.getProxy());
 //        if (StrUtil.isEmpty(ip)) {
 //            ip = getIp(cdLineIpProxyDTO,82L);
 //            if (StrUtil.isEmpty(ip)) {
@@ -134,7 +134,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         return ip;
     }
 
-    private String getIp(CdLineIpProxyDTO cdLineIpProxyDTO, Long countryCode) {
+    private String getIp(CdLineIpProxyDTO cdLineIpProxyDTO, Long countryCode, Integer proxy) {
         String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource3, cdLineIpProxyDTO.getTokenPhone());
         Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
         boolean triedLock = lock.tryLock();
@@ -153,7 +153,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                     //如果有直接返回
                     if (ObjectUtil.isNotNull(one)) {
                         String ip = one.getIp();
-                        CurlVO proxyUse = isProxyUse(ip, regions);
+                        CurlVO proxyUse = getProxyUse(ip, regions, proxy);
                         if (proxyUse.isProxyUse()) {
                             //如果ip相同并且国家一样
                             if (proxyUse.getIp().equals(one.getOutIpv4()) && regions.toLowerCase().equals(proxyUse.getCountry().toLowerCase())) {
@@ -188,7 +188,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                     String ip = null;
                     Queue<String> getflowip = caffeineCacheListString.getIfPresent(cdLineIpProxyDTO.getTokenPhone());
                     if (CollUtil.isEmpty(getflowip)) {
-                        String resp = getLunaIpResp(regions);
+                        String resp = getIpResp(regions, proxy);
                         if (resp == null) return null;
                         String[] split = resp.split("\r\n");
                         Queue<String> getflowipNew = new LinkedList<>();
@@ -202,7 +202,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                         caffeineCacheListString.put(cdLineIpProxyDTO.getTokenPhone(),getflowip);
                     }
 
-                    CurlVO proxyUse = isProxyUse(ip, regions);
+                    CurlVO proxyUse = getProxyUse(ip, regions, proxy);
                     if (proxyUse.isProxyUse()) {
                         //如果国家一样
                         if (regions.toLowerCase().equals(proxyUse.getCountry().toLowerCase())) {
@@ -234,6 +234,23 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         }else {
             log.info("keyByResource = {} 在执行",keyByResource);
         }
+        return null;
+    }
+
+    private String getIpResp(String regions, Integer proxy) {
+        if (ObjectUtil.isNull(proxy)) {
+            log.error("getIpResp_error_proxy_null");
+            return null;
+        }
+        if (proxy == 1) {
+            //lunaproxy
+            return getLunaIpResp(regions);
+        } else if (proxy == 2) {
+            //ip2world
+            return getIp2World(regions);
+        }
+        //静态代理、
+        log.error("getIpResp_error_proxy {}", proxy);
         return null;
     }
 
@@ -282,6 +299,22 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
     }
 
     //43.159.18.174:24496 curl --socks5 43.159.18.174:24496 ipinfo.io
+    private CurlVO getProxyUse(String ip,String country, Integer proxy) {
+        if (ObjectUtil.isNull(proxy)) {
+            log.error("selectProxyUse_error_proxy_null");
+            return null;
+        }
+        if (proxy == 1) {
+            //lunaproxy
+           return isProxyUse(ip, country);
+        } else if (proxy == 2) {
+            //ip2world
+            return isProxyUseIp2World(ip, country);
+        }
+        //静态代理、
+        log.error("selectProxyUse_error_proxy {}", proxy);
+        return null;
+    }
     private CurlVO isProxyUse(String ip,String country) {
         CurlVO falseCurlVO = new CurlVO().setProxyUse(false);
         try {
