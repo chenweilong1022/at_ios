@@ -340,7 +340,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
     private CurlVO isProxyUseIp2World(String ip,String country) {
         CurlVO falseCurlVO = new CurlVO().setProxyUse(false);
         try {
-            String format1 = String.format("curl -x socks5://%s ipinfo.io?token=ff1896d538634d",ip);
+            String format1 = String.format("curl -x socks5://%s ipinfo.io?token=a8e5532c38cef4",ip);
             log.info("format1 = {}",format1);
             List<String> strings = RuntimeUtil.execForLines(format1);
             log.info("curl resp = {}",CollUtil.join(strings,""));
