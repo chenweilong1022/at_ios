@@ -174,8 +174,8 @@ public class Data5Task {
                                     atDataSubtaskEntity.setMsg(syncContentsResultVO.getMsg());
                                 }
 //                                long count = atDataSubtaskEntityList.stream().filter(item -> item.getTaskStatus().equals(TaskStatus.TaskStatus10.getKey())).count();
-//                                atDataSubtaskService.updateBatchById(atDataSubtaskEntityList);
-//                                if (ObjectUtil.isNotNull(atDataSubtaskVO.getGroupId()) && count > 0) {
+                                atDataSubtaskService.updateBatchById(atDataSubtaskEntityList);
+//                                if (ObjectUtil.isNotNull(atDataSubtaskVO.getGroupId()) && cosunt > 0) {
 //                                    //拉群改状态
 //                                    AtGroupEntity atGroupEntity = new AtGroupEntity();
 //                                    atGroupEntity.setId(atDataSubtaskVO.getGroupId());
