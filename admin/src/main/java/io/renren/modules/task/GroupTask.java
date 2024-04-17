@@ -333,6 +333,9 @@ public class GroupTask {
                         );
 
                         if (CollUtil.isEmpty(atDataSubtaskEntities)) {
+                            cdGroupTasksEntity.setGroupStatus(GroupStatus.GroupStatus10.getKey());
+                            cdGroupTasksEntity.setMsg(StrUtil.concat(true,cdGroupTasksEntity.getMsg(),"好友没有加成功"));
+                            atGroupService.updateById(cdGroupTasksEntity);
                             return;
                         }
 
