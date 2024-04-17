@@ -2,9 +2,7 @@ package io.renren.modules.ltt.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.RuntimeUtil;
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.util.*;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -12,6 +10,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.benmanes.caffeine.cache.Cache;
 import io.renren.common.utils.*;
+import io.renren.common.utils.EnumUtil;
 import io.renren.common.utils.vo.PhoneCountryVO;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.client.entity.ProjectWorkEntity;
@@ -39,6 +38,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static cn.hutool.core.lang.PatternPool.IPV4;
 
 
 @Service("cdLineIpProxyService")
@@ -274,18 +275,10 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 
 
     public static void main(String[] args) {
-        String format1 = String.format("curl -x socks5://%s ipinfo.io?token=1b1e3410f2b88e","43.152.113.218:19212");
-        List<String> strings = RuntimeUtil.execForLines(format1);
 
-        boolean flag = false;
+        boolean match = ReUtil.isMatch(IPV4, "1.46.11.249");
+        System.out.println(match);
 
-        List<String> newStr = new ArrayList<>();
-        for (String string : strings) {
-            if (string.contains("{") || flag) {
-                flag = true;
-                newStr.add(string);
-            }
-        }
 
     }
 
@@ -306,10 +299,10 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         }
         if (proxy == 1) {
             //lunaproxy
-           return isProxyUseIp2World(ip, country);
+           return isProxyUseMe(ip, country);
         } else if (proxy == 2) {
             //ip2world
-            return isProxyUseIp2World(ip, country);
+            return isProxyUseMe(ip, country);
         }
         //静态代理、
         log.error("selectProxyUse_error_proxy {}", proxy);
@@ -317,7 +310,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
     }
     private CurlVO isProxyUse(String ip,String country) {
         CurlVO falseCurlVO = new CurlVO().setProxyUse(false);
-        try {
+        try {//curl -x 43.152.113.218:13923 202.79.171.146:8080
             String format1 = String.format("curl -x %s -U user-lu9904136:Ch1433471850 myip.lunaproxy.io",ip);
             List<String> strings = RuntimeUtil.execForLines(format1);
             String s = strings.get(strings.size() - 1);
@@ -328,6 +321,26 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                 String outCountry = split[2];
                 log.info("ip = {} country = {} format = {}",ip,country,s);
                 return falseCurlVO.setProxyUse(true).setIp(outIp).setCountry(outCountry);
+            }
+            log.info("ip = {} country = {} format = {}",ip,country,"没有找到JSON数据");
+            return falseCurlVO;
+        }catch (Exception e) {
+
+        }
+        return falseCurlVO;
+    }
+
+
+    private CurlVO isProxyUseMe(String ip,String country) {
+        CurlVO falseCurlVO = new CurlVO().setProxyUse(false);
+        try {
+            String format1 = String.format("curl -x %s 202.79.171.146:8080",ip);
+            List<String> strings = RuntimeUtil.execForLines(format1);
+            String outIp = strings.get(strings.size() - 1);
+            boolean match = ReUtil.isMatch(IPV4, outIp);
+            if (match) {
+                log.info("ip = {} country = {} format = {}",ip,country,outIp);
+                return falseCurlVO.setProxyUse(true).setIp(outIp).setCountry(country);
             }
             log.info("ip = {} country = {} format = {}",ip,country,"没有找到JSON数据");
             return falseCurlVO;
