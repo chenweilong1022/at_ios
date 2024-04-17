@@ -117,7 +117,7 @@ public class DataTask {
                     update.setSuccessfulQuantity((int) success10);
                     update.setFailuresQuantity((int) fail);
                     update.setId(groupCountByDataTaskIdVO.getDataTaskId());
-                    if (success10 + fail >= groupCountByDataTaskIdVO.getAddTotalQuantity() && success10 > 0) {
+                    if (success10 + fail >= groupCountByDataTaskIdVO.getAddTotalQuantity()) {
                         update.setTaskStatus(TaskStatus.TaskStatus3.getKey());
                     }
                     atDataTaskEntityList.add(update);
