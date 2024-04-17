@@ -49,7 +49,7 @@ import java.util.concurrent.locks.ReentrantLock;
 @Component
 @Slf4j
 @EnableAsync
-@Profile({"prod"})
+@Profile({"register"})
 public class OpenAppTask {
 
 
