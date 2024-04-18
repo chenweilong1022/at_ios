@@ -101,8 +101,7 @@ public class CdPhoneFilterServiceImpl extends ServiceImpl<CdPhoneFilterDao, CdPh
             } catch (Exception e) {
                 if (s.contains("@") || s.contains("#")) {
                     CdPhoneFilterEntity cdPhoneFilterEntity = new CdPhoneFilterEntity();
-                    String s1 = s.replaceAll("#", "");
-                    cdPhoneFilterEntity.setContactKey(s1);
+                    cdPhoneFilterEntity.setContactKey(s);
                     cdPhoneFilterEntity.setTaskStatus(PhoneFilterStatus.PhoneFilterStatus2.getKey());
                     cdPhoneFilterEntities.add(cdPhoneFilterEntity);
                 }
