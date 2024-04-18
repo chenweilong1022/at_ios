@@ -48,6 +48,8 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import static io.renren.modules.ltt.enums.OpenStatus.OpenStatus3;
+import static io.renren.modules.ltt.enums.OpenStatus.OpenStatus4;
 import static io.renren.modules.ltt.enums.UserStatus.UserStatus1;
 
 
@@ -80,6 +82,7 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
                         .notIn(atUser.getValidateFlag() != null && Boolean.TRUE.equals(atUser.getValidateFlag()), AtUserEntity::getStatus, UserStatus1.getKey())
                         .eq(atUser.getValidateFlag() != null && Boolean.FALSE.equals(atUser.getValidateFlag()), AtUserEntity::getStatus, UserStatus1.getKey())
                         .eq(atUser.getUserSource() != null, AtUserEntity::getUserSource, atUser.getUserSource())
+                        .eq(atUser.getId() != null, AtUserEntity::getId, atUser.getId())
                         .orderByDesc(AtUserEntity::getId)
         );
 
@@ -359,25 +362,38 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void cleanBlockData(Long sysUserId) {
+        //清理封号数据
         List<AtUserEntity> userList = baseMapper
                 .selectList(new QueryWrapper<AtUserEntity>().lambda()
                 .eq(AtUserEntity::getStatus, UserStatus.UserStatus2.getKey())
                 .eq(ObjectUtil.isNotNull(sysUserId), AtUserEntity::getSysUserId, sysUserId)
                 );
-        Assert.isTrue(CollectionUtils.isEmpty(userList), "无需要清理的数据！");
+        if (CollectionUtils.isNotEmpty(userList)) {
+            List<Integer> ids = userList.stream().map(AtUserEntity::getId).distinct().collect(Collectors.toList());
+            baseMapper.deleteBatchIds(ids);
 
-        //清理封号数据
-        List<Integer> ids = userList.stream().map(AtUserEntity::getId).distinct().collect(Collectors.toList());
-        baseMapper.deleteBatchIds(ids);
+            List<Integer> userTokenIdList = userList.stream().filter(i -> i.getUserTokenId() != null)
+                    .map(AtUserEntity::getUserTokenId).distinct().collect(Collectors.toList());
+            //清理token
+            if (CollectionUtils.isNotEmpty(userTokenIdList)) {
+                atUserTokenService.removeByIds(userTokenIdList);
+            }
+        }
 
-        List<Integer> userTokenIdList = userList.stream()
-                .filter(i -> i.getUserTokenId() != null)
-                .map(AtUserEntity::getUserTokenId).distinct()
-                .collect(Collectors.toList());
-        //清理token
-        if (CollectionUtils.isNotEmpty(userTokenIdList)) {
-            atUserTokenService.removeByIds(userTokenIdList);
+        //清理token中过期的数据
+        List<AtUserTokenEntity> tokenList = atUserTokenService.list(new QueryWrapper<AtUserTokenEntity>().lambda()
+                .eq(ObjectUtil.isNotNull(sysUserId), AtUserTokenEntity::getSysUserId, sysUserId)
+                .in(AtUserTokenEntity::getOpenStatus, Arrays.asList(OpenStatus3.getKey(), OpenStatus4.getKey())));
+        if (CollectionUtils.isNotEmpty(tokenList)) {
+            List<Integer> tokenIdList = tokenList.stream().map(AtUserTokenEntity::getId).distinct().collect(Collectors.toList());
+            atUserTokenService.removeByIds(tokenIdList);
+
+            //清理账号数据
+            baseMapper.delete(new QueryWrapper<AtUserEntity>().lambda().in(AtUserEntity::getUserTokenId, tokenIdList));
+
         }
     }
+
+
 
 }

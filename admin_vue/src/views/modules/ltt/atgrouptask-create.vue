@@ -330,6 +330,7 @@
             label="操作">
             <template slot-scope="scope">
               <el-button type="text" size="small" @click="errLogsHandle(scope.row.id)">错误日志</el-button>
+              <el-button type="text" size="small" @click="atUserHandle(scope.row.userId)">拉群账号</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -473,6 +474,12 @@ import ErrLogs from "./atdatatask-err-logs.vue";
         this.errLogsVisible = true
         this.$nextTick(() => {
           this.$refs.errLogs.init(id)
+        })
+      },
+      // 拉群账号
+      atUserHandle (userId) {
+        this.$nextTick(() => {
+          this.$router.push({name: 'ltt-atuser', query:{ userId: userId}})
         })
       },
       infoById () {

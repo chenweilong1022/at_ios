@@ -296,6 +296,7 @@
           }
         ],
         dataForm: {
+          userId: null,
           nickName: '',
           nation: '',
           telephone: '',
@@ -329,6 +330,7 @@
       AddOrUpdate
     },
     activated () {
+      this.init()
       this.getDataList()
       this.getAtUserSource()
       this.getCountryCodeEnums()
@@ -338,6 +340,9 @@
       this.queryUserGroupBySearchWord('')
     },
     methods: {
+      init() {
+        this.dataForm.userId = this.$route.query.userId
+      },
       getCountryCodeEnums () {
         this.$http({
           url: this.$http.adornUrl(`/app/enums/countryCodes`),
@@ -372,6 +377,7 @@
             'customerService': this.dataForm.customerService,
             'validateFlag': this.dataForm.validateFlag,
             'userSource': this.dataForm.userSource,
+            'id': this.dataForm.userId,
             'selectLimit': this.dataForm.selectLimit
           })
         }).then(({data}) => {
