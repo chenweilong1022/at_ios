@@ -22,6 +22,7 @@ import io.renren.modules.ltt.entity.CdLineRegisterEntity;
 import io.renren.modules.ltt.enums.LockMapKeyResource;
 import io.renren.modules.ltt.enums.OpenStatus;
 import io.renren.modules.ltt.enums.RegisterStatus;
+import io.renren.modules.ltt.enums.UseFlag;
 import io.renren.modules.ltt.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,8 +86,9 @@ public class OpenAppTask {
 
         List<AtUserTokenEntity> atUserTokenEntities = atUserTokenService.list(new QueryWrapper<AtUserTokenEntity>().lambda()
                 .eq(AtUserTokenEntity::getOpenStatus, OpenStatus.OpenStatus5.getKey())
+                .eq(AtUserTokenEntity::getUseFlag, UseFlag.YES.getKey())
                 .isNotNull(AtUserTokenEntity::getToken)
-                .last("limit 50")
+                .last("limit 20")
         );
 
         if (CollUtil.isEmpty(atUserTokenEntities)) {
@@ -150,9 +152,10 @@ public class OpenAppTask {
         try {
             List<AtUserTokenEntity> atUserTokenEntities = atUserTokenService.list(new QueryWrapper<AtUserTokenEntity>().lambda()
                     .eq(AtUserTokenEntity::getOpenStatus, OpenStatus.OpenStatus2.getKey())
+                    .eq(AtUserTokenEntity::getUseFlag, UseFlag.YES.getKey())
                     .isNotNull(AtUserTokenEntity::getToken)
                     .lt(AtUserTokenEntity::getOpenTime, DateUtil.date())
-                    .last("limit 50")
+                    .last("limit 20")
             );
 
             if (CollUtil.isEmpty(atUserTokenEntities)) {
@@ -222,8 +225,9 @@ public class OpenAppTask {
         List<AtUserTokenEntity> atUserTokenEntities = atUserTokenService.list(new QueryWrapper<AtUserTokenEntity>().lambda()
                 .eq(AtUserTokenEntity::getOpenStatus, OpenStatus.OpenStatus1.getKey())
                 .isNotNull(AtUserTokenEntity::getToken)
+                .eq(AtUserTokenEntity::getUseFlag, UseFlag.YES.getKey())
                 .lt(AtUserTokenEntity::getOpenTime, DateUtil.date())
-                .last("limit 50")
+                .last("limit 20")
         );
 
 
