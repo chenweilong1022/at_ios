@@ -13,8 +13,8 @@ import java.io.Serializable;
 public class CdPhoneFilterStatusDto implements Serializable {
 
     @ApiModelProperty(value = "成功数量")
-    private Integer successCount;
+    private Long successCount;
 
     @ApiModelProperty(value = "失败数量")
-    private Integer failCount;
+    private Long failCount;
 }

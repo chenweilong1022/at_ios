@@ -199,7 +199,38 @@ import DetailList from "./cdphonefilter";
         })
       },
       exportTxt (recordId) {
-        window.open(this.$http.adornUrl(`/ltt/cdphonefilter/exportSJ?recordId=${recordId}&token=${this.$cookie.get('token')}`));
+        // window.open(this.$http.adornUrl(`/ltt/cdphonefilter/exportSJ?recordId=${recordId}&token=${this.$cookie.get('token')}`));
+        this.$http({
+          url: this.$http.adornUrl(`/ltt/cdphonefilter/exportSJ?recordId=${recordId}&token=${this.$cookie.get('token')}`),
+          method: 'get'
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            data.fileUrl.map(item => {
+              console.log(item)
+              var fileName = this.getFilename(item)
+              var link = document.createElement('a')
+              // 这里是将url转成blob地址，
+              fetch(item).then((res) => res.blob())
+                .then((blob) => {
+                  // 将链接地址字符内容转变成blob地址
+                  link.href = URL.createObjectURL(blob)
+                  console.log(link.href)
+                  /**
+                   * 下载的文件的名字
+                   */
+                  link.download = fileName
+                  document.body.appendChild(link)
+                  link.click()
+                })
+            })
+          } else {
+            this.$message.error(data.msg)
+          }
+        })
+      },
+      getFilename(url) {
+        // 从图片链接中提取文件名
+        return url.substring(url.lastIndexOf('/')+1)
       },
       detailList (recordId) {
         this.detailListVisible = true

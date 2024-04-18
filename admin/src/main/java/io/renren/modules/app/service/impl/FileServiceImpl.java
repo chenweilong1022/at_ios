@@ -5,10 +5,8 @@ import io.renren.modules.app.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
@@ -34,19 +32,24 @@ public class FileServiceImpl implements FileService {
         String saveUrl = fileConfig.getSaveurl() + fileName;
 
         File file = new File(saveUrl);
-        file.createNewFile();
+        try {
+            file.createNewFile(); // 创建文件，如果文件已存在则不执行任何操作
 
-        try (FileWriter fileWriter = new FileWriter(file);
-             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);) {
+            try (FileOutputStream fos = new FileOutputStream(file);
+                 OutputStreamWriter osw = new OutputStreamWriter(fos, StandardCharsets.UTF_8);
+                 BufferedWriter bufferedWriter = new BufferedWriter(osw)) {
 
-            for (String text : textList) {
-                bufferedWriter.write(text);
-                bufferedWriter.newLine();
+                for (String text : textList) {
+                    bufferedWriter.write(text);
+                    bufferedWriter.newLine();
+                }
+
+                bufferedWriter.flush(); // 确保所有内容都被写出
+                return fileConfig.getBaseurl() + fileName;
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-
-            bufferedWriter.flush();
-            return fileConfig.getBaseurl() + fileName;
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return null;

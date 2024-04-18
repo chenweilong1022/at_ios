@@ -61,5 +61,8 @@ public class CdPhoneFilterRecordEntity implements Serializable {
 	@ApiModelProperty(required=false,value="失败数量")
 	private Long failCount;
 
+	@ApiModelProperty(required=false,value="文件地址（集合列表）")
+	private String fileUrl;
+
 
 }

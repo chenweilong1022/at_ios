@@ -65,18 +65,12 @@
     },
     methods: {
       handleSuccess (uploadFile, response, uploadFiles) {
-        console.log(uploadFile)
-        console.log(uploadFiles)
         this.fileList = uploadFiles
       },
       handleRemove (uploadFile, uploadFiles) {
         this.fileList = uploadFiles
-        console.log(uploadFile)
-        console.log(uploadFiles)
       },
       handlePreview (uploadFile, uploadFiles) {
-        console.log(uploadFile)
-        console.log(uploadFiles)
         this.fileList = uploadFiles
       },
       init (id) {

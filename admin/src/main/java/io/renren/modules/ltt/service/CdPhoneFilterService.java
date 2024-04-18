@@ -8,6 +8,7 @@ import io.renren.modules.ltt.vo.CdPhoneFilterVO;
 import io.renren.modules.ltt.entity.CdPhoneFilterEntity;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -59,7 +60,7 @@ public interface CdPhoneFilterService extends IService<CdPhoneFilterEntity> {
     @Override
     boolean removeByIds(Collection<? extends Serializable> ids);
 
-    byte[] exportSJ(Long recordId);
+    List<String> exportSJ(Long recordId) throws Exception;
 
     CdPhoneFilterStatusDto queryByTaskStatus(Integer recordId);
 

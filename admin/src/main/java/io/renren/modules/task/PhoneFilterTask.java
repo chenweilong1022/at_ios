@@ -233,8 +233,8 @@ public class PhoneFilterTask {
 
                 updateRecord = new CdPhoneFilterRecordEntity();
                 updateRecord.setRecordId(recordEntity.getRecordId());
-                updateRecord.setSuccessCount(recordEntity.getSuccessCount() + filterStatusDto.getSuccessCount());
-                updateRecord.setFailCount(recordEntity.getFailCount() + filterStatusDto.getFailCount());
+                updateRecord.setSuccessCount(filterStatusDto.getSuccessCount());
+                updateRecord.setFailCount(filterStatusDto.getFailCount());
                 if (updateRecord.getSuccessCount() + updateRecord.getFailCount() >= recordEntity.getTotalCount()) {
                     updateRecord.setTaskStatus(PhoneFilterStatus3.getKey());
                 }

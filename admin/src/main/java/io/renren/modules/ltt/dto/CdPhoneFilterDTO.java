@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 手机号筛选
@@ -78,5 +79,5 @@ public class CdPhoneFilterDTO extends PageParam implements Serializable {
 	@ApiModelProperty(required=false,value="line的协议返回信息")
 	private String msg;
 	@ApiModelProperty(required=false,value="")
-	private String textUrl;
+	private List<String> textUrlList;
 }

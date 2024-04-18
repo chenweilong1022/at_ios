@@ -16,9 +16,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 @RestController
 @RequestMapping("/app")
@@ -37,20 +36,26 @@ public class AppFileController {
         /**
          * 文件名称
          */
-		String fileName = RandomUtil.simpleUUID() + "." + FileUtil.extName(file.getOriginalFilename());
-        /**
-         * 保存路径
-         */
-		String saveurl = fileConfig.getSaveurl();
-		File saveFile = new File(saveurl, fileName);
-        /**
-         * 保存文件到服务器
-         */
-		FileUtils.copyToFile(file.getInputStream(),saveFile);
+        String fileName = RandomUtil.simpleUUID() + "." + FileUtil.extName(file.getOriginalFilename());
+        String saveurl = fileConfig.getSaveurl();
+        File saveFile = new File(saveurl, fileName);
+
+        // 创建文件并指定编码
+        try (InputStream inputStream = file.getInputStream();
+             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(saveFile), StandardCharsets.UTF_8))) {
+
+            char[] buffer = new char[1024];
+            int numRead;
+            while ((numRead = reader.read(buffer)) != -1) {
+                writer.write(buffer, 0, numRead);
+            }
+        }
+
         /**
          * 网络访问路径 返回
          */
-		String url = fileConfig.getBaseurl() + fileName;
+        String url = fileConfig.getBaseurl() + fileName;
 
 		return R.data(url);
     }

@@ -2,6 +2,7 @@ package io.renren.modules.ltt.controller;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 
 import io.renren.modules.ltt.dto.CdPhoneFilterRecordDTO;
 import io.renren.modules.ltt.service.CdPhoneFilterRecordService;
@@ -50,7 +51,7 @@ public class CdPhoneFilterController {
      * 列表
      */
     @RequestMapping("/recordList")
-    @RequiresPermissions("ltt:atmessagerecord:list")
+//    @RequiresPermissions("ltt:atmessagerecord:list")
     public R list(CdPhoneFilterRecordDTO recordDTO){
         PageUtils page = cdPhoneFilterRecordService.queryPage(recordDTO);
 
@@ -73,7 +74,7 @@ public class CdPhoneFilterController {
      * 保存
      */
     @RequestMapping("/save")
-    @RequiresPermissions("ltt:atmessagerecord:save")
+//    @RequiresPermissions("ltt:atmessagerecord:save")
     public R save(@RequestBody CdPhoneFilterDTO cdPhoneFilter){
         cdPhoneFilterService.save(cdPhoneFilter);
 
@@ -84,15 +85,11 @@ public class CdPhoneFilterController {
      * 保存
      */
     @RequestMapping("/exportSJ")
-    @RequiresPermissions("ltt:atmessagerecord:save")
-    public void exportSJ(@RequestParam Long recordId,
-                         HttpServletResponse response) throws IOException {
-        byte[] bytes = cdPhoneFilterService.exportSJ(recordId);
-        response.reset();
-        response.setHeader("Content-Disposition", String.format("attachment; filename=\"%s.txt\"",java.net.URLEncoder.encode("充值","UTF-8")));
-        response.addHeader("Content-Length", "" + bytes.length);
-        response.setContentType("application/octet-stream; charset=UTF-8");
-        IOUtils.write(bytes, response.getOutputStream());
+//    @RequiresPermissions("ltt:atmessagerecord:save")
+    public R exportSJ(@RequestParam Long recordId,
+                         HttpServletResponse response) throws Exception {
+        List<String> fileUrl = cdPhoneFilterService.exportSJ(recordId);
+        return R.ok().put("fileUrl", fileUrl);
     }
 
     /**

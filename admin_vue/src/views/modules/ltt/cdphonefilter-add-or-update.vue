@@ -5,11 +5,22 @@
     :visible.sync="visible">
     <el-form :model="dataForm" :rules="dataRule" ref="dataForm" @keyup.enter.native="dataFormSubmit()" label-width="80px">
       <el-form-item label="料子">
-        <el-upload
-          class="upload-demo"
-          :action="uploadUrl"
-          :on-success="handleAvatarSuccess">
-          <el-button size="small" type="primary">点击上传</el-button>
+        <el-upload ref="upload"
+                   v-model:file-list="fileList"
+                   class="upload-demo"
+                   :multiple="multiple"
+                   :action="uploadUrl"
+                   :on-preview="handlePreview"
+                   :on-remove="handleRemove"
+                   :on-success="handleSuccess"
+                   list-type="picture"
+        >
+          <el-button type="primary">Click to upload</el-button>
+          <template #tip>
+            <div class="el-upload__tip">
+              txt files with a size less than 500kb
+            </div>
+          </template>
         </el-upload>
       </el-form-item>
     </el-form>
@@ -26,10 +37,11 @@ export default {
   data () {
     return {
       visible: false,
+      fileList: [],
       uploadUrl: '',
       dataForm: {
         id: 0,
-        textUrl: '',
+        textUrlList: [],
         dataTaskId: '',
         userId: '',
         taskStatus: '',
@@ -180,13 +192,25 @@ export default {
     }
   },
   methods: {
+    handleSuccess (uploadFile, response, uploadFiles) {
+      this.fileList = uploadFiles
+    },
+    handleRemove (uploadFile, uploadFiles) {
+      this.fileList = uploadFiles
+    },
+    handlePreview (uploadFile, uploadFiles) {
+      this.fileList = uploadFiles
+    },
     handleAvatarSuccess (res, file) {
-      this.dataForm.textUrl = res.data
+      this.dataForm.textUrlList = res.data
     },
     init (id) {
       this.dataForm.id = id || 0
       this.uploadUrl = this.$http.adornUrl(`/app/file/upload`)
       this.visible = true
+      if (this.$refs.upload != null) {
+        this.$refs.upload.clearFiles()
+      }
       this.$nextTick(() => {
         this.$refs['dataForm'].resetFields()
         if (this.dataForm.id) {
@@ -242,6 +266,11 @@ export default {
     },
     // 表单提交
     dataFormSubmit () {
+      for (let i = 0; i < this.fileList.length; i++) {
+        let data = this.fileList[i]
+        this.dataForm.textUrlList.push(data.response.data)
+      }
+      this.fileList = []
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           this.$http({
@@ -283,7 +312,7 @@ export default {
               'updateTime': this.dataForm.updateTime,
               'lineTaskId': this.dataForm.lineTaskId,
               'msg': this.dataForm.msg,
-              'textUrl': this.dataForm.textUrl,
+              'textUrlList': this.dataForm.textUrlList,
               'groupType': this.dataForm.groupType,
               'refreshContactStatus': this.dataForm.refreshContactStatus
             })
