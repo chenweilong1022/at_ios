@@ -61,6 +61,14 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
                 atGroup
         );
 
+        List<AtGroupVO> resultList = page.getRecords();
+        if (CollUtil.isNotEmpty(resultList)) {
+            List<Integer> userIdList = resultList.stream().filter(i -> ObjectUtil.isNotNull(i.getUserId()))
+                    .map(AtGroupVO::getUserId).collect(Collectors.toList());
+            Map<Integer, String> phoneMap = atUserService.queryTelephoneByIds(userIdList);
+            resultList.forEach(i->i.setUserTelephone(phoneMap.get(i.getUserId())));
+        }
+        page.setRecords(resultList);
         return PageUtils.<AtGroupVO>page(page);
     }
     @Override
