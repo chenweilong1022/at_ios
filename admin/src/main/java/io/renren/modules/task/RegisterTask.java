@@ -132,62 +132,75 @@ public class RegisterTask {
         }
         for (CdLineRegisterEntity cdLineRegisterEntity : cdLineRegisterEntities) {
             poolExecutor.execute(() -> {
-                RegisterResultDTO registerResultDTO = new RegisterResultDTO();
-                registerResultDTO.setTaskId(cdLineRegisterEntity.getTaskId());
-                RegisterResultVO registerResultVO = lineService.registerResult(registerResultDTO);
-                if (ObjectUtil.isNull(registerResultVO)) {
-                    return;
-                }
-                if (200 == registerResultVO.getCode()) {
-                    Long status = registerResultVO.getData().getStatus();
-                    if (2 == status || 1 == status || 0 == status || Long.valueOf(20001).equals(status)) {
-                        if (2 == status) {
-                            SyncLineTokenDTO syncLineTokenDTO = new SyncLineTokenDTO();
-                            syncLineTokenDTO.setTaskId(cdLineRegisterEntity.getTaskId());
-                            SyncLineTokenVO syncLineTokenVO = lineService.SyncLineTokenDTO(syncLineTokenDTO);
-                            if (ObjectUtil.isNull(syncLineTokenVO)) {
+                String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource5, cdLineRegisterEntity.getId());
+                Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
+                CdLineRegisterEntity update = null;
+                boolean triedLock = lock.tryLock();
+                log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
+                if(triedLock) {
+                    try{
+                        RegisterResultDTO registerResultDTO = new RegisterResultDTO();
+                        registerResultDTO.setTaskId(cdLineRegisterEntity.getTaskId());
+                        RegisterResultVO registerResultVO = lineService.registerResult(registerResultDTO);
+                        if (ObjectUtil.isNull(registerResultVO)) {
+                            return;
+                        }
+                        if (200 == registerResultVO.getCode()) {
+                            Long status = registerResultVO.getData().getStatus();
+                            if (2 == status || 1 == status || 0 == status || Long.valueOf(20001).equals(status)) {
+                                if (2 == status) {
+                                    SyncLineTokenDTO syncLineTokenDTO = new SyncLineTokenDTO();
+                                    syncLineTokenDTO.setTaskId(cdLineRegisterEntity.getTaskId());
+                                    SyncLineTokenVO syncLineTokenVO = lineService.SyncLineTokenDTO(syncLineTokenDTO);
+                                    if (ObjectUtil.isNull(syncLineTokenVO)) {
+                                        return;
+                                    }
+                                    if (200 == syncLineTokenVO.getCode() && CollUtil.isNotEmpty(syncLineTokenVO.getData())) {
+                                        SyncLineTokenVOData syncLineTokenVOData = syncLineTokenVO.getData().get(0);
+                                        cdLineRegisterEntity.setRegisterStatus(RegisterStatus.RegisterStatus4.getKey());
+                                        String token = syncLineTokenVOData.getToken();
+                                        LineTokenJson lineTokenJson = JSON.parseObject(token, LineTokenJson.class);
+                                        boolean accountExistStatus = lineTokenJson.isAccountExistStatus();
+                                        if (accountExistStatus) {
+                                            cdLineRegisterEntity.setAccountExistStatus(AccountExistStatus.AccountExistStatus2.getKey());
+                                        }else {
+                                            cdLineRegisterEntity.setAccountExistStatus(AccountExistStatus.AccountExistStatus1.getKey());
+                                        }
+                                        cdLineRegisterEntity.setToken(token);
+                                        cdLineRegisterService.updateById(cdLineRegisterEntity);
+                                    }
+                                }
                                 return;
                             }
-                            if (200 == syncLineTokenVO.getCode() && CollUtil.isNotEmpty(syncLineTokenVO.getData())) {
-                                SyncLineTokenVOData syncLineTokenVOData = syncLineTokenVO.getData().get(0);
-                                cdLineRegisterEntity.setRegisterStatus(RegisterStatus.RegisterStatus4.getKey());
-                                String token = syncLineTokenVOData.getToken();
-                                LineTokenJson lineTokenJson = JSON.parseObject(token, LineTokenJson.class);
-                                boolean accountExistStatus = lineTokenJson.isAccountExistStatus();
-                                if (accountExistStatus) {
-                                    cdLineRegisterEntity.setAccountExistStatus(AccountExistStatus.AccountExistStatus2.getKey());
-                                }else {
-                                    cdLineRegisterEntity.setAccountExistStatus(AccountExistStatus.AccountExistStatus1.getKey());
+                            cdLineRegisterEntity.setRegisterStatus(RegisterStatus.RegisterStatus5.getKey());
+                            cdLineRegisterEntity.setErrMsg(registerResultVO.getData().getRemark());
+
+                            CdGetPhoneEntity cdGetPhoneEntity = new CdGetPhoneEntity();
+                            cdGetPhoneEntity.setId(cdLineRegisterEntity.getGetPhoneId());
+                            cdGetPhoneEntity.setPhoneStatus(PhoneStatus6.getKey());
+                            if (StrUtil.isNotEmpty(cdLineRegisterEntity.getPkey())) {
+                                if (StringUtils.isNotEmpty(cdGetPhoneEntity.getCountrycode())
+                                        && CountryCode.CountryCode3.getValue().equals(cdGetPhoneEntity.getCountrycode())) {
+                                    //日本
+                                    cardJpService.withBlackMobile(cdLineRegisterEntity.getPkey());
+                                } else if (StringUtils.isNotEmpty(cdGetPhoneEntity.getCountrycode())
+                                        && CountryCode.CountryCode5.getValue().equals(cdGetPhoneEntity.getCountrycode())) {
+                                    firefoxServiceImpl.withBlackMobile(cdLineRegisterEntity.getPkey());
+                                } else {
+                                    firefoxService.withBlackMobile(cdLineRegisterEntity.getPkey());
                                 }
-                                cdLineRegisterEntity.setToken(token);
-                                cdLineRegisterService.updateById(cdLineRegisterEntity);
+                                cdGetPhoneEntity.setPhoneStatus(PhoneStatus6.getKey());
                             }
+
+                            cdLineRegisterService.updateById(cdLineRegisterEntity);
+
+                            cdGetPhoneService.updateById(cdGetPhoneEntity);
                         }
-                        return;
+                    }finally {
+                        lock.unlock();
                     }
-                    cdLineRegisterEntity.setRegisterStatus(RegisterStatus.RegisterStatus5.getKey());
-                    cdLineRegisterEntity.setErrMsg(registerResultVO.getData().getRemark());
-
-                    CdGetPhoneEntity cdGetPhoneEntity = new CdGetPhoneEntity();
-                    cdGetPhoneEntity.setId(cdLineRegisterEntity.getGetPhoneId());
-                    cdGetPhoneEntity.setPhoneStatus(PhoneStatus6.getKey());
-                    if (StrUtil.isNotEmpty(cdLineRegisterEntity.getPkey())) {
-                        if (StringUtils.isNotEmpty(cdGetPhoneEntity.getCountrycode())
-                                && CountryCode.CountryCode3.getValue().equals(cdGetPhoneEntity.getCountrycode())) {
-                            //日本
-                            cardJpService.withBlackMobile(cdLineRegisterEntity.getPkey());
-                        } else if (StringUtils.isNotEmpty(cdGetPhoneEntity.getCountrycode())
-                                && CountryCode.CountryCode5.getValue().equals(cdGetPhoneEntity.getCountrycode())) {
-                            firefoxServiceImpl.withBlackMobile(cdLineRegisterEntity.getPkey());
-                        } else {
-                            firefoxService.withBlackMobile(cdLineRegisterEntity.getPkey());
-                        }
-                        cdGetPhoneEntity.setPhoneStatus(PhoneStatus6.getKey());
-                    }
-
-                    cdLineRegisterService.updateById(cdLineRegisterEntity);
-
-                    cdGetPhoneService.updateById(cdGetPhoneEntity);
+                }else {
+                    log.info("keyByResource = {} 在执行",keyByResource);
                 }
             });
         }
