@@ -128,10 +128,10 @@ public class PhoneFilterTask {
                 searchPhoneDTO.setPhone(cdPhoneFilterEntity.getContactKey());
                 searchPhoneDTO.setToken(atUserTokenEntity.getToken());
                 SearchPhoneVO andAddContactsByPhone = null;
-                if (cdPhoneFilterEntity.getContactKey().contains("@")) {
+                if (cdPhoneFilterEntity.getContactKey().contains("@") || cdPhoneFilterEntity.getContactKey().contains("#")) {
                     SearchUserIdDTO searchUserIdDTO = new SearchUserIdDTO();
                     searchUserIdDTO.setProxy(proxyIp);
-                    searchUserIdDTO.setUserId(cdPhoneFilterEntity.getContactKey());
+                    searchUserIdDTO.setUserId(cdPhoneFilterEntity.getContactKey().replace("#",""));
                     searchUserIdDTO.setToken(atUserTokenEntity.getToken());
                     SearchUserIdVO searchUserIdVO = lineService.searchUserId(searchUserIdDTO);
                     if (ObjectUtil.isNotNull(searchUserIdVO)) {
