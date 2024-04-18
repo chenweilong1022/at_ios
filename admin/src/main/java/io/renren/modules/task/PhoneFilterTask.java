@@ -136,9 +136,12 @@ public class PhoneFilterTask {
                     SearchUserIdVO searchUserIdVO = lineService.searchUserId(searchUserIdDTO);
                     if (ObjectUtil.isNotNull(searchUserIdVO)) {
                         if (200 != searchUserIdVO.getCode()) {
-                            cdPhoneFilterEntity.setMsg(andAddContactsByPhone.getMsg());
-//                        cdPhoneFilterEntity.setTaskStatus(PhoneFilterStatus.PhoneFilterStatus4.getKey());
-                            cdPhoneFilterEntitiesUpdate.add(cdPhoneFilterEntity);
+                            cdPhoneFilterEntity.setMsg(searchUserIdVO.getMsg());
+                            if (searchUserIdVO.getMsg().contains(UserStatusCode.UserStatusCode12.getValue())) {
+                                cdPhoneFilterEntity.setTaskStatus(PhoneFilterStatus4.getKey());
+                                cdPhoneFilterEntitiesUpdate.add(cdPhoneFilterEntity);
+                                continue;
+                            }
                             atUserService.unlock(poll.getId(),UserStatus.UserStatus2);
                             continue;
                         } else {
