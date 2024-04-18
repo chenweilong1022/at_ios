@@ -37,7 +37,7 @@ public class AtDataSubtaskController extends AbstractController {
      */
     @RequestMapping("/list")
     @RequiresPermissions("ltt:atdatasubtask:list")
-    public R list(AtDataSubtaskParamPageDTO atDataSubtask){
+    public R list(@RequestBody AtDataSubtaskParamPageDTO atDataSubtask){
         atDataSubtask.setSysUserId(getAuthUserId());
         PageUtils page = atDataSubtaskService.queryPage(atDataSubtask);
 

@@ -304,6 +304,12 @@ public class GroupTask {
             return;
         }
 
+
+
+
+
+
+
         //获取用户MAP
         List<Integer> userIds = cdGroupTasksEntities.stream().map(AtGroupEntity::getUserId).collect(Collectors.toList());
         List<AtUserEntity> atUserEntities = atUserService.listByIds(userIds);
@@ -333,6 +339,9 @@ public class GroupTask {
                         );
 
                         if (CollUtil.isEmpty(atDataSubtaskEntities)) {
+                            cdGroupTasksEntity.setGroupStatus(GroupStatus.GroupStatus10.getKey());
+                            cdGroupTasksEntity.setMsg(StrUtil.concat(true,cdGroupTasksEntity.getMsg(),"好友没有加成功"));
+                            atGroupService.updateById(cdGroupTasksEntity);
                             return;
                         }
 
