@@ -241,8 +241,11 @@
           <el-table-column
             prop="userTelephone"
             header-align="center"
-            align="center"
+            align="center" width="120"
             label="拉群手机号">
+            <template slot-scope="scope">
+              <el-button type="text" @click="atUserHandle(scope.row.userId)">{{scope.row.userTelephone}}</el-button>
+            </template>
           </el-table-column>
           <el-table-column
             prop="groupStatusStr"
@@ -251,7 +254,7 @@
             width="100"
             label="拉群状态">
             <template slot-scope="scope">
-              <el-tag  size="small" type="danger">{{ scope.row.groupStatusStr }}</el-tag>
+              <el-tag size="small" type="danger">{{ scope.row.groupStatusStr }}</el-tag>
             </template>
           </el-table-column>
           <el-table-column
@@ -330,7 +333,7 @@
             label="操作">
             <template slot-scope="scope">
               <el-button type="text" size="small" @click="errLogsHandle(scope.row.id)">错误日志</el-button>
-              <el-button type="text" size="small" @click="atUserHandle(scope.row.userId)">拉群账号</el-button>
+<!--              <el-button type="text" size="small" @click="atUserHandle(scope.row.userId)">拉群账号</el-button>-->
             </template>
           </el-table-column>
         </el-table>
