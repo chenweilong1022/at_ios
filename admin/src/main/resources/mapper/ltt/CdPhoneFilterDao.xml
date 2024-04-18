@@ -17,5 +17,17 @@
         <result property="msg" column="msg"/>
     </resultMap>
 
-
+<select id="queryByTaskStatus" resultType="io.renren.modules.ltt.dto.CdPhoneFilterStatusDto">
+    SELECT
+        SUM(
+                IF
+                ( task_status = 3, 1, 0 )) AS successCount,
+        SUM(
+                IF
+                ( task_status = 4, 1, 0 )) AS failCount
+    FROM
+        cd_phone_filter
+    WHERE
+        record_id = #{recordId}
+</select>
 </mapper>

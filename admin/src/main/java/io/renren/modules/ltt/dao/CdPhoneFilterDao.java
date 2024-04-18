@@ -1,8 +1,10 @@
 package io.renren.modules.ltt.dao;
 
+import io.renren.modules.ltt.dto.CdPhoneFilterStatusDto;
 import io.renren.modules.ltt.entity.CdPhoneFilterEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 手机号筛选
@@ -13,5 +15,6 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface CdPhoneFilterDao extends BaseMapper<CdPhoneFilterEntity> {
-	
+
+    CdPhoneFilterStatusDto queryByTaskStatus(@Param("recordId") Integer recordId);
 }

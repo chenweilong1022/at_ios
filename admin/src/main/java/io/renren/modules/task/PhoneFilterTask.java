@@ -11,6 +11,7 @@ import io.renren.modules.client.vo.SearchPhoneVO;
 import io.renren.modules.client.vo.SearchUserIdVO;
 import io.renren.modules.client.vo.The818051863582;
 import io.renren.modules.ltt.dto.CdLineIpProxyDTO;
+import io.renren.modules.ltt.dto.CdPhoneFilterStatusDto;
 import io.renren.modules.ltt.entity.*;
 import io.renren.modules.ltt.enums.*;
 import io.renren.modules.ltt.service.*;
@@ -47,6 +48,7 @@ public class PhoneFilterTask {
 
 
     static ReentrantLock task1Lock = new ReentrantLock();
+    static ReentrantLock task2Lock = new ReentrantLock();
 
     @Autowired
     private LineService lineService;
@@ -187,36 +189,6 @@ public class PhoneFilterTask {
                        }
                     }
                     cdPhoneFilterService.updateBatchById(cdPhoneFilterEntitiesUpdate);
-                    Map<Integer, List<CdPhoneFilterEntity>> recordMap = cdPhoneFilterEntitiesUpdate.stream()
-                            .collect(Collectors.groupingBy(CdPhoneFilterEntity::getRecordId));
-
-
-
-                    //更新主表
-                    List<Integer> recordIdList = recordMap.keySet().stream().collect(Collectors.toList());
-                    List<CdPhoneFilterRecordVO> recordList = cdPhoneFilterRecordService.getByIds(recordIdList);
-
-                    List<CdPhoneFilterRecordEntity> updateRecordList = new ArrayList<>(recordMap.size());
-                    CdPhoneFilterRecordEntity updateRecord;
-                    List<CdPhoneFilterEntity> list;
-                    for (CdPhoneFilterRecordVO recordVO : recordList) {
-                        list = recordMap.get(recordVO.getRecordId());
-                        updateRecord = new CdPhoneFilterRecordEntity();
-                        updateRecord.setRecordId(recordVO.getRecordId());
-                        updateRecord.setSuccessCount(recordVO.getSuccessCount() + list.stream()
-                                .filter(i->PhoneFilterStatus3.getKey().equals(i.getTaskStatus())).count());
-                        updateRecord.setFailCount(recordVO.getFailCount() + list.stream()
-                                .filter(i->PhoneFilterStatus4.getKey().equals(i.getTaskStatus())).count());
-                        if (updateRecord.getSuccessCount()+ updateRecord.getFailCount() >= recordVO.getTotalCount()) {
-                            updateRecord.setTaskStatus(PhoneFilterStatus3.getKey());
-                        }
-                        if (updateRecord.getFailCount() >= recordVO.getTotalCount()) {
-                            updateRecord.setTaskStatus(PhoneFilterStatus4.getKey());
-                        }
-                        updateRecordList.add(updateRecord);
-                    }
-                    cdPhoneFilterRecordService.updateBatchById(updateRecordList);
-
                 }
             }
         }catch (Exception e) {
@@ -225,5 +197,57 @@ public class PhoneFilterTask {
             task1Lock.unlock();
         }
 
+    }
+
+
+    /**
+     * 获取初始化的添加粉任务
+     */
+    @Scheduled(fixedDelay = 10 * 1000)
+    @Transactional(rollbackFor = Exception.class)
+    @Async
+    public void task2() {
+        boolean b = task2Lock.tryLock();
+        if (!b) {
+            return;
+        }
+        try{
+            List<CdPhoneFilterRecordEntity> recordList = cdPhoneFilterRecordService.list(new QueryWrapper<CdPhoneFilterRecordEntity>().lambda()
+                    .eq(CdPhoneFilterRecordEntity::getTaskStatus, PhoneFilterStatus.PhoneFilterStatus2.getKey())
+                    .last("limit 10")
+            );
+            if (CollUtil.isEmpty(recordList)) {
+                log.info("PhoneFilterTask task2 recordList isEmpty");
+                return;
+            }
+            List<CdPhoneFilterRecordEntity> updateRecordList = new ArrayList<>(recordList.size());
+            CdPhoneFilterRecordEntity updateRecord;
+            CdPhoneFilterStatusDto filterStatusDto;
+            for (CdPhoneFilterRecordEntity recordEntity : recordList) {
+                //查询筛选记录
+                filterStatusDto = cdPhoneFilterService.queryByTaskStatus(recordEntity.getRecordId());
+                if (ObjectUtil.isNull(filterStatusDto)) {
+                    log.error("PhoneFilterTask_error 记录为空 {}", recordEntity);
+                    continue;
+                }
+
+                updateRecord = new CdPhoneFilterRecordEntity();
+                updateRecord.setRecordId(recordEntity.getRecordId());
+                updateRecord.setSuccessCount(recordEntity.getSuccessCount() + filterStatusDto.getSuccessCount());
+                updateRecord.setFailCount(recordEntity.getFailCount() + filterStatusDto.getFailCount());
+                if (updateRecord.getSuccessCount() + updateRecord.getFailCount() >= recordEntity.getTotalCount()) {
+                    updateRecord.setTaskStatus(PhoneFilterStatus3.getKey());
+                }
+                if (updateRecord.getFailCount() >= recordEntity.getTotalCount()) {
+                    updateRecord.setTaskStatus(PhoneFilterStatus4.getKey());
+                }
+                updateRecordList.add(updateRecord);
+            }
+            cdPhoneFilterRecordService.updateBatchById(updateRecordList);
+        }catch (Exception e) {
+            log.error("PhoneFilterTask_err = {}", e);
+        }finally {
+            task2Lock.unlock();
+        }
     }
 }

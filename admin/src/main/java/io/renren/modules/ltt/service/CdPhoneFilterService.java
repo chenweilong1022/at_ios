@@ -3,9 +3,9 @@ package io.renren.modules.ltt.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import io.renren.common.utils.PageUtils;
 import io.renren.modules.ltt.dto.CdPhoneFilterDTO;
+import io.renren.modules.ltt.dto.CdPhoneFilterStatusDto;
 import io.renren.modules.ltt.vo.CdPhoneFilterVO;
 import io.renren.modules.ltt.entity.CdPhoneFilterEntity;
-
 import java.io.Serializable;
 import java.util.Collection;
 
@@ -60,6 +60,8 @@ public interface CdPhoneFilterService extends IService<CdPhoneFilterEntity> {
     boolean removeByIds(Collection<? extends Serializable> ids);
 
     byte[] exportSJ(Long recordId);
+
+    CdPhoneFilterStatusDto queryByTaskStatus(Integer recordId);
 
 }
 
