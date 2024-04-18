@@ -239,6 +239,7 @@ public class Data4Task {
                                     update.setId(null);
                                     atDataSubtaskService.update(update,new QueryWrapper<AtDataSubtaskEntity>().lambda()
                                             .eq(AtDataSubtaskEntity::getDataTaskId,atDataSubtaskEntity.getDataTaskId())
+                                            .eq(AtDataSubtaskEntity::getUserId,atDataSubtaskEntity.getUserId())
                                             .eq(AtDataSubtaskEntity::getTaskStatus,TaskStatus.TaskStatus2.getKey())
                                     );
                                     atUserService.unlock(atDataSubtaskEntity.getUserId(),userStatus);
