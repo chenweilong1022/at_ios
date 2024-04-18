@@ -20,6 +20,7 @@ import io.renren.modules.ltt.conver.CdPhoneFilterRecordConver;
 import io.renren.modules.ltt.dao.CdPhoneFilterRecordDao;
 import io.renren.modules.ltt.dto.CdLineIpProxyDTO;
 import io.renren.modules.ltt.dto.CdPhoneFilterRecordDTO;
+import io.renren.modules.ltt.dto.CdPhoneFilterStatusDto;
 import io.renren.modules.ltt.entity.AtUserTokenEntity;
 import io.renren.modules.ltt.entity.CdPhoneFilterRecordEntity;
 import io.renren.modules.ltt.enums.DeleteFlag;
@@ -179,6 +180,11 @@ public class CdPhoneFilterServiceImpl extends ServiceImpl<CdPhoneFilterDao, CdPh
         }
         String newStr = newJS.stream().map(phone -> phone + "\n").collect(Collectors.joining());
         return StrUtil.bytes(newStr);
+    }
+
+    @Override
+    public CdPhoneFilterStatusDto queryByTaskStatus(Integer recordId) {
+        return baseMapper.queryByTaskStatus(recordId);
     }
 
 }
