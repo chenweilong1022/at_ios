@@ -332,7 +332,6 @@ public class RegisterTask {
         }
         List<CdGetPhoneEntity> list = cdGetPhoneService.list(new QueryWrapper<CdGetPhoneEntity>().lambda()
                 .eq(CdGetPhoneEntity::getPhoneStatus, PhoneStatus.PhoneStatus1.getKey())
-                .last("limit 50")
         );
         if (CollUtil.isEmpty(list)) {
             log.info("RegisterTask task5 list isEmpty");
