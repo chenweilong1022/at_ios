@@ -189,7 +189,7 @@ public class Data4Task {
                             addFriendsByHomeRecommendDTO.setProxy(proxyIp);
                             addFriendsByHomeRecommendDTO.setMid(atDataSubtaskVO.getMid());
                             addFriendsByHomeRecommendDTO.setToken(atUserTokenEntity.getToken());
-                            searchPhoneVO = lineService.addFriendsByHomeRecommend(addFriendsByHomeRecommendDTO);
+                            searchPhoneVO = lineService.addFriendsByFriendRecommend(addFriendsByHomeRecommendDTO);
                         }
                         AtDataSubtaskEntity update = new AtDataSubtaskEntity();
                         if (ObjectUtil.isNull(searchPhoneVO)) {
