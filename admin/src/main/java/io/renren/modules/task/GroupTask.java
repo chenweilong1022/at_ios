@@ -304,6 +304,12 @@ public class GroupTask {
             return;
         }
 
+
+
+
+
+
+
         //获取用户MAP
         List<Integer> userIds = cdGroupTasksEntities.stream().map(AtGroupEntity::getUserId).collect(Collectors.toList());
         List<AtUserEntity> atUserEntities = atUserService.listByIds(userIds);
