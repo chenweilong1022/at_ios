@@ -44,6 +44,7 @@
         <result property="addType" column="add_type"/>
         <result property="materialId" column="material_id"/>
         <result property="materialPhoneType" column="material_phone_type"/>
+        <result property="userId" column="user_id"/>
 
 
         <result property="taskName" column="task_name"/>

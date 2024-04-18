@@ -239,10 +239,16 @@
             label="群人数">
           </el-table-column>
           <el-table-column
+            prop="userTelephone"
+            header-align="center"
+            align="center"
+            label="拉群手机号">
+          </el-table-column>
+          <el-table-column
             prop="groupStatusStr"
             header-align="center"
             align="center"
-            width="120"
+            width="100"
             label="拉群状态">
             <template slot-scope="scope">
               <el-tag  size="small" type="danger">{{ scope.row.groupStatusStr }}</el-tag>
@@ -259,25 +265,37 @@
             prop="addTotalQuantity"
             header-align="center"
             align="center"
-            label="加粉总数">
+            width="120"
+            label="加粉数据">
+            <template slot-scope="scope">
+              <div>加粉总数：{{ scope.row.addTotalQuantity }}</div>
+              <div>成功数：{{ scope.row.successfulQuantity }}</div>
+              <div>失败数：{{ scope.row.failuresQuantity }}</div>
+            </template>
           </el-table-column>
-          <el-table-column
-            prop="successfulQuantity"
-            header-align="center"
-            align="center"
-            label="成功数">
-          </el-table-column>
-          <el-table-column
-            prop="failuresQuantity"
-            header-align="center"
-            align="center"
-            label="失败数">
-          </el-table-column>
+<!--          <el-table-column-->
+<!--            prop="addTotalQuantity"-->
+<!--            header-align="center"-->
+<!--            align="center"-->
+<!--            label="加粉总数">-->
+<!--          </el-table-column>-->
+<!--          <el-table-column-->
+<!--            prop="successfulQuantity"-->
+<!--            header-align="center"-->
+<!--            align="center"-->
+<!--            label="成功数">-->
+<!--          </el-table-column>-->
+<!--          <el-table-column-->
+<!--            prop="failuresQuantity"-->
+<!--            header-align="center"-->
+<!--            align="center"-->
+<!--            label="失败数">-->
+<!--          </el-table-column>-->
           <el-table-column
             prop="taskStatus"
             header-align="center"
             align="center"
-            width="120"
+            width="100"
             label="加粉状态">
             <template slot-scope="scope">
               <el-button v-if="scope.row.taskStatus === 5" type="success" plain>{{scope.row.taskStatusStr}}</el-button>
@@ -291,11 +309,18 @@
             prop="schedule"
             header-align="center"
             align="center"
-            width="220"
+            width="95"
             label="加粉进度">
             <template slot-scope="scope">
-              <el-progress :stroke-width="10" type="circle" :percentage="scope.row.scheduleFloat"></el-progress>
+              <el-progress :stroke-width="7" type="circle"  :width="70" :percentage="scope.row.scheduleFloat"></el-progress>
             </template>
+          </el-table-column>
+          <el-table-column
+            prop="msg"
+            header-align="center"
+            align="center"
+            width="100"
+            label="日志">
           </el-table-column>
           <el-table-column
             fixed="right"

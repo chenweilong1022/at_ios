@@ -190,6 +190,12 @@ public class AtGroupVO implements Serializable {
 	@ApiModelProperty(required=false,value="群id")
 	private Integer groupId;
 
+	/**
+	 * 电话
+	 */
+	@ApiModelProperty(required=false,value="电话")
+	private String userTelephone;
+
 	public String getScheduleFloat() {
 		double v = (double) (successfulQuantity + failuresQuantity) / addTotalQuantity * 100;
 		return String.format("%.2f", v);
