@@ -238,8 +238,8 @@
         }
         this.$http({
           url: this.$http.adornUrl('/ltt/atdatasubtask/list'),
-          method: 'get',
-          params: this.$http.adornParams({
+          method: 'post',
+          data: this.$http.adornData({
             'page': this.pageIndex,
             'limit': this.pageSize,
             'contactKey': this.dataForm.contactKey,
