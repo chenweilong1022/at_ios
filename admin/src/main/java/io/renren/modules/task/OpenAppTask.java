@@ -182,6 +182,7 @@ public class OpenAppTask {
                                 DateTime openTime = DateUtil.offsetHour(DateUtil.date(), 8);
                                 AtUserTokenEntity update = new AtUserTokenEntity();
                                 update.setId(atUserTokenEntity.getId());
+                                update.setErrMsg(data.getRemark());
                                 if (2 == data.getStatus()) {
                                     update.setOpenStatus(OpenStatus.OpenStatus1.getKey());
                                     update.setOpenTime(openTime);
@@ -196,6 +197,8 @@ public class OpenAppTask {
                                         update.setOpenStatus(OpenStatus.OpenStatus3.getKey());
                                     }
                                 }else if (1 == data.getStatus()) {
+                                    return;
+                                }else {
                                     return;
                                 }
                                 atUserTokenService.updateById(update);
