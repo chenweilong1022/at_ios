@@ -98,7 +98,13 @@ public class CdPhoneFilterServiceImpl extends ServiceImpl<CdPhoneFilterDao, CdPh
                 s = s.replace("-","");
                 phoneNumberInfo = PhoneUtil.getPhoneNumberInfo(s);
             } catch (Exception e) {
-
+                if (s.contains("@") || s.contains("#")) {
+                    CdPhoneFilterEntity cdPhoneFilterEntity = new CdPhoneFilterEntity();
+                    String s1 = s.replaceAll("#", "");
+                    cdPhoneFilterEntity.setContactKey(s1);
+                    cdPhoneFilterEntity.setTaskStatus(PhoneFilterStatus.PhoneFilterStatus2.getKey());
+                    cdPhoneFilterEntities.add(cdPhoneFilterEntity);
+                }
             }
             if (ObjectUtil.isNotNull(phoneNumberInfo)) {
                 CdPhoneFilterEntity cdPhoneFilterEntity = new CdPhoneFilterEntity();
