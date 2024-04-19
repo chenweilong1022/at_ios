@@ -334,8 +334,6 @@
       this.getDataList()
       this.getAtUserSource()
       this.getCountryCodeEnums()
-    },
-    created() {
       this.queryCustomerByFuzzyName('')
       this.queryUserGroupBySearchWord('')
     },
