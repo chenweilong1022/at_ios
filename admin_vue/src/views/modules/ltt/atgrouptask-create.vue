@@ -46,12 +46,24 @@
             </el-select>
           </el-form-item>
           <el-form-item label="群人数" prop="groupCountTotal">
-            <el-input v-model="dataForm.groupCountTotal" placeholder="群人数"></el-input>
+            <el-input v-model="dataForm.groupCountTotal" placeholder="群人数" style="width: 70%;"></el-input>
           </el-form-item>
           <el-form-item label="拉群号数量" prop="pullGroupNumber">
-            <el-input v-model="dataForm.pullGroupNumber" placeholder="拉群号数量"></el-input>
+            <el-input v-model="dataForm.pullGroupNumber" placeholder="拉群号数量" style="width: 70%;"></el-input>
           </el-form-item>
-
+          <el-form-item label="间隔秒数" prop="intervalSecond">
+            <el-input v-model="dataForm.intervalSecond" placeholder="间隔秒数" style="width: 70%;"></el-input>
+          </el-form-item>
+          <el-form-item label="代理ip">
+            <el-select v-model="dataForm.ipCountryCode" placeholder="代理ip" clearable>
+              <el-option
+                v-for="item in countryCodes"
+                :key="item.key"
+                :label="item.value"
+                :value="item.key">
+              </el-option>
+            </el-select>
+          </el-form-item>
         </div>
 
         <div class="group-content">
@@ -409,6 +421,8 @@ import ErrLogs from "./atdatatask-err-logs.vue";
           pullGroupNumber: 1,
           groupCount: null,
           groupCountStart: 0,
+          intervalSecond: null,
+          ipCountryCode: null,
           navyUrlList: [],
           materialUrlList: []
         }
@@ -629,6 +643,8 @@ import ErrLogs from "./atdatatask-err-logs.vue";
             'id': this.dataForm.id,
             'groupName': this.dataForm.groupName,
             'countryCode': this.dataForm.countryCode,
+            'intervalSecond': this.dataForm.intervalSecond,
+            'ipCountryCode': this.dataForm.ipCountryCode,
             'userGroupId': this.dataForm.userGroupId,
             'navyUrlList': this.dataForm.navyUrlList,
             'groupCountStart': this.dataForm.groupCountStart,

@@ -155,4 +155,14 @@ public class AtGroupDTO extends PageParam implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="类型")
 	private List<Integer> groupStatusList;
+
+	@ApiModelProperty(required=false,value="间隔秒数")
+	private Integer intervalSecond;
+
+
+	/**
+	 * 代理ip
+	 */
+	@ApiModelProperty(required=false,value="代理ip")
+	private Integer ipCountryCode;
 }

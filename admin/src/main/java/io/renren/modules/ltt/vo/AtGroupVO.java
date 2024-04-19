@@ -196,6 +196,21 @@ public class AtGroupVO implements Serializable {
 	@ApiModelProperty(required=false,value="电话")
 	private String userTelephone;
 
+
+	@ApiModelProperty(required=false,value="间隔秒数")
+	private Integer intervalSecond;
+
+	/**
+	 * 代理ip
+	 */
+	@ApiModelProperty(required=false,value="代理ip")
+	private Integer ipCountryCode;
+
+	/**
+	 * 国家
+	 */
+	@ApiModelProperty(required=false,value="国家")
+	private Integer countryCode;
 	public String getScheduleFloat() {
 		double v = (double) (successfulQuantity + failuresQuantity) / addTotalQuantity * 100;
 		return String.format("%.2f", v);

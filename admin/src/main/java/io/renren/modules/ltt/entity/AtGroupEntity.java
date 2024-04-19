@@ -127,4 +127,13 @@ public class AtGroupEntity implements Serializable {
 	@ApiModelProperty(required=false,value="")
 	private String msg;
 
+	@ApiModelProperty(required=false,value="间隔秒数")
+	private Integer intervalSecond;
+
+	/**
+	 * 代理ip
+	 */
+	@ApiModelProperty(required=false,value="代理ip")
+	private Integer ipCountryCode;
+
 }

@@ -143,4 +143,16 @@ public class AtGroupTaskDTO extends PageParam implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="剩余")
 	private Queue<String> materialUrlsQueue;
+
+
+
+	@ApiModelProperty(required=false,value="间隔秒数")
+	private Integer intervalSecond;
+
+
+	/**
+	 * 代理ip
+	 */
+	@ApiModelProperty(required=false,value="代理ip")
+	private Integer ipCountryCode;
 }
