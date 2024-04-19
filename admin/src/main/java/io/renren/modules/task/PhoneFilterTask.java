@@ -145,6 +145,7 @@ public class PhoneFilterTask {
                                 continue;
                             }
                             atUserService.unlock(poll.getId(),UserStatus.UserStatus2);
+                            poll = cdLineRegisterEntityQueue.poll();
                             continue;
                         } else {
                             String mid = searchUserIdVO.getData().getMid();
