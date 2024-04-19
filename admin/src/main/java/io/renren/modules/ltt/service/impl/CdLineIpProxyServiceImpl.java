@@ -124,7 +124,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         Long countryCode = phoneNumberInfo.getCountryCode();
 //        String keyByResource1 = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource3, countryCode.intValue());
 //        Lock lock1 = lockMap.computeIfAbsent(keyByResource1, k -> new ReentrantLock());
-        countryCode = 1L;
+//        countryCode = 1L;
         String ip = getIp(cdLineIpProxyDTO, countryCode, projectWorkEntity.getProxy());
 //        if (StrUtil.isEmpty(ip)) {
 //            ip = getIp(cdLineIpProxyDTO,82L);
