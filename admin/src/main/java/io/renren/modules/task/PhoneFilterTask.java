@@ -164,6 +164,7 @@ public class PhoneFilterTask {
 //                        cdPhoneFilterEntity.setTaskStatus(PhoneFilterStatus.PhoneFilterStatus4.getKey());
                             cdPhoneFilterEntitiesUpdate.add(cdPhoneFilterEntity);
                             atUserService.unlock(poll.getId(),UserStatus.UserStatus2);
+                            poll = cdLineRegisterEntityQueue.poll();
                             continue;
                         } else {
                             Map<String, The818051863582> data = andAddContactsByPhone.getData();

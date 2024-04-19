@@ -70,6 +70,8 @@ public class CdLineIpProxyDTO extends PageParam implements Serializable {
 
 	private boolean newIp = false;
 
+	private Long countryCode;
+
 	public String getTokenPhone() {
 		tokenPhone = tokenPhone.replaceAll("-","");
 		return tokenPhone;

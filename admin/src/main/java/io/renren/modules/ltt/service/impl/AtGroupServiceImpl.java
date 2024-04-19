@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.benmanes.caffeine.cache.Cache;
 import io.renren.common.utils.EnumUtil;
 import io.renren.common.utils.PageUtils;
 import io.renren.common.utils.Query;
@@ -34,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
@@ -54,6 +56,8 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
     private AtDataTaskService atDataTaskService;
     @Autowired
     private AtUserService atUserService;
+    @Resource(name = "caffeineCacheAtGroupEntity")
+    private Cache<Integer, AtGroupEntity> caffeineCacheAtGroupEntity;
     @Override
     public PageUtils<AtGroupVO> queryPage(AtGroupDTO atGroup) {
         IPage<AtGroupVO> page = baseMapper.listPage(
@@ -341,6 +345,17 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
             updates.add(update);
         }
         atDataTaskService.updateBatchById(updates);
+    }
+
+    @Override
+    public AtGroupEntity getByIdCache(Integer groupId) {
+        AtGroupEntity atGroupEntity = caffeineCacheAtGroupEntity.getIfPresent(groupId);
+        if(ObjectUtil.isNotNull(atGroupEntity)) {
+            return atGroupEntity;
+        }
+        atGroupEntity = this.getById((Serializable) groupId);
+        caffeineCacheAtGroupEntity.put(groupId,atGroupEntity);
+        return atGroupEntity;
     }
 
     private static void init() {

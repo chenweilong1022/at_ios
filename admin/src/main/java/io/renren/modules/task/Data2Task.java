@@ -1,10 +1,13 @@
 package io.renren.modules.task;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.github.benmanes.caffeine.cache.Cache;
 import io.renren.modules.client.LineService;
 import io.renren.modules.client.dto.AddFriendsByHomeRecommendDTO;
 import io.renren.modules.client.dto.AddFriendsByUserTicket;
@@ -27,6 +30,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -76,6 +81,8 @@ public class Data2Task {
     private AtDataSubtaskService atDataSubtaskService;
     @Autowired
     private AtGroupService atGroupService;
+    @Resource(name = "caffeineCacheDate")
+    private Cache<Integer, Date> caffeineCacheDate;
 
 //    /**
 //     * 更新头像结果返回
@@ -127,8 +134,25 @@ public class Data2Task {
                 log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
                 if(triedLock) {
                     try{
-                        int i = RandomUtil.randomInt(3, 5);
-                        Thread.sleep(i * 1000L);
+                        AtGroupEntity atGroupEntityConfig = null;
+                        if (ObjectUtil.isNotNull(atDataSubtaskEntity.getGroupId())) {
+                            atGroupEntityConfig = atGroupService.getByIdCache(atDataSubtaskEntity.getGroupId());
+                            if (ObjectUtil.isNull(atGroupEntityConfig)) {
+                                return;
+                            }
+                            Date nextTime = caffeineCacheDate.getIfPresent(atGroupEntityConfig.getId());
+                            if (ObjectUtil.isNotNull(nextTime)) {
+                                DateTime now = DateUtil.date();
+                                boolean after = now.after(nextTime);
+                                if (!after) {
+                                    return;
+                                }
+                            }
+
+                        }else {
+                            int i = RandomUtil.randomInt(3, 5);
+                            Thread.sleep(i * 1000L);
+                        }
                         //查询mid
                         AtDataSubtaskVO atDataSubtaskVO = atDataSubtaskService.getById(atDataSubtaskEntity.getId());
                         if (ObjectUtil.isNull(atDataSubtaskVO)) {
@@ -143,6 +167,10 @@ public class Data2Task {
                         CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
                         cdLineIpProxyDTO.setTokenPhone(atUserTokenEntity.getTelephone());
                         cdLineIpProxyDTO.setLzPhone(atUserTokenEntity.getTelephone());
+                        //去设置区号
+                        if (ObjectUtil.isNotNull(atGroupEntityConfig)) {
+                            cdLineIpProxyDTO.setCountryCode(atGroupEntityConfig.getIpCountryCode().longValue());
+                        }
                         String proxyIp = cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO);
                         if (StrUtil.isEmpty(proxyIp)) {
                             return;
@@ -164,6 +192,10 @@ public class Data2Task {
                             CdLineIpProxyDTO cdLineIpProxyDTO1 = new CdLineIpProxyDTO();
                             cdLineIpProxyDTO1.setTokenPhone(one.getTelephone());
                             cdLineIpProxyDTO1.setLzPhone(one.getTelephone());
+                            //去设置区号
+                            if (ObjectUtil.isNotNull(atGroupEntityConfig)) {
+                                cdLineIpProxyDTO1.setCountryCode(atGroupEntityConfig.getIpCountryCode().longValue());
+                            }
                             String proxyIp1 = cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO1);
                             if (StrUtil.isEmpty(proxyIp1)) {
                                 return;
@@ -246,7 +278,17 @@ public class Data2Task {
                             }
                         }
                         update.setId(atDataSubtaskEntity.getId());
+                        //设置加好友的时间
+                        update.setCreateTime(DateUtil.date());
                         atDataSubtaskService.updateById(update);
+                        //如果配置不为空
+                        if (ObjectUtil.isNotNull(atGroupEntityConfig)) {
+                            //获取间隔的秒,设置下次可以执行的时间
+                            Integer intervalSecond = atGroupEntityConfig.getIntervalSecond();
+                            int i = RandomUtil.randomInt(intervalSecond, intervalSecond + 2);
+                            DateTime nextTime = DateUtil.offsetSecond(DateUtil.date(), i);
+                            caffeineCacheDate.put(atGroupEntityConfig.getId(),nextTime);
+                        }
                     } catch (InterruptedException e) {
                         log.error("err = ",e.getMessage());
                     } finally {

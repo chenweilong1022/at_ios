@@ -122,6 +122,9 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
             return null;
         }
         Long countryCode = phoneNumberInfo.getCountryCode();
+        if (ObjectUtil.isNotNull(cdLineIpProxyDTO.getCountryCode())) {
+            countryCode = cdLineIpProxyDTO.getCountryCode();
+        }
 //        String keyByResource1 = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource3, countryCode.intValue());
 //        Lock lock1 = lockMap.computeIfAbsent(keyByResource1, k -> new ReentrantLock());
 //        countryCode = 1L;

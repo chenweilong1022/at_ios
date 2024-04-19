@@ -77,5 +77,12 @@ public interface AtGroupService extends IService<AtGroupEntity> {
      * @param atGroup
      */
     void startTask(AtGroupDTO atGroup);
+
+    /**
+     * 获取缓存
+     * @param groupId
+     * @return
+     */
+    AtGroupEntity getByIdCache(Integer groupId);
 }
 
