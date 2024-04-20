@@ -1,6 +1,8 @@
 package io.renren.modules.task;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -35,6 +37,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -141,6 +144,10 @@ public class GroupTask {
                         CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
                         cdLineIpProxyDTO.setTokenPhone(atUserTokenEntity.getTelephone());
                         cdLineIpProxyDTO.setLzPhone(atUserTokenEntity.getTelephone());
+                        //去设置区号
+                        if (ObjectUtil.isNotNull(cdGroupTasksEntity.getIpCountryCode())) {
+                            cdLineIpProxyDTO.setCountryCode(cdGroupTasksEntity.getIpCountryCode().longValue());
+                        }
                         String proxyIp = cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO);
                         if (StrUtil.isEmpty(proxyIp)) {
                             return;
@@ -247,6 +254,10 @@ public class GroupTask {
                                     CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
                                     cdLineIpProxyDTO.setTokenPhone(atUserVO.getTelephone());
                                     cdLineIpProxyDTO.setLzPhone(atUserVO.getTelephone());
+                                    //去设置区号
+                                    if (ObjectUtil.isNotNull(cdGroupTasksEntity.getIpCountryCode())) {
+                                        cdLineIpProxyDTO.setCountryCode(cdGroupTasksEntity.getIpCountryCode().longValue());
+                                    }
                                     String proxyIp = cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO);
                                     if (StrUtil.isEmpty(proxyIp)) {
                                         return;
@@ -326,6 +337,7 @@ public class GroupTask {
                 log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
                 if(triedLock) {
                     try{
+
                         //获取用户token
                         AtUserTokenEntity atUserTokenEntity = userIdAtUserTokenEntityMap.get(cdGroupTasksEntity.getUserId());
                         if (ObjectUtil.isNull(atUserTokenEntity)) {
@@ -351,6 +363,10 @@ public class GroupTask {
                         CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
                         cdLineIpProxyDTO.setTokenPhone(atUserTokenEntity.getTelephone());
                         cdLineIpProxyDTO.setLzPhone(atUserTokenEntity.getTelephone());
+                        //去设置区号
+                        if (ObjectUtil.isNotNull(cdGroupTasksEntity.getIpCountryCode())) {
+                            cdLineIpProxyDTO.setCountryCode(cdGroupTasksEntity.getIpCountryCode().longValue());
+                        }
                         String proxyIp = cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO);
                         if (StrUtil.isEmpty(proxyIp)) {
                             return;
