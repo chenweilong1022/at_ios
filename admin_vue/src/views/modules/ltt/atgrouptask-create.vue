@@ -29,6 +29,28 @@
             </el-select>
           </el-form-item>
 
+          <el-form-item v-if="groupType === 6" label="合群号国家">
+            <el-select v-model="dataForm.countryCodeH" placeholder="合群号国家" clearable>
+              <el-option
+                v-for="item in countryCodes"
+                :key="item.key"
+                :label="item.value"
+                :value="item.key">
+              </el-option>
+            </el-select>
+          </el-form-item>
+
+          <el-form-item v-if="groupType === 6" label="合群号分组" prop="userGroupIdH">
+            <el-select v-model="dataForm.userGroupIdH" placeholder="合群号分组">
+              <el-option
+                v-for="item in dataUserGroupList"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id">
+              </el-option>
+            </el-select>
+          </el-form-item>
+
           <el-form-item label="拉群类型" prop="groupType">
             <el-select
               v-model="groupType"
@@ -414,9 +436,11 @@ import ErrLogs from "./atdatatask-err-logs.vue";
         dataForm: {
           id: null,
           userGroupId: null,
+          userGroupIdH: null,
           groupType: null,
           groupName: '',
           countryCode: 66,
+          countryCodeH: 81,
           groupCountTotal: 99,
           pullGroupNumber: 1,
           groupCount: null,
@@ -643,9 +667,11 @@ import ErrLogs from "./atdatatask-err-logs.vue";
             'id': this.dataForm.id,
             'groupName': this.dataForm.groupName,
             'countryCode': this.dataForm.countryCode,
+            'countryCodeH': this.dataForm.countryCodeH,
             'intervalSecond': this.dataForm.intervalSecond,
             'ipCountryCode': this.dataForm.ipCountryCode,
             'userGroupId': this.dataForm.userGroupId,
+            'userGroupIdH': this.dataForm.userGroupIdH,
             'navyUrlList': this.dataForm.navyUrlList,
             'groupCountStart': this.dataForm.groupCountStart,
             'pullGroupNumber': this.dataForm.pullGroupNumber,

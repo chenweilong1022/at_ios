@@ -12,6 +12,7 @@ public enum GroupType implements BaseEnum {
     GroupType3(3,"无限加粉模式（加粉号专用）"),
     GroupType4(4,"日本，台湾专用uid模式2（加分号必须是日本）"),
     GroupType5(5,"同步通讯录模式（加粉号和数据必须是相同国家）"),
+    GroupType6(6,"泰国号拉群，日本号同步通讯录合群"),
     ;
 
     GroupType(int key, String value) {

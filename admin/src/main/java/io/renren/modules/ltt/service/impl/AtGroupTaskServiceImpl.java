@@ -200,27 +200,22 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void onGroupStart(AtGroupTaskDTO atGroupTask) {
+        //如果是合群，默认为2个拉群号
+        if (GroupType.GroupType6.getKey().equals(atGroupTask.getGroupType())) {
+            atGroupTask.setPullGroupNumber(2);
+        }
         //获取所有群信息
         List<OnGroupPreVO> onGroupPreVOS = onGroupPre(atGroupTask);
+        //校验拉群号国家
+        List<AtUserVO> atUserVOS = getAtUserVOS(atGroupTask, onGroupPreVOS);
+        List<AtUserVO> atUserVOSH = getAtUserVOSH(atGroupTask, onGroupPreVOS);
 
-
-        AtUserDTO atUserDTO = new AtUserDTO();
-        atUserDTO.setSysUserId(atGroupTask.getSysUserId());
-        String regions = EnumUtil.queryValueByKey(atGroupTask.getCountryCode(), CountryCode.values());
-        atUserDTO.setNation(regions.toUpperCase());
-        atUserDTO.setUserGroupId(atGroupTask.getUserGroupId());
-        atUserDTO.setLimit(onGroupPreVOS.size() * atGroupTask.getPullGroupNumber());
-        atUserDTO.setStatus(UserStatus.UserStatus4.getKey());
-        atUserDTO.setUserSource(AtUserSourceEnum.AtUserSource1.getKey());
-        //获取符合账号的号码
-        PageUtils pageUtils = atUserService.queryPage(atUserDTO);
-        List<AtUserVO> atUserVOS = pageUtils.getList();
-
-        Assert.isTrue(onGroupPreVOS.size()*atGroupTask.getPullGroupNumber()>atUserVOS.size(),"拉群号不足，请增加拉群号");
-
+        //拉群号队列
         Queue<AtUserVO> atUserVOQueue = new LinkedList<>(atUserVOS);
         List<AtUserEntity> atUserEntityUpdates = new ArrayList<>();
         List<AtDataSubtaskEntity> atDataSubtaskEntityListNew = new ArrayList<>();
+        //合群号队列
+        Queue<AtUserVO> atUserVOQueueH = new LinkedList<>(atUserVOSH);
 
 
         //保存分组
@@ -247,7 +242,7 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
             atGroupEntitiesSave.add(atGroupTaskEntity);
         }
 
-        //分组
+        //保存群
         atGroupService.saveBatch(atGroupEntitiesSave,atGroupEntitiesSave.size());
 
         for (OnGroupPreVO onGroupPreVO : onGroupPreVOS) {
@@ -278,7 +273,7 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
             onGroupPreVO.setAtDataTask(atDataTask);
             atDataTaskEntitiesSave.add(atDataTask);
         }
-        //data任务
+        //保存任务
         atDataTaskService.saveBatch(atDataTaskEntitiesSave,atDataTaskEntitiesSave.size());
 
         for (OnGroupPreVO onGroupPreVO : onGroupPreVOS) {
@@ -295,7 +290,7 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
             AtGroupEntity atGroupTaskEntity = onGroupPreVO.getAtGroupTaskEntity();
             AtDataTaskEntity atDataTask = onGroupPreVO.getAtDataTask();
 
-
+            //水军
             for (String navyTextList : navyTextLists) {
                 String[] parts = navyTextList.split("\\s+");
                 AtDataSubtaskEntity save = new AtDataSubtaskEntity();
@@ -315,6 +310,9 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
                 }else {
                     save.setContactKey(parts[0].trim());
                 }
+                String getContactKey = save.getContactKey().replace("+", "");
+                save.setContactKey(getContactKey);
+                resetGroupType(atGroupTask, save);
                 //校验通讯录模式的国家
                 if (GroupType.GroupType5.getKey().equals(groupType4.getKey())) {
                     Assert.isTrue(StrUtil.isEmpty(save.getContactKey()),"手机号不能为空");
@@ -325,12 +323,13 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
                 save.setCreateTime(DateUtil.date());
                 atDataSubtaskEntities.add(save);
             }
-
+            //料子
             for (String materialUrl : materialUrls) {
                 String[] parts = materialUrl.split("\\s+");
                 AtDataSubtaskEntity save = new AtDataSubtaskEntity();
                 save.setGroupId(atGroupTaskEntity.getId());
                 save.setGroupType(groupType4.getKey());
+
                 save.setTaskStatus(TaskStatus.TaskStatus1.getKey());
                 save.setDataTaskId(atDataTask.getId());
                 save.setSysUserId(atGroupTask.getSysUserId());
@@ -345,6 +344,9 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
                 }else {
                     save.setContactKey(parts[0].trim());
                 }
+                String getContactKey = save.getContactKey().replace("+", "");
+                save.setContactKey(getContactKey);
+                resetGroupType(atGroupTask, save);
                 //校验通讯录模式的国家
                 if (GroupType.GroupType5.getKey().equals(groupType4.getKey())) {
                     Assert.isTrue(StrUtil.isEmpty(save.getContactKey()),"手机号不能为空");
@@ -355,22 +357,26 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
                 save.setCreateTime(DateUtil.date());
                 atDataSubtaskEntities.add(save);
             }
-
-
             //将加粉数据分组
             List<List<AtDataSubtaskEntity>> partition = Lists.partition(atDataSubtaskEntities, atDataSubtaskEntities.size() / atGroupTask.getPullGroupNumber() + 1);
-
+            //如果是泰国拉群日本合群模式去重新分配数据
+            partition = getListsByType(atGroupTask, partition, atDataSubtaskEntities);
 
 
             AtUserVO pollFirst = null;
             //给加粉数据分组
             for (List<AtDataSubtaskEntity> atDataSubtaskEntityList : partition) {
-                AtUserVO poll = atUserVOQueue.poll();
+                AtUserVO poll = null;
                 if (ObjectUtil.isNull(pollFirst)) {
+                    poll = atUserVOQueue.poll();
                     pollFirst = poll;
                     atGroupTaskEntity.setUserId(pollFirst.getId());
-
                 }else {
+                    if (GroupType.GroupType6.getKey().equals(atGroupTask.getGroupType())) {
+                        poll = atUserVOQueueH.poll();
+                    }else {
+                        poll = atUserVOQueue.poll();
+                    }
                     AtUserTokenVO atUserTokenVO = atUserTokenService.getById(poll.getUserTokenId());
                     String token = atUserTokenVO.getToken();
                     LineTokenJson lineTokenJson = JSON.parseObject(token, LineTokenJson.class);
@@ -378,6 +384,9 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
                     AtDataSubtaskEntity save = new AtDataSubtaskEntity();
                     save.setGroupId(atGroupTaskEntity.getId());
                     save.setGroupType(groupType4.getKey());
+                    if (GroupType.GroupType6.getKey().equals(atGroupTask.getGroupType())) {
+                        save.setGroupType(GroupType.GroupType2.getKey());
+                    }
                     save.setTaskStatus(TaskStatus.TaskStatus1.getKey());
                     save.setDataTaskId(atDataTask.getId());
                     save.setSysUserId(atGroupTask.getSysUserId());
@@ -419,6 +428,86 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
         atGroupTask.setTaskStatus(TaskStatus.TaskStatus12.getKey());
         AtGroupTaskEntity atGroupTaskEntity = AtGroupTaskConver.MAPPER.converDTO(atGroupTask);
         this.updateById(atGroupTaskEntity);
+    }
+
+    private static void resetGroupType(AtGroupTaskDTO atGroupTask, AtDataSubtaskEntity save) {
+        if (GroupType.GroupType6.getKey().equals(atGroupTask.getGroupType())) {
+            //与合群号国家相同
+            if (save.getContactKey().startsWith(atGroupTask.getCountryCodeH().toString())) {
+                save.setGroupType(GroupType.GroupType5.getKey());
+            }else {
+                save.setGroupType(GroupType.GroupType2.getKey());
+            }
+        }
+    }
+
+    private List<AtUserVO> getAtUserVOSH(AtGroupTaskDTO atGroupTask, List<OnGroupPreVO> onGroupPreVOS) {
+        //合群号国家
+        AtUserDTO atUserDTOH = new AtUserDTO();
+        atUserDTOH.setSysUserId(atGroupTask.getSysUserId());
+        String regionsH = EnumUtil.queryValueByKey(atGroupTask.getCountryCodeH(), CountryCode.values());
+        atUserDTOH.setNation(regionsH.toUpperCase());
+        atUserDTOH.setUserGroupId(atGroupTask.getUserGroupIdH());
+        atUserDTOH.setLimit(onGroupPreVOS.size() * atGroupTask.getPullGroupNumber());
+        atUserDTOH.setStatus(UserStatus.UserStatus4.getKey());
+        atUserDTOH.setUserSource(AtUserSourceEnum.AtUserSource1.getKey());
+        //获取符合账号的号码
+        PageUtils pageUtilsH = atUserService.queryPage(atUserDTOH);
+        List<AtUserVO> atUserVOSH = pageUtilsH.getList();
+        //如果是泰国号拉群模式
+        if (GroupType.GroupType6.getKey().equals(atGroupTask.getGroupType())) {
+            Assert.isTrue(onGroupPreVOS.size()>atUserVOSH.size(),"合群号不足，请增加合群号");
+        }else {
+            Assert.isTrue(onGroupPreVOS.size()*atGroupTask.getPullGroupNumber()>atUserVOSH.size(),"合群号不足，请增加合群号");
+        }
+        return atUserVOSH;
+    }
+
+    private static List<List<AtDataSubtaskEntity>> getListsByType(AtGroupTaskDTO atGroupTask, List<List<AtDataSubtaskEntity>> partition, List<AtDataSubtaskEntity> atDataSubtaskEntities){
+        //如果是合群，默认为2个拉群号
+        if (GroupType.GroupType6.getKey().equals(atGroupTask.getGroupType())) {
+            partition = CollUtil.newArrayList();
+            //分为2部分 合群号相同的一部分，其他一部分
+            List<AtDataSubtaskEntity> atDataSubtaskEntityList1 = new ArrayList<>();
+            List<AtDataSubtaskEntity> atDataSubtaskEntityListH = new ArrayList<>();
+            for (AtDataSubtaskEntity atDataSubtaskEntity : atDataSubtaskEntities) {
+                try {
+                    PhoneCountryVO phoneNumberInfo = PhoneUtil.getPhoneNumberInfo(atDataSubtaskEntity.getContactKey());
+                    if (atGroupTask.getCountryCodeH().longValue() == phoneNumberInfo.getCountryCode()) {
+                        atDataSubtaskEntityListH.add(atDataSubtaskEntity);
+                    }else {
+                        atDataSubtaskEntityList1.add(atDataSubtaskEntity);
+                    }
+                } catch (Exception e) {
+
+                }
+            }
+            partition.add(atDataSubtaskEntityList1);
+            partition.add(atDataSubtaskEntityListH);
+        }
+        return partition;
+    }
+
+    private List<AtUserVO> getAtUserVOS(AtGroupTaskDTO atGroupTask, List<OnGroupPreVO> onGroupPreVOS) {
+        //拉群号国家
+        AtUserDTO atUserDTO = new AtUserDTO();
+        atUserDTO.setSysUserId(atGroupTask.getSysUserId());
+        String regions = EnumUtil.queryValueByKey(atGroupTask.getCountryCode(), CountryCode.values());
+        atUserDTO.setNation(regions.toUpperCase());
+        atUserDTO.setUserGroupId(atGroupTask.getUserGroupId());
+        atUserDTO.setLimit(onGroupPreVOS.size() * atGroupTask.getPullGroupNumber());
+        atUserDTO.setStatus(UserStatus.UserStatus4.getKey());
+        atUserDTO.setUserSource(AtUserSourceEnum.AtUserSource1.getKey());
+        //获取符合账号的号码
+        PageUtils pageUtils = atUserService.queryPage(atUserDTO);
+        List<AtUserVO> atUserVOS = pageUtils.getList();
+        //如果是泰国号拉群模式
+        if (GroupType.GroupType6.getKey().equals(atGroupTask.getGroupType())) {
+            Assert.isTrue(onGroupPreVOS.size()>atUserVOS.size(),"拉群号不足，请增加拉群号");
+        }else {
+            Assert.isTrue(onGroupPreVOS.size()* atGroupTask.getPullGroupNumber()>atUserVOS.size(),"拉群号不足，请增加拉群号");
+        }
+        return atUserVOS;
     }
 
     @Override
