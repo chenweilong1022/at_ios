@@ -88,7 +88,7 @@ public class CacheConfig {
     }
 
     @Bean(value = "cardJpSms")
-    public Cache<String, String> cardJpSms() {
+    public Cache<String, Date> cardJpSms() {
         return Caffeine.newBuilder()
                 // 设置最后一次写入或访问后两个小时后过期
                 .expireAfterWrite(30, TimeUnit.MINUTES)

@@ -1,6 +1,7 @@
 package io.renren.modules.client.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
@@ -23,6 +24,12 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +54,7 @@ public class CardJpServiceImpl implements FirefoxService {
     private SystemConstant systemConstant;
 
     @Resource(name = "cardJpSms")
-    private Cache<String, String> cardJpSms;
+    private Cache<String, Date> cardJpSms;
 
     @EventListener
     @Order(value = 8888)
@@ -120,8 +127,8 @@ public class CardJpServiceImpl implements FirefoxService {
     public String getPhoneCode(String pKey) {
         try {
             //发起操作时间
-            String createTimestamp = cardJpSms.getIfPresent(pKey);
-            log.info("CardJpServiceImpl_getPhoneCode_createTimestamp {}", createTimestamp);
+            Date date = cardJpSms.getIfPresent(pKey);
+            log.info("CardJpServiceImpl_getPhoneCode_createTimestamp {}", date);
 
             HashMap<String, String> paramMap = new HashMap<>();
             paramMap.put("user_code", systemConstant.getJpSmsConfigUserCode());//必填，用户号
@@ -147,12 +154,20 @@ public class CardJpServiceImpl implements FirefoxService {
             }
             List<CardJpGetPhoneSmsVO.Data.Ret> ret = resultDto.getData().getRet();
             if (CollectionUtil.isNotEmpty(ret)) {
-                CardJpGetPhoneSmsVO.Data.Ret ret1 = ret.stream().filter(i -> CollectionUtil.isNotEmpty(i.getSms())).findFirst().orElse(null);
-                if (ObjectUtil.isNotNull(ret1) && CollectionUtil.isNotEmpty(ret1.getSms())) {
-                    CardJpGetPhoneSmsVO.Data.Ret.Sm sms = ret1.getSms().stream()
-                            .filter(i -> DateUtils.comparisonTime(i.getRecvTime(), createTimestamp))
-                            .findFirst().orElse(null);
-                    return ObjectUtil.isNotNull(sms) ? extractVerificationCode(sms.getContent()) : null;
+                for (CardJpGetPhoneSmsVO.Data.Ret ret1 : ret) {
+                    if (ObjectUtil.isNotNull(ret1) && CollectionUtil.isNotEmpty(ret1.getSms())) {
+                        List<CardJpGetPhoneSmsVO.Data.Ret.Sm> sms = ret1.getSms();
+                        for (CardJpGetPhoneSmsVO.Data.Ret.Sm sm : sms) {
+                            long timestamp = Long.valueOf(sm.getRecvTime());  // Your Unix timestamp
+                            LocalDateTime localDateTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(timestamp), ZoneId.of("Asia/Shanghai"));
+                            ZonedDateTime zonedDateTime = localDateTime.atZone(ZoneId.of("Asia/Shanghai"));
+                            Date recvTime = Date.from(zonedDateTime.toInstant());
+                            boolean before = date.before(recvTime);
+                            if (before) {
+                                return extractVerificationCode(sm.getContent());
+                            }
+                        }
+                    }
                 }
             }
             return null;
