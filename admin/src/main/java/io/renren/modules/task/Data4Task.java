@@ -148,6 +148,9 @@ public class Data4Task {
                                 if (!after) {
                                     return;
                                 }
+                            }else {
+                                int i = RandomUtil.randomInt(3, 5);
+                                Thread.sleep(i * 1000L);
                             }
 
                         }else {
@@ -286,9 +289,11 @@ public class Data4Task {
                         if (ObjectUtil.isNotNull(atGroupEntityConfig)) {
                             //获取间隔的秒,设置下次可以执行的时间
                             Integer intervalSecond = atGroupEntityConfig.getIntervalSecond();
-                            int i = RandomUtil.randomInt(intervalSecond, intervalSecond + 2);
-                            DateTime nextTime = DateUtil.offsetSecond(DateUtil.date(), i);
-                            caffeineCacheDate.put(atGroupEntityConfig.getId(),nextTime);
+                            if (ObjectUtil.isNotNull(intervalSecond)) {
+                                int i = RandomUtil.randomInt(intervalSecond, intervalSecond + 2);
+                                DateTime nextTime = DateUtil.offsetSecond(DateUtil.date(), i);
+                                caffeineCacheDate.put(atGroupEntityConfig.getId(),nextTime);
+                            }
                         }
                     } catch (InterruptedException e) {
                         log.error("err = ",e.getMessage());
