@@ -405,11 +405,12 @@ public class DataTask {
 
                             update.setMsg(searchPhoneVO.getMsg());
                             if (200 == searchPhoneVO.getCode()) {
+                                update.setTaskStatus(TaskStatus.TaskStatus5.getKey());
                                 Map<String, The818051863582> data = searchPhoneVO.getData();
                                 Collection<The818051863582> values = data.values();
                                 for (The818051863582 value : values) {
-                                    update.setTaskStatus(TaskStatus.TaskStatus7.getKey());
                                     update.setMid(value.getMid());
+                                    update.setTaskStatus(TaskStatus.TaskStatus7.getKey());
                                     update.setDisplayName(value.getDisplayName());
                                     update.setPhoneticName(value.getPhoneticName());
                                     update.setPictureStatus(value.getPictureStatus());
