@@ -131,7 +131,7 @@ public class Data5Task {
                         List<AtDataSubtaskEntity> atDataSubtaskEntityList = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
                                 .eq(ObjectUtil.isNotNull(atDataSubtaskVO.getDataTaskId()),AtDataSubtaskEntity::getDataTaskId,atDataSubtaskVO.getDataTaskId())
                                 .eq(ObjectUtil.isNotNull(atDataSubtaskVO.getGroupId()),AtDataSubtaskEntity::getGroupId,atDataSubtaskVO.getGroupId())
-                                .eq(AtDataSubtaskEntity::getGroupId,atDataSubtaskVO.getUserId())
+                                .eq(AtDataSubtaskEntity::getUserId,atDataSubtaskVO.getUserId())
                                 .eq(AtDataSubtaskEntity::getTaskStatus,TaskStatus.TaskStatus9.getKey())
                         );
                         if (CollUtil.isEmpty(atDataSubtaskEntityList)) {
@@ -260,7 +260,7 @@ public class Data5Task {
                         List<AtDataSubtaskEntity> list = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
                                 .eq(ObjectUtil.isNotNull(atDataSubtaskEntity.getDataTaskId()),AtDataSubtaskEntity::getDataTaskId,atDataSubtaskEntity.getDataTaskId())
                                 .eq(ObjectUtil.isNotNull(atDataSubtaskEntity.getGroupId()),AtDataSubtaskEntity::getGroupId,atDataSubtaskEntity.getGroupId())
-                                .eq(AtDataSubtaskEntity::getGroupId,atDataSubtaskEntity.getUserId())
+                                .eq(AtDataSubtaskEntity::getUserId,atDataSubtaskEntity.getUserId())
                                 .eq(AtDataSubtaskEntity::getGroupType,GroupType.GroupType5.getKey())
                         );
 
