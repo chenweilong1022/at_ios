@@ -210,21 +210,6 @@ public class DataTask {
                             if (ObjectUtil.isNull(atGroupEntityConfig)) {
                                 return;
                             }
-                            Date nextTime = caffeineCacheDate.getIfPresent(atGroupEntityConfig.getId());
-                            //如果没有下一次的时间 设置默认的时间
-                            if (ObjectUtil.isNotNull(nextTime)) {
-                                DateTime now = DateUtil.date();
-                                boolean after = now.after(nextTime);
-                                if (!after) {
-                                    return;
-                                }
-                            }else {
-                                int i = RandomUtil.randomInt(3, 5);
-                                Thread.sleep(i * 1000L);
-                            }
-                        }else {
-                            int i = RandomUtil.randomInt(3, 5);
-                            Thread.sleep(i * 1000L);
                         }
                         //获取用户token
                         AtUserTokenEntity atUserTokenEntity = userIdAtUserTokenEntityMap.get(atDataSubtaskEntity.getUserId());
@@ -242,6 +227,10 @@ public class DataTask {
                         CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
                         cdLineIpProxyDTO.setTokenPhone(atUserTokenEntity.getTelephone());
                         cdLineIpProxyDTO.setLzPhone(contactKey);
+                        //去设置区号
+                        if (ObjectUtil.isNotNull(atGroupEntityConfig)) {
+                            cdLineIpProxyDTO.setCountryCode(atGroupEntityConfig.getIpCountryCode().longValue());
+                        }
                         String proxyIp = cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO);
                         if (StrUtil.isEmpty(proxyIp)) {
                             return;
@@ -314,19 +303,7 @@ public class DataTask {
                         //设置加好友的时间
                         update.setCreateTime(DateUtil.date());
                         atDataSubtaskService.updateById(update);
-                        //如果配置不为空
-                        if (ObjectUtil.isNotNull(atGroupEntityConfig)) {
-                            //获取间隔的秒,设置下次可以执行的时间
-                            Integer intervalSecond = atGroupEntityConfig.getIntervalSecond();
-                            if (ObjectUtil.isNotNull(intervalSecond)) {
-                                int i = RandomUtil.randomInt(intervalSecond, intervalSecond + 2);
-                                DateTime nextTime = DateUtil.offsetSecond(DateUtil.date(), i);
-                                caffeineCacheDate.put(atGroupEntityConfig.getId(),nextTime);
-                            }
-                        }
 
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
                     } finally {
                         lock.unlock();
                     }
@@ -407,6 +384,10 @@ public class DataTask {
                             CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
                             cdLineIpProxyDTO.setTokenPhone(atUserTokenEntity.getTelephone());
                             cdLineIpProxyDTO.setLzPhone(contactKey);
+                            //去设置区号
+                            if (ObjectUtil.isNotNull(atGroupEntityConfig)) {
+                                cdLineIpProxyDTO.setCountryCode(atGroupEntityConfig.getIpCountryCode().longValue());
+                            }
                             String proxyIp = cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO);
                             if (StrUtil.isEmpty(proxyIp)) {
                                 return;
