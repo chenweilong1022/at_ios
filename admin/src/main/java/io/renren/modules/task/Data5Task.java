@@ -301,14 +301,16 @@ public class Data5Task {
                         if (200 == lineRegisterVO.getCode()) {
                             update.setTaskStatus(TaskStatus.TaskStatus9.getKey());
                             atDataSubtaskService.update(update,new UpdateWrapper<AtDataSubtaskEntity>().lambda()
-                                    .eq(AtDataSubtaskEntity::getDataTaskId,atDataSubtaskEntity.getDataTaskId())
+                                    .eq(ObjectUtil.isNotNull(atDataSubtaskEntity.getDataTaskId()),AtDataSubtaskEntity::getDataTaskId,atDataSubtaskEntity.getDataTaskId())
+                                    .eq(ObjectUtil.isNotNull(atDataSubtaskEntity.getGroupId()),AtDataSubtaskEntity::getGroupId,atDataSubtaskEntity.getGroupId())
                                     .eq(AtDataSubtaskEntity::getUserId,atDataSubtaskEntity.getUserId())
                                     .eq(AtDataSubtaskEntity::getTaskStatus,TaskStatus.TaskStatus2.getKey())
                             );
                         }else {
                             update.setTaskStatus(TaskStatus.TaskStatus5.getKey());
                             atDataSubtaskService.update(update,new UpdateWrapper<AtDataSubtaskEntity>().lambda()
-                                    .eq(AtDataSubtaskEntity::getDataTaskId,atDataSubtaskEntity.getDataTaskId())
+                                    .eq(ObjectUtil.isNotNull(atDataSubtaskEntity.getDataTaskId()),AtDataSubtaskEntity::getDataTaskId,atDataSubtaskEntity.getDataTaskId())
+                                    .eq(ObjectUtil.isNotNull(atDataSubtaskEntity.getGroupId()),AtDataSubtaskEntity::getGroupId,atDataSubtaskEntity.getGroupId())
                                     .eq(AtDataSubtaskEntity::getUserId,atDataSubtaskEntity.getUserId())
                                     .eq(AtDataSubtaskEntity::getTaskStatus,TaskStatus.TaskStatus2.getKey())
                             );
