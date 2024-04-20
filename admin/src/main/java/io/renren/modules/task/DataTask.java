@@ -86,7 +86,7 @@ public class DataTask {
     private Cache<Integer, Date> caffeineCacheDate;
 
 
-    @Scheduled(fixedDelay = 20000)
+    @Scheduled(fixedDelay = 8000)
     @Transactional(rollbackFor = Exception.class)
     @Async
     public void task5() {
@@ -121,6 +121,14 @@ public class DataTask {
                     update.setFailuresQuantity((int) fail);
                     update.setId(groupCountByDataTaskIdVO.getDataTaskId());
                     if (success10 + fail >= groupCountByDataTaskIdVO.getAddTotalQuantity()) {
+                        update.setTaskStatus(TaskStatus.TaskStatus3.getKey());
+                    }
+                    atDataTaskEntityList.add(update);
+                }else if (GroupType.GroupType6.getKey().equals(groupCountByDataTaskIdVO.getGroupType())) {
+                    update.setSuccessfulQuantity((int) success10 + (int) success8);
+                    update.setFailuresQuantity((int) fail);
+                    update.setId(groupCountByDataTaskIdVO.getDataTaskId());
+                    if (success10 + success8 + fail >= groupCountByDataTaskIdVO.getAddTotalQuantity()) {
                         update.setTaskStatus(TaskStatus.TaskStatus3.getKey());
                     }
                     atDataTaskEntityList.add(update);
