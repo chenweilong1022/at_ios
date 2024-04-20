@@ -129,8 +129,9 @@ public class Data5Task {
                         }
 
                         List<AtDataSubtaskEntity> atDataSubtaskEntityList = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
-                                .eq(AtDataSubtaskEntity::getDataTaskId,atDataSubtaskVO.getDataTaskId())
-                                .eq(AtDataSubtaskEntity::getUserId,atDataSubtaskVO.getUserId())
+                                .eq(ObjectUtil.isNotNull(atDataSubtaskVO.getDataTaskId()),AtDataSubtaskEntity::getDataTaskId,atDataSubtaskVO.getDataTaskId())
+                                .eq(ObjectUtil.isNotNull(atDataSubtaskVO.getGroupId()),AtDataSubtaskEntity::getGroupId,atDataSubtaskVO.getGroupId())
+                                .eq(AtDataSubtaskEntity::getGroupId,atDataSubtaskVO.getUserId())
                                 .eq(AtDataSubtaskEntity::getTaskStatus,TaskStatus.TaskStatus9.getKey())
                         );
                         if (CollUtil.isEmpty(atDataSubtaskEntityList)) {
@@ -257,8 +258,9 @@ public class Data5Task {
                         int i = RandomUtil.randomInt(3, 5);
                         Thread.sleep(i * 1000L);
                         List<AtDataSubtaskEntity> list = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
-                                .eq(AtDataSubtaskEntity::getDataTaskId,atDataSubtaskEntity.getDataTaskId())
-                                .eq(AtDataSubtaskEntity::getGroupId,atDataSubtaskEntity.getGroupId())
+                                .eq(ObjectUtil.isNotNull(atDataSubtaskEntity.getDataTaskId()),AtDataSubtaskEntity::getDataTaskId,atDataSubtaskEntity.getDataTaskId())
+                                .eq(ObjectUtil.isNotNull(atDataSubtaskEntity.getGroupId()),AtDataSubtaskEntity::getGroupId,atDataSubtaskEntity.getGroupId())
+                                .eq(AtDataSubtaskEntity::getGroupId,atDataSubtaskEntity.getUserId())
                                 .eq(AtDataSubtaskEntity::getGroupType,GroupType.GroupType5.getKey())
                         );
 
