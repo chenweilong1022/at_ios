@@ -228,7 +228,7 @@ public class DataTask {
                         cdLineIpProxyDTO.setTokenPhone(atUserTokenEntity.getTelephone());
                         cdLineIpProxyDTO.setLzPhone(contactKey);
                         //去设置区号
-                        if (ObjectUtil.isNotNull(atGroupEntityConfig)) {
+                        if (ObjectUtil.isNotNull(atGroupEntityConfig.getIpCountryCode())) {
                             cdLineIpProxyDTO.setCountryCode(atGroupEntityConfig.getIpCountryCode().longValue());
                         }
                         String proxyIp = cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO);
@@ -385,7 +385,7 @@ public class DataTask {
                             cdLineIpProxyDTO.setTokenPhone(atUserTokenEntity.getTelephone());
                             cdLineIpProxyDTO.setLzPhone(contactKey);
                             //去设置区号
-                            if (ObjectUtil.isNotNull(atGroupEntityConfig)) {
+                            if (ObjectUtil.isNotNull(atGroupEntityConfig.getIpCountryCode())) {
                                 cdLineIpProxyDTO.setCountryCode(atGroupEntityConfig.getIpCountryCode().longValue());
                             }
                             String proxyIp = cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO);
