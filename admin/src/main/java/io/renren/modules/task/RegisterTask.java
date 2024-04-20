@@ -513,7 +513,7 @@ public class RegisterTask {
     /**
      * 根据任务去获取手机号
      */
-    @Scheduled(fixedDelay = 5000)
+    @Scheduled(fixedDelay = 20000)
     @Transactional(rollbackFor = Exception.class)
     @Async
     public void task2() {
