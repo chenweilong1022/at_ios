@@ -28,7 +28,7 @@
             SUM(IF(ds.task_status = 5,1,0)) fail5,
             SUM(IF(ds.task_status = 10,1,0)) success10,
             ds.data_task_id dataTaskId,
-            MIN(ds.group_type) groupType,
+            MIN(t.group_type) groupType,
             MIN(t.add_total_quantity) addTotalQuantity,
             MIN(ds.group_id) groupId
         FROM
