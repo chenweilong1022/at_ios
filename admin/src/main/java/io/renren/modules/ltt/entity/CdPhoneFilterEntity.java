@@ -1,6 +1,7 @@
 package io.renren.modules.ltt.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
@@ -42,17 +43,23 @@ public class CdPhoneFilterEntity implements Serializable {
 	@ApiModelProperty(required=false,value="任务状态")
 	private Integer taskStatus;
 	/**
-	 * 
+	 *
+	 */
+	@ApiModelProperty(required=false,value="")
+	@TableField(exist = false)
+	private Long countryCode;
+	/**
+	 *
 	 */
 	@ApiModelProperty(required=false,value="")
 	private String contactKey;
 	/**
-	 * 
+	 *
 	 */
 	@ApiModelProperty(required=false,value="")
 	private String mid;
 	/**
-	 * 
+	 *
 	 */
 	@ApiModelProperty(required=false,value="")
 	private String displayName;

@@ -248,7 +248,7 @@ public class Data5Task {
 
         for (AtDataSubtaskVO atDataSubtaskEntity : atDataSubtaskEntities) {
             threadPoolTaskExecutor.execute(() -> {
-                String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource7, atDataSubtaskEntity.getDataTaskId());
+                String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource7, atDataSubtaskEntity.getUserId());
                 Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
                 boolean triedLock = lock.tryLock();
                 log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);

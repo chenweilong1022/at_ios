@@ -4,6 +4,8 @@
 //import cn.hutool.core.util.ObjectUtil;
 //import cn.hutool.core.util.StrUtil;
 //import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+//import io.renren.common.utils.PhoneUtil;
+//import io.renren.common.utils.vo.PhoneCountryVO;
 //import io.renren.modules.client.LineService;
 //import io.renren.modules.client.dto.SearchPhoneDTO;
 //import io.renren.modules.client.dto.SearchUserIdDTO;
@@ -42,7 +44,7 @@
 //@Component
 //@Slf4j
 //@EnableAsync
-//@Profile({"prod","register"})
+//@Profile({"prod","dev"})
 //public class PhoneFilterTask {
 //
 //
@@ -66,6 +68,69 @@
 //    private AtUserTokenService atUserTokenService;
 //    @Autowired
 //    private CdLineIpProxyService cdLineIpProxyService;
+////
+////
+////
+////    /**
+////     * 获取初始化的添加粉任务
+////     */
+////    @Scheduled(fixedDelay = 5000)
+////    @Transactional(rollbackFor = Exception.class)
+////    @Async
+////    public void task1() {
+////        boolean b = task1Lock.tryLock();
+////        if (!b) {
+////            return;
+////        }
+////        try{
+////            List<CdPhoneFilterEntity> cdPhoneFilterEntities = cdPhoneFilterService.list(new QueryWrapper<CdPhoneFilterEntity>().lambda()
+////                    .eq(CdPhoneFilterEntity::getTaskStatus, PhoneFilterStatus.PhoneFilterStatus5.getKey())
+////            );
+////            if (CollUtil.isEmpty(cdPhoneFilterEntities)) {
+////                log.info("PhoneFilterTask task1 cdPhoneFilterEntities isEmpty");
+////                return;
+////            }
+////            //将需要同步同步通讯录的手机号分组
+////            Map<Long, List<CdPhoneFilterEntity>> listMap = cdPhoneFilterEntities.stream().collect(Collectors.groupingBy(item -> {
+////                String contactKey = item.getContactKey();
+////                try {
+////                    PhoneCountryVO phoneNumberInfo = PhoneUtil.getPhoneNumberInfo(contactKey);
+////                    if (ObjectUtil.isNotNull(phoneNumberInfo)) {
+////                        return phoneNumberInfo.getCountryCode();
+////                    }
+////                } catch (Exception e) {
+////
+////                }
+////                return -1L;
+////            }));
+////
+////            Set<Long> set = listMap.keySet();
+////            for (Long key : set) {
+////                List<CdPhoneFilterEntity> phoneFilterEntities = listMap.get(key);
+////                if (CollUtil.isEmpty(phoneFilterEntities)) {
+////                    continue;
+////                }
+////
+////
+////
+////
+////            }
+////
+////
+////        }catch (Exception e) {
+////            log.error("PhoneFilterTask_err = {}", e);
+////        }finally {
+////            task1Lock.unlock();
+////        }
+////
+////    }
+//
+//
+//
+//
+//
+//
+//
 //    /**
 //     * 获取初始化的添加粉任务
 //     */

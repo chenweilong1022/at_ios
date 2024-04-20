@@ -1,6 +1,8 @@
 package io.renren.modules.ltt.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -9,6 +11,7 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import io.renren.common.utils.EnumUtil;
 import io.renren.common.utils.PageUtils;
 import io.renren.common.utils.PhoneUtil;
 import io.renren.common.utils.Query;
@@ -21,14 +24,18 @@ import io.renren.modules.ltt.dao.CdPhoneFilterDao;
 import io.renren.modules.ltt.dao.CdPhoneFilterRecordDao;
 import io.renren.modules.ltt.dto.CdPhoneFilterDTO;
 import io.renren.modules.ltt.dto.CdPhoneFilterStatusDto;
+import io.renren.modules.ltt.entity.AtDataSubtaskEntity;
+import io.renren.modules.ltt.entity.AtUserEntity;
 import io.renren.modules.ltt.entity.CdPhoneFilterEntity;
 import io.renren.modules.ltt.entity.CdPhoneFilterRecordEntity;
-import io.renren.modules.ltt.enums.DeleteFlag;
-import io.renren.modules.ltt.enums.PhoneFilterStatus;
+import io.renren.modules.ltt.enums.*;
+import io.renren.modules.ltt.service.AtDataSubtaskService;
+import io.renren.modules.ltt.service.AtUserService;
 import io.renren.modules.ltt.service.CdPhoneFilterRecordService;
 import io.renren.modules.ltt.service.CdPhoneFilterService;
 import io.renren.modules.ltt.vo.CdPhoneFilterVO;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,6 +57,10 @@ public class CdPhoneFilterServiceImpl extends ServiceImpl<CdPhoneFilterDao, CdPh
 
     @Resource
     private CdPhoneFilterRecordDao cdPhoneFilterRecordDao;
+    @Autowired
+    private AtDataSubtaskService atDataSubtaskService;
+    @Autowired
+    private AtUserService atUserService;
 
     @Resource
     private FileService fileService;
@@ -107,6 +118,7 @@ public class CdPhoneFilterServiceImpl extends ServiceImpl<CdPhoneFilterDao, CdPh
             }
             if (ObjectUtil.isNotNull(phoneNumberInfo)) {
                 CdPhoneFilterEntity cdPhoneFilterEntity = new CdPhoneFilterEntity();
+                cdPhoneFilterEntity.setCountryCode(phoneNumberInfo.getCountryCode());
                 cdPhoneFilterEntity.setContactKey(s);
                 cdPhoneFilterEntity.setTaskStatus(PhoneFilterStatus.PhoneFilterStatus2.getKey());
                 cdPhoneFilterEntities.add(cdPhoneFilterEntity);
@@ -125,6 +137,61 @@ public class CdPhoneFilterServiceImpl extends ServiceImpl<CdPhoneFilterDao, CdPh
         recordEntity.setSuccessCount(0l);
         recordEntity.setFailCount(0l);
         cdPhoneFilterRecordService.save(recordEntity);
+
+
+        List<AtDataSubtaskEntity> atDataSubtaskEntities = new ArrayList<>();
+        //获取通讯录map
+        Map<Long, List<CdPhoneFilterEntity>> longListMap = cdPhoneFilterEntities.stream().collect(Collectors.groupingBy(CdPhoneFilterEntity::getCountryCode));
+        for (Long key : longListMap.keySet()) {
+            if (ObjectUtil.isNotNull(key)) {
+                List<CdPhoneFilterEntity> cdPhoneFilterEntitiesNew = longListMap.get(key);
+                //给用户分配一个user
+                if (CollectionUtil.isNotEmpty(cdPhoneFilterEntitiesNew) && cdPhoneFilterEntitiesNew.size() > 20) {
+
+                    String regions = EnumUtil.queryValueByKey(key.intValue(), CountryCode.values());
+                    List<AtUserEntity> atUserEntities = atUserService.list(new QueryWrapper<AtUserEntity>().lambda()
+                            .in(AtUserEntity::getStatus, UserStatus.UserStatus4.getKey(),UserStatus.UserStatus6.getKey())
+                            .eq(AtUserEntity::getNation, regions)
+                            .orderByDesc(AtUserEntity::getId)
+                            .last("limit 1")
+                    );
+                    Assert.isTrue(CollUtil.isEmpty(atUserEntities),"账号不足，请增加账号");
+                    //修改用户为已使用
+                    AtUserEntity poll = atUserEntities.get(0);
+                    AtUserEntity atUserEntity = new AtUserEntity();
+                    atUserEntity.setId(poll.getId());
+                    atUserEntity.setStatus(UserStatus.UserStatus6.getKey());
+                    atUserService.updateById(atUserEntity);
+
+                    for (CdPhoneFilterEntity cdPhoneFilterEntity : cdPhoneFilterEntitiesNew) {
+                        //s设置为通讯录
+                        cdPhoneFilterEntity.setTaskStatus(PhoneFilterStatus.PhoneFilterStatus5.getKey());
+                        GroupType groupType4 = GroupType.GroupType5;
+                        AtDataSubtaskEntity save = new AtDataSubtaskEntity();
+                        save.setGroupType(groupType4.getKey());
+                        save.setRecordId(recordEntity.getRecordId());
+                        save.setUserId(atUserEntity.getId());
+                        save.setTaskStatus(TaskStatus.TaskStatus2.getKey());
+                        save.setDataType(DataType.DataType4.getKey());
+                        save.setContactKey(cdPhoneFilterEntity.getContactKey());
+                        //校验通讯录模式的国家
+                        if (GroupType.GroupType5.getKey().equals(groupType4.getKey())) {
+                            Assert.isTrue(StrUtil.isEmpty(save.getContactKey()),"手机号不能为空");
+                        }
+                        save.setDeleteFlag(DeleteFlag.NO.getKey());
+                        save.setCreateTime(DateUtil.date());
+                        atDataSubtaskEntities.add(save);
+                    }
+
+                }
+            }
+        }
+        //如果加粉任务不为空
+        if (CollUtil.isNotEmpty(atDataSubtaskEntities)) {
+            atDataSubtaskService.saveBatchOnMe(atDataSubtaskEntities);
+        }
+
+
 
         //数据记录
         cdPhoneFilterEntities.forEach(i->{

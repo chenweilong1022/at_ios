@@ -13,6 +13,8 @@ public enum PhoneFilterStatus implements BaseEnum {
     PhoneFilterStatus2(2,"查询中"),
     PhoneFilterStatus3(3,"查询完成"),
     PhoneFilterStatus4(4,"查询失败"),
+    PhoneFilterStatus5(5,"同步通讯录"),
+    PhoneFilterStatus6(6,"同步中"),
     ;
 
     PhoneFilterStatus(int key, String value) {
