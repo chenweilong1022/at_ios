@@ -5,12 +5,10 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import io.renren.modules.client.LineService;
-import io.renren.modules.client.dto.CreateGroupMax;
-import io.renren.modules.client.dto.GetChatsDTO;
-import io.renren.modules.client.dto.InviteIntoChatDTO;
-import io.renren.modules.client.dto.RegisterResultDTO;
+import io.renren.modules.client.dto.*;
 import io.renren.modules.client.vo.CreateGroupResultVO;
 import io.renren.modules.client.vo.GetChatsVO;
 import io.renren.modules.client.vo.LineRegisterVO;
@@ -19,11 +17,9 @@ import io.renren.modules.ltt.entity.AtDataSubtaskEntity;
 import io.renren.modules.ltt.entity.AtGroupEntity;
 import io.renren.modules.ltt.entity.AtUserEntity;
 import io.renren.modules.ltt.entity.AtUserTokenEntity;
-import io.renren.modules.ltt.enums.GroupStatus;
-import io.renren.modules.ltt.enums.LockMapKeyResource;
-import io.renren.modules.ltt.enums.TaskStatus;
-import io.renren.modules.ltt.enums.UserStatus;
+import io.renren.modules.ltt.enums.*;
 import io.renren.modules.ltt.service.*;
+import io.renren.modules.ltt.vo.AtDataTaskVO;
 import io.renren.modules.ltt.vo.AtUserTokenVO;
 import io.renren.modules.ltt.vo.AtUserVO;
 import lombok.extern.slf4j.Slf4j;
@@ -358,6 +354,27 @@ public class GroupTask {
                         }
 
                         List<String> mids = atDataSubtaskEntities.stream().map(AtDataSubtaskEntity::getMid).distinct().collect(Collectors.toList());
+                        AtDataTaskVO dataTaskVO = atDataTaskService.getById(atDataSubtaskEntities.get(0).getDataTaskId());
+                        Integer groupType = dataTaskVO.getGroupType();
+
+                        if (GroupType.GroupType6.getKey().equals(groupType)) {
+                            //获取不是当前用户的合群user
+                            AtDataSubtaskEntity atDataSubtaskEntity = atDataSubtaskService.getOne(new QueryWrapper<AtDataSubtaskEntity>().lambda()
+                                    .eq(AtDataSubtaskEntity::getGroupId, cdGroupTasksEntity.getId())
+                                    .notIn(AtDataSubtaskEntity::getUserId, cdGroupTasksEntity.getUserId())
+                                    .in(AtDataSubtaskEntity::getTaskStatus, TaskStatus.TaskStatus10.getKey(), TaskStatus.TaskStatus8.getKey())
+                                    .last("limit 1")
+                            );
+                            if (ObjectUtil.isNotNull(atDataSubtaskEntity)) {
+                                AtUserVO atUserVO = atUserService.getById(atDataSubtaskEntity.getUserId());
+                                AtUserTokenVO atUserTokenVO = atUserTokenService.getById(atUserVO.getUserTokenId());
+                                if (ObjectUtil.isNotNull(atUserTokenVO)) {
+                                    String token = atUserTokenVO.getToken();
+                                    LineTokenJson lineTokenJson = JSON.parseObject(token, LineTokenJson.class);
+                                    mids.add(lineTokenJson.getMid());
+                                }
+                            }
+                        }
 
                         //获取代理
                         CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();

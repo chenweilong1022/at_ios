@@ -261,7 +261,7 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
             for (Integer key : integerListMap1.keySet()) {
                 //数据data
                 List<AtDataSubtaskEntity> atDataSubtaskEntities1 = integerListMap1.get(key);
-                long count = atDataSubtaskEntities1.stream().filter(item -> item.getTaskStatus().equals(TaskStatus.TaskStatus8.getKey()) || item.getTaskStatus().equals(TaskStatus.TaskStatus5.getKey()) || item.getTaskStatus().equals(TaskStatus.TaskStatus13.getKey())  || item.getTaskStatus().equals(TaskStatus.TaskStatus10.getKey())).count();
+                long count = atDataSubtaskEntities1.stream().filter(item -> item.getTaskStatus().equals(TaskStatus.TaskStatus13.getKey())).count();
                 if (count > 0) {
                     AtUserVO poll = atUserVOQueue.poll();
                     AtUserEntity atUserEntity = new AtUserEntity();
@@ -275,7 +275,8 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
                         atGroupEntity.setUserId(poll.getId());
                         atGroupEntityListUpdate.add(atGroupEntity);
                     }else {
-                        AtUserTokenVO atUserTokenVO = atUserTokenService.getById(poll.getUserTokenId());
+                        AtUserVO atUserVO = atUserService.getById(atGroupEntity.getUserId());
+                        AtUserTokenVO atUserTokenVO = atUserTokenService.getById(atUserVO.getUserTokenId());
                         LineTokenJson lineTokenJson = JSON.parseObject(atUserTokenVO.getToken(), LineTokenJson.class);
                         AtDataSubtaskEntity save = new AtDataSubtaskEntity();
                         save.setGroupId(atGroupEntity.getId());
@@ -287,7 +288,7 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
                         save.setContactKey(lineTokenJson.getPhone());
                         save.setMid(lineTokenJson.getMid());
                         save.setDisplayName(lineTokenJson.getNickName());
-                        save.setUserId(atGroupEntity.getUserId());
+                        save.setUserId(poll.getId());
                         atDataSubtaskEntityListSave.add(save);
                     }
                     for (AtDataSubtaskEntity atDataSubtaskEntity : atDataSubtaskEntities1) {
@@ -304,9 +305,6 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
             }
 
             if (CollUtil.isNotEmpty(atDataSubtaskEntityListSave)) {
-                for (AtDataSubtaskEntity atDataSubtaskEntity : atDataSubtaskEntityListSave) {
-                    atDataSubtaskEntity.setUserId(atGroupEntity.getUserId());
-                }
                 atDataSubtaskService.saveBatch(atDataSubtaskEntityListSave);
             }
 

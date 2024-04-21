@@ -370,13 +370,13 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
                 if (ObjectUtil.isNull(pollFirst)) {
                     poll = atUserVOQueue.poll();
                     pollFirst = poll;
-                    atGroupTaskEntity.setUserId(pollFirst.getId());
                 }else {
                     if (GroupType.GroupType6.getKey().equals(atGroupTask.getGroupType())) {
                         poll = atUserVOQueueH.poll();
                     }else {
                         poll = atUserVOQueue.poll();
                     }
+                    atGroupTaskEntity.setUserId(poll.getId());
                     AtUserTokenVO atUserTokenVO = atUserTokenService.getById(poll.getUserTokenId());
                     String token = atUserTokenVO.getToken();
                     LineTokenJson lineTokenJson = JSON.parseObject(token, LineTokenJson.class);
