@@ -201,9 +201,6 @@ export default {
     handlePreview (uploadFile, uploadFiles) {
       this.fileList = uploadFiles
     },
-    handleAvatarSuccess (res, file) {
-      this.dataForm.textUrlList = res.data
-    },
     init (id) {
       this.dataForm.id = id || 0
       this.uploadUrl = this.$http.adornUrl(`/app/file/upload`)
@@ -266,6 +263,7 @@ export default {
     },
     // 表单提交
     dataFormSubmit () {
+      this.dataForm.textUrlList = []
       for (let i = 0; i < this.fileList.length; i++) {
         let data = this.fileList[i]
         this.dataForm.textUrlList.push(data.response.data)

@@ -353,6 +353,7 @@ public class GroupTask {
                             return;
                         }
 
+
                         List<String> mids = atDataSubtaskEntities.stream().map(AtDataSubtaskEntity::getMid).distinct().collect(Collectors.toList());
                         AtDataTaskVO dataTaskVO = atDataTaskService.getById(atDataSubtaskEntities.get(0).getDataTaskId());
                         Integer groupType = dataTaskVO.getGroupType();

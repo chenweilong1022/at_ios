@@ -1,25 +1,22 @@
 package io.renren.modules.client.impl;
 
-import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
-import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
 import com.github.benmanes.caffeine.cache.Cache;
+import io.renren.common.utils.ConfigConstant;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.client.FirefoxService;
 import io.renren.modules.client.entity.ProjectWorkEntity;
-import io.renren.modules.client.vo.CardMeGetPhoneVO;
 import io.renren.modules.client.vo.GetPhoneVO;
-import io.renren.modules.client.vo.GetSmsVO;
-import io.renren.modules.client.vo.ReleaseMobileVO;
+import io.renren.modules.ltt.enums.CountryCode;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author liuyuchan
@@ -28,41 +25,45 @@ import java.util.regex.Pattern;
  */
 @Service("cardMeServiceImpl")
 @Game
+@Slf4j
 public class CardMeServiceImpl implements FirefoxService {
 
     @Resource(name = "caffeineCacheProjectWorkEntity")
     private Cache<String, ProjectWorkEntity> caffeineCacheProjectWorkEntity;
 
-    static String baseHttp = "http://134.122.130.205:8880";
-    static String token = "545148dc498842ca8cea980b1a677b27";
-
-    static String projectId = "202";
-
     public GetPhoneVO getPhone(){
         try {
-            String getPhoneHttp =  String.format("%s/app/cdcardgroup/getDeviceIdByProjectId",baseHttp);
-            Map<String,String> param = new HashMap<>();
-            param.put("projectId",projectId);
-            String jsonStr = JSONUtil.toJsonStr(param);
-            String resp = HttpUtil.createPost(getPhoneHttp).header("token",token).body(jsonStr).execute().body();
-            System.out.println(resp);
-            CardMeGetPhoneVO cardMeGetPhoneVO = JSON.parseObject(resp, CardMeGetPhoneVO.class);
-            if (ObjectUtil.isNotNull(cardMeGetPhoneVO) && ObjectUtil.isNotNull(cardMeGetPhoneVO.getData())) {
-                String phone = cardMeGetPhoneVO.getData().getPhone();
-                GetPhoneVO getPhoneVo = new GetPhoneVO().setNumber("").setPkey(cardMeGetPhoneVO.getData().getIccid()).setTime(null).setCom("").setCountry("").setCountryCode("").setPhone(phone).setOther("");
+            ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
+            String getPhoneHttp = String.format("%s?act=getPhone&token=%s&iid=%s&did=&country=%s&operator=&provi=&city=&seq=0&mobile=",
+                    projectWorkEntity.getFirefoxBaseUrl(), projectWorkEntity.getFirefoxToken(),
+                    projectWorkEntity.getFirefoxIid(), "tha");
+
+
+            log.info("FirefoxService_getPhone param:{}", getPhoneHttp);
+            String resp = HttpUtil.get(getPhoneHttp);
+            log.info("FirefoxService_getPhone result:{}", resp);
+
+            String[] split = resp.split("\\|");
+            if (split.length == 8) {
+                String number = split[0];
+                String pkey = split[1];
+                String time = split[2];
+                String country = split[3];
+                String countryCode = split[4];
+                String other = split[5];
+                String com = split[6];
+                String phone = split[7];
+                GetPhoneVO getPhoneVo = new GetPhoneVO().setNumber(number)
+                        .setPkey(pkey).setTime(time).setCom(com).setCountry(country)
+                        .setCountryCode(countryCode)
+                        .setPhone(String.format("%s%s", CountryCode.CountryCode1.getKey(), phone))
+                        .setOther(other);
                 return getPhoneVo;
             }
+            //{"com":"COM47","country":"hkg","countryCode":"852","number":"1","other":"","phone":"62783463",
+            // "pkey":"12D6A90AC0EABC6CDC1290CF7FF39A1365C1F525A1D0587D","time":"2024-04-05T21:39:16"}
         }catch (Exception e) {
-        }
-        return null;
-    }
-
-    public String extractVerificationCode(String smsText) {
-        // 使用正则表达式匹配短信内容中的验证码
-        Pattern pattern = Pattern.compile("\\d{6}"); // 此处使用六位数字作为验证码的示例
-        Matcher matcher = pattern.matcher(smsText);
-        if (matcher.find()) {
-            return matcher.group();
+            log.info("FirefoxService_getPhone error:{}", e);
         }
         return null;
     }
@@ -70,20 +71,20 @@ public class CardMeServiceImpl implements FirefoxService {
     @Override
     public String getPhoneCode(String pKey) {
         try {
-            String getPhoneHttp =  String.format("%s/app/cdcardlock/getSms",baseHttp);
-            Map<String,String> param = new HashMap<>();
-            param.put("projectId",projectId);
-            param.put("iccid",pKey);
-            String jsonStr = JSONUtil.toJsonStr(param);
-            String resp = HttpUtil.createPost(getPhoneHttp).header("token",token).body(jsonStr).execute().body();
-            System.out.println(resp);
-            GetSmsVO getSmsVO = JSON.parseObject(resp, GetSmsVO.class);
-            if (ObjectUtil.isNotNull(getSmsVO) && StrUtil.isNotEmpty(getSmsVO.getData())) {
-                String data = getSmsVO.getData();
-                data = extractVerificationCode(data);
-                return data;
+            ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
+            String getPhoneHttp = String.format("%s?act=getPhoneCode&token=%s&pkey=%s",
+                    projectWorkEntity.getFirefoxBaseUrl(),projectWorkEntity.getFirefoxToken(),pKey);
+
+            log.info("FirefoxService_getPhoneCode param:{}", getPhoneHttp);
+            String resp = HttpUtil.get(getPhoneHttp);
+            log.info("FirefoxService_getPhoneCode result:{}", resp);
+
+            String[] split = resp.split("\\|");
+            if (split.length == 3) {
+                return split[1];
             }
         }catch (Exception e) {
+            log.info("FirefoxService_getPhoneCode error:{}", e);
 
         }
         return null;
@@ -92,52 +93,31 @@ public class CardMeServiceImpl implements FirefoxService {
     @Override
     public boolean setRel(String pKey) {
         try {
-            String getPhoneHttp =  String.format("%s/app/cdcardlock/releaseMobile",baseHttp);
-            Map<String,String> param = new HashMap<>();
-            param.put("projectId",projectId);
-            param.put("iccid",pKey);
-            String jsonStr = JSONUtil.toJsonStr(param);
-            String resp = HttpUtil.createPost(getPhoneHttp).header("token",token).body(jsonStr).execute().body();
-            System.out.println(resp);
-            ReleaseMobileVO releaseMobileVO = JSON.parseObject(resp, ReleaseMobileVO.class);
-            if (ObjectUtil.isNotNull(releaseMobileVO) && 0 ==  releaseMobileVO.getCode()) {
+            ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
+            String getPhoneHttp = String.format("%s?act=setRel&token=%s&pkey=%s",
+                    projectWorkEntity.getFirefoxBaseUrl(),projectWorkEntity.getFirefoxToken(),pKey);
+
+            log.info("FirefoxService_setRel param:{}", getPhoneHttp);
+            String resp = HttpUtil.get(getPhoneHttp);
+            log.info("FirefoxService_setRel result:{}", resp);
+
+            String[] split = resp.split("\\|");
+            if ("1".equals(split[0])) {
                 return true;
-            }
-            if (ObjectUtil.isNotNull(releaseMobileVO) && 500 ==  releaseMobileVO.getCode()) {
-                return true;
-            }
-            if (ObjectUtil.isNotNull(releaseMobileVO) && ObjectUtil.isNotNull(releaseMobileVO.getData())) {
-                return releaseMobileVO.getData();
+            }else {
+                String status = split[1];
+                if ("-6".equals(status) || "-5".equals(status) || "-4".equals(status) || "-3".equals(status)) {
+                    return true;
+                }
             }
         }catch (Exception e) {
-
+            log.info("FirefoxService_setRel error:{}", e);
         }
         return false;
     }
 
     @Override
     public boolean withBlackMobile(String pKey) {
-        try {
-            String getPhoneHttp =  String.format("%s/app/cdcardlock/withBlackMobile",baseHttp);
-            Map<String,String> param = new HashMap<>();
-            param.put("projectId",projectId);
-            param.put("iccid",pKey);
-            String jsonStr = JSONUtil.toJsonStr(param);
-            String resp = HttpUtil.createPost(getPhoneHttp).header("token",token).body(jsonStr).execute().body();
-            System.out.println(resp);
-            ReleaseMobileVO releaseMobileVO = JSON.parseObject(resp, ReleaseMobileVO.class);
-            if (ObjectUtil.isNotNull(releaseMobileVO) && 0 ==  releaseMobileVO.getCode()) {
-                return true;
-            }
-            if (ObjectUtil.isNotNull(releaseMobileVO) && 500 ==  releaseMobileVO.getCode()) {
-                return true;
-            }
-            if (ObjectUtil.isNotNull(releaseMobileVO) && ObjectUtil.isNotNull(releaseMobileVO.getData())) {
-                return releaseMobileVO.getData();
-            }
-        }catch (Exception e) {
-
-        }
         return false;
     }
 }
