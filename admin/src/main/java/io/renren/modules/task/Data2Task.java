@@ -235,8 +235,6 @@ public class Data2Task {
                         } else if (201 == searchPhoneVO.getCode()) {
                             if (searchPhoneVO.getMsg().contains(UserStatusCode.UserStatusCode10.getValue())) {
                                 update.setTaskStatus(TaskStatus.TaskStatus5.getKey());
-                            } else if (searchPhoneVO.getMsg().contains(UserStatusCode.UserStatusCode5.getValue())) {
-                                update.setTaskStatus(TaskStatus.TaskStatus5.getKey());
                             } else if (searchPhoneVO.getMsg().contains(UserStatusCode.UserStatusCode11.getValue())) {
                                 update.setTaskStatus(TaskStatus.TaskStatus5.getKey());
                             } else {
@@ -252,6 +250,8 @@ public class Data2Task {
                                     //如果失败，修改状态
                                     update.setTaskStatus(TaskStatus.TaskStatus5.getKey());
                                 } else if (searchPhoneVO.getMsg().contains(UserStatusCode.UserStatusCode8.getValue())) {
+                                    userStatus = UserStatus.UserStatus3;
+                                } else if (searchPhoneVO.getMsg().contains(UserStatusCode.UserStatusCode5.getValue())) {
                                     userStatus = UserStatus.UserStatus3;
                                 }
 
