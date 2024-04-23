@@ -208,7 +208,10 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
         List<OnGroupPreVO> onGroupPreVOS = onGroupPre(atGroupTask);
         //校验拉群号国家
         List<AtUserVO> atUserVOS = getAtUserVOS(atGroupTask, onGroupPreVOS);
-        List<AtUserVO> atUserVOSH = getAtUserVOSH(atGroupTask, onGroupPreVOS);
+        List<AtUserVO> atUserVOSH = CollUtil.newArrayList();
+        if (GroupType.GroupType6.getKey().equals(atGroupTask.getGroupType())) {
+            atUserVOSH = getAtUserVOSH(atGroupTask, onGroupPreVOS);
+        }
 
         //拉群号队列
         Queue<AtUserVO> atUserVOQueue = new LinkedList<>(atUserVOS);
@@ -370,13 +373,14 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
                 if (ObjectUtil.isNull(pollFirst)) {
                     poll = atUserVOQueue.poll();
                     pollFirst = poll;
+                    atGroupTaskEntity.setUserId(poll.getId());
                 }else {
                     if (GroupType.GroupType6.getKey().equals(atGroupTask.getGroupType())) {
                         poll = atUserVOQueueH.poll();
+                        atGroupTaskEntity.setUserId(poll.getId());
                     }else {
                         poll = atUserVOQueue.poll();
                     }
-                    atGroupTaskEntity.setUserId(poll.getId());
                     AtUserTokenVO atUserTokenVO = atUserTokenService.getById(poll.getUserTokenId());
                     String token = atUserTokenVO.getToken();
                     LineTokenJson lineTokenJson = JSON.parseObject(token, LineTokenJson.class);
