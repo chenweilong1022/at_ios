@@ -360,8 +360,15 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
                 save.setCreateTime(DateUtil.date());
                 atDataSubtaskEntities.add(save);
             }
+
+            Integer pullGroupNumber = atGroupTask.getPullGroupNumber();
+            int size = atDataSubtaskEntities.size();
+            if (pullGroupNumber != 1) {
+                double result = Math.ceil((double) atDataSubtaskEntities.size() / pullGroupNumber);
+                size = (int) result;
+            }
             //将加粉数据分组
-            List<List<AtDataSubtaskEntity>> partition = Lists.partition(atDataSubtaskEntities, atDataSubtaskEntities.size() / atGroupTask.getPullGroupNumber() + 1);
+            List<List<AtDataSubtaskEntity>> partition = Lists.partition(atDataSubtaskEntities, size);
             //如果是泰国拉群日本合群模式去重新分配数据
             partition = getListsByType(atGroupTask, partition, atDataSubtaskEntities);
 

@@ -49,8 +49,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
-import static io.renren.modules.ltt.enums.PhoneStatus.PhoneStatus5;
-import static io.renren.modules.ltt.enums.PhoneStatus.PhoneStatus6;
+import static io.renren.modules.ltt.enums.PhoneStatus.*;
 
 /**
  * @author liuyuchan
@@ -517,7 +516,7 @@ public class RegisterTask {
     /**
      * 根据任务去获取手机号
      */
-    @Scheduled(fixedDelay = 20000)
+    @Scheduled(fixedDelay = 5000)
     @Transactional(rollbackFor = Exception.class)
     @Async
     public void task2() {
@@ -525,6 +524,13 @@ public class RegisterTask {
         List<CdRegisterSubtasksVO> cdRegisterSubtasksVOS = cdRegisterSubtasksService.groupByTaskId();
         if (CollUtil.isEmpty(cdRegisterSubtasksVOS)) {
             log.info("RegisterTask task2 list isEmpty");
+            return;
+        }
+        //限制同一时间只能有80个同时注册的
+        int count1 = cdGetPhoneService.count(new QueryWrapper<CdGetPhoneEntity>().lambda()
+                .in(CdGetPhoneEntity::getPhoneStatus,PhoneStatus1.getKey(),PhoneStatus2.getKey())
+        );
+        if (count1 >= 80) {
             return;
         }
         for (CdRegisterSubtasksVO cdRegisterSubtasksEntity : cdRegisterSubtasksVOS) {

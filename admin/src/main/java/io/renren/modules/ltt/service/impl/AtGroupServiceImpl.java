@@ -181,6 +181,7 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
         }catch (IOException e) {
 
         }
+
         try {
             String packagePath = String.format("【群数%d】/共有【群-%d】-【人数-%d】.txt",cdGroupTasksEntities.size(),cdGroupTasksEntities.size(),totalSuccessfullyAttractGroupsNumber);
             zip.putNextEntry(new ZipEntry(packagePath));
@@ -190,6 +191,46 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
         }catch (IOException e) {
 
         }
+
+        try{
+
+
+            List<AtGroupEntity> atGroupEntities = this.list(new QueryWrapper<AtGroupEntity>().lambda()
+                    .in(AtGroupEntity::getId, importZipDTO.getIds())
+                    .isNull(AtGroupEntity::getRoomId)
+            );
+
+            List<Integer> integers = atGroupEntities.stream().map(AtGroupEntity::getId).collect(Collectors.toList());
+
+            List<AtDataSubtaskEntity> atDataSubtaskEntityList = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
+                    .in(AtDataSubtaskEntity::getGroupId, integers)
+                    .eq(AtDataSubtaskEntity::getDataType,DataType.DataType1.getKey())
+            );
+
+            List<String> tokens7 = atDataSubtaskEntityList.stream().map(item -> String.format("%s  %s  %s", item.getContactKey(), item.getMid(), item.getDisplayName())).collect(Collectors.toList());
+            //封装模板数据
+            Map<String, Object> map7 = new HashMap<>();
+            map7.put("columns", tokens7);
+            VelocityContext context7 = new VelocityContext(map7);
+            //渲染模板
+            StringWriter sw7 = new StringWriter();
+            Template tpl7 = Velocity.getTemplate("template/84data.vm", "UTF-8" );
+            tpl7.merge(context7, sw7);
+
+            String packagePath7 = String.format("export/%s.txt","export");
+            zip.putNextEntry(new ZipEntry(packagePath7));
+            IOUtils.write(sw7.toString(), zip, "UTF-8");
+            IOUtils.closeQuietly(sw7);
+            zip.closeEntry();
+        }catch (Exception e) {
+
+        }
+
+
+
+
+
+
 
         IOUtils.closeQuietly(zip);
         byte[] byteArray = outputStream.toByteArray();

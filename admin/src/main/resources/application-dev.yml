@@ -1,6 +1,7 @@
 project:
     host:
         name: ${PROJECT_HOST_NAME:127.0.0.1:8880}
+        pre: ${PROJECT_HOST_PRE:http}
     mysql:
         hostname: ${PROJECT_MYSQL_HOSTNAME:143.92.40.151}
         port: ${PROJECT_MYSQL_PORT:3308}
@@ -30,7 +31,7 @@ logging:
     file: ${project.log.file}/logs.log
 file:
     upload:
-        baseurl: https://${project.host.name}/file/
+        baseurl: ${project.host.pre}://${project.host.name}/file/
         saveurl: ${project.file.saveurl}/images/
 spring:
     datasource:

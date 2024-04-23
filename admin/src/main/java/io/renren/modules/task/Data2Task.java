@@ -179,7 +179,7 @@ public class Data2Task {
                             return;
                         }
                         SearchPhoneVO searchPhoneVO = null;
-                        if (false) {
+                        if (DataType.DataType3.getKey().equals(atDataSubtaskEntity.getDataType())) {
                             AtUserEntity one = atUserService.getOne(new QueryWrapper<AtUserEntity>().lambda()
                                     .eq(AtUserEntity::getTelephone,atDataSubtaskVO.getContactKey())
                             );
