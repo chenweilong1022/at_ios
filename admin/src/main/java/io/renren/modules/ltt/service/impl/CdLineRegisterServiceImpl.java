@@ -144,4 +144,11 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
         return baseMapper.deleteById(cdLineRegisterEntity.getId()) > 0;
     }
 
+    @Override
+    public Integer queryLineRegisterCount(String countryCode) {
+        return baseMapper.selectCount(new QueryWrapper<CdLineRegisterEntity>().lambda()
+                .eq(CdLineRegisterEntity::getRegisterStatus, RegisterStatus.RegisterStatus4.getKey())
+                .eq(CdLineRegisterEntity::getCountryCode, countryCode));
+    }
+
 }

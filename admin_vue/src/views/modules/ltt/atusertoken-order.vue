@@ -44,9 +44,6 @@
           </el-option>
         </el-select>
       </el-form-item>
-<!--      <el-form-item label="商品名称" prop="productName">-->
-<!--        <el-input v-model="dataForm.productName" placeholder="商品名称" disabled="true"></el-input>-->
-<!--      </el-form-item>-->
       <el-form-item label="价格" prop="price">
         <el-row>
           <el-col :span="12">
@@ -58,6 +55,9 @@
       </el-form-item>
       <el-form-item label="购买数量" prop="orderNumber">
         <el-input v-model="dataForm.orderNumber" placeholder="购买数量"></el-input>
+      </el-form-item>
+      <el-form-item label="当前库存" prop="lineRegisterCount">
+        <el-input v-model="dataForm.lineRegisterCount" placeholder="当前库存" disabled="true"></el-input>
       </el-form-item>
     </el-form>
     <span slot="footer" class="dialog-footer">
@@ -87,6 +87,7 @@ export default {
         countryCode: null,
         productId: null,
         productName: null,
+        lineRegisterCount: null,
         price: null,
         orderNumber: null
       },
@@ -150,8 +151,9 @@ export default {
     },
     productChangeHandler () {
       this.queryProductBySearchWord()
+      this.queryLineRegisterCount()
     },
-    queryProductBySearchWord() {
+    queryProductBySearchWord () {
       this.$http({
         url: this.$http.adornUrl(`/ltt/productinfo/queryOnlyProduct`),
         method: 'get',
@@ -169,6 +171,21 @@ export default {
           this.dataForm.productName = ''
           this.dataForm.price = ''
           this.dataForm.productId = ''
+        }
+      })
+    },
+    queryLineRegisterCount () {
+      this.$http({
+        url: this.$http.adornUrl(`/ltt/cdlineregister/queryLineRegisterCount`),
+        method: 'get',
+        params: this.$http.adornParams({
+          'countryCode': this.dataForm.countryCode
+        })
+      }).then(({data}) => {
+        if (data && data.code === 0 && data.lineRegisterCount != null) {
+          this.dataForm.lineRegisterCount = data.lineRegisterCount
+        } else {
+          this.dataForm.lineRegisterCount = 0
         }
       })
     },

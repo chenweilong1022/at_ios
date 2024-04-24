@@ -108,5 +108,12 @@ public interface CdLineRegisterService extends IService<CdLineRegisterEntity> {
      * @return
      */
     boolean registerRetry(Integer id);
+
+    /**
+     * 查询line注册数量
+     * @param countryCode
+     * @return
+     */
+    Integer queryLineRegisterCount(String countryCode);
 }
 

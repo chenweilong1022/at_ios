@@ -4,10 +4,7 @@ import java.util.Arrays;
 
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import io.renren.modules.ltt.dto.CdLineRegisterDTO;
 import io.renren.modules.ltt.vo.CdLineRegisterVO;
@@ -107,4 +104,16 @@ public class CdLineRegisterController {
         return R.ok();
     }
 
+    /**
+     * 查询line注册数量
+     * @param countryCode
+     * @return
+     */
+    @RequestMapping("/queryLineRegisterCount")
+    @RequiresPermissions("ltt:cdregistertask:info")
+    public R queryLineRegisterCount(@RequestParam("countryCode") String countryCode){
+        Integer count = cdLineRegisterService.queryLineRegisterCount(countryCode);
+
+        return R.ok().put("lineRegisterCount", count);
+    }
 }
