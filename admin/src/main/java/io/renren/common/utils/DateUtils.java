@@ -23,6 +23,8 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Date;
 
 /**
@@ -229,5 +231,27 @@ public class DateUtils {
             return true;
         }
         return false;
+    }
+
+    /**
+     * 获取今天开始的时间（午夜零点）
+     * @return
+     */
+    public static LocalDateTime getTodayStart() {
+        return LocalDateTime.now().toLocalDate().atStartOfDay();
+    }
+
+
+    /**
+     * 组合今天的日期和一天中的最大时间
+     * @return
+     */
+    public static LocalDateTime getTodayEnd() {
+        return java.time.LocalDate.now().atTime(LocalTime.MAX);
+    }
+
+    public static void main(String[] args) {
+        getTodayStart();
+        getTodayEnd();
     }
 }

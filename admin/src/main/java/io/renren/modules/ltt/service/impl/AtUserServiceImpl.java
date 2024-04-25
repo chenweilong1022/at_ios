@@ -2,19 +2,32 @@ package io.renren.modules.ltt.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import io.renren.common.utils.DateUtils;
+import io.renren.common.utils.PageUtils;
+import io.renren.common.utils.Query;
 import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.app.service.FileService;
 import io.renren.modules.client.dto.LineTokenJson;
+import io.renren.modules.ltt.conver.AtUserConver;
+import io.renren.modules.ltt.dao.AtUserDao;
 import io.renren.modules.ltt.dao.UpdateAtUserCustomerParamDto;
 import io.renren.modules.ltt.dao.UpdateUserGroupParamDto;
 import io.renren.modules.ltt.dao.ValidateAtUserStatusParamDto;
+import io.renren.modules.ltt.dto.AtUserDTO;
+import io.renren.modules.ltt.dto.UserSummaryResultDto;
+import io.renren.modules.ltt.entity.AtUserEntity;
 import io.renren.modules.ltt.entity.AtUserTokenEntity;
 import io.renren.modules.ltt.enums.CountryCode;
 import io.renren.modules.ltt.enums.DeleteFlag;
 import io.renren.modules.ltt.enums.UserStatus;
+import io.renren.modules.ltt.service.AtUserService;
 import io.renren.modules.ltt.service.AtUserTokenService;
+import io.renren.modules.ltt.vo.AtUserVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.IOUtils;
@@ -23,18 +36,6 @@ import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 import org.springframework.stereotype.Service;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import io.renren.common.utils.PageUtils;
-import io.renren.common.utils.Query;
-
-import io.renren.modules.ltt.dao.AtUserDao;
-import io.renren.modules.ltt.entity.AtUserEntity;
-import io.renren.modules.ltt.dto.AtUserDTO;
-import io.renren.modules.ltt.vo.AtUserVO;
-import io.renren.modules.ltt.service.AtUserService;
-import io.renren.modules.ltt.conver.AtUserConver;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
@@ -50,7 +51,7 @@ import java.util.zip.ZipOutputStream;
 
 import static io.renren.modules.ltt.enums.OpenStatus.OpenStatus3;
 import static io.renren.modules.ltt.enums.OpenStatus.OpenStatus4;
-import static io.renren.modules.ltt.enums.UserStatus.UserStatus1;
+import static io.renren.modules.ltt.enums.UserStatus.*;
 
 
 @Service("atUserService")
@@ -395,5 +396,20 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
     }
 
 
+    @Override
+    public UserSummaryResultDto queryUserSummary() {
+        //今日已使用数量
+        Integer usedUserStock = baseMapper.selectCount(new QueryWrapper<AtUserEntity>().lambda()
+                .eq(AtUserEntity::getStatus, UserStatus6.getKey())
+                .between(AtUserEntity::getCreateTime, DateUtils.getTodayStart(), DateUtils.getTodayEnd()));
+        //今日在线数量
+        Integer onlineUserNum = baseMapper.selectCount(new QueryWrapper<AtUserEntity>().lambda()
+                .eq(AtUserEntity::getStatus, UserStatus4.getKey())
+                .between(AtUserEntity::getCreateTime, DateUtils.getTodayStart(), DateUtils.getTodayEnd()));
 
+        UserSummaryResultDto resultDto = new UserSummaryResultDto();
+        resultDto.setUsedUserStock(usedUserStock);
+        resultDto.setOnlineUserNum(onlineUserNum);
+        return resultDto;
+    }
 }

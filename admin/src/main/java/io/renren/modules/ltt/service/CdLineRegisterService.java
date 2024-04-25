@@ -3,6 +3,7 @@ package io.renren.modules.ltt.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import io.renren.common.utils.PageUtils;
 import io.renren.modules.ltt.dto.CdLineRegisterDTO;
+import io.renren.modules.ltt.dto.LineRegisterSummaryResultDto;
 import io.renren.modules.ltt.vo.CdLineRegisterVO;
 import io.renren.modules.ltt.entity.CdLineRegisterEntity;
 import io.renren.modules.ltt.vo.GetCountBySubTaskIdVO;
@@ -115,5 +116,11 @@ public interface CdLineRegisterService extends IService<CdLineRegisterEntity> {
      * @return
      */
     Integer queryLineRegisterCount(String countryCode);
+
+    /**
+     * 注册数据汇总
+     * @return
+     */
+    LineRegisterSummaryResultDto queryLineRegisterSummary();
 }
 

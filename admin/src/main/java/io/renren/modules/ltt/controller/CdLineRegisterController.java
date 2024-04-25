@@ -2,6 +2,7 @@ package io.renren.modules.ltt.controller;
 
 import java.util.Arrays;
 
+import io.renren.modules.ltt.dto.LineRegisterSummaryResultDto;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -115,5 +116,17 @@ public class CdLineRegisterController {
         Integer count = cdLineRegisterService.queryLineRegisterCount(countryCode);
 
         return R.ok().put("lineRegisterCount", count);
+    }
+
+    /**
+     * 注册数据汇总
+     *
+     */
+    @RequestMapping("/queryLineRegisterSummary")
+    @RequiresPermissions("ltt:cdregistertask:info")
+    public R queryLineRegisterSummary() {
+        LineRegisterSummaryResultDto resultDto = cdLineRegisterService.queryLineRegisterSummary();
+
+        return R.ok().put("lineRegisterSummary", resultDto);
     }
 }

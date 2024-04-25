@@ -1,9 +1,11 @@
 package io.renren.modules.ltt.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import io.renren.common.utils.DateUtils;
 import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.ltt.dto.CdLineIpProxyDTO;
+import io.renren.modules.ltt.dto.LineRegisterSummaryResultDto;
 import io.renren.modules.ltt.entity.CdGetPhoneEntity;
 import io.renren.modules.ltt.enums.PhoneStatus;
 import io.renren.modules.ltt.enums.RegisterStatus;
@@ -149,6 +151,22 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
         return baseMapper.selectCount(new QueryWrapper<CdLineRegisterEntity>().lambda()
                 .eq(CdLineRegisterEntity::getRegisterStatus, RegisterStatus.RegisterStatus4.getKey())
                 .eq(CdLineRegisterEntity::getCountryCode, countryCode));
+    }
+
+    @Override
+    public LineRegisterSummaryResultDto queryLineRegisterSummary() {
+        //库存
+        Integer registerStock = baseMapper.selectCount(new QueryWrapper<CdLineRegisterEntity>().lambda()
+                .eq(CdLineRegisterEntity::getRegisterStatus, RegisterStatus.RegisterStatus4.getKey()));
+        //今日注册数量
+        Integer todayRegisterNum = baseMapper.selectCount(new QueryWrapper<CdLineRegisterEntity>().lambda()
+                .eq(CdLineRegisterEntity::getRegisterStatus, RegisterStatus.RegisterStatus4.getKey())
+                .between(CdLineRegisterEntity::getCreateTime, DateUtils.getTodayStart(), DateUtils.getTodayEnd()));
+
+        LineRegisterSummaryResultDto resultDto = new LineRegisterSummaryResultDto();
+        resultDto.setRegisterStock(registerStock);
+        resultDto.setTodayRegisterNum(todayRegisterNum);
+        return resultDto;
     }
 
 }

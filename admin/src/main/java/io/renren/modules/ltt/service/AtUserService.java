@@ -6,6 +6,7 @@ import io.renren.modules.ltt.dao.UpdateAtUserCustomerParamDto;
 import io.renren.modules.ltt.dao.UpdateUserGroupParamDto;
 import io.renren.modules.ltt.dao.ValidateAtUserStatusParamDto;
 import io.renren.modules.ltt.dto.AtUserDTO;
+import io.renren.modules.ltt.dto.UserSummaryResultDto;
 import io.renren.modules.ltt.enums.UserStatus;
 import io.renren.modules.ltt.vo.AtUserVO;
 import io.renren.modules.ltt.entity.AtUserEntity;
@@ -118,5 +119,11 @@ public interface AtUserService extends IService<AtUserEntity> {
      * 清理封号数据
      */
     void cleanBlockData(Long sysUserId);
+
+    /**
+     * 账号使用情况汇总
+     * @return
+     */
+    UserSummaryResultDto queryUserSummary();
 }
 

@@ -8,6 +8,7 @@ import com.alibaba.fastjson.JSON;
 import io.renren.modules.ltt.dao.UpdateAtUserCustomerParamDto;
 import io.renren.modules.ltt.dao.UpdateUserGroupParamDto;
 import io.renren.modules.ltt.dao.ValidateAtUserStatusParamDto;
+import io.renren.modules.ltt.dto.UserSummaryResultDto;
 import io.renren.modules.sys.controller.AbstractController;
 import org.apache.commons.io.IOUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
@@ -153,6 +154,17 @@ public class AtUserController extends AbstractController {
 		atUserService.removeByIds(Arrays.asList(ids));
 
         return R.ok();
+    }
+
+    /**
+     * 账号使用情况汇总
+     */
+    @RequestMapping("/queryUserSummary")
+    @RequiresPermissions("ltt:atuser:info")
+    public R queryUserSummary(){
+        UserSummaryResultDto resultDto = atUserService.queryUserSummary();
+
+        return R.ok().put("userSummary", resultDto);
     }
 
 }
