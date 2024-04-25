@@ -10,7 +10,7 @@
       <div class="summary-item">今日已使用账户:
         <div style="color: #dc3545;display: inline;">{{ dataForm.usedUserStock }}</div>
       </div>
-      <div class="summary-item">今日在线账户:
+      <div class="summary-item">在线账户:
         <div style="color: #ffc107;display: inline;"> {{ dataForm.onlineUserNum }}</div>
       </div>
     </div>

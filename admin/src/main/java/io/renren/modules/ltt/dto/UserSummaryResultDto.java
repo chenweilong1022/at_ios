@@ -15,7 +15,7 @@ public class UserSummaryResultDto implements Serializable {
     @ApiModelProperty("今日已使用数量")
     private Integer usedUserStock;
 
-    @ApiModelProperty("今日在线数量")
+    @ApiModelProperty("当前在线数量")
     private Integer onlineUserNum;
 
 }

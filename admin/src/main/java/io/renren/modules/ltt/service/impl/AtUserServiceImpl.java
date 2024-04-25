@@ -402,10 +402,9 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
         Integer usedUserStock = baseMapper.selectCount(new QueryWrapper<AtUserEntity>().lambda()
                 .eq(AtUserEntity::getStatus, UserStatus6.getKey())
                 .between(AtUserEntity::getCreateTime, DateUtils.getTodayStart(), DateUtils.getTodayEnd()));
-        //今日在线数量
+        //当前在线数量
         Integer onlineUserNum = baseMapper.selectCount(new QueryWrapper<AtUserEntity>().lambda()
-                .eq(AtUserEntity::getStatus, UserStatus4.getKey())
-                .between(AtUserEntity::getCreateTime, DateUtils.getTodayStart(), DateUtils.getTodayEnd()));
+                .eq(AtUserEntity::getStatus, UserStatus4.getKey()));
 
         UserSummaryResultDto resultDto = new UserSummaryResultDto();
         resultDto.setUsedUserStock(usedUserStock);
