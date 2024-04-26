@@ -203,6 +203,14 @@ public class OpenAppTask {
                                     return;
                                 }
                                 atUserTokenService.updateById(update);
+                            }else if (201 == openAppResult.getCode()){
+                                AtUserTokenEntity update = new AtUserTokenEntity();
+                                update.setId(atUserTokenEntity.getId());
+                                String concat = StrUtil.concat(true, openAppResult.getMsg());
+                                update.setErrMsg(concat);
+                                update.setOpenStatus(OpenStatus.OpenStatus1.getKey());
+                                update.setOpenTime(DateUtil.date());
+                                atUserTokenService.updateById(update);
                             }
                         }finally {
                             lock.unlock();
