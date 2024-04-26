@@ -88,14 +88,15 @@ export default {
   box-shadow: 0 4px 8px rgba(0,0,0,0.15); /* 更深的阴影效果 */
   margin: 10px;         /* 添加外边距避免模块紧贴在一起 */
   min-height: 100px;
+  width: 100%; /* 全宽度使得居中更为明显，也可根据实际需要调整宽度 */
 }
 
 .summary-item {
-  width: 100%; /* 全宽度使得居中更为明显，也可根据实际需要调整宽度 */
+  width: 80%; /* 全宽度使得居中更为明显，也可根据实际需要调整宽度 */
   margin: 10px 0; /* 添加上下间隔以清晰区分各项 */
-  //margin: 10px 10px; /* Optional: Add margins to each item for better spacing */
+  margin: 10px 10px; /* Optional: Add margins to each item for better spacing */
   padding: 20px 20px;  /* 增大内边距，使文字与边框之间的空间更大 */
-  font-size: 36px;     /* 特别大的字体大小 */
+  font-size: 18px;     /* 特别大的字体大小 */
   font-weight: bold;
   text-align: center;
   justify-content: center; /* 水平居中 */
