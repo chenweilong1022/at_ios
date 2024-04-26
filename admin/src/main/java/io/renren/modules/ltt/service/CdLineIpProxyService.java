@@ -8,6 +8,7 @@ import io.renren.modules.ltt.entity.CdLineIpProxyEntity;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -60,5 +61,12 @@ public interface CdLineIpProxyService extends IService<CdLineIpProxyEntity> {
     boolean removeByIds(Collection<? extends Serializable> ids);
 
     String getProxyIp(CdLineIpProxyDTO cdLineIpProxyDTO);
+
+    /**
+     * 删除手机号对应的ip
+     * @param tokenPhoneList
+     * @return
+     */
+    Integer deleteByTokenPhone(List<String> tokenPhoneList);
 }
 

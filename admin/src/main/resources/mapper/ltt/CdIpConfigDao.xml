@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.modules.ltt.dao.CdIpConfigDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.renren.modules.ltt.entity.CdIpConfigEntity" id="cdIpConfigMap">
+        <result property="id" column="id"/>
+        <result property="ip" column="ip"/>
+        <result property="countryCode" column="country_code"/>
+        <result property="usedCount" column="used_count"/>
+        <result property="httpPort" column="http_port"/>
+        <result property="sock5Port" column="sock5_port"/>
+        <result property="account" column="account"/>
+        <result property="password" column="password"/>
+        <result property="deleteFlag" column="delete_flag"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <update id="updateUsedCountById">
+        update
+        cd_ip_config
+        set used_count = used_count + 1, update_time = #{updateTime}
+        WHERE id = #{id}
+    </update>
+
+</mapper>

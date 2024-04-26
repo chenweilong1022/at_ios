@@ -72,6 +72,9 @@ public class CdLineIpProxyDTO extends PageParam implements Serializable {
 
 	private Long countryCode;
 
+	@ApiModelProperty(value = "选择的代理模式，传入则使用此类型，不传则用系统配置")
+	private Integer selectProxyStatus;
+
 	public String getTokenPhone() {
 		tokenPhone = tokenPhone.replaceAll("-","");
 		return tokenPhone;

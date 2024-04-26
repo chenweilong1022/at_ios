@@ -66,4 +66,7 @@ public class CdLineIpProxyVO implements Serializable {
 	@ApiModelProperty(required=false,value="")
 	private String country;
 
+
+	@ApiModelProperty(required=false,value="ip类型 1动态ip 2固定ip")
+	private Integer ipType;
 }

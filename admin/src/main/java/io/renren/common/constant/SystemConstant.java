@@ -28,5 +28,8 @@ public class SystemConstant {
     @Value(value = "${jpSmsConfig.interfaceUrl}")
     private String jpSmsConfigInterfaceUrl;
 
+    @Value(value = "${ipConfig.maxUsedCount}")
+    private Integer ipConfigMaxUsedCount;
+
 
 }

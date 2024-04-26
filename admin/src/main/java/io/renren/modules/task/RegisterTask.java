@@ -357,6 +357,9 @@ public class RegisterTask {
                         CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
                         cdLineIpProxyDTO.setTokenPhone(cdGetPhoneEntity.getPhone());
                         cdLineIpProxyDTO.setLzPhone(cdGetPhoneEntity.getPhone());
+                        if (ProxyStatus.ProxyStatus3.getKey().equals(projectWorkEntity.getProxy())) {
+                            cdLineIpProxyDTO.setSelectProxyStatus(ProxyStatus.ProxyStatus2.getKey());
+                        }
                         String proxyIp = cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO);
                         if (StrUtil.isEmpty(proxyIp)) {
                             return;

@@ -110,6 +110,9 @@
         <el-button style="margin-top: 15px;" v-if="isAuth('ltt:atuser:save')" type="primary"
                    @click="userValidateHandle()">验活账号
         </el-button>
+        <el-button style="margin-top: 15px;" v-if="isAuth('ltt:atuser:save')" type="primary"
+                   @click="maintainUserHandle()":disabled="dataListSelections.length <= 0">养号
+        </el-button>
         <el-button style="margin-top: 15px;" v-if="isAuth('ltt:atuser:delete')" type="danger" @click="deleteHandle()"
                    :disabled="dataListSelections.length <= 0">批量删除
         </el-button>
@@ -478,6 +481,37 @@
             if (data && data.code === 0) {
               this.$message({
                 message: '操作成功，正在进行验活操作，请稍后',
+                type: 'success',
+                duration: 1500,
+                onClose: () => {
+                  this.getDataList()
+                }
+              })
+            } else {
+              this.$message.error(data.msg)
+            }
+          })
+        })
+      },
+      // 养号
+      maintainUserHandle () {
+        var ids = this.dataListSelections.map(item => {return item.id})
+        this.$confirm(`确定要对勾选账户进行 养号 操作?`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$http({
+            url: this.$http.adornUrl('/ltt/atuser/maintainUser'),
+            method: 'post',
+            data: this.$http.adornData({
+              'ids': ids,
+              'validateFlag': false
+            })
+          }).then(({data}) => {
+            if (data && data.code === 0) {
+              this.$message({
+                message: '操作成功，正在进行养号操作，请稍后',
                 type: 'success',
                 duration: 1500,
                 onClose: () => {

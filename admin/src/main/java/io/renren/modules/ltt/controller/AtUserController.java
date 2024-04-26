@@ -118,6 +118,17 @@ public class AtUserController extends AbstractController {
     }
 
     /**
+     * 养号
+     */
+    @RequestMapping("/maintainUser")
+    @RequiresPermissions("ltt:atuser:update")
+    public R maintainUser(@RequestBody ValidateAtUserStatusParamDto paramDto){
+		atUserService.maintainUser(paramDto);
+
+        return R.ok();
+    }
+
+    /**
      * 清理封号数据
      */
     @RequestMapping("/cleanBlockData")

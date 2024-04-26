@@ -32,6 +32,11 @@ public class EnumUtil {
         return ObjectUtil.isNotNull(baseEnum1) ? baseEnum1.getValue() : null;
     }
 
+    public static Integer queryKeyByValue(String value,BaseEnum[] baseEnums) {
+        BaseEnum baseEnum1 = Arrays.stream(baseEnums).filter(baseEnum -> baseEnum.getValue().equals(value)).findAny().orElse(null);
+        return ObjectUtil.isNotNull(baseEnum1) ? baseEnum1.getKey() : null;
+    }
+
 
     private static EnumVo toEnumVo(BaseEnum baseEnum) {
         return new EnumVo().setKey(baseEnum.getKey()).setValue(baseEnum.getValue());

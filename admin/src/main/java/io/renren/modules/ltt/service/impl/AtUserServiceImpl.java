@@ -1,11 +1,13 @@
 package io.renren.modules.ltt.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.benmanes.caffeine.cache.Cache;
 import io.renren.common.utils.DateUtils;
 import io.renren.common.utils.PageUtils;
 import io.renren.common.utils.Query;
@@ -27,6 +29,7 @@ import io.renren.modules.ltt.enums.DeleteFlag;
 import io.renren.modules.ltt.enums.UserStatus;
 import io.renren.modules.ltt.service.AtUserService;
 import io.renren.modules.ltt.service.AtUserTokenService;
+import io.renren.modules.ltt.service.CdLineIpProxyService;
 import io.renren.modules.ltt.vo.AtUserVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -65,6 +68,11 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
     @Resource
     private FileService fileService;
 
+    @Resource
+    private CdLineIpProxyService lineIpProxyService;
+
+    @Resource(name = "caffeineCacheListString")
+    private Cache<String, Queue<String>> caffeineCacheListString;
     @Override
     public PageUtils<AtUserVO> queryPage(AtUserDTO atUser) {
         IPage<AtUserEntity> page = baseMapper.selectPage(
@@ -178,6 +186,32 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
             }
             return this.updateBatchById(updateList);
         }
+    }
+
+    @Override
+    public boolean maintainUser(ValidateAtUserStatusParamDto paramDto) {
+        Assert.isTrue(ObjectUtils.isEmpty(paramDto), "数据不能为空");
+        Assert.isTrue(paramDto.getValidateFlag() == null || Boolean.TRUE.equals(paramDto.getValidateFlag()),
+                "养号类型不能为空，且只能养护勾选账号");
+        Assert.isTrue(CollectionUtils.isEmpty(paramDto.getIds()), "选择的数据不能为空");
+
+        List<Integer> ids = paramDto.getIds();
+        List<AtUserEntity> userList = baseMapper.selectBatchIds(ids);
+        Assert.isTrue(CollectionUtils.isEmpty(userList), "数据不能为空");
+
+        //清空ip
+        List<String> phoneList = userList.stream().map(AtUserEntity::getTelephone).collect(Collectors.toList());
+        for (String phone : phoneList) {
+            Queue<String> getflowip = caffeineCacheListString.getIfPresent(phone);
+            if (CollUtil.isNotEmpty(getflowip)) {
+                caffeineCacheListString.put(phone, new LinkedList<>());
+            }
+        }
+        lineIpProxyService.deleteByTokenPhone(phoneList);
+
+        //置为：未验证
+        this.validateUserStatus(paramDto);
+        return true;
     }
 
     @Override

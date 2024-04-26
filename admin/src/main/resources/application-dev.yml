@@ -88,4 +88,6 @@ jpSmsConfig:
     userCode: 431657
     interfaceKey: 1e1824c7c39d44cab61817fed90776bf
     interfaceUrl: https://api.yamadamms.com/api/Request/
-
+#静态ip最大使用次数
+ipConfig:
+    maxUsedCount: 3

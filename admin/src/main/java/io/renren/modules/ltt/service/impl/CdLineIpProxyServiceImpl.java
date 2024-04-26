@@ -19,9 +19,12 @@ import io.renren.modules.client.vo.IPWorldRespCurl;
 import io.renren.modules.ltt.conver.CdLineIpProxyConver;
 import io.renren.modules.ltt.dao.CdLineIpProxyDao;
 import io.renren.modules.ltt.dto.CdLineIpProxyDTO;
+import io.renren.modules.ltt.entity.CdIpConfigEntity;
 import io.renren.modules.ltt.entity.CdLineIpProxyEntity;
 import io.renren.modules.ltt.enums.CountryCode;
+import io.renren.modules.ltt.enums.IpTypeEnum;
 import io.renren.modules.ltt.enums.LockMapKeyResource;
+import io.renren.modules.ltt.service.CdIpConfigService;
 import io.renren.modules.ltt.service.CdLineIpProxyService;
 import io.renren.modules.ltt.vo.CdLineIpProxyVO;
 import lombok.extern.slf4j.Slf4j;
@@ -33,11 +36,8 @@ import javax.annotation.Resource;
 import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static cn.hutool.core.lang.PatternPool.IPV4;
 
@@ -53,6 +53,8 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
     private Cache<String, ProjectWorkEntity> caffeineCacheProjectWorkEntity;
     @Autowired
     private ConcurrentHashMap<String, Lock> lockMap;
+    @Resource
+    private CdIpConfigService cdIpConfigService;
 
     @Override
     public PageUtils<CdLineIpProxyVO> queryPage(CdLineIpProxyDTO cdLineIpProxy) {
@@ -125,10 +127,13 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         if (ObjectUtil.isNotNull(cdLineIpProxyDTO.getCountryCode())) {
             countryCode = cdLineIpProxyDTO.getCountryCode();
         }
+
+        Integer proxy = ObjectUtil.isNotNull(cdLineIpProxyDTO.getSelectProxyStatus()) ?
+                cdLineIpProxyDTO.getSelectProxyStatus() : projectWorkEntity.getProxy();
 //        String keyByResource1 = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource3, countryCode.intValue());
 //        Lock lock1 = lockMap.computeIfAbsent(keyByResource1, k -> new ReentrantLock());
 //        countryCode = 1L;
-        String ip = getIp(cdLineIpProxyDTO, countryCode, projectWorkEntity.getProxy());
+        String ip = getIp(cdLineIpProxyDTO, countryCode, proxy);
 //        if (StrUtil.isEmpty(ip)) {
 //            ip = getIp(cdLineIpProxyDTO,82L);
 //            if (StrUtil.isEmpty(ip)) {
@@ -140,6 +145,9 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 
     private String getIp(CdLineIpProxyDTO cdLineIpProxyDTO, Long countryCode, Integer proxy) {
         String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource3, cdLineIpProxyDTO.getTokenPhone());
+        if (proxy == 3) {
+            keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource3, String.valueOf(countryCode));
+        }
         Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
         boolean triedLock = lock.tryLock();
         log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
@@ -148,12 +156,22 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                 String regions = EnumUtil.queryValueByKey(countryCode.intValue(), CountryCode.values());
                 if (!cdLineIpProxyDTO.isNewIp()) {
                     //查询是否已经有这个国家的ip了
+                    //todo 先查静态。如果配置的是：静态代理-》给一个静态ip。
+                    //先判断是否有静态ip
                     CdLineIpProxyEntity one = this.getOne(new QueryWrapper<CdLineIpProxyEntity>().lambda()
-                            .eq(CdLineIpProxyEntity::getTokenPhone, cdLineIpProxyDTO.getTokenPhone())
-                            .eq(CdLineIpProxyEntity::getLzCountry,String.valueOf(countryCode))
-                            .orderByDesc(CdLineIpProxyEntity::getId)
-                            .last("limit 1")
-                    );
+                                    .eq(CdLineIpProxyEntity::getTokenPhone, cdLineIpProxyDTO.getTokenPhone())
+                                    .eq(CdLineIpProxyEntity::getLzCountry,String.valueOf(countryCode))
+                                    .eq(CdLineIpProxyEntity::getIpType, IpTypeEnum.IpType2.getKey())
+                                    .orderByDesc(CdLineIpProxyEntity::getId)
+                                    .last("limit 1"));
+                    if(one == null) {
+                        one = this.getOne(new QueryWrapper<CdLineIpProxyEntity>().lambda()
+                                .eq(CdLineIpProxyEntity::getTokenPhone, cdLineIpProxyDTO.getTokenPhone())
+                                .eq(CdLineIpProxyEntity::getLzCountry,String.valueOf(countryCode))
+                                .orderByDesc(CdLineIpProxyEntity::getId)
+                                .last("limit 1"));
+                    }
+
                     //如果有直接返回
                     if (ObjectUtil.isNotNull(one)) {
                         String ip = one.getIp();
@@ -171,6 +189,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                                 save.setOutIpv4(proxyUse.getIp());
                                 save.setCountry(proxyUse.getCountry());
                                 save.setCreateTime(DateUtil.date());
+                                save.setIpType(proxy == 3 ? IpTypeEnum.IpType2.getKey() : IpTypeEnum.IpType1.getKey());
                                 try {
                                     this.save(save);
                                     return socks5Pre(ip);
@@ -180,6 +199,18 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                                     log.info("e = {}",e.toString());
                                 }
 
+                            } else {
+                                if (proxy == 3) {
+                                    //静态代理时，无法获取出口ip，人工处理，不重复取新的ip
+                                    log.error("getProxyIp_error 静态ip异常 {}, {}", one, proxyUse);
+                                    return null;
+                                }
+                            }
+                        } else {
+                            if (proxy == 3) {
+                                //静态代理时，无法获取出口ip，人工处理，不重复取新的ip
+                                log.error("getProxyIp_error 静态ip异常 {}, {}", one, proxyUse);
+                                return null;
                             }
                         }
                     }
@@ -217,6 +248,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                             save.setOutIpv4(proxyUse.getIp());
                             save.setCountry(proxyUse.getCountry());
                             save.setCreateTime(DateUtil.date());
+                            save.setIpType(proxy == 3 ? IpTypeEnum.IpType2.getKey() : IpTypeEnum.IpType1.getKey());
                             try {
                                 this.save(save);
                                 flag = false;
@@ -224,6 +256,18 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                                 continue;
                             }
                             return socks5Pre(ip);
+                        } else {
+                            if (proxy == 3) {
+                                //静态代理时，无法获取出口ip，人工处理，不重复取新的ip
+                                log.error("getProxyIp_error 静态ip异常 {}, {}", ip, proxyUse);
+                                return null;
+                            }
+                        }
+                    } else {
+                        if (proxy == 3) {
+                            //静态代理时，无法获取出口ip，人工处理，不重复取新的ip
+                            log.error("getProxyIp_error 静态ip异常 {}, {}", ip, proxyUse);
+                            return null;
                         }
                     }
 
@@ -252,11 +296,27 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         } else if (proxy == 2) {
             //ip2world
             return getIp2World(regions);
+        } else if (proxy == 3) {
+            //静态代理
+            return getStaticIpResp(regions);
         }
-        //静态代理、
         log.error("getIpResp_error_proxy {}", proxy);
         return null;
     }
+
+    private String getStaticIpResp(String regions) {
+        Integer countryCode = EnumUtil.queryKeyByValue(regions, CountryCode.values());
+
+        CdIpConfigEntity ipConfig = cdIpConfigService.getIpConfig(countryCode);
+        if (ipConfig == null) {
+            return null;
+        }
+        //累加ip使用次数
+        cdIpConfigService.updateUsedCountById(ipConfig.getId());
+        return String.format("%s:%s@%s:%s",
+                ipConfig.getAccount(), ipConfig.getPassword(), ipConfig.getIp(), ipConfig.getSock5Port());
+    }
+
 
     private static String getLunaIpResp(String regions) {
         String getPhoneHttp = String.format("https://tq.lunaproxy.com/getflowip?neek=1136881&num=500&type=1&sep=1&regions=%s&ip_si=1&level=1&sb=", regions);
@@ -277,13 +337,13 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
     }
 
 
-    public static void main(String[] args) {
-
-        boolean match = ReUtil.isMatch(IPV4, "1.46.11.249");
-        System.out.println(match);
-
-
-    }
+//    public static void main(String[] args) {
+//
+//        boolean match = ReUtil.isMatch(IPV4, "1.46.11.249");
+//        System.out.println(match);
+//
+//
+//    }
 
 
 
@@ -306,8 +366,10 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         } else if (proxy == 2) {
             //ip2world
             return isProxyUseMe(ip, country);
+        } else if (proxy == 3) {
+            //静态代理
+            return isProxyUseMe(ip, country);
         }
-        //静态代理、
         log.error("selectProxyUse_error_proxy {}", proxy);
         return null;
     }
@@ -333,6 +395,29 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         return falseCurlVO;
     }
 
+    public static void main(String[] args) {
+        //45.195.152.211	2000/2333	song062	1612132sd
+        String ip ="song062:1612132sd@45.195.152.211:2333";
+        String country = "th";
+        String format1 = String.format("curl -x %s 202.79.171.146:8080",ip);
+
+        System.out.println(format1);
+        System.out.println("************");
+
+        List<String> strings = RuntimeUtil.execForLines(format1);
+        String outIp = strings.get(strings.size() - 1);
+
+        System.out.println(outIp);
+        System.out.println("************");
+
+        boolean match = ReUtil.isMatch(IPV4, outIp);
+        System.out.println(match);
+        if (match) {
+            log.info("ip = {} country = {} format = {}",ip,country,outIp);
+        } else {
+            log.info("----------");
+        }
+    }
 
     private CurlVO isProxyUseMe(String ip,String country) {
         CurlVO falseCurlVO = new CurlVO().setProxyUse(false);
@@ -396,4 +481,14 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 //            System.out.println("没有找到JSON数据");
 //        }
 //    }
+
+    @Override
+    public Integer deleteByTokenPhone(List<String> tokenPhoneList) {
+        if (CollUtil.isEmpty(tokenPhoneList)) {
+            return 0;
+        }
+        return baseMapper.delete(new QueryWrapper<CdLineIpProxyEntity>().lambda()
+                .in(CdLineIpProxyEntity::getTokenPhone, tokenPhoneList));
+    }
+
 }
