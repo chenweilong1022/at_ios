@@ -192,9 +192,9 @@ public class OpenAppTask {
                                     update.setOpenTime(openTime);
                                 }else if (-1 == data.getStatus()) {
                                     update.setOpenStatus(OpenStatus.OpenStatus4.getKey());
-                                    if (data.getRemark().contains("网络异常")) {
+                                    if (concat.contains("网络异常")) {
                                         update.setOpenStatus(OpenStatus.OpenStatus1.getKey());
-                                    }else if (data.getRemark().contains("TOKEN_CLIENT_LOGGED_OUT")) {
+                                    }else if (concat.contains("TOKEN_CLIENT_LOGGED_OUT")) {
                                         update.setOpenStatus(OpenStatus.OpenStatus3.getKey());
                                     }
                                 }else if (1 == data.getStatus()) {
