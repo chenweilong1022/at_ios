@@ -20,6 +20,7 @@ public enum UserStatusCode implements BaseEnum {
     UserStatusCode11(11,"INVALID_STATE"),
     UserStatusCode12(12,"NOT_FOUND Reason"),
     UserStatusCode13(13,"issueLiffView failed: unknown result"),
+    UserStatusCode14(14,"authentication error"),
     ;
 
     UserStatusCode(int key, String value) {

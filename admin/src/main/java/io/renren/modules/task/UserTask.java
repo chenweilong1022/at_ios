@@ -386,6 +386,8 @@ public class UserTask {
                                 update.setStatus(UserStatus.UserStatus2.getKey());
                             }else  if (issueLiffViewVO.getMsg().contains(UserStatusCode.UserStatusCode13.getValue())) {
                                 update.setStatus(UserStatus.UserStatus2.getKey());
+                            }else  if (issueLiffViewVO.getMsg().contains(UserStatusCode.UserStatusCode14.getValue())) {
+                                update.setStatus(UserStatus.UserStatus3.getKey());
                             }
                         }else if(300 == issueLiffViewVO.getCode()) {
                             update.setStatus(UserStatus.UserStatus1.getKey());
