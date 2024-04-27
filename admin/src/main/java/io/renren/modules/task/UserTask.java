@@ -384,6 +384,8 @@ public class UserTask {
                             //用户添加群过多 封号
                             if (issueLiffViewVO.getMsg().contains(UserStatusCode.UserStatusCode9.getValue())) {
                                 update.setStatus(UserStatus.UserStatus2.getKey());
+                            }else  if (issueLiffViewVO.getMsg().contains(UserStatusCode.UserStatusCode13.getValue())) {
+                                update.setStatus(UserStatus.UserStatus2.getKey());
                             }
                         }else if(300 == issueLiffViewVO.getCode()) {
                             update.setStatus(UserStatus.UserStatus1.getKey());
