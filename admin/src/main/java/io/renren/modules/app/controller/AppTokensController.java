@@ -49,7 +49,7 @@ public class AppTokensController {
     private AtUserTokenIosService atUserTokenIosService;
 
 
-    @PostMapping("/token/syncAppToken")
+    @RequestMapping("/token/syncAppToken")
     public R syncAppToken(HttpServletRequest request, @RequestParam("deviceId") String deviceId) {
         String body = ServletUtil.getBody(request);
         IosTokenDTO map = JSON.parseObject(body, IosTokenDTO.class);
@@ -63,7 +63,7 @@ public class AppTokensController {
     @Resource(name = "stringQueueCacheIOSTaskVO")
     private Cache<String, Queue<IOSTaskVO>> stringQueueCacheIOSTaskVO;
 
-    @PostMapping("/task/getTask")
+    @RequestMapping("/task/getTask")
     public R getTask( @RequestParam("deviceId") String deviceId) {
         Queue<IOSTaskVO> cacheIOSTaskVOIfPresent = stringQueueCacheIOSTaskVO.getIfPresent(deviceId);
         if (CollUtil.isEmpty(cacheIOSTaskVOIfPresent)) {
