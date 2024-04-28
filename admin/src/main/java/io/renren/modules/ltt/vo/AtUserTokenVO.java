@@ -73,6 +73,11 @@ public class AtUserTokenVO implements Serializable {
 	@ApiModelProperty(required=false,value="token类型 1协议token 2真机token'")
 	private Integer tokenType;
 	/**
+	 * 加粉任务子任务
+	 */
+	@ApiModelProperty(required=false,value="加粉任务子任务")
+	private Integer dataSubtaskId;
+	/**
 	 *
 	 */
 	@ApiModelProperty(required=false,value="")

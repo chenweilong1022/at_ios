@@ -80,6 +80,11 @@ public class AtUserTokenEntity implements Serializable {
 	@ApiModelProperty(required=false,value="")
 	private Integer openStatus;
 	/**
+	 * 加粉任务子任务
+	 */
+	@ApiModelProperty(required=false,value="加粉任务子任务")
+	private Integer dataSubtaskId;
+	/**
 	 *
 	 */
 	@ApiModelProperty(required=false,value="")

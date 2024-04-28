@@ -80,4 +80,9 @@ public class AtUserTokenDTO extends PageParam implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="")
 	private String taskId;
+	/**
+	 * 加粉任务子任务
+	 */
+	@ApiModelProperty(required=false,value="加粉任务子任务")
+	private Integer dataSubtaskId;
 }
