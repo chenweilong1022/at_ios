@@ -227,4 +227,9 @@ public class AtDataSubtaskDTO extends PageParam implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="记录id")
 	private Integer recordId;
+	/**
+	 * 打开app
+	 */
+	@ApiModelProperty(required=false,value="打开app")
+	private Integer openApp;
 }
