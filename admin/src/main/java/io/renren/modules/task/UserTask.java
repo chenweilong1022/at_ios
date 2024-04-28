@@ -330,7 +330,7 @@ public class UserTask {
         //获取用户未验证的状态
         List<AtUserEntity> atUserEntities = atUserService.list(new QueryWrapper<AtUserEntity>().lambda()
                 .eq(AtUserEntity::getStatus,UserStatus.UserStatus1.getKey())
-                .last("limit 20")
+                .last("limit 50")
                 .orderByAsc(AtUserEntity::getStatus)
         );
         if (CollUtil.isEmpty(atUserEntities)) {
