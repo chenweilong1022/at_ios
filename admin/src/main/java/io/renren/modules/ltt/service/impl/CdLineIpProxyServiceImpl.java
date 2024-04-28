@@ -218,7 +218,8 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 
                 boolean flag = true;
                 int i = 0;
-                while(i < 10) {
+                int len = 10;
+                while(i < len) {
                     i++;
                     String ip = null;
                     Queue<String> getflowip = caffeineCacheListString.getIfPresent(cdLineIpProxyDTO.getTokenPhone());
@@ -232,15 +233,24 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                         }
                         ip = getflowipNew.poll();
                         caffeineCacheListString.put(cdLineIpProxyDTO.getTokenPhone(),getflowipNew);
+                        len = getflowipNew.size();
                     }else {
                         ip = getflowip.poll();
                         caffeineCacheListString.put(cdLineIpProxyDTO.getTokenPhone(),getflowip);
+                        len = getflowip.size();
                     }
 
                     CurlVO proxyUse = getProxyUse(ip, regions, proxy);
                     if (proxyUse.isProxyUse()) {
                         //如果国家一样
                         if (regions.toLowerCase().equals(proxyUse.getCountry().toLowerCase())) {
+                            CdLineIpProxyEntity one = this.getOne(new QueryWrapper<CdLineIpProxyEntity>().lambda()
+                                    .eq(CdLineIpProxyEntity::getOutIpv4,ip)
+                                    .last("limit 1")
+                            );
+                            if (ObjectUtil.isNotNull(one)) {
+                                continue;
+                            }
                             CdLineIpProxyEntity save = new CdLineIpProxyEntity();
                             save.setIp(ip);
                             save.setTokenPhone(cdLineIpProxyDTO.getTokenPhone());
