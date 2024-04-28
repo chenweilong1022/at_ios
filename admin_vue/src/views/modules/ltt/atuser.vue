@@ -87,6 +87,16 @@
           </el-select>
         </el-form-item>
         <el-form-item>
+          <el-select v-model="dataForm.tokenOpenStatus" placeholder="打开状态" clearable>
+            <el-option
+              v-for="item in openStatusCodes"
+              :key="item.key"
+              :label="item.value"
+              :value="item.key">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item>
           <el-input v-model="dataForm.selectLimit" placeholder="查询条数" clearable></el-input>
         </el-form-item>
         <el-button @click="getDataList()">查询</el-button>
@@ -123,6 +133,7 @@
     </el-form>
     <el-table
       :data="dataList"
+      @sort-change="onSortChange"
       border
       v-loading="dataListLoading"
       @selection-change="selectionChangeHandle"
@@ -132,12 +143,6 @@
         header-align="center"
         align="center"
         width="50">
-      </el-table-column>
-      <el-table-column
-        prop="avatar"
-        header-align="center"
-        align="center"
-        label="头像">
       </el-table-column>
       <el-table-column
         prop="nation"
@@ -156,18 +161,6 @@
         header-align="center"
         align="center"
         label="昵称">
-      </el-table-column>
-      <el-table-column
-        prop="numberFriends"
-        header-align="center"
-        align="center"
-        label="好友数量">
-      </el-table-column>
-      <el-table-column
-        prop="password"
-        header-align="center"
-        align="center"
-        label="密码">
       </el-table-column>
       <el-table-column
         prop="userGroupName"
@@ -215,6 +208,33 @@
         header-align="center"
         align="center"
         label="创建时间">
+      </el-table-column>
+      <el-table-column
+        prop="tokenOpenStatus"
+        header-align="center"
+        align="center"
+        label="打开状态">
+        <template slot-scope="scope">
+          <el-tag v-for="item in openStatusCodes" :key="item.key" v-if="scope.row.tokenOpenStatus === item.key">
+            {{ item.value }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="tokenOpenTime"
+        header-align="center"
+        align="center"
+        sortable
+        label="打开时间">
+      </el-table-column>
+      <el-table-column
+        prop="status"
+        header-align="center"
+        align="center"
+        label="日志信息">
+        <template slot-scope="scope">
+          {{scope.row.msg}}/{{scope.row.tokenErrMsg}}
+        </template>
       </el-table-column>
       <el-table-column
         fixed="right"
@@ -308,11 +328,16 @@
           customerServiceId: null,
           validateFlag: null,
           userSource: null,
-          selectLimit: null
+          selectLimit: null,
+          tokenOpenStatus: null,
+          tokenOpenTimeSort: null,
+          tokenOpenTime: null,
+          tokenErrMsg: null
         },
         customerServiceField: '',
         dataList: [],
         atUserSourceCodes: [],
+        openStatusCodes: [],
         pageIndex: 1,
         pageSize: 10,
         totalPage: 0,
@@ -336,6 +361,7 @@
       this.init()
       this.getDataList()
       this.getAtUserSource()
+      this.getOpenStatus()
       this.getCountryCodeEnums()
       this.queryCustomerByFuzzyName('')
       this.queryUserGroupBySearchWord('')
@@ -343,6 +369,20 @@
     methods: {
       init() {
         this.dataForm.userId = this.$route.query.userId
+      },
+      onSortChange ({ column, prop, order }) {
+        // column 是当前列的引用
+        // prop 是排序的列的属性名
+        // order 是排序的顺序，'ascending' 或 'descending'
+        console.log('Sort by', prop, 'with order', order)
+        // 根据 prop 和 order 对数据进行排序
+        // 排序 0正序 1倒序
+        if (order == null) {
+          this.dataForm.tokenOpenTimeSort = null
+        } else {
+          this.dataForm.tokenOpenTimeSort = order === 'ascending' ? 0 : 1
+        }
+        this.getDataList()
       },
       getCountryCodeEnums () {
         this.$http({
@@ -379,7 +419,9 @@
             'validateFlag': this.dataForm.validateFlag,
             'userSource': this.dataForm.userSource,
             'id': this.dataForm.userId,
-            'selectLimit': this.dataForm.selectLimit
+            'selectLimit': this.dataForm.selectLimit,
+            'tokenOpenStatus': this.dataForm.tokenOpenStatus,
+            'tokenOpenTimeSort': this.dataForm.tokenOpenTimeSort
           })
         }).then(({data}) => {
           if (data && data.code === 0) {
@@ -663,6 +705,18 @@
         }).then(({data}) => {
           if (data && data.code === 0) {
             this.atUserSourceCodes = data.data
+          } else {
+            this.$message.error(data.msg)
+          }
+        })
+      },
+      getOpenStatus () {
+        this.$http({
+          url: this.$http.adornUrl(`/app/enums/getOpenStatus`),
+          method: 'get'
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.openStatusCodes = data.data
           } else {
             this.$message.error(data.msg)
           }

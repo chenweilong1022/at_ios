@@ -1,6 +1,7 @@
 package io.renren.modules.ltt.service.impl;
-import java.util.Date;
+import java.util.*;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.http.HttpUtil;
@@ -25,9 +26,7 @@ import io.renren.modules.ltt.conver.AtUserTokenConver;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service("atUserTokenService")
@@ -103,6 +102,17 @@ public class AtUserTokenServiceImpl extends ServiceImpl<AtUserTokenDao, AtUserTo
     @Override
     public List<AtUserTokenEntity> selectBatchIds(List<Integer> ids) {
         return baseMapper.selectBatchIds(ids);
+    }
+    @Override
+    public Map<Integer, AtUserTokenEntity> queryMapBatchIds(List<Integer> ids) {
+        if (CollectionUtil.isEmpty(ids)) {
+            return Collections.emptyMap();
+        }
+        List<AtUserTokenEntity> list = baseMapper.selectBatchIds(ids);
+        if (CollectionUtil.isEmpty(list)) {
+            return Collections.emptyMap();
+        }
+        return list.stream().collect(Collectors.toMap(AtUserTokenEntity::getId, i -> i));
     }
 
 }

@@ -120,4 +120,17 @@ public class AtUserVO implements Serializable {
 	@ApiModelProperty(required=false,value="账号来源协议 1协议 2真机")
 	private Integer userSource;
 
+	@ApiModelProperty(required=false,value="at_user_token表")
+	private Integer tokenOpenStatus;
+	/**
+	 *
+	 */
+	@ApiModelProperty(required=false,value="at_user_token表")
+	private Date tokenOpenTime;
+	/**
+	 *
+	 */
+	@ApiModelProperty(required=false,value="at_user_token表")
+	private String tokenErrMsg;
+
 }

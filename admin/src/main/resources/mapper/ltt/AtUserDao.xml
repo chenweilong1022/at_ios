@@ -41,4 +41,92 @@
           and delete_flag = 1
     </select>
 
+    <select id="queryPageCount" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        at_user u
+        INNER JOIN at_user_token t ON u.user_token_id = t.id
+        <where>
+            <include refid="page_where_if"/>
+        </where>
+    </select>
+
+    <select id="queryPage" resultType="io.renren.modules.ltt.vo.AtUserVO">
+        SELECT
+        u.id,
+        u.nation,
+        u.telephone,
+        u.nick_name as nickName,
+        u.user_group_id as userGroupId,
+        u.user_group_name as userGroupName,
+        u.customer_service_id as customerServiceId,
+        u.customer_service as customerService,
+        u.status as status,
+        u.msg as msg,
+        u.create_time as createTime,
+        u.user_token_id as userTokenId,
+        u.user_source as userSource,
+        t.open_status as tokenOpenStatus,
+        t.open_time as tokenOpenTime,
+        t.err_msg as tokenErrMsg
+        FROM
+        at_user u
+        INNER JOIN at_user_token t ON u.user_token_id = t.id
+        <where>
+            <include refid="page_where_if"/>
+        </where>
+        <if test="tokenOpenTimeSort == null">
+            order by u.id desc
+        </if>
+        <if test="tokenOpenTimeSort != null and tokenOpenTimeSort == 0">
+            order by t.open_time asc
+        </if>
+        <if test="tokenOpenTimeSort != null and tokenOpenTimeSort == 1">
+            order by t.open_time desc
+        </if>
+        limit #{pageStart},#{limit}
+    </select>
+
+    <sql id="page_where_if">
+        <if test="sysUserId != null">
+            u.sys_user_id = #{sysUserId}
+        </if>
+        <if test="nickName != null and nickName!=''">
+            u.nick_name = #{nickName}
+        </if>
+        <if test="nation != null and nation!=''">
+            u.nation = #{nation}
+        </if>
+        <if test="telephone != null and telephone!=''">
+            u.telephone = #{telephone}
+        </if>
+        <if test="userGroupId != null">
+            u.user_group_id = #{userGroupId}
+        </if>
+        <if test="customerServiceId != null and customerServiceId != 0">
+            u.customer_service_id = #{customerServiceId}
+        </if>
+        <if test="customerServiceId != null and customerServiceId == 0">
+            u.customer_service_id is null
+        </if>
+        <if test="status != null">
+            u.status = #{status}
+        </if>
+        <if test="validateFlag != null and validateFlag == 1">
+            u.status != 1
+        </if>
+        <if test="validateFlag != null and validateFlag == 0">
+            u.status = 1
+        </if>
+        <if test="userSource != null">
+            u.user_source = #{userSource}
+        </if>
+        <if test="id != null">
+            u.id = #{id}
+        </if>
+        <if test="tokenOpenStatus != null">
+            t.open_status = #{tokenOpenStatus}
+        </if>
+    </sql>
 </mapper>

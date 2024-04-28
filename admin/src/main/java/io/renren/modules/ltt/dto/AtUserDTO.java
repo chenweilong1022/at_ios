@@ -125,4 +125,10 @@ public class AtUserDTO extends PageParam implements Serializable {
 	@ApiModelProperty(required=false,value="账号来源协议 1协议 2真机")
 	private Integer userSource;
 
+
+	@ApiModelProperty(required=false,value="at_user_token表")
+	private Integer tokenOpenStatus;
+
+	@ApiModelProperty(required=false,value="排序 0正序 1倒序")
+	private Integer tokenOpenTimeSort;
 }

@@ -92,4 +92,10 @@ public class AppTestController {
         return R.data(enumVos);
     }
 
+    @GetMapping("enums/getOpenStatus")
+    public R getOpenStatus() {
+        List<EnumVo> enumVos = EnumUtil.enumToVo(OpenStatus.values());
+        return R.data(enumVos);
+    }
+
 }
