@@ -179,7 +179,7 @@ public class OpenAppTask {
                                 if (ObjectUtil.isNull(data)) {
                                     return;
                                 }
-                                DateTime openTime = DateUtil.offsetHour(DateUtil.date(), 8);
+                                DateTime openTime = DateUtil.offsetHour(DateUtil.date(), 24);
                                 AtUserTokenEntity update = new AtUserTokenEntity();
                                 update.setId(atUserTokenEntity.getId());
                                 String concat = StrUtil.concat(true, data.getRemark(), openAppResult.getMsg());
