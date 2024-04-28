@@ -74,7 +74,7 @@ public class LineServiceImpl implements LineService {
             ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
             String getPhoneHttp = String.format("%s/api/v1/account/issueLiffView",projectWorkEntity.getLineBaseHttp());
             String jsonStr = JSONUtil.toJsonStr(issueLiffViewDTO);
-            String resp = HttpUtil.post(getPhoneHttp, jsonStr);
+            String resp = HttpUtil.post(getPhoneHttp, jsonStr,20000);
             log.info("param = {},resp = {}", jsonStr, resp);
             if (code300(issueLiffViewDTO.getProxy(), jsonStr, resp)) return new IssueLiffViewVO().setCode(300L).setMsg("网络异常");
             IssueLiffViewVO issueLiffViewVO = JSON.parseObject(resp, IssueLiffViewVO.class);
