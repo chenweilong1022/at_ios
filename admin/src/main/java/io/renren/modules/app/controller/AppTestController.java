@@ -62,6 +62,12 @@ public class AppTestController {
         return R.data(enumVos);
     }
 
+    @GetMapping("enums/getOpenApps")
+    public R getOpenApps() {
+        List<EnumVo> enumVos = EnumUtil.enumToVo(OpenApp.values());
+        return R.data(enumVos);
+    }
+
     @GetMapping("enums/getOrderStatus")
     public R getOrderStatus() {
         List<EnumVo> enumVos = EnumUtil.enumToVo(OrderStatus.values());

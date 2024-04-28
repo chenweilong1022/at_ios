@@ -44,7 +44,7 @@ public class AtUserController extends AbstractController {
     @RequiresPermissions("ltt:atuser:list")
     public R list(AtUserDTO atUser){
         atUser.setSysUserId(getAuthUserId());
-        PageUtils page = atUserService.queryPage(atUser);
+        PageUtils page = atUserService.queryPage1(atUser);
 
         return R.ok().put("page", page);
     }

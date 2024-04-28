@@ -17,6 +17,7 @@ import io.renren.modules.client.vo.LineRegisterVO;
 import io.renren.modules.client.vo.OpenAppResult;
 import io.renren.modules.client.vo.RefreshAccessTokenVO;
 import io.renren.modules.ltt.dto.CdLineIpProxyDTO;
+import io.renren.modules.ltt.entity.AtDataSubtaskEntity;
 import io.renren.modules.ltt.entity.AtUserTokenEntity;
 import io.renren.modules.ltt.entity.CdLineRegisterEntity;
 import io.renren.modules.ltt.enums.LockMapKeyResource;
@@ -71,6 +72,8 @@ public class OpenAppTask {
     private ConcurrentHashMap<String, Lock> lockMap;
     @Autowired
     private AtUserTokenService atUserTokenService;
+    @Autowired
+    private AtDataSubtaskService atDataSubtaskService;
 
     private static final Object lockObj4 = new Object();
 
@@ -187,6 +190,13 @@ public class OpenAppTask {
                                 if (2 == data.getStatus()) {
                                     update.setOpenStatus(OpenStatus.OpenStatus1.getKey());
                                     update.setOpenTime(openTime);
+                                    update.setDataSubtaskId(-1);
+                                    if (ObjectUtil.isNotNull(atUserTokenEntity.getDataSubtaskId())) {
+                                        AtDataSubtaskEntity atDataSubtaskEntity = new AtDataSubtaskEntity();
+                                        atDataSubtaskEntity.setId(atUserTokenEntity.getDataSubtaskId());
+                                        atDataSubtaskEntity.setOpenApp(io.renren.modules.ltt.enums.OpenApp.OpenApp1.getKey());
+                                        atDataSubtaskService.updateById(atDataSubtaskEntity);
+                                    }
                                 }else if (Long.valueOf(10001).equals(data.getStatus())) {
                                     update.setOpenStatus(OpenStatus.OpenStatus5.getKey());
                                     update.setOpenTime(openTime);

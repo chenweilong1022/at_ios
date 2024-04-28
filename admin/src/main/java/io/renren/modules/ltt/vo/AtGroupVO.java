@@ -211,6 +211,11 @@ public class AtGroupVO implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="国家")
 	private Integer countryCode;
+	/**
+	 * 间隔秒数
+	 */
+	@ApiModelProperty(required=false,value="间隔秒数")
+	private Integer searchIntervalSecond;
 	public String getScheduleFloat() {
 		double v = (double) (successfulQuantity + failuresQuantity) / addTotalQuantity * 100;
 		return String.format("%.2f", v);

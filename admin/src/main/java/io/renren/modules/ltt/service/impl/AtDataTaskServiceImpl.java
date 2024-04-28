@@ -91,7 +91,7 @@ public class AtDataTaskServiceImpl extends ServiceImpl<AtDataTaskDao, AtDataTask
         atUserDTO.setUserSource(AtUserSourceEnum.AtUserSource1.getKey());
         atUserDTO.setLimit(5000);
         //获取符合账号的号码
-        PageUtils pageUtils = atUserService.queryPage(atUserDTO);
+        PageUtils pageUtils = atUserService.queryPageOld(atUserDTO);
 
 
 

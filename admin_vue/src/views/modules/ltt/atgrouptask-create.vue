@@ -73,13 +73,26 @@
           <el-form-item label="拉群号数量" prop="pullGroupNumber">
             <el-input v-model="dataForm.pullGroupNumber" placeholder="拉群号数量" style="width: 70%;"></el-input>
           </el-form-item>
-          <el-form-item label="间隔秒数" prop="intervalSecond">
-            <el-input v-model="dataForm.intervalSecond" placeholder="间隔秒数" style="width: 70%;"></el-input>
+          <el-form-item label="加粉间隔秒数" prop="intervalSecond">
+            <el-input v-model="dataForm.intervalSecond" placeholder="加粉间隔秒数" style="width: 70%;"></el-input>
+          </el-form-item>
+          <el-form-item v-if="groupType === 1" label="搜索间隔秒数" prop="searchIntervalSecond">
+            <el-input v-model="dataForm.searchIntervalSecond" placeholder="搜索间隔秒数" style="width: 70%;"></el-input>
           </el-form-item>
           <el-form-item label="代理ip">
             <el-select v-model="dataForm.ipCountryCode" placeholder="代理ip" clearable>
               <el-option
                 v-for="item in countryCodes"
+                :key="item.key"
+                :label="item.value"
+                :value="item.key">
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="加粉打开app">
+            <el-select v-model="dataForm.openApp" placeholder="加粉打开app" clearable>
+              <el-option
+                v-for="item in openAppOptions"
                 :key="item.key"
                 :label="item.value"
                 :value="item.key">
@@ -417,6 +430,7 @@ import ErrLogs from "./atdatatask-err-logs.vue";
         fileContentList: [],
         remaining: '',
         countryCodes: [],
+        openAppOptions: [],
         dataRule: {
         },
         dataFormGroupTask: {
@@ -446,7 +460,9 @@ import ErrLogs from "./atdatatask-err-logs.vue";
           groupCount: null,
           groupCountStart: 0,
           intervalSecond: null,
+          searchIntervalSecond: null,
           ipCountryCode: null,
+          openApp: null,
           navyUrlList: [],
           materialUrlList: []
         }
@@ -462,6 +478,7 @@ import ErrLogs from "./atdatatask-err-logs.vue";
       this.dataForm.id = groupTaskId
       this.uploadUrl = this.$http.adornUrl(`/app/file/upload`)
       this.getCountryCodeEnums()
+      this.getOpenApps()
       this.getUserGroupDataList()
       this.getGroupType()
       this.infoById()
@@ -589,6 +606,18 @@ import ErrLogs from "./atdatatask-err-logs.vue";
           }
         })
       },
+      getOpenApps () {
+        this.$http({
+          url: this.$http.adornUrl(`/app/enums/getOpenApps`),
+          method: 'get'
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.openAppOptions = data.data
+          } else {
+            this.$message.error(data.msg)
+          }
+        })
+      },
       hide () {
         this.tableDataFlag = false;
       },
@@ -669,11 +698,13 @@ import ErrLogs from "./atdatatask-err-logs.vue";
             'countryCode': this.dataForm.countryCode,
             'countryCodeH': this.dataForm.countryCodeH,
             'intervalSecond': this.dataForm.intervalSecond,
+            'searchIntervalSecond': this.dataForm.searchIntervalSecond,
             'ipCountryCode': this.dataForm.ipCountryCode,
             'userGroupId': this.dataForm.userGroupId,
             'userGroupIdH': this.dataForm.userGroupIdH,
             'navyUrlList': this.dataForm.navyUrlList,
             'groupCountStart': this.dataForm.groupCountStart,
+            'openApp': this.dataForm.openApp,
             'pullGroupNumber': this.dataForm.pullGroupNumber,
             'groupCountTotal': this.dataForm.groupCountTotal,
             'materialUrlList': this.dataForm.materialUrlList,

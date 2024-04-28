@@ -241,6 +241,7 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
             atGroupTaskEntity.setCreateTime(DateUtil.date());
             atGroupTaskEntity.setIpCountryCode(atGroupTask.getIpCountryCode());
             atGroupTaskEntity.setIntervalSecond(atGroupTask.getIntervalSecond());
+            atGroupTaskEntity.setSearchIntervalSecond(atGroupTask.getSearchIntervalSecond());
             onGroupPreVO.setAtGroupTaskEntity(atGroupTaskEntity);
             atGroupEntitiesSave.add(atGroupTaskEntity);
         }
@@ -303,6 +304,7 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
                 save.setSysUserId(atGroupTask.getSysUserId());
                 save.setDataType(DataType.DataType2.getKey());
                 save.setTaskStatus(TaskStatus.TaskStatus1.getKey());
+                save.setOpenApp(atGroupTask.getOpenApp());
                 if (parts.length > 2) {
                     save.setContactKey(parts[0].trim());
                     save.setMid(parts[1].trim());
@@ -332,7 +334,7 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
                 AtDataSubtaskEntity save = new AtDataSubtaskEntity();
                 save.setGroupId(atGroupTaskEntity.getId());
                 save.setGroupType(groupType4.getKey());
-
+                save.setOpenApp(atGroupTask.getOpenApp());
                 save.setTaskStatus(TaskStatus.TaskStatus1.getKey());
                 save.setDataTaskId(atDataTask.getId());
                 save.setSysUserId(atGroupTask.getSysUserId());
@@ -395,6 +397,7 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
                     AtDataSubtaskEntity save = new AtDataSubtaskEntity();
                     save.setGroupId(atGroupTaskEntity.getId());
                     save.setGroupType(groupType4.getKey());
+                    save.setOpenApp(atGroupTask.getOpenApp());
                     if (GroupType.GroupType6.getKey().equals(atGroupTask.getGroupType())) {
                         save.setGroupType(GroupType.GroupType2.getKey());
                     }
@@ -463,7 +466,7 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
         atUserDTOH.setStatus(UserStatus.UserStatus4.getKey());
         atUserDTOH.setUserSource(AtUserSourceEnum.AtUserSource1.getKey());
         //获取符合账号的号码
-        PageUtils pageUtilsH = atUserService.queryPage(atUserDTOH);
+        PageUtils pageUtilsH = atUserService.queryPageOld(atUserDTOH);
         List<AtUserVO> atUserVOSH = pageUtilsH.getList();
         //如果是泰国号拉群模式
         if (GroupType.GroupType6.getKey().equals(atGroupTask.getGroupType())) {
@@ -510,7 +513,7 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
         atUserDTO.setStatus(UserStatus.UserStatus4.getKey());
         atUserDTO.setUserSource(AtUserSourceEnum.AtUserSource1.getKey());
         //获取符合账号的号码
-        PageUtils pageUtils = atUserService.queryPage(atUserDTO);
+        PageUtils pageUtils = atUserService.queryPageOld(atUserDTO);
         List<AtUserVO> atUserVOS = pageUtils.getList();
         //如果是泰国号拉群模式
         if (GroupType.GroupType6.getKey().equals(atGroupTask.getGroupType())) {

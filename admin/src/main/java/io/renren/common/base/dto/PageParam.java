@@ -1,5 +1,6 @@
 package io.renren.common.base.dto;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -31,4 +32,11 @@ public abstract class PageParam implements Serializable {
 	@TableField(exist = false)
 	@ApiModelProperty(required=false,value="分页开始 sql使用",hidden = true)
 	private Integer pageStart;
+
+	public Integer getPage() {
+		if (ObjectUtil.isNull(page)) {
+			page = 1;
+		}
+		return page;
+	}
 }

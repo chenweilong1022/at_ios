@@ -32,7 +32,14 @@ public interface AtUserService extends IService<AtUserEntity> {
      * @param atUser
      * @return
      */
-    PageUtils queryPage(AtUserDTO atUser);
+    PageUtils queryPage1(AtUserDTO atUser);
+
+    /**
+     * 分页查询
+     * @param atUser
+     * @return
+     */
+    PageUtils queryPageOld(AtUserDTO atUser);
     /**
      * 根据id查询
      * @param id

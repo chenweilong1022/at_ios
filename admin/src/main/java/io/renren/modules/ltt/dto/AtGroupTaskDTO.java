@@ -155,9 +155,16 @@ public class AtGroupTaskDTO extends PageParam implements Serializable {
 	private Queue<String> materialUrlsQueue;
 
 
-
 	@ApiModelProperty(required=false,value="间隔秒数")
 	private Integer intervalSecond;
+	/**
+	 * 间隔秒数
+	 */
+	@ApiModelProperty(required=false,value="间隔秒数")
+	private Integer searchIntervalSecond;
+
+	@ApiModelProperty(required=false,value="打开app")
+	private Integer openApp;
 
 
 	/**

@@ -75,7 +75,7 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
     @Resource(name = "caffeineCacheListString")
     private Cache<String, Queue<String>> caffeineCacheListString;
     @Override
-    public PageUtils<AtUserVO> queryPage(AtUserDTO atUser) {
+    public PageUtils<AtUserVO> queryPage1(AtUserDTO atUser) {
         atUser.setPageStart((atUser.getPage() - 1) * atUser.getLimit());
         Integer count = baseMapper.queryPageCount(atUser);
         List<AtUserVO> resultList = Collections.emptyList();
@@ -83,6 +83,30 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
             resultList = baseMapper.queryPage(atUser);
         }
         return new PageUtils(resultList, count, atUser.getLimit(), atUser.getPage());
+    }
+
+    @Override
+    public PageUtils queryPageOld(AtUserDTO atUser) {
+        IPage<AtUserEntity> page = baseMapper.selectPage(
+                new Query<AtUserEntity>(atUser).getPage(),
+                new QueryWrapper<AtUserEntity>().lambda()
+                        .eq(ObjectUtil.isNotNull(atUser.getSysUserId()), AtUserEntity::getSysUserId, atUser.getSysUserId())
+                        .eq(StringUtils.isNotEmpty(atUser.getNickName()), AtUserEntity::getNickName, atUser.getNickName())
+                        .eq(StringUtils.isNotEmpty(atUser.getNation()), AtUserEntity::getNation, atUser.getNation())
+                        .eq(StringUtils.isNotEmpty(atUser.getTelephone()), AtUserEntity::getTelephone, atUser.getTelephone())
+                        .eq(atUser.getUserGroupId() != null, AtUserEntity::getUserGroupId, atUser.getUserGroupId())
+                        //有客服id，不为0则查询：客服id
+                        .eq(atUser.getCustomerServiceId() != null && atUser.getCustomerServiceId() != 0, AtUserEntity::getCustomerServiceId, atUser.getCustomerServiceId())
+                        //有客服id，为0则查询：没有客服的用户列表
+                        .isNull(atUser.getCustomerServiceId() != null && atUser.getCustomerServiceId() == 0, AtUserEntity::getCustomerServiceId)
+                        .eq(atUser.getStatus() != null, AtUserEntity::getStatus, atUser.getStatus())
+                        .notIn(atUser.getValidateFlag() != null && Boolean.TRUE.equals(atUser.getValidateFlag()), AtUserEntity::getStatus, UserStatus1.getKey())
+                        .eq(atUser.getValidateFlag() != null && Boolean.FALSE.equals(atUser.getValidateFlag()), AtUserEntity::getStatus, UserStatus1.getKey())
+                        .eq(atUser.getUserSource() != null, AtUserEntity::getUserSource, atUser.getUserSource())
+                        .eq(atUser.getId() != null, AtUserEntity::getId, atUser.getId())
+                        .orderByDesc(AtUserEntity::getId)
+        );
+        return PageUtils.<AtUserVO>page(page).setList(AtUserConver.MAPPER.conver(page.getRecords()));
     }
 
     @Override

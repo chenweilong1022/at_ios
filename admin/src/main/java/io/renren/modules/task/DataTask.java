@@ -44,7 +44,7 @@ import java.util.stream.Collectors;
 @Component
 @Slf4j
 @EnableAsync
-@Profile({"prod","task"})
+@Profile({"prod","dev"})
 public class DataTask {
 
 
@@ -84,6 +84,8 @@ public class DataTask {
     private AtDataSubtaskService atDataSubtaskService;
     @Resource(name = "caffeineCacheDate")
     private Cache<Integer, Date> caffeineCacheDate;
+    @Resource(name = "caffeineCacheDateSearch")
+    private Cache<Integer, Date> caffeineCacheDateSearch;
 
 
     @Scheduled(fixedDelay = 8000)
@@ -218,6 +220,21 @@ public class DataTask {
                             if (ObjectUtil.isNull(atGroupEntityConfig)) {
                                 return;
                             }
+                            Date nextTime = caffeineCacheDate.getIfPresent(atGroupEntityConfig.getId());
+                            //如果没有下一次的时间 设置默认的时间
+                            if (ObjectUtil.isNotNull(nextTime)) {
+                                DateTime now = DateUtil.date();
+                                boolean after = now.after(nextTime);
+                                if (!after) {
+                                    return;
+                                }
+                            }else {
+                                int i = RandomUtil.randomInt(3, 5);
+                                Thread.sleep(i * 1000L);
+                            }
+                        }else {
+                            int i = RandomUtil.randomInt(3, 5);
+                            Thread.sleep(i * 1000L);
                         }
                         //获取用户token
                         AtUserTokenEntity atUserTokenEntity = userIdAtUserTokenEntityMap.get(atDataSubtaskEntity.getUserId());
@@ -311,7 +328,8 @@ public class DataTask {
                         //设置加好友的时间
                         update.setCreateTime(DateUtil.date());
                         atDataSubtaskService.updateById(update);
-
+                    } catch (InterruptedException e) {
+                        log.error("err = {}",e.getMessage());
                     } finally {
                         lock.unlock();
                     }
@@ -360,7 +378,7 @@ public class DataTask {
                             if (ObjectUtil.isNull(atGroupEntityConfig)) {
                                 return;
                             }
-                            Date nextTime = caffeineCacheDate.getIfPresent(atGroupEntityConfig.getId());
+                            Date nextTime = caffeineCacheDateSearch.getIfPresent(atGroupEntityConfig.getId());
                             //如果没有下一次的时间 设置默认的时间
                             if (ObjectUtil.isNotNull(nextTime)) {
                                 DateTime now = DateUtil.date();
@@ -384,6 +402,19 @@ public class DataTask {
                         //查询mid
                         AtDataSubtaskVO atDataSubtaskVO = atDataSubtaskService.getById(atDataSubtaskEntity.getId());
                         if (ObjectUtil.isNull(atDataSubtaskVO)) {
+                            return;
+                        }
+                        //是否需要打开app,如果需要打开，直接去打开app
+                        Integer openApp = atDataSubtaskVO.getOpenApp();
+                        if (OpenApp.OpenApp2.getKey().equals(openApp)) {
+                            //如果为空或者小于0，直接去设置一下需要打开app
+                            if (ObjectUtil.isNull(atUserTokenEntity.getDataSubtaskId()) || atUserTokenEntity.getDataSubtaskId() <= 0) {
+                                // 设置立即打开app
+                                atUserTokenEntity.setOpenTime(DateUtil.date());
+                                atUserTokenEntity.setOpenStatus(OpenStatus.OpenStatus1.getKey());
+                                atUserTokenEntity.setDataSubtaskId(atDataSubtaskVO.getId());
+                                atUserTokenService.updateById(atUserTokenEntity);
+                            }
                             return;
                         }
                         String contactKey = atDataSubtaskVO.getContactKey();
@@ -483,7 +514,15 @@ public class DataTask {
                             atDataSubtaskService.updateById(update);
                             //如果配置不为空
                             if (ObjectUtil.isNotNull(atGroupEntityConfig)) {
-                                //获取间隔的秒,设置下次可以执行的时间
+                                //获取间隔的秒,设置下次可以搜索的时间
+                                Integer searchIntervalSecond = atGroupEntityConfig.getSearchIntervalSecond();
+                                if (ObjectUtil.isNotNull(searchIntervalSecond)) {
+                                    int i = RandomUtil.randomInt(searchIntervalSecond, searchIntervalSecond + 2);
+                                    DateTime nextTime = DateUtil.offsetSecond(DateUtil.date(), i);
+                                    caffeineCacheDateSearch.put(atGroupEntityConfig.getId(),nextTime);
+                                }
+
+                                //获取间隔的秒,设置下次加好友的时间
                                 Integer intervalSecond = atGroupEntityConfig.getIntervalSecond();
                                 if (ObjectUtil.isNotNull(intervalSecond)) {
                                     int i = RandomUtil.randomInt(intervalSecond, intervalSecond + 2);

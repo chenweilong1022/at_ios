@@ -252,7 +252,7 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
         atUserDTO.setStatus(UserStatus.UserStatus4.getKey());
         atUserDTO.setUserSource(AtUserSourceEnum.AtUserSource1.getKey());
         //获取符合账号的号码
-        PageUtils pageUtils = atUserService.queryPage(atUserDTO);
+        PageUtils pageUtils = atUserService.queryPageOld(atUserDTO);
 
         //获取所有群
         List<AtGroupEntity> atGroupEntities = this.listByIds(atGroup.getIds());
