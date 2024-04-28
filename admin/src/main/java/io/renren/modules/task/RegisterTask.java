@@ -58,7 +58,7 @@ import static io.renren.modules.ltt.enums.PhoneStatus.*;
  */
 @Component
 @Slf4j
-@Profile({"prod","register"})
+@Profile({"prod","user"})
 public class RegisterTask {
 
 
