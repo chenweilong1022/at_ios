@@ -46,7 +46,7 @@ import static io.renren.modules.ltt.enums.AtUserTokenTypeEnum.AtUserTokenType2;
 @Component
 @Slf4j
 @EnableAsync
-@Profile({"prod","register"})
+@Profile({"prod","verify"})
 public class UserTask {
 
 
