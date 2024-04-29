@@ -323,6 +323,12 @@
               <div>失败数：{{ scope.row.failuresQuantity }}</div>
             </template>
           </el-table-column>
+          <el-table-column
+            prop="nextTime"
+            header-align="center"
+            align="center"
+            label="下次加粉时间">
+          </el-table-column>
 <!--          <el-table-column-->
 <!--            prop="addTotalQuantity"-->
 <!--            header-align="center"-->

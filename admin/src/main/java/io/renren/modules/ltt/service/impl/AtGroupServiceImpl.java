@@ -58,6 +58,10 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
     private AtUserService atUserService;
     @Resource(name = "caffeineCacheAtGroupEntity")
     private Cache<Integer, AtGroupEntity> caffeineCacheAtGroupEntity;
+
+    @Resource(name = "caffeineCacheDate")
+    private Cache<Integer, Date> caffeineCacheDate;
+
     @Override
     public PageUtils<AtGroupVO> queryPage(AtGroupDTO atGroup) {
         IPage<AtGroupVO> page = baseMapper.listPage(
@@ -67,10 +71,17 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
 
         List<AtGroupVO> resultList = page.getRecords();
         if (CollUtil.isNotEmpty(resultList)) {
+            //拉群手机号
             List<Integer> userIdList = resultList.stream().filter(i -> ObjectUtil.isNotNull(i.getUserId()))
                     .map(AtGroupVO::getUserId).collect(Collectors.toList());
             Map<Integer, String> phoneMap = atUserService.queryTelephoneByIds(userIdList);
-            resultList.forEach(i->i.setUserTelephone(phoneMap.get(i.getUserId())));
+
+            for (AtGroupVO atGroupVO : resultList) {
+                atGroupVO.setUserTelephone(phoneMap.get(atGroupVO.getUserId()));
+
+                //下次加粉时间
+                atGroupVO.setNextTime(caffeineCacheDate.getIfPresent(atGroupVO.getId()));
+            }
         }
         page.setRecords(resultList);
         return PageUtils.<AtGroupVO>page(page);
