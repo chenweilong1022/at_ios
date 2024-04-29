@@ -529,13 +529,6 @@ public class RegisterTask {
             log.info("RegisterTask task2 list isEmpty");
             return;
         }
-        //限制同一时间只能有80个同时注册的
-        int count1 = cdGetPhoneService.count(new QueryWrapper<CdGetPhoneEntity>().lambda()
-                .in(CdGetPhoneEntity::getPhoneStatus,PhoneStatus1.getKey(),PhoneStatus2.getKey())
-        );
-        if (count1 >= 80) {
-            return;
-        }
         for (CdRegisterSubtasksVO cdRegisterSubtasksEntity : cdRegisterSubtasksVOS) {
             poolExecutor.execute(() -> {
                 String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource2, 1);
