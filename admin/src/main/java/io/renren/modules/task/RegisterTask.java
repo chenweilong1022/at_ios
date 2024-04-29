@@ -58,7 +58,7 @@ import static io.renren.modules.ltt.enums.PhoneStatus.*;
  */
 @Component
 @Slf4j
-@Profile({"prod","user"})
+@Profile({"prod","register"})
 public class RegisterTask {
 
 
@@ -527,13 +527,6 @@ public class RegisterTask {
         List<CdRegisterSubtasksVO> cdRegisterSubtasksVOS = cdRegisterSubtasksService.groupByTaskId();
         if (CollUtil.isEmpty(cdRegisterSubtasksVOS)) {
             log.info("RegisterTask task2 list isEmpty");
-            return;
-        }
-        //限制同一时间只能有80个同时注册的
-        int count1 = cdGetPhoneService.count(new QueryWrapper<CdGetPhoneEntity>().lambda()
-                .in(CdGetPhoneEntity::getPhoneStatus,PhoneStatus1.getKey(),PhoneStatus2.getKey())
-        );
-        if (count1 >= 80) {
             return;
         }
         for (CdRegisterSubtasksVO cdRegisterSubtasksEntity : cdRegisterSubtasksVOS) {
