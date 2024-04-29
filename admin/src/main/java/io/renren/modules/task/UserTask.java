@@ -9,9 +9,11 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import io.renren.modules.client.LineService;
 import io.renren.modules.client.dto.IssueLiffViewDTO;
 import io.renren.modules.client.dto.LineTokenJson;
+import io.renren.modules.client.vo.ConversionAppTokenVO;
 import io.renren.modules.ltt.dto.CdLineIpProxyDTO;
 import io.renren.modules.ltt.entity.AtUserEntity;
 import io.renren.modules.ltt.entity.AtUserTokenEntity;
+import io.renren.modules.ltt.entity.AtUserTokenIosEntity;
 import io.renren.modules.ltt.enums.*;
 import io.renren.modules.ltt.service.*;
 import io.renren.modules.ltt.vo.IssueLiffViewVO;
@@ -25,9 +27,11 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -56,7 +60,7 @@ public class UserTask {
     private AtUserTokenIosService atUserTokenIosService;
     @Autowired
     private ConcurrentHashMap<String, Lock> lockMap;
-
+    static ReentrantLock task5Lock = new ReentrantLock();
 
 
     public static final Object atUserlockObj = new Object();
@@ -489,72 +493,72 @@ public class UserTask {
 
     }
 
-//    /**
-//     * 生成真机token
-//     */
-//    @Scheduled(fixedDelay = 5000)
-//    @Transactional(rollbackFor = Exception.class)
-//    @Async
-//    public void task5() {
-//        boolean b = task5Lock.tryLock();
-//        if (!b) {
-//            return;
-//        }
-//        try {
-//            //获取刚导入的token去转化为账号
-//            List<AtUserTokenIosEntity> atUserTokenIosEntityList = atUserTokenIosService.list(new QueryWrapper<AtUserTokenIosEntity>().lambda().isNull(AtUserTokenIosEntity::getAtUserTokenId).last("limit 10"));
-//            if (CollUtil.isEmpty(atUserTokenIosEntityList)) {
-//                log.info("UserTask task5 atUserTokenIosEntityList isEmpty");
-//                return;
-//            }
-//            final CountDownLatch latch = new CountDownLatch(atUserTokenIosEntityList.size());
-//
-//            for (AtUserTokenIosEntity tokenIosEntity : atUserTokenIosEntityList) {
-//                threadPoolTaskExecutor.submit(new Thread(() -> {
-//                    if (StrUtil.isEmpty(tokenIosEntity.getIosToken())) {
-//                        latch.countDown();
-//                        return;
-//                    }
-//                    //获取用户token
-//                    ConversionAppTokenVO conversionAppToken = lineService.conversionAppToken(tokenIosEntity.getIosToken());
-//                    if (ObjectUtil.isNull(conversionAppToken)) {
-//                        latch.countDown();
-//                        return;
-//                    }
-//                    //成功获取返回zhi
-//                    if (0 == conversionAppToken.getCode() && conversionAppToken.getData() != null) {
-//                        String token = conversionAppToken.getData().getToken();
-//                        if (StrUtil.isEmpty(token)) {
-//                            latch.countDown();
-//                            return;
-//                        }
-//
-//                        //插入token
-//                        AtUserTokenEntity updateAtUserToken = new AtUserTokenEntity();
-//                        updateAtUserToken.setToken(token);
-//                        updateAtUserToken.setUserGroupId(null);
-//                        updateAtUserToken.setSysUserId(1L);
-//                        updateAtUserToken.setTokenType(AtUserTokenType2.getKey());//token类型 1协议token 2真机token
-//                        updateAtUserToken.setUseFlag(UseFlag.NO.getKey());
-//                        updateAtUserToken.setDeleteFlag(DeleteFlag.NO.getKey());
-//                        updateAtUserToken.setCreateTime(new Date());
-//                        updateAtUserToken.setPlatform(Platform.IOS.getKey());
-//                        atUserTokenService.save(updateAtUserToken);
-//
-//                        AtUserTokenIosEntity updateAtUserTokenIos = new AtUserTokenIosEntity();
-//                        updateAtUserTokenIos.setId(tokenIosEntity.getId());
-//                        updateAtUserTokenIos.setAtUserTokenId(updateAtUserToken.getId());
-//                        atUserTokenIosService.updateById(updateAtUserTokenIos);
-//                    }
-//                    latch.countDown();
-//                }));
-//            }
-//            latch.await();
-//        } catch (Exception e) {
-//            log.error("UserTask task5 err = {}", e.getMessage());
-//        } finally {
-//            task5Lock.unlock();
-//        }
-//    }
+    /**
+     * 生成真机token
+     */
+    @Scheduled(fixedDelay = 5000)
+    @Transactional(rollbackFor = Exception.class)
+    @Async
+    public void task5() {
+        boolean b = task5Lock.tryLock();
+        if (!b) {
+            return;
+        }
+        try {
+            //获取刚导入的token去转化为账号
+            List<AtUserTokenIosEntity> atUserTokenIosEntityList = atUserTokenIosService.list(new QueryWrapper<AtUserTokenIosEntity>().lambda().isNull(AtUserTokenIosEntity::getAtUserTokenId).last("limit 10"));
+            if (CollUtil.isEmpty(atUserTokenIosEntityList)) {
+                log.info("UserTask task5 atUserTokenIosEntityList isEmpty");
+                return;
+            }
+            final CountDownLatch latch = new CountDownLatch(atUserTokenIosEntityList.size());
+
+            for (AtUserTokenIosEntity tokenIosEntity : atUserTokenIosEntityList) {
+                threadPoolTaskExecutor.submit(new Thread(() -> {
+                    if (StrUtil.isEmpty(tokenIosEntity.getIosToken())) {
+                        latch.countDown();
+                        return;
+                    }
+                    //获取用户token
+                    ConversionAppTokenVO conversionAppToken = lineService.conversionAppToken(tokenIosEntity.getIosToken());
+                    if (ObjectUtil.isNull(conversionAppToken)) {
+                        latch.countDown();
+                        return;
+                    }
+                    //成功获取返回zhi
+                    if (0 == conversionAppToken.getCode() && conversionAppToken.getData() != null) {
+                        String token = conversionAppToken.getData().getToken();
+                        if (StrUtil.isEmpty(token)) {
+                            latch.countDown();
+                            return;
+                        }
+
+                        //插入token
+                        AtUserTokenEntity updateAtUserToken = new AtUserTokenEntity();
+                        updateAtUserToken.setToken(token);
+                        updateAtUserToken.setUserGroupId(null);
+                        updateAtUserToken.setSysUserId(1L);
+                        updateAtUserToken.setTokenType(AtUserTokenType2.getKey());//token类型 1协议token 2真机token
+                        updateAtUserToken.setUseFlag(UseFlag.NO.getKey());
+                        updateAtUserToken.setDeleteFlag(DeleteFlag.NO.getKey());
+                        updateAtUserToken.setCreateTime(new Date());
+                        updateAtUserToken.setPlatform(Platform.IOS.getKey());
+                        atUserTokenService.save(updateAtUserToken);
+
+                        AtUserTokenIosEntity updateAtUserTokenIos = new AtUserTokenIosEntity();
+                        updateAtUserTokenIos.setId(tokenIosEntity.getId());
+                        updateAtUserTokenIos.setAtUserTokenId(updateAtUserToken.getId());
+                        atUserTokenIosService.updateById(updateAtUserTokenIos);
+                    }
+                    latch.countDown();
+                }));
+            }
+            latch.await();
+        } catch (Exception e) {
+            log.error("UserTask task5 err = {}", e.getMessage());
+        } finally {
+            task5Lock.unlock();
+        }
+    }
 
 }
