@@ -29,7 +29,7 @@
         WHERE
             s.registration_status IN(1,2)
         ORDER BY
-            s.registration_status asc,s.number_successes ASC,s.number_failures ASC
+            s.registration_status desc,s.number_successes ASC,s.number_failures ASC
             LIMIT 2
     </select>
 
