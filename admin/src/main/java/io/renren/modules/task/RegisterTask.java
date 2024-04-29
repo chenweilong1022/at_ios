@@ -466,6 +466,11 @@ public class RegisterTask {
                             cdRegisterSubtasksEntity.setNumberSuccesses(getCountBySubTaskIdVO.getSuccessCount());
                             //设置失败数量
                             cdRegisterSubtasksEntity.setNumberFailures(getCountBySubTaskIdVO.getErrorCount());
+                            int count = getCountBySubTaskIdVO.getSuccessCount() + getCountBySubTaskIdVO.getErrorCount();
+                            if (count >= cdRegisterSubtasksEntity.getNumberRegistrations()) {
+                                cdRegisterSubtasksEntity.setRegistrationStatus(RegistrationStatus.RegistrationStatus6.getKey());
+                            }
+
                             errorTotal = errorTotal + cdRegisterSubtasksEntity.getNumberFailures();
                             successTotal = successTotal + cdRegisterSubtasksEntity.getNumberSuccesses();
                             registerSuccessCount = registerSuccessCount + getCountBySubTaskIdVO.getRegisterSuccessCount();
@@ -545,7 +550,7 @@ public class RegisterTask {
                                 int count = cdGetPhoneService.count(new QueryWrapper<CdGetPhoneEntity>().lambda()
                                         .eq(CdGetPhoneEntity::getSubtasksId,cdRegisterSubtasksEntity.getId())
                                 );
-                                if (!cdRegisterSubtasksEntity.getNumberRegistrations().equals(count)) {
+                                if (cdRegisterSubtasksEntity.getNumberRegistrations() > count) {
                                     CdGetPhoneDTO cdGetPhoneDTO = new CdGetPhoneDTO();
                                     cdGetPhoneDTO.setCount(cdRegisterSubtasksEntity.getNumberRegistrations() - count);
                                     cdGetPhoneDTO.setSubtasksId(cdRegisterSubtasksEntity.getId());
@@ -555,7 +560,7 @@ public class RegisterTask {
                                     if (cdRegisterSubtasksEntity.getNumberRegistrations().equals(cdGetPhoneEntities.size() + count)) {
                                         CdRegisterSubtasksEntity update = new CdRegisterSubtasksEntity();
                                         update.setId(cdRegisterSubtasksEntity.getId());
-                                        update.setRegistrationStatus(RegistrationStatus.RegistrationStatus6.getKey());
+                                        update.setRegistrationStatus(RegistrationStatus.RegistrationStatus2.getKey());
                                         cdRegisterSubtasksService.updateById(update);
                                     }
                                 }
@@ -571,9 +576,9 @@ public class RegisterTask {
                                 CdRegisterSubtasksEntity update = new CdRegisterSubtasksEntity();
                                 update.setId(cdRegisterSubtasksEntity.getId());
                                 update.setRegistrationStatus(RegistrationStatus.RegistrationStatus2.getKey());
-                                if (cdRegisterSubtasksEntity.getNumberRegistrations().equals(cdGetPhoneEntities.size())) {
-                                    update.setRegistrationStatus(RegistrationStatus.RegistrationStatus6.getKey());
-                                }
+//                                if (cdRegisterSubtasksEntity.getNumberRegistrations().equals(cdGetPhoneEntities.size())) {
+//                                    update.setRegistrationStatus(RegistrationStatus.RegistrationStatus6.getKey());
+//                                }
                                 cdRegisterSubtasksService.updateById(update);
                             }
                         }finally {
