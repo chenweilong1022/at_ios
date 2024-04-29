@@ -30,7 +30,7 @@
             s.registration_status IN(1,2)
         ORDER BY
             s.registration_status desc,s.number_successes desc,s.number_failures desc
-            LIMIT 2
+            LIMIT 4
     </select>
 
 </mapper>
