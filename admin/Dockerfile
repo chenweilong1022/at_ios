@@ -22,4 +22,4 @@ RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai  /etc/localtime
 EXPOSE 8880
 
 # 配置容器启动后执行的命令
-ENTRYPOINT [ "sh", "-c", "java -Djava.security.egd=file:/dev/./urandom -Xms512m -Xmx1024m -jar /app.jar " ]
+ENTRYPOINT [ "sh", "-c", "java -Djava.security.egd=file:/dev/./urandom -Xms6g -Xmx6g -jar /app.jar " ]

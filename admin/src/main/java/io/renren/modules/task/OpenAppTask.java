@@ -20,11 +20,9 @@ import io.renren.modules.ltt.dto.CdLineIpProxyDTO;
 import io.renren.modules.ltt.entity.AtDataSubtaskEntity;
 import io.renren.modules.ltt.entity.AtUserTokenEntity;
 import io.renren.modules.ltt.entity.CdLineRegisterEntity;
-import io.renren.modules.ltt.enums.LockMapKeyResource;
-import io.renren.modules.ltt.enums.OpenStatus;
-import io.renren.modules.ltt.enums.RegisterStatus;
-import io.renren.modules.ltt.enums.UseFlag;
+import io.renren.modules.ltt.enums.*;
 import io.renren.modules.ltt.service.*;
+import jdk.nashorn.internal.parser.TokenType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
@@ -51,7 +49,7 @@ import java.util.concurrent.locks.ReentrantLock;
 @Component
 @Slf4j
 @EnableAsync
-@Profile({"register"})
+@Profile({"open"}) //打开服务
 public class OpenAppTask {
 
 
@@ -89,6 +87,7 @@ public class OpenAppTask {
 
         List<AtUserTokenEntity> atUserTokenEntities = atUserTokenService.list(new QueryWrapper<AtUserTokenEntity>().lambda()
                 .eq(AtUserTokenEntity::getOpenStatus, OpenStatus.OpenStatus5.getKey())
+                .eq(AtUserTokenEntity::getTokenType, AtUserTokenTypeEnum.AtUserTokenType1.getKey())
                 .eq(AtUserTokenEntity::getUseFlag, UseFlag.YES.getKey())
                 .isNotNull(AtUserTokenEntity::getToken)
                 .last("limit 40")
@@ -155,6 +154,7 @@ public class OpenAppTask {
         try {
             List<AtUserTokenEntity> atUserTokenEntities = atUserTokenService.list(new QueryWrapper<AtUserTokenEntity>().lambda()
                     .eq(AtUserTokenEntity::getOpenStatus, OpenStatus.OpenStatus2.getKey())
+                    .eq(AtUserTokenEntity::getTokenType, AtUserTokenTypeEnum.AtUserTokenType1.getKey())
                     .eq(AtUserTokenEntity::getUseFlag, UseFlag.YES.getKey())
                     .isNotNull(AtUserTokenEntity::getToken)
                     .lt(AtUserTokenEntity::getOpenTime, DateUtil.date())
@@ -246,6 +246,7 @@ public class OpenAppTask {
     public void task1() {
         List<AtUserTokenEntity> atUserTokenEntities = atUserTokenService.list(new QueryWrapper<AtUserTokenEntity>().lambda()
                 .eq(AtUserTokenEntity::getOpenStatus, OpenStatus.OpenStatus1.getKey())
+                .eq(AtUserTokenEntity::getTokenType, AtUserTokenTypeEnum.AtUserTokenType1.getKey())
                 .isNotNull(AtUserTokenEntity::getToken)
                 .eq(AtUserTokenEntity::getUseFlag, UseFlag.YES.getKey())
                 .lt(AtUserTokenEntity::getOpenTime, DateUtil.date())

@@ -31,8 +31,8 @@ public class CardMeServiceImpl implements FirefoxService {
     @Resource(name = "caffeineCacheProjectWorkEntity")
     private Cache<String, ProjectWorkEntity> caffeineCacheProjectWorkEntity;
 
-    public GetPhoneVO getPhone(){
-        try {
+    public GetPhoneVO getPhone(){//http://www.firefox.fun/yhapi.ashx?act=getPhone&token=e2b49358e15f981824a022c629b55146_46756&iid=127&did=&country=th&operator=&provi=&city=&seq=0&mobile=
+        try {//e2b49358e15f981824a022c629b55146_46756&pkey=C4AAE53ACE3A55E42DF9C491DBA98C91CD1AC433BAAB7CC0
             ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
             String getPhoneHttp = String.format("%s?act=getPhone&token=%s&iid=%s&did=&country=%s&operator=&provi=&city=&seq=0&mobile=",
                     projectWorkEntity.getFirefoxBaseUrl(), projectWorkEntity.getFirefoxToken(),
@@ -68,7 +68,7 @@ public class CardMeServiceImpl implements FirefoxService {
         return null;
     }
 
-    @Override
+    @Override//http://www.firefox.fun/yhapi.ashx?act=getPhoneCode&token=%s&pkey=%s
     public String getPhoneCode(String pKey) {
         try {
             ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
