@@ -90,43 +90,43 @@
 
     <sql id="page_where_if">
         <if test="sysUserId != null">
-            u.sys_user_id = #{sysUserId}
+            and u.sys_user_id = #{sysUserId}
         </if>
         <if test="nickName != null and nickName!=''">
-            u.nick_name = #{nickName}
+            and u.nick_name = #{nickName}
         </if>
         <if test="nation != null and nation!=''">
-            u.nation = #{nation}
+            and u.nation = #{nation}
         </if>
         <if test="telephone != null and telephone!=''">
-            u.telephone = #{telephone}
+            and u.telephone = #{telephone}
         </if>
         <if test="userGroupId != null">
-            u.user_group_id = #{userGroupId}
+            and u.user_group_id = #{userGroupId}
         </if>
         <if test="customerServiceId != null and customerServiceId != 0">
-            u.customer_service_id = #{customerServiceId}
+            and u.customer_service_id = #{customerServiceId}
         </if>
         <if test="customerServiceId != null and customerServiceId == 0">
-            u.customer_service_id is null
+            and u.customer_service_id is null
         </if>
         <if test="status != null">
-            u.status = #{status}
+            and u.status = #{status}
         </if>
         <if test="validateFlag != null and validateFlag == 1">
-            u.status != 1
+            and u.status != 1
         </if>
         <if test="validateFlag != null and validateFlag == 0">
-            u.status = 1
+            and u.status = 1
         </if>
         <if test="userSource != null">
-            u.user_source = #{userSource}
+            and u.user_source = #{userSource}
         </if>
         <if test="id != null">
-            u.id = #{id}
+            and u.id = #{id}
         </if>
         <if test="tokenOpenStatus != null">
-            t.open_status = #{tokenOpenStatus}
+            and t.open_status = #{tokenOpenStatus}
         </if>
     </sql>
 </mapper>
