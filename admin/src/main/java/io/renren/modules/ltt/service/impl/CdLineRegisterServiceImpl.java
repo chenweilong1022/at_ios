@@ -7,6 +7,7 @@ import io.renren.datasources.annotation.Game;
 import io.renren.modules.ltt.dto.CdLineIpProxyDTO;
 import io.renren.modules.ltt.dto.LineRegisterSummaryResultDto;
 import io.renren.modules.ltt.entity.CdGetPhoneEntity;
+import io.renren.modules.ltt.entity.CdLineIpProxyEntity;
 import io.renren.modules.ltt.enums.PhoneStatus;
 import io.renren.modules.ltt.enums.RegisterStatus;
 import io.renren.modules.ltt.service.CdGetPhoneService;
@@ -136,11 +137,15 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
         getPhoneService.updateById(updateCdGetPhoneEntity);
 
         //获取代理
-        CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
-        cdLineIpProxyDTO.setTokenPhone(cdGetPhone.getPhone());
-        cdLineIpProxyDTO.setLzPhone(cdGetPhone.getPhone());
-        cdLineIpProxyDTO.setNewIp(true);
-        cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO);
+//        CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
+//        cdLineIpProxyDTO.setTokenPhone(cdGetPhone.getPhone());
+//        cdLineIpProxyDTO.setLzPhone(cdGetPhone.getPhone());
+//        cdLineIpProxyDTO.setNewIp(true);
+//        cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO);
+
+        CdLineIpProxyEntity cdLineIpProxyEntity = new CdLineIpProxyEntity();
+        cdLineIpProxyEntity.setTokenPhone("");
+        cdLineIpProxyService.update(cdLineIpProxyEntity,new QueryWrapper<CdLineIpProxyEntity>().lambda().eq(CdLineIpProxyEntity::getTokenPhone, cdGetPhone.getPhone()));
 
         //删除line注册此条记录
         return baseMapper.deleteById(cdLineRegisterEntity.getId()) > 0;
