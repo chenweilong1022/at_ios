@@ -313,7 +313,7 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
             for (Integer key : integerListMap1.keySet()) {
                 //数据data
                 List<AtDataSubtaskEntity> atDataSubtaskEntities1 = integerListMap1.get(key);
-                long count = atDataSubtaskEntities1.stream().filter(item -> item.getTaskStatus().equals(TaskStatus.TaskStatus13.getKey())).count();
+                long count = atDataSubtaskEntities1.stream().filter(item -> item.getTaskStatus().equals(TaskStatus.TaskStatus13.getKey()) || item.getTaskStatus().equals(TaskStatus.TaskStatus8.getKey())).count();
                 if (count > 0) {
                     AtUserVO poll = atUserVOQueue.poll();
                     AtUserEntity atUserEntity = new AtUserEntity();
