@@ -252,8 +252,6 @@ public class Data3Task {
                                 } else if (searchPhoneVO.getMsg().contains(UserStatusCode.UserStatusCode5.getValue())) {
                                     userStatus = UserStatus.UserStatus3;
                                 }
-
-
                                 //任务失败
                                 AtDataTaskEntity atDataTaskEntity = new AtDataTaskEntity();
                                 atDataTaskEntity.setId(atDataSubtaskEntity.getDataTaskId());
