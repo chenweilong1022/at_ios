@@ -228,11 +228,11 @@ public class AtDataTaskServiceImpl extends ServiceImpl<AtDataTaskDao, AtDataTask
             //获取所有子任务
             List<AtDataSubtaskEntity> list = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
                     .eq(AtDataSubtaskEntity::getDataTaskId,taskEntity.getId())
-                    .eq(AtDataSubtaskEntity::getTaskStatus,TaskStatus.TaskStatus5.getKey())
+                    .in(AtDataSubtaskEntity::getTaskStatus,TaskStatus.TaskStatus5.getKey(),TaskStatus.TaskStatus13.getKey())
             );
 
-            for (AtDataSubtaskEntity atAvatarSubtaskEntity : list) {
-                atAvatarSubtaskEntity.setTaskStatus(TaskStatus.TaskStatus2.getKey());
+            for (AtDataSubtaskEntity atDataSubtaskEntity : list) {
+                atDataSubtaskEntity.setTaskStatus(TaskStatus.TaskStatus2.getKey());
             }
             if (CollUtil.isNotEmpty(list)) {
                 atDataSubtaskService.updateBatchById(list);
