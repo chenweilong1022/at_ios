@@ -129,4 +129,29 @@
             and t.open_status = #{tokenOpenStatus}
         </if>
     </sql>
+
+    <select id="queryUsedUserSummary" resultType="io.renren.modules.ltt.dto.UserSummaryResultDto">
+        SELECT
+            u.nation AS countryCode,
+            count( u.id ) AS usedUserStock
+        FROM
+            at_user u
+                INNER JOIN at_group g ON u.id = g.user_id
+        WHERE
+            DATE ( g.create_time )= CURDATE()
+        GROUP BY
+            u.nation;
+    </select>
+
+    <select id="queryOnlineUserSummary" resultType="io.renren.modules.ltt.dto.UserSummaryResultDto">
+        SELECT
+            nation AS countryCode,
+            count( id ) AS onlineUserNum
+        FROM
+            at_user
+        WHERE
+            STATUS = 4
+        GROUP BY
+            nation;
+    </select>
 </mapper>

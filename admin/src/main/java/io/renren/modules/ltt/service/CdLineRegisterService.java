@@ -121,6 +121,6 @@ public interface CdLineRegisterService extends IService<CdLineRegisterEntity> {
      * 注册数据汇总
      * @return
      */
-    LineRegisterSummaryResultDto queryLineRegisterSummary();
+    List<LineRegisterSummaryResultDto> queryLineRegisterSummary();
 }
 

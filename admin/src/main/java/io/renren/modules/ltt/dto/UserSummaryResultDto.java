@@ -12,6 +12,9 @@ import java.io.Serializable;
 @Data
 public class UserSummaryResultDto implements Serializable {
 
+    @ApiModelProperty(required=false,value="")
+    private String countryCode;
+
     @ApiModelProperty("今日已使用数量")
     private Integer usedUserStock;
 

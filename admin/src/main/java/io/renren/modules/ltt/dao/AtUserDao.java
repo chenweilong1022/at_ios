@@ -3,6 +3,7 @@ package io.renren.modules.ltt.dao;
 import io.renren.modules.ltt.dto.AtDataSubtaskParamPageDTO;
 import io.renren.modules.ltt.dto.AtDataSubtaskResultDto;
 import io.renren.modules.ltt.dto.AtUserDTO;
+import io.renren.modules.ltt.dto.UserSummaryResultDto;
 import io.renren.modules.ltt.entity.AtUserEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import io.renren.modules.ltt.vo.AtUserVO;
@@ -32,5 +33,19 @@ public interface AtUserDao extends BaseMapper<AtUserEntity> {
     Integer queryPageCount(AtUserDTO atUserDTO);
 
     List<AtUserVO> queryPage(AtUserDTO atUserDTO);
+
+    /**
+     * 已使用账户汇总
+     * @return
+     */
+    List<UserSummaryResultDto> queryUsedUserSummary();
+
+
+    /**
+     * 在线账户汇总
+     * @return
+     */
+    List<UserSummaryResultDto> queryOnlineUserSummary();
+
 
 }

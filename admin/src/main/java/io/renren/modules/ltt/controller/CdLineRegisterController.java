@@ -1,6 +1,7 @@
 package io.renren.modules.ltt.controller;
 
 import java.util.Arrays;
+import java.util.List;
 
 import io.renren.modules.ltt.dto.LineRegisterSummaryResultDto;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
@@ -125,7 +126,7 @@ public class CdLineRegisterController {
     @RequestMapping("/queryLineRegisterSummary")
     @RequiresPermissions("ltt:cdregistertask:info")
     public R queryLineRegisterSummary() {
-        LineRegisterSummaryResultDto resultDto = cdLineRegisterService.queryLineRegisterSummary();
+        List<LineRegisterSummaryResultDto> resultDto = cdLineRegisterService.queryLineRegisterSummary();
 
         return R.ok().put("lineRegisterSummary", resultDto);
     }

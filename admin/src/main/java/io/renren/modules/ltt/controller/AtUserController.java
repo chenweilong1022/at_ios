@@ -173,7 +173,7 @@ public class AtUserController extends AbstractController {
     @RequestMapping("/queryUserSummary")
     @RequiresPermissions("ltt:atuser:info")
     public R queryUserSummary(){
-        UserSummaryResultDto resultDto = atUserService.queryUserSummary();
+        List<UserSummaryResultDto> resultDto = atUserService.queryUserSummary();
 
         return R.ok().put("userSummary", resultDto);
     }

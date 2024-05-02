@@ -159,19 +159,9 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
     }
 
     @Override
-    public LineRegisterSummaryResultDto queryLineRegisterSummary() {
-        //库存
-        Integer registerStock = baseMapper.selectCount(new QueryWrapper<CdLineRegisterEntity>().lambda()
-                .eq(CdLineRegisterEntity::getRegisterStatus, RegisterStatus.RegisterStatus4.getKey()));
-        //今日注册数量
-        Integer todayRegisterNum = baseMapper.selectCount(new QueryWrapper<CdLineRegisterEntity>().lambda()
-                .eq(CdLineRegisterEntity::getRegisterStatus, RegisterStatus.RegisterStatus4.getKey())
-                .between(CdLineRegisterEntity::getCreateTime, DateUtils.getTodayStart(), DateUtils.getTodayEnd()));
-
-        LineRegisterSummaryResultDto resultDto = new LineRegisterSummaryResultDto();
-        resultDto.setRegisterStock(registerStock);
-        resultDto.setTodayRegisterNum(todayRegisterNum);
-        return resultDto;
+    public List<LineRegisterSummaryResultDto> queryLineRegisterSummary() {
+        List<LineRegisterSummaryResultDto> summaryResultDtos = baseMapper.queryLineRegisterSummary();
+        return summaryResultDtos;
     }
 
 }

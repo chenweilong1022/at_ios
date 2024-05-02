@@ -11,10 +11,18 @@ import java.io.Serializable;
  */
 @Data
 public class LineRegisterSummaryResultDto implements Serializable {
+    @ApiModelProperty(required=false,value="国家")
+    private String countryCode;
 
     @ApiModelProperty("库存")
     private Integer registerStock;
 
     @ApiModelProperty("今日注册数量")
     private Integer todayRegisterNum;
+
+    @ApiModelProperty("昨日注册数量")
+    private Integer yesterdayRegisterNum;
+
+    @ApiModelProperty("前天注册数量")
+    private Integer beforeRegisterNum;
 }

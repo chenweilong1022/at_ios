@@ -442,18 +442,35 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
 
 
     @Override
-    public UserSummaryResultDto queryUserSummary() {
+    public List<UserSummaryResultDto> queryUserSummary() {
         //今日已使用数量
-        Integer usedUserStock = baseMapper.selectCount(new QueryWrapper<AtUserEntity>().lambda()
-                .eq(AtUserEntity::getStatus, UserStatus6.getKey())
-                .between(AtUserEntity::getCreateTime, DateUtils.getTodayStart(), DateUtils.getTodayEnd()));
+        Map<String, Integer> usedUserMap = baseMapper.queryUsedUserSummary().stream()
+                .collect(Collectors.toMap(UserSummaryResultDto::getCountryCode, UserSummaryResultDto::getUsedUserStock));
         //当前在线数量
-        Integer onlineUserNum = baseMapper.selectCount(new QueryWrapper<AtUserEntity>().lambda()
-                .eq(AtUserEntity::getStatus, UserStatus4.getKey()));
+        Map<String, Integer> onlineUserMap = baseMapper.queryOnlineUserSummary().stream()
+                .collect(Collectors.toMap(UserSummaryResultDto::getCountryCode, UserSummaryResultDto::getOnlineUserNum));
 
-        UserSummaryResultDto resultDto = new UserSummaryResultDto();
-        resultDto.setUsedUserStock(usedUserStock);
-        resultDto.setOnlineUserNum(onlineUserNum);
-        return resultDto;
+        List<UserSummaryResultDto> resultList = new ArrayList<>(2);
+        UserSummaryResultDto resultDto = null;
+        String countryCode = null;
+
+
+
+        for (CountryCode typeEnum : CountryCode.values()) {
+            countryCode = typeEnum.getValue().toUpperCase();
+            resultDto = new UserSummaryResultDto();
+            if (usedUserMap.get(countryCode) != null) {
+                resultDto.setCountryCode(countryCode);
+                resultDto.setUsedUserStock(usedUserMap.get(countryCode));
+            }
+            if (onlineUserMap.get(countryCode) != null) {
+                resultDto.setCountryCode(countryCode);
+                resultDto.setOnlineUserNum(onlineUserMap.get(countryCode));
+            }
+            if (StringUtils.isNotEmpty(resultDto.getCountryCode())) {
+                resultList.add(resultDto);
+            }
+        }
+        return resultList;
     }
 }

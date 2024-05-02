@@ -138,6 +138,6 @@ public interface AtUserService extends IService<AtUserEntity> {
      * 账号使用情况汇总
      * @return
      */
-    UserSummaryResultDto queryUserSummary();
+    List<UserSummaryResultDto> queryUserSummary();
 }
 
