@@ -19,8 +19,6 @@ public class SysUserTokenServiceImpl extends ServiceImpl<SysUserTokenDao, SysUse
 
 	@Override
 	public R createToken(long userId) {
-		//生成一个token
-		String token = TokenGenerator.generateValue();
 
 		//当前时间
 		Date now = new Date();
@@ -29,6 +27,16 @@ public class SysUserTokenServiceImpl extends ServiceImpl<SysUserTokenDao, SysUse
 
 		//判断是否生成过token
 		SysUserTokenEntity tokenEntity = this.getById(userId);
+
+		//生成一个token
+		String token;
+		if(tokenEntity == null || tokenEntity.getExpireTime().getTime() < System.currentTimeMillis()){
+			//新用户/token失效
+			token = TokenGenerator.generateValue();
+		} else {
+			token = tokenEntity.getToken();
+		}
+
 		if(tokenEntity == null){
 			tokenEntity = new SysUserTokenEntity();
 			tokenEntity.setUserId(userId);
