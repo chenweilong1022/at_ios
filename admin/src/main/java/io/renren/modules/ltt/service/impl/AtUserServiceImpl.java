@@ -460,11 +460,11 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
             countryCode = typeEnum.getValue().toUpperCase();
             resultDto = new UserSummaryResultDto();
             if (usedUserMap.get(countryCode) != null) {
-                resultDto.setCountryCode(countryCode);
+                resultDto.setCountryCode(typeEnum.getValue());
                 resultDto.setUsedUserStock(usedUserMap.get(countryCode));
             }
             if (onlineUserMap.get(countryCode) != null) {
-                resultDto.setCountryCode(countryCode);
+                resultDto.setCountryCode(typeEnum.getValue());
                 resultDto.setOnlineUserNum(onlineUserMap.get(countryCode));
             }
             if (StringUtils.isNotEmpty(resultDto.getCountryCode())) {
