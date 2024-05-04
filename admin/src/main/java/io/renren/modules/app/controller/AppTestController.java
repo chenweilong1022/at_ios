@@ -11,10 +11,7 @@ import io.renren.modules.app.code.UserCode;
 import io.renren.modules.app.dto.UserUpdateDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
@@ -116,7 +113,7 @@ public class AppTestController {
         return R.data(enumVos);
     }
 
-    @GetMapping("setJpSfPhoneCache")
+    @PostMapping("setJpSfPhoneCache")
     public R setJpSfPhoneCache(@RequestBody LinkedList<String> phoneList) {
         jpSfPhoneCacheListString.put("jpSfPhone",phoneList);
         return R.data(true);

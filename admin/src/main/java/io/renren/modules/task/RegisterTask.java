@@ -267,11 +267,11 @@ public class RegisterTask {
                                 return;
                             }
                             if (StrUtil.isEmpty(phoneCode) && StringUtils.isNotEmpty(cdGetPhoneEntity.getCountrycode())) {
-                                if (CountryCode.CountryCode3.getValue().equals(cdGetPhoneEntity.getCountrycode())) {
+                                if (CountryCode.CountryCode3.getValue().equals(cdGetPhoneEntity.getCountrycode()) && CountryCode.CountryCode3.getKey().toString().equals(cdGetPhoneEntity.getCountry())) {
                                     //日本
                                     cardJpSms.put(cdGetPhoneEntity.getPkey(), cdGetPhoneEntity.getCreateTime());
                                     phoneCode = cardJpService.getPhoneCode(cdGetPhoneEntity.getPkey());
-                                }else if (CountryCode.CountryCode8.getValue().equals(cdGetPhoneEntity.getCountrycode())) {
+                                }else if (CountryCode.CountryCode8.getValue().equals(cdGetPhoneEntity.getCountrycode())  && CountryCode.CountryCode8.getKey().toString().equals(cdGetPhoneEntity.getCountry())) {
                                     //日本-四方
                                     phoneCode = cardJpSFService.getPhoneCode(cdGetPhoneEntity.getPkey());
                                 } else if (CountryCode.CountryCode5.getValue().equals(cdGetPhoneEntity.getCountrycode())) {
@@ -577,6 +577,7 @@ public class RegisterTask {
                             cdGetPhoneDTO.setCount(cdRegisterSubtasksEntity.getNumberRegistrations());
                             cdGetPhoneDTO.setSubtasksId(cdRegisterSubtasksEntity.getId());
                             cdGetPhoneDTO.setCountrycode(CountryCode.getValueByKey(cdRegisterSubtasksEntity.getCountryCode()));
+                            cdGetPhoneDTO.setCountrycodeKey(cdRegisterSubtasksEntity.getCountryCode());
                             List<CdGetPhoneEntity> cdGetPhoneEntities = cdGetPhoneService.addCount(cdGetPhoneDTO);
                             //如果数量相等
                             if (CollUtil.isNotEmpty(cdGetPhoneEntities)) {

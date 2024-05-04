@@ -2,6 +2,7 @@ package io.renren.modules.client.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
@@ -56,11 +57,13 @@ public class CardJpSFServiceImpl implements FirefoxService {
             Queue<String> jpSfPhone = jpSfPhoneCacheListString.getIfPresent("jpSfPhone");
             if (CollectionUtil.isNotEmpty(jpSfPhone)) {
                 String phone = jpSfPhone.poll();
-                GetPhoneVO getPhoneVo = new GetPhoneVO()
-                        .setPkey(phone)
-                        .setPhone(String.format("%s%s", CountryCode.CountryCode3.getKey(), phone))
-                        .setNumber("").setTime(null).setCom("").setCountry("").setCountryCode("").setOther("");
-                return getPhoneVo;
+                if (StrUtil.isNotEmpty(phone)) {
+                    GetPhoneVO getPhoneVo = new GetPhoneVO()
+                            .setPkey(phone)
+                            .setPhone(String.format("%s%s", CountryCode.CountryCode3.getKey(), phone))
+                            .setNumber("").setTime(null).setCom("").setCountry("").setCountryCode("").setOther("");
+                    return getPhoneVo;
+                }
             }
             return null;
         } catch (Exception e) {

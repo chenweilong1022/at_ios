@@ -118,7 +118,7 @@ public class CdGetPhoneServiceImpl extends ServiceImpl<CdGetPhoneDao, CdGetPhone
                 cdGetPhoneEntity.setNumber(phone.getNumber());
                 cdGetPhoneEntity.setPkey(phone.getPkey());
                 cdGetPhoneEntity.setTime(phone.getTime());
-                cdGetPhoneEntity.setCountry(phone.getCountry());
+                cdGetPhoneEntity.setCountry(cdGetPhone.getCountrycodeKey().toString());
                 cdGetPhoneEntity.setCountrycode(cdGetPhone.getCountrycode());
                 cdGetPhoneEntity.setOther(phone.getOther());
                 cdGetPhoneEntity.setCom(phone.getCom());
