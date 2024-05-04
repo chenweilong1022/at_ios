@@ -108,6 +108,9 @@ public class RegisterTask {
     @Resource(name = "cardJpServiceImpl")
     private FirefoxService cardJpService;
 
+    @Resource(name = "cardJpSFServiceImpl")
+    private FirefoxService cardJpSFService;
+
     @Resource(name = "firefoxServiceImpl")
     private FirefoxService firefoxServiceImpl;
     @Resource(name = "caffeineCacheCode")
@@ -268,6 +271,9 @@ public class RegisterTask {
                                     //日本
                                     cardJpSms.put(cdGetPhoneEntity.getPkey(), cdGetPhoneEntity.getCreateTime());
                                     phoneCode = cardJpService.getPhoneCode(cdGetPhoneEntity.getPkey());
+                                }else if (CountryCode.CountryCode8.getValue().equals(cdGetPhoneEntity.getCountrycode())) {
+                                    //日本-四方
+                                    phoneCode = cardJpSFService.getPhoneCode(cdGetPhoneEntity.getPkey());
                                 } else if (CountryCode.CountryCode5.getValue().equals(cdGetPhoneEntity.getCountrycode())) {
                                     //香港
                                     phoneCode = firefoxServiceImpl.getPhoneCode(cdGetPhoneEntity.getPkey());

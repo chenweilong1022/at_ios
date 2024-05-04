@@ -14,7 +14,9 @@ import io.renren.modules.client.FirefoxService;
 import io.renren.modules.client.entity.ProjectWorkEntity;
 import io.renren.modules.client.vo.CardJpGetPhoneSmsVO;
 import io.renren.modules.client.vo.CardJpGetPhoneVO;
+import io.renren.modules.client.vo.CardJpSFGetPhoneSmsVO;
 import io.renren.modules.client.vo.GetPhoneVO;
+import io.renren.modules.ltt.entity.AtUserPortEntity;
 import io.renren.modules.ltt.enums.CountryCode;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -33,6 +35,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static io.renren.modules.client.impl.CardJpServiceImpl.extractVerificationCode;
+
 /**
  * @author liuyuchan
  * @email liuyuchan286@gmail.com
@@ -43,29 +47,22 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CardJpSFServiceImpl implements FirefoxService {
 
-    @Resource(name = "caffeineCacheProjectWorkEntity")
-    private Cache<String, ProjectWorkEntity> caffeineCacheProjectWorkEntity;
-
-    @Resource
-    private SystemConstant systemConstant;
-
-
-    @EventListener
-    @Order(value = 8888)
-    public void test(ApplicationReadyEvent event) {
-//        getPhone();
-//        getPhoneCode("128590");
-    }
+    @Resource(name = "jpSfPhoneCacheListString")
+    private Cache<String, Queue<String>> jpSfPhoneCacheListString;
 
     @Override
     public GetPhoneVO getPhone() {
         try {
-            GetPhoneVO getPhoneVo = new GetPhoneVO()
-                    .setPkey("09040029763")
-                    .setPhone(String.format("%s%s", CountryCode.CountryCode3.getKey(), "09040029763"))
-                    .setNumber("").setTime(null).setCom("").setCountry("").setCountryCode("").setOther("");
-            return getPhoneVo;
-
+            Queue<String> jpSfPhone = jpSfPhoneCacheListString.getIfPresent("jpSfPhone");
+            if (CollectionUtil.isNotEmpty(jpSfPhone)) {
+                String phone = jpSfPhone.poll();
+                GetPhoneVO getPhoneVo = new GetPhoneVO()
+                        .setPkey(phone)
+                        .setPhone(String.format("%s%s", CountryCode.CountryCode3.getKey(), phone))
+                        .setNumber("").setTime(null).setCom("").setCountry("").setCountryCode("").setOther("");
+                return getPhoneVo;
+            }
+            return null;
         } catch (Exception e) {
             log.error("CardJpSFServiceImpl_getPhone_error {}", e);
         }
@@ -83,6 +80,17 @@ public class CardJpSFServiceImpl implements FirefoxService {
             String resp = HttpUtil.get(getPhoneHttp);
             log.info("CardJpSFServiceImpl_getPhoneCode_result {}", resp);
 
+            List<CardJpSFGetPhoneSmsVO> resultList = JSON.parseArray(resp, CardJpSFGetPhoneSmsVO.class);
+
+            if (CollectionUtil.isNotEmpty(resultList)) {
+                CardJpSFGetPhoneSmsVO cardJpSFGetPhoneSmsVO = resultList.stream()
+                        .filter(i -> pKey.equals(i.getSimnum()))
+                        .max(Comparator.comparing(CardJpSFGetPhoneSmsVO::getTime)).orElse(null);
+                if (cardJpSFGetPhoneSmsVO != null) {
+                    String s = extractVerificationCode(cardJpSFGetPhoneSmsVO.getContent());
+                    return s;
+                }
+            }
             return null;
         } catch (Exception e) {
             log.error("CardJpSFServiceImpl_getPhoneCode_error {}", e);
@@ -100,4 +108,35 @@ public class CardJpSFServiceImpl implements FirefoxService {
         return true;
     }
 
+    public static void main(String[] args) {
+        String result = "[\n" +
+                "    {\n" +
+                "        \"id\": 50,\n" +
+                "        \"content\": \"認証番号「155646」をLINEで入力して下さい。他人には教えないで下さい。30分間有効です。\",\n" +
+                "        \"time\": \"2024-05-04 20:59:48\",\n" +
+                "        \"simnum\": \"09040029763\"\n" +
+                "    },\n" +
+                "   {\n" +
+                "        \"id\": 51,\n" +
+                "        \"content\": \"認証番号「155647」をLINEで入力して下さい。他人には教えないで下さい。30分間有効です。\",\n" +
+                "        \"time\": \"2024-05-04 20:59:58\",\n" +
+                "        \"simnum\": \"09040029763\"\n" +
+                "    }\n" +
+                "]";
+        String phone = "09040029763";
+        List<CardJpSFGetPhoneSmsVO> resultList = JSON.parseArray(result, CardJpSFGetPhoneSmsVO.class);
+        log.info("CardJpServiceImpl_getPhoneCode_result {}", resultList);
+
+        if (CollectionUtil.isNotEmpty(resultList)) {
+            CardJpSFGetPhoneSmsVO cardJpSFGetPhoneSmsVO = resultList.stream()
+                    .filter(i -> phone.equals(i.getSimnum()))
+                    .max(Comparator.comparing(CardJpSFGetPhoneSmsVO::getTime)).orElse(null);
+            if (cardJpSFGetPhoneSmsVO != null) {
+                String s = extractVerificationCode(cardJpSFGetPhoneSmsVO.getContent());
+                System.out.println(s);
+            }
+        }
+
+
+    }
 }

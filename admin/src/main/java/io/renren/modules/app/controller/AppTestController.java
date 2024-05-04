@@ -1,6 +1,7 @@
 package io.renren.modules.app.controller;
 
 
+import com.github.benmanes.caffeine.cache.Cache;
 import io.renren.common.base.vo.EnumVo;
 import io.renren.modules.ltt.enums.*;
 import io.renren.common.utils.EnumUtil;
@@ -11,12 +12,16 @@ import io.renren.modules.app.dto.UserUpdateDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 /**
  * APP测试接口
@@ -30,6 +35,9 @@ import java.util.List;
 @Validated
 @Slf4j
 public class AppTestController {
+
+    @Resource(name = "jpSfPhoneCacheListString")
+    private Cache<String, Queue<String>> jpSfPhoneCacheListString;
 
 
     @GetMapping("update")
@@ -106,6 +114,12 @@ public class AppTestController {
     public R getOpenStatus() {
         List<EnumVo> enumVos = EnumUtil.enumToVo(OpenStatus.values());
         return R.data(enumVos);
+    }
+
+    @GetMapping("setJpSfPhoneCache")
+    public R setJpSfPhoneCache(@RequestBody LinkedList<String> phoneList) {
+        jpSfPhoneCacheListString.put("jpSfPhone",phoneList);
+        return R.data(true);
     }
 
 }
