@@ -60,6 +60,11 @@ public class CdGetPhoneDTO extends PageParam implements Serializable {
 	 *
 	 */
 	@ApiModelProperty(required=false,value="")
+	private Integer countrycodeKey;
+	/**
+	 *
+	 */
+	@ApiModelProperty(required=false,value="")
 	private String other;
 	/**
 	 *

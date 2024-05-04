@@ -16,5 +16,6 @@ import java.util.List;
 public class EnumVo {
     private Integer key;
     private String value;
+    private String value2;
     private List<EnumVo> children;
 }

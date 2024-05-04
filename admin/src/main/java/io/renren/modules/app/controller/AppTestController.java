@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -40,7 +41,10 @@ public class AppTestController {
 
     @GetMapping("enums/countryCodes")
     public R update() {
-        List<EnumVo> enumVos = EnumUtil.enumToVo(CountryCode.values());
+        List<EnumVo> enumVos = new ArrayList<>();
+        for (CountryCode value : CountryCode.values()) {
+            enumVos.add(new EnumVo().setKey(value.getKey()).setValue(value.getValue()).setValue2(value.getValue2()));
+        }
         return R.data(enumVos);
     }
 

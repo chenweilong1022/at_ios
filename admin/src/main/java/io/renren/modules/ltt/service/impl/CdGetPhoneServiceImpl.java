@@ -80,6 +80,9 @@ public class CdGetPhoneServiceImpl extends ServiceImpl<CdGetPhoneDao, CdGetPhone
     @Resource(name = "cardJpServiceImpl")
     private FirefoxService cardJpService;
 
+    @Resource(name = "cardJpSFServiceImpl")
+    private FirefoxService cardJpSFService;
+
     @Resource(name = "firefoxServiceImpl")
     private FirefoxService firefoxService;
 
@@ -97,9 +100,11 @@ public class CdGetPhoneServiceImpl extends ServiceImpl<CdGetPhoneDao, CdGetPhone
             }
 
             GetPhoneVO phone = null;
-            if (CountryCode.CountryCode3.getValue().equals(cdGetPhone.getCountrycode())) {
+            if (CountryCode.CountryCode3.getKey().equals(cdGetPhone.getCountrycodeKey()) && CountryCode.CountryCode3.getValue().equals(cdGetPhone.getCountrycode())) {
                 //日本
                 phone = cardJpService.getPhone();
+            }else if (CountryCode.CountryCode8.getKey().equals(cdGetPhone.getCountrycodeKey()) && CountryCode.CountryCode8.getValue().equals(cdGetPhone.getCountrycode())) {
+                phone = cardJpSFService.getPhone();
             } else if (CountryCode.CountryCode5.getValue().equals(cdGetPhone.getCountrycode())) {
                 //香港
                 phone = firefoxService.getPhone();

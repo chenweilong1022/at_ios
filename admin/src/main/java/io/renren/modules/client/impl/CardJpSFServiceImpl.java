@@ -61,7 +61,7 @@ public class CardJpSFServiceImpl implements FirefoxService {
     public GetPhoneVO getPhone() {
         try {
             GetPhoneVO getPhoneVo = new GetPhoneVO()
-                    .setPkey(UUID.randomUUID().toString())
+                    .setPkey("09040029763")
                     .setPhone(String.format("%s%s", CountryCode.CountryCode3.getKey(), "09040029763"))
                     .setNumber("").setTime(null).setCom("").setCountry("").setCountryCode("").setOther("");
             return getPhoneVo;
