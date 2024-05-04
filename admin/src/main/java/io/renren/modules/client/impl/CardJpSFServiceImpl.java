@@ -75,25 +75,25 @@ public class CardJpSFServiceImpl implements FirefoxService {
     @Override
     public String getPhoneCode(String pKey) {
         try {
-            String getPhoneHttp = String.format("%s/smslist?token=%s",
-                    "http://sms.szfangmm.com:3000/api/",
-                    "wA54jX77SdvDSCeDkFSB6i");
-
-            log.info("CardJpSFServiceImpl_getPhone param:{}", getPhoneHttp);
-            String resp = HttpUtil.get(getPhoneHttp);
-            log.info("CardJpSFServiceImpl_getPhoneCode_result {}", resp);
-
-            List<CardJpSFGetPhoneSmsVO> resultList = JSON.parseArray(resp, CardJpSFGetPhoneSmsVO.class);
-
-            if (CollectionUtil.isNotEmpty(resultList)) {
-                CardJpSFGetPhoneSmsVO cardJpSFGetPhoneSmsVO = resultList.stream()
-                        .filter(i -> pKey.equals(i.getSimnum()))
-                        .max(Comparator.comparing(CardJpSFGetPhoneSmsVO::getTime)).orElse(null);
-                if (cardJpSFGetPhoneSmsVO != null) {
-                    String s = extractVerificationCode(cardJpSFGetPhoneSmsVO.getContent());
-                    return s;
-                }
-            }
+//            String getPhoneHttp = String.format("%s/smslist?token=%s",
+//                    "http://sms.szfangmm.com:3000/api/",
+//                    "wA54jX77SdvDSCeDkFSB6i");
+//
+//            log.info("CardJpSFServiceImpl_getPhone param:{}", getPhoneHttp);
+//            String resp = HttpUtil.get(getPhoneHttp);
+//            log.info("CardJpSFServiceImpl_getPhoneCode_result {}", resp);
+//
+//            List<CardJpSFGetPhoneSmsVO> resultList = JSON.parseArray(resp, CardJpSFGetPhoneSmsVO.class);
+//
+//            if (CollectionUtil.isNotEmpty(resultList)) {
+//                CardJpSFGetPhoneSmsVO cardJpSFGetPhoneSmsVO = resultList.stream()
+//                        .filter(i -> pKey.equals(i.getSimnum()))
+//                        .max(Comparator.comparing(CardJpSFGetPhoneSmsVO::getTime)).orElse(null);
+//                if (cardJpSFGetPhoneSmsVO != null) {
+//                    String s = extractVerificationCode(cardJpSFGetPhoneSmsVO.getContent());
+//                    return s;
+//                }
+//            }
             return null;
         } catch (Exception e) {
             log.error("CardJpSFServiceImpl_getPhoneCode_error {}", e);
