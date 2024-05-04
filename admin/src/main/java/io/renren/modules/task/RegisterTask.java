@@ -272,6 +272,7 @@ public class RegisterTask {
                                     cardJpSms.put(cdGetPhoneEntity.getPkey(), cdGetPhoneEntity.getCreateTime());
                                     phoneCode = cardJpService.getPhoneCode(cdGetPhoneEntity.getPkey());
                                 }else if (CountryCode.CountryCode8.getValue().equals(cdGetPhoneEntity.getCountrycode())  && CountryCode.CountryCode8.getKey().toString().equals(cdGetPhoneEntity.getCountry())) {
+                                    cardJpSms.put(cdGetPhoneEntity.getPkey(), cdGetPhoneEntity.getCreateTime());
                                     //日本-四方
                                     phoneCode = cardJpSFService.getPhoneCode(cdGetPhoneEntity.getPkey());
                                 } else if (CountryCode.CountryCode5.getValue().equals(cdGetPhoneEntity.getCountrycode())) {

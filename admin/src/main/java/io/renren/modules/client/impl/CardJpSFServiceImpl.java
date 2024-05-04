@@ -1,6 +1,7 @@
 package io.renren.modules.client.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
@@ -21,6 +22,10 @@ import io.renren.modules.ltt.entity.AtUserPortEntity;
 import io.renren.modules.ltt.enums.CountryCode;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
@@ -57,6 +62,7 @@ public class CardJpSFServiceImpl implements FirefoxService {
             Queue<String> jpSfPhone = jpSfPhoneCacheListString.getIfPresent("jpSfPhone");
             if (CollectionUtil.isNotEmpty(jpSfPhone)) {
                 String phone = jpSfPhone.poll();
+                jpSfPhoneCacheListString.put("phone",jpSfPhone);
                 if (StrUtil.isNotEmpty(phone)) {
                     GetPhoneVO getPhoneVo = new GetPhoneVO()
                             .setPkey(phone)
@@ -72,28 +78,46 @@ public class CardJpSFServiceImpl implements FirefoxService {
         return null;
     }
 
+    @Resource(name = "cardJpSms")
+    private Cache<String, Date> cardJpSms;
+
     @Override
     public String getPhoneCode(String pKey) {
+        //发起操作时间
+        Date date = cardJpSms.getIfPresent(pKey);
+        CloseableHttpClient httpClient = HttpClients.createDefault();
         try {
-//            String getPhoneHttp = String.format("%s/smslist?token=%s",
-//                    "http://sms.szfangmm.com:3000/api/",
-//                    "wA54jX77SdvDSCeDkFSB6i");
-//
-//            log.info("CardJpSFServiceImpl_getPhone param:{}", getPhoneHttp);
-//            String resp = HttpUtil.get(getPhoneHttp);
-//            log.info("CardJpSFServiceImpl_getPhoneCode_result {}", resp);
-//
-//            List<CardJpSFGetPhoneSmsVO> resultList = JSON.parseArray(resp, CardJpSFGetPhoneSmsVO.class);
-//
-//            if (CollectionUtil.isNotEmpty(resultList)) {
-//                CardJpSFGetPhoneSmsVO cardJpSFGetPhoneSmsVO = resultList.stream()
-//                        .filter(i -> pKey.equals(i.getSimnum()))
-//                        .max(Comparator.comparing(CardJpSFGetPhoneSmsVO::getTime)).orElse(null);
-//                if (cardJpSFGetPhoneSmsVO != null) {
-//                    String s = extractVerificationCode(cardJpSFGetPhoneSmsVO.getContent());
-//                    return s;
-//                }
-//            }
+
+            String getPhoneHttp = String.format("%s/smslist?token=%s",
+                    "http://sms.szfangmm.com:3000/api/",
+                    "wA54jX77SdvDSCeDkFSB6i");
+
+            log.info("CardJpSFServiceImpl_getPhone param:{}", getPhoneHttp);
+
+            HttpGet request = new HttpGet("http://sms.szfangmm.com:3000/api/smslist?token=wA54jX77SdvDSCeDkFSB6i");
+            request.addHeader("User-Agent", "Mozilla/5.0");
+            String resp = httpClient.execute(request, httpResponse ->
+                    EntityUtils.toString(httpResponse.getEntity()));
+
+            log.info("CardJpSFServiceImpl_getPhoneCode_result {}", resp);
+
+            List<CardJpSFGetPhoneSmsVO> resultList = JSON.parseArray(resp, CardJpSFGetPhoneSmsVO.class);
+
+            if (CollectionUtil.isNotEmpty(resultList)) {
+                CardJpSFGetPhoneSmsVO cardJpSFGetPhoneSmsVO = resultList.stream()
+                        .filter(i -> pKey.equals(i.getSimnum()))
+                        .max(Comparator.comparing(CardJpSFGetPhoneSmsVO::getTime)).orElse(null);
+                if (ObjectUtil.isNull(cardJpSFGetPhoneSmsVO)) {
+                    return null;
+                }
+                Date time = cardJpSFGetPhoneSmsVO.getTime();
+                time = DateUtil.offsetHour(time,-1);
+                boolean before = date.before(time);
+                if (cardJpSFGetPhoneSmsVO != null && before) {
+                    String s = extractVerificationCode(cardJpSFGetPhoneSmsVO.getContent());
+                    return s;
+                }
+            }
             return null;
         } catch (Exception e) {
             log.error("CardJpSFServiceImpl_getPhoneCode_error {}", e);
