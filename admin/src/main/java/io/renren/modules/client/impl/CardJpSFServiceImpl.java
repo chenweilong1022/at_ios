@@ -88,13 +88,7 @@ public class CardJpSFServiceImpl implements FirefoxService {
         CloseableHttpClient httpClient = HttpClients.createDefault();
         try {
 
-            String getPhoneHttp = String.format("%s/smslist?token=%s",
-                    "http://sms.szfangmm.com:3000/api/",
-                    "wA54jX77SdvDSCeDkFSB6i");
-
-            log.info("CardJpSFServiceImpl_getPhone param:{}", getPhoneHttp);
-
-            HttpGet request = new HttpGet("http://sms.szfangmm.com:3000/api/smslist?token=wA54jX77SdvDSCeDkFSB6i");
+            HttpGet request = new HttpGet("http://sms.newszfang.vip:3000/api/smslist?token=iLrsPw55gHmkGkK52znKvm");
             request.addHeader("User-Agent", "Mozilla/5.0");
             String resp = httpClient.execute(request, httpResponse ->
                     EntityUtils.toString(httpResponse.getEntity()));
