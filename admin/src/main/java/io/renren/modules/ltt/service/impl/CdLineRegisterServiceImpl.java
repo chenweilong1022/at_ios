@@ -145,9 +145,9 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
 //        cdLineIpProxyDTO.setNewIp(true);
 //        cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO);
 
-        CdLineIpProxyEntity cdLineIpProxyEntity = new CdLineIpProxyEntity();
-        cdLineIpProxyEntity.setTokenPhone("");
-        cdLineIpProxyService.update(cdLineIpProxyEntity,new QueryWrapper<CdLineIpProxyEntity>().lambda().eq(CdLineIpProxyEntity::getTokenPhone, cdGetPhone.getPhone()));
+//        CdLineIpProxyEntity cdLineIpProxyEntity = new CdLineIpProxyEntity();
+//        cdLineIpProxyEntity.setTokenPhone("");
+//        cdLineIpProxyService.update(cdLineIpProxyEntity,new QueryWrapper<CdLineIpProxyEntity>().lambda().eq(CdLineIpProxyEntity::getTokenPhone, cdGetPhone.getPhone()));
 
         //删除line注册此条记录
         return baseMapper.deleteById(cdLineRegisterEntity.getId()) > 0;
