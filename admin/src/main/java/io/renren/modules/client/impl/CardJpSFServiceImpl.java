@@ -88,7 +88,7 @@ public class CardJpSFServiceImpl implements FirefoxService {
         CloseableHttpClient httpClient = HttpClients.createDefault();
         try {
 
-            HttpGet request = new HttpGet("http://sms.szfangmm.com:3000/api/smslist?token=dWZyCC6Bxan5Swo5coWFHh");
+            HttpGet request = new HttpGet("http://sms.newszfang.vip:3000/api/smslist?token=iLrsPw55gHmkGkK52znKvm");
             request.addHeader("User-Agent", "Mozilla/5.0");
             String resp = httpClient.execute(request, httpResponse ->
                     EntityUtils.toString(httpResponse.getEntity()));
@@ -105,7 +105,7 @@ public class CardJpSFServiceImpl implements FirefoxService {
                     return null;
                 }
                 Date time = cardJpSFGetPhoneSmsVO.getTime();
-                time = DateUtil.offsetHour(time,-1);
+//                time = DateUtil.offsetHour(time,-1);
                 boolean before = date.before(time);
                 if (cardJpSFGetPhoneSmsVO != null && before) {
                     String s = extractVerificationCode(cardJpSFGetPhoneSmsVO.getContent());

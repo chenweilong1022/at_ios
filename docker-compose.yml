@@ -3,13 +3,13 @@ services:
   atios:
     container_name: atios
     build:
-      context: ./at_ios/admin/
+      context: ./admin/
       dockerfile: Dockerfile
     image: atios:1.0.0
     env_file:
       - ./app.env
     volumes:
-      - /home/webfile:/home/webfile
+      - /Users/chenweilong/Desktop/uploa/webfile:/home/webfile
     ports:
       - "8880:8880"
       - "8888:8888"

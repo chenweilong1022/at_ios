@@ -19,10 +19,11 @@ import io.renren.modules.client.vo.RefreshAccessTokenVO;
 import io.renren.modules.ltt.dto.CdLineIpProxyDTO;
 import io.renren.modules.ltt.entity.AtDataSubtaskEntity;
 import io.renren.modules.ltt.entity.AtUserTokenEntity;
-import io.renren.modules.ltt.entity.CdLineRegisterEntity;
-import io.renren.modules.ltt.enums.*;
+import io.renren.modules.ltt.enums.AtUserTokenTypeEnum;
+import io.renren.modules.ltt.enums.LockMapKeyResource;
+import io.renren.modules.ltt.enums.OpenStatus;
+import io.renren.modules.ltt.enums.UseFlag;
 import io.renren.modules.ltt.service.*;
-import jdk.nashorn.internal.parser.TokenType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
@@ -35,9 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
