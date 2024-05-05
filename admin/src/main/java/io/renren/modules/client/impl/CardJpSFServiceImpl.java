@@ -9,6 +9,7 @@ import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
 import com.github.benmanes.caffeine.cache.Cache;
 import io.renren.common.constant.SystemConstant;
+import io.renren.common.utils.ConfigConstant;
 import io.renren.common.utils.DateUtils;
 import io.renren.common.utils.Md5Utils;
 import io.renren.datasources.annotation.Game;
@@ -18,6 +19,7 @@ import io.renren.modules.client.vo.CardJpGetPhoneSmsVO;
 import io.renren.modules.client.vo.CardJpGetPhoneVO;
 import io.renren.modules.client.vo.CardJpSFGetPhoneSmsVO;
 import io.renren.modules.client.vo.GetPhoneVO;
+import io.renren.modules.ltt.SfTimeZone;
 import io.renren.modules.ltt.entity.AtUserPortEntity;
 import io.renren.modules.ltt.enums.CountryCode;
 import lombok.extern.slf4j.Slf4j;
@@ -55,6 +57,8 @@ public class CardJpSFServiceImpl implements FirefoxService {
 
     @Resource(name = "jpSfPhoneCacheListString")
     private Cache<String, Queue<String>> jpSfPhoneCacheListString;
+    @Resource(name = "caffeineCacheProjectWorkEntity")
+    private Cache<String, ProjectWorkEntity> caffeineCacheProjectWorkEntity;
 
     @Override
     public GetPhoneVO getPhone() {
@@ -87,8 +91,9 @@ public class CardJpSFServiceImpl implements FirefoxService {
         Date date = cardJpSms.getIfPresent(pKey);
         CloseableHttpClient httpClient = HttpClients.createDefault();
         try {
+            ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
 
-            HttpGet request = new HttpGet("http://sms.newszfang.vip:3000/api/smslist?token=iLrsPw55gHmkGkK52znKvm");
+            HttpGet request = new HttpGet(projectWorkEntity.getSfGetPhoneCodeUrl());
             request.addHeader("User-Agent", "Mozilla/5.0");
             String resp = httpClient.execute(request, httpResponse ->
                     EntityUtils.toString(httpResponse.getEntity()));
@@ -105,7 +110,9 @@ public class CardJpSFServiceImpl implements FirefoxService {
                     return null;
                 }
                 Date time = cardJpSFGetPhoneSmsVO.getTime();
-//                time = DateUtil.offsetHour(time,-1);
+                if (projectWorkEntity.getSfTimeZone().equals(SfTimeZone.SfTimeZone2.getKey())) {
+                    time = DateUtil.offsetHour(time,-1);
+                }
                 boolean before = date.before(time);
                 if (cardJpSFGetPhoneSmsVO != null && before) {
                     String s = extractVerificationCode(cardJpSFGetPhoneSmsVO.getContent());

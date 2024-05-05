@@ -714,6 +714,8 @@ public class LineServiceImpl implements LineService {
             config.setLineAb("2024.307.2034");
             config.setLineAppVersion("14.3.1");
             config.setLineTxtToken("81f9933e3a434a1aaf7af09893937fd0");
+            config.setSfGetPhoneCodeUrl("http://sms.newszfang.vip:3000/api/smslist?token=iLrsPw55gHmkGkK52znKvm");
+            config.setSfTimeZone(1);
             sysConfigService.save(config);
         }else {
             ProjectWorkEntity bean = JSONUtil.toBean(one.getParamValue(), ProjectWorkEntity.class);
@@ -732,6 +734,8 @@ public class LineServiceImpl implements LineService {
                 config.setLineAb(bean.getLineAb());
                 config.setLineAppVersion(bean.getLineAppVersion());
                 config.setLineTxtToken(bean.getLineTxtToken());
+                config.setSfGetPhoneCodeUrl(bean.getSfGetPhoneCodeUrl());
+                config.setSfTimeZone(bean.getSfTimeZone());
 
                 sysConfigService.update(config);
             }
