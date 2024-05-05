@@ -28,6 +28,7 @@ import io.renren.modules.ltt.dto.CdLineRegisterDTO;
 import io.renren.modules.ltt.vo.CdLineRegisterVO;
 import io.renren.modules.ltt.service.CdLineRegisterService;
 import io.renren.modules.ltt.conver.CdLineRegisterConver;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.io.Serializable;
@@ -118,6 +119,7 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
     private CdLineIpProxyService cdLineIpProxyService;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean registerRetry(Integer id) {
         CdLineRegisterEntity cdLineRegisterEntity = baseMapper.selectById(id);
         Assert.isTrue(ObjectUtil.isNull(cdLineRegisterEntity), "数据为空");
