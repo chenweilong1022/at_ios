@@ -86,6 +86,9 @@ public class SysConfigController extends AbstractController {
 			config.setLineAb(projectWorkEntity.getLineAb());
 			config.setLineAppVersion(projectWorkEntity.getLineAppVersion());
 			config.setLineTxtToken(projectWorkEntity.getLineTxtToken());
+			config.setSfGetPhoneCodeUrl(projectWorkEntity.getSfGetPhoneCodeUrl());
+			config.setSfTimeZone(projectWorkEntity.getSfTimeZone());
+
 		}
 
 		return R.ok().put("config", config);
@@ -117,6 +120,8 @@ public class SysConfigController extends AbstractController {
 			config.setLineAb(projectWorkEntity.getLineAb());
 			config.setLineAppVersion(projectWorkEntity.getLineAppVersion());
 			config.setLineTxtToken(projectWorkEntity.getLineTxtToken());
+			config.setSfGetPhoneCodeUrl(projectWorkEntity.getSfGetPhoneCodeUrl());
+			config.setSfTimeZone(projectWorkEntity.getSfTimeZone());
 		}
 
 		return R.ok().put("config", config);

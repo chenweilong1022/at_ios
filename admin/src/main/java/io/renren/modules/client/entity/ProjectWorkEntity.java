@@ -1,5 +1,6 @@
 package io.renren.modules.client.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -26,4 +27,8 @@ public class ProjectWorkEntity implements Serializable {
     private String lineAppVersion;
 
     private String lineTxtToken;
+
+    private String sfGetPhoneCodeUrl;
+
+    private Integer sfTimeZone;
 }

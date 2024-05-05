@@ -66,8 +66,22 @@
       <el-form-item label="LINE国家配置" prop="firefoxCountry1"  v-if="type === 2">
         <el-input v-model="dataForm.firefoxCountry1" placeholder="LINE国家配置"></el-input>
       </el-form-item>
-      <el-form-item label="静态代理使用次数" prop="proxyUseCount"  v-if="type === 2">
+      <el-form-item label="静态代理使用次数" prop="proxyUseCount" v-if="type === 2">
         <el-input v-model="dataForm.proxyUseCount" placeholder="静态代理使用次数"></el-input>
+      </el-form-item>
+      <el-form-item label="四方验证码URL" prop="sfGetPhoneCodeUrl">
+        <el-input v-model="dataForm.sfGetPhoneCodeUrl" placeholder="四方验证码URL"></el-input>
+      </el-form-item>
+      <el-form-item label="四方时区" prop="sfTimeZone" >
+<!--        <el-input v-model="dataForm.sfTimeZone" placeholder="四方时区"></el-input>-->
+        <el-select v-model="dataForm.sfTimeZone" placeholder="四方时区" clearable>
+          <el-option
+            v-for="item in options1"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value">
+          </el-option>
+        </el-select>
       </el-form-item>
     </el-form>
     <span slot="footer" class="dialog-footer">
@@ -115,6 +129,16 @@ export default {
           label: '静态代理'
         }
       ],
+      options1: [
+        {
+          value: 1,
+          label: '中国时间'
+        },
+        {
+          value: 2,
+          label: '日本时间'
+        }
+      ],
       options: [
         {
           value: 1,
@@ -127,6 +151,7 @@ export default {
       ],
       dataForm: {
         id: 0,
+        sfTimeZone: null,
         paramKey: '',
         paramValue: '',
         firefoxBaseUrl: '',
@@ -135,6 +160,7 @@ export default {
         firefoxCountry: '',
         firefoxCountry1: '',
         proxyUseCount: '',
+        sfGetPhoneCodeUrl: '',
         lineBaseHttp: '',
 
         lineAb: '',
@@ -181,6 +207,8 @@ export default {
               this.dataForm.firefoxCountry = data.config.firefoxCountry
               this.dataForm.firefoxCountry1 = data.config.firefoxCountry1
               this.dataForm.proxyUseCount = data.config.proxyUseCount
+              this.dataForm.sfGetPhoneCodeUrl = data.config.sfGetPhoneCodeUrl
+              this.dataForm.sfTimeZone = data.config.sfTimeZone
               this.proxy = data.config.proxy
             }
           })
@@ -209,6 +237,8 @@ export default {
               'firefoxCountry': this.dataForm.firefoxCountry,
               'firefoxCountry1': this.dataForm.firefoxCountry1,
               'proxyUseCount': this.dataForm.proxyUseCount,
+              'sfGetPhoneCodeUrl': this.dataForm.sfGetPhoneCodeUrl,
+              'sfTimeZone': this.dataForm.sfTimeZone,
               'proxy': this.proxy,
               'type': this.type,
               'remark': this.dataForm.remark

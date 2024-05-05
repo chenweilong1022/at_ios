@@ -66,4 +66,8 @@ public class SysConfigEntity extends AbstractEntity implements Serializable {
 	private String lineAppVersion;
 	@TableField(exist = false)
 	private String lineTxtToken;
+	@TableField(exist = false)
+	private String sfGetPhoneCodeUrl;
+	@TableField(exist = false)
+	private Integer sfTimeZone;
 }

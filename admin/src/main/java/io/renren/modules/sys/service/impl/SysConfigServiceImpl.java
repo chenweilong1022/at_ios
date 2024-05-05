@@ -58,7 +58,7 @@ public class SysConfigServiceImpl extends ServiceImpl<SysConfigDao, SysConfigEnt
 
 		return new PageUtils(page);
 	}
-	
+
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public boolean save(SysConfigEntity config) {
@@ -74,6 +74,8 @@ public class SysConfigServiceImpl extends ServiceImpl<SysConfigDao, SysConfigEnt
 		projectWorkEntity.setLineAb(config.getLineAb());
 		projectWorkEntity.setLineAppVersion(config.getLineAppVersion());
 		projectWorkEntity.setLineTxtToken(config.getLineTxtToken());
+		projectWorkEntity.setSfGetPhoneCodeUrl(config.getSfGetPhoneCodeUrl());
+		projectWorkEntity.setSfTimeZone(config.getSfTimeZone());
 
 		String jsonStr = JSONUtil.toJsonStr(projectWorkEntity);
 		config.setParamKey(ConfigConstant.PROJECT_WORK_KEY);
@@ -98,6 +100,8 @@ public class SysConfigServiceImpl extends ServiceImpl<SysConfigDao, SysConfigEnt
 		projectWorkEntity.setLineAb(config.getLineAb());
 		projectWorkEntity.setLineAppVersion(config.getLineAppVersion());
 		projectWorkEntity.setLineTxtToken(config.getLineTxtToken());
+		projectWorkEntity.setSfGetPhoneCodeUrl(config.getSfGetPhoneCodeUrl());
+		projectWorkEntity.setSfTimeZone(config.getSfTimeZone());
 
 		String jsonStr = JSONUtil.toJsonStr(projectWorkEntity);
 		config.setParamKey(ConfigConstant.PROJECT_WORK_KEY);
@@ -134,7 +138,7 @@ public class SysConfigServiceImpl extends ServiceImpl<SysConfigDao, SysConfigEnt
 
 		return config == null ? null : config.getParamValue();
 	}
-	
+
 	@Override
 	public <T> T getConfigObject(String key, Class<T> clazz) {
 		String value = getValue(key);
