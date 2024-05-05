@@ -68,5 +68,12 @@ public interface CdLineIpProxyService extends IService<CdLineIpProxyEntity> {
      * @return
      */
     Integer deleteByTokenPhone(List<String> tokenPhoneList);
+
+    /**
+     * 手机号置空
+     * @param tokenPhone
+     * @return
+     */
+    Integer clearTokenPhone(String tokenPhone);
 }
 

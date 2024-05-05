@@ -386,7 +386,9 @@
             label="操作">
             <template slot-scope="scope">
               <el-button type="text" size="small" @click="errLogsHandle(scope.row.id)">错误日志</el-button>
-<!--              <el-button type="text" size="small" @click="atUserHandle(scope.row.userId)">拉群账号</el-button>-->
+              <el-button type="text" size="small"
+                         v-if="scope.row.msg === 'NetError：网络异常'"
+                         @click="errRetryHandle(scope.row.id)">错误重试</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -577,6 +579,31 @@ import ErrLogs from "./atdatatask-err-logs.vue";
           } else {
             this.$message.error(data.msg)
           }
+        })
+      },
+      errRetryHandle (id) {
+        this.$confirm(`确定进行拉群重试操作?`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$http({
+            url: this.$http.adornUrl('/ltt/atgroup/errRetryGroup/' + id),
+            method: 'post'
+          }).then(({data}) => {
+            if (data && data.code === 0) {
+              this.$message({
+                message: '操作成功',
+                type: 'success',
+                duration: 1500,
+                onClose: () => {
+                  this.getDataList()
+                }
+              })
+            } else {
+              this.$message.error(data.msg)
+            }
+          })
         })
       },
       groupTypeChangeHandler () {
