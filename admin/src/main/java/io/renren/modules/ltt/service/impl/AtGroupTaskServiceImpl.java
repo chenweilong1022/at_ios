@@ -65,7 +65,7 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
             List<Long> sysUserIdList = resultList.stream().map(AtGroupTaskVO::getSysUserId).collect(Collectors.toList());
             //查询username
             Map<Long, String> usernameMap = sysUserService.queryUserNameByUserIdList(sysUserIdList);
-            resultList.forEach(i -> i.setSysUsername(usernameMap.get(i.getSysUserId())));
+//            resultList.forEach(i -> i.setSysUsername(usernameMap.get(i.getSysUserId())));
 
             //查询拉群数据统计
             List<Integer> groupTaskIdList = resultList.stream().map(AtGroupTaskVO::getId).collect(Collectors.toList());

@@ -101,6 +101,9 @@ public class AtGroupTaskVO implements Serializable {
 	private Integer failUserCount;
 
 	public String getScheduleFloat() {
+		if (successGroupCount == null || usdUserCount == null) {
+			return "0";
+		}
 		return String.format("%.2f", (double) successGroupCount / usdUserCount * 100);
 	}
 
