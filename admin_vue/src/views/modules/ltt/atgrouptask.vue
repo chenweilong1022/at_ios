@@ -23,34 +23,31 @@
         label="任务名称">
       </el-table-column>
       <el-table-column
-        prop="addTotalQuantity"
+        prop="usdUserCount"
         header-align="center"
         align="center"
-        label="加粉总数">
+        label="总使用账号数">
       </el-table-column>
       <el-table-column
-        prop="successfulQuantity"
+        prop="successGroupCount"
         header-align="center"
         align="center"
-        label="成功数">
+        label="拉群成功数">
       </el-table-column>
       <el-table-column
-        prop="failuresQuantity"
+        prop="failUserCount"
         header-align="center"
         align="center"
-        label="失败数">
-      </el-table-column>
-      <el-table-column
-        prop="taskStatus"
-        header-align="center"
-        align="center"
-        label="状态">
+        label="拉取失败账号数量">
       </el-table-column>
       <el-table-column
         prop="schedule"
         header-align="center"
         align="center"
-        label="进度">
+        label="成功率">
+        <template slot-scope="scope">
+          <el-progress :stroke-width="9" type="circle"  :width="90" :percentage="scope.row.scheduleFloat"></el-progress>
+        </template>
       </el-table-column>
       <el-table-column
         prop="createTime"

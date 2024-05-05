@@ -4,11 +4,14 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import io.renren.common.utils.PageUtils;
 import io.renren.modules.client.dto.ImportZipDTO;
 import io.renren.modules.ltt.dto.AtGroupDTO;
+import io.renren.modules.ltt.vo.AtGroupTaskVO;
 import io.renren.modules.ltt.vo.AtGroupVO;
 import io.renren.modules.ltt.entity.AtGroupEntity;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -91,5 +94,12 @@ public interface AtGroupService extends IService<AtGroupEntity> {
      * @return
      */
     Boolean errRetryGroup(Integer groupId);
+
+    /**
+     * 数据汇总
+     * @param groupTaskIdList
+     * @return
+     */
+    Map<Integer, AtGroupTaskVO> groupDataSummary(List<Integer> groupTaskIdList);
 }
 

@@ -91,7 +91,7 @@
             t.task_status
         FROM
             at_group g
-                LEFT JOIN at_data_task t ON g.id = t.group_id
+                inner JOIN at_data_task t ON g.id = t.group_id
         WHERE
             g.group_task_id = #{dto.groupTaskId}
         <if test="dto.groupStatusList != null and dto.groupStatusList.size>0">
@@ -102,5 +102,19 @@
         </if>
     </select>
 
+    <select id="groupDataSummary" resultType="io.renren.modules.ltt.vo.AtGroupTaskVO">
+        SELECT
+        group_task_id as id,
+        COUNT(DISTINCT user_id) AS usdUserCount,
+        SUM(CASE WHEN group_status = 9 THEN 1 ELSE 0 END) AS successGroupCount,
+        COUNT(DISTINCT CASE WHEN group_status = 9 THEN user_id END) AS successUserCount
+        FROM
+        at_group where group_task_id in(
+        <foreach collection="groupTaskIdList" item="item" index="index" separator=",">
+            #{item}
+        </foreach>
+        )
+        group by group_task_id
+    </select>
 
 </mapper>
