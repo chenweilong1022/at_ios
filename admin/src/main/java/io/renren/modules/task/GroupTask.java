@@ -321,6 +321,9 @@ public class GroupTask {
         List<Integer> userIds = cdGroupTasksEntities.stream().map(AtGroupEntity::getUserId).collect(Collectors.toList());
         List<AtUserEntity> atUserEntities = atUserService.listByIds(userIds);
         List<Integer> userTokenIds = atUserEntities.stream().map(AtUserEntity::getUserTokenId).collect(Collectors.toList());
+        if (CollUtil.isEmpty(userTokenIds)) {
+            return;
+        }
         List<AtUserTokenEntity> tokenEntities = atUserTokenService.listByIds(userTokenIds);
         Map<Integer, AtUserTokenEntity> atUserTokenEntityMap = tokenEntities.stream().collect(Collectors.toMap(AtUserTokenEntity::getId, item -> item));
         Map<Integer, AtUserTokenEntity> userIdAtUserTokenEntityMap = atUserEntities.stream().collect(Collectors.toMap(AtUserEntity::getId, item -> atUserTokenEntityMap.get(item.getUserTokenId()).setTelephone(item.getTelephone())));
