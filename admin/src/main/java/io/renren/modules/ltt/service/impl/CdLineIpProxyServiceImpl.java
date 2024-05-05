@@ -28,6 +28,7 @@ import io.renren.modules.ltt.service.CdIpConfigService;
 import io.renren.modules.ltt.service.CdLineIpProxyService;
 import io.renren.modules.ltt.vo.CdLineIpProxyVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -499,6 +500,18 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         }
         return baseMapper.delete(new QueryWrapper<CdLineIpProxyEntity>().lambda()
                 .in(CdLineIpProxyEntity::getTokenPhone, tokenPhoneList));
+    }
+
+    @Override
+    public Integer clearTokenPhone(String tokenPhone) {
+        if (StringUtils.isEmpty(tokenPhone)) {
+            return 0;
+        }
+        CdLineIpProxyEntity updateEntity = new CdLineIpProxyEntity();
+        updateEntity.setTokenPhone("");
+
+        return baseMapper.update(updateEntity, new QueryWrapper<CdLineIpProxyEntity>().lambda()
+                .eq(CdLineIpProxyEntity::getTokenPhone, tokenPhone));
     }
 
 }

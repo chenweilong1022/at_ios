@@ -60,6 +60,16 @@ public class AtGroupController extends AbstractController {
 
         return R.ok().put("atGroup", atGroup);
     }
+    /**
+     * 错误重试
+     */
+    @RequestMapping("/errRetryGroup/{id}")
+    @RequiresPermissions("ltt:atgrouptask:update")
+    public R errRetryGroup(@PathVariable("id") Integer id){
+		Boolean flag = atGroupService.errRetryGroup(id);
+
+        return R.ok().put("resultFlag", flag);
+    }
 
     /**
      * 保存

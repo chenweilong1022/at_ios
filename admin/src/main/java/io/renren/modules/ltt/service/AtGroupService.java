@@ -84,5 +84,12 @@ public interface AtGroupService extends IService<AtGroupEntity> {
      * @return
      */
     AtGroupEntity getByIdCache(Integer groupId);
+
+    /**
+     * 错误重试
+     * @param groupId
+     * @return
+     */
+    Boolean errRetryGroup(Integer groupId);
 }
 

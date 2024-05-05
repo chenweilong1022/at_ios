@@ -28,6 +28,7 @@ import io.renren.modules.ltt.vo.AtGroupVO;
 import io.renren.modules.ltt.vo.AtUserTokenVO;
 import io.renren.modules.ltt.vo.AtUserVO;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
@@ -61,6 +62,9 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
 
     @Resource(name = "caffeineCacheDate")
     private Cache<Integer, Date> caffeineCacheDate;
+
+    @Resource
+    private CdLineIpProxyService cdLineIpProxyService;
 
     @Override
     public PageUtils<AtGroupVO> queryPage(AtGroupDTO atGroup) {
@@ -413,6 +417,30 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
         Properties prop = new Properties();
         prop.put("file.resource.loader.class", "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader" );
         Velocity.init(prop);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public Boolean errRetryGroup(Integer groupId) {
+        AtGroupEntity atGroup = baseMapper.selectById(groupId);
+        Assert.isNull(atGroup, "数据不存在，请检查");
+
+        if (StringUtils.isNotEmpty(atGroup.getMsg()) && atGroup.getMsg().contains("网络异常")) {
+            //网络异常的处理
+            AtGroupEntity updateGroup = new AtGroupEntity();
+            updateGroup.setId(atGroup.getId());
+            updateGroup.setGroupStatus(GroupStatus.GroupStatus7.getKey());
+            int count = baseMapper.updateById(updateGroup);
+
+            //查询手机号
+            AtUserVO atUser = atUserService.getById(atGroup.getUserId());
+            if (atUser != null) {
+                //代理清空
+                cdLineIpProxyService.clearTokenPhone(atUser.getTelephone());
+            }
+            return count > 0;
+        }
+        return false;
     }
 
 }
