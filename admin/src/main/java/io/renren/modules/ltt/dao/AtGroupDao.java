@@ -5,9 +5,12 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.renren.modules.ltt.dto.AtGroupDTO;
 import io.renren.modules.ltt.entity.AtGroupEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import io.renren.modules.ltt.vo.AtGroupTaskVO;
 import io.renren.modules.ltt.vo.AtGroupVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  *
@@ -20,4 +23,11 @@ import org.apache.ibatis.annotations.Param;
 public interface AtGroupDao extends BaseMapper<AtGroupEntity> {
 
     IPage<AtGroupVO> listPage(Page<AtGroupEntity> page,@Param("dto") AtGroupDTO atGroup);
+
+    /**
+     * 数据汇总
+     * @param groupTaskIdList
+     * @return
+     */
+    List<AtGroupTaskVO> groupDataSummary(@Param("groupTaskIdList") List<Integer> groupTaskIdList);
 }

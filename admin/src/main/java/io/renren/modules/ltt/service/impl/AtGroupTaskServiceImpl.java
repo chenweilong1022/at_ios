@@ -9,8 +9,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
-import io.renren.common.utils.EnumUtil;
-import io.renren.common.utils.PhoneUtil;
+import io.renren.common.utils.*;
 import io.renren.common.utils.vo.PhoneCountryVO;
 import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
@@ -23,6 +22,7 @@ import io.renren.modules.ltt.enums.*;
 import io.renren.modules.ltt.service.*;
 import io.renren.modules.ltt.vo.*;
 import io.renren.modules.sys.service.SysUserService;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.api.WxConsts;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,8 +30,6 @@ import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import io.renren.common.utils.PageUtils;
-import io.renren.common.utils.Query;
 
 import io.renren.modules.ltt.dao.AtGroupTaskDao;
 import io.renren.modules.ltt.dto.AtGroupTaskDTO;
@@ -55,6 +53,7 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
     private SysUserService sysUserService;
     @Override
     public PageUtils<AtGroupTaskVO> queryPage(AtGroupTaskDTO atGroupTask) {
+        // 使用了多少个账号， 拉了多少个群 失败了多少个账户 统计比例
         IPage<AtGroupTaskEntity> page = baseMapper.selectPage(
                 new Query<AtGroupTaskEntity>(atGroupTask).getPage(),
                 new QueryWrapper<AtGroupTaskEntity>().lambda()
@@ -67,6 +66,24 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
             //查询username
             Map<Long, String> usernameMap = sysUserService.queryUserNameByUserIdList(sysUserIdList);
             resultList.forEach(i -> i.setSysUsername(usernameMap.get(i.getSysUserId())));
+
+            //查询拉群数据统计
+            List<Integer> groupTaskIdList = resultList.stream().map(AtGroupTaskVO::getId).collect(Collectors.toList());
+            Map<Integer, AtGroupTaskVO> summaryMap = atGroupService.groupDataSummary(groupTaskIdList);
+
+
+            //数据处理
+            for (AtGroupTaskVO atGroupTaskVO : resultList) {
+                atGroupTaskVO.setSysUsername(usernameMap.get(atGroupTaskVO.getSysUserId()));
+
+                if (summaryMap.get(atGroupTaskVO.getId()) != null) {
+                    AtGroupTaskVO tmp = summaryMap.get(atGroupTaskVO.getId());
+                    atGroupTaskVO.setUsdUserCount(tmp.getUsdUserCount());
+                    atGroupTaskVO.setSuccessGroupCount(tmp.getSuccessGroupCount());
+                    atGroupTaskVO.setSuccessUserCount(tmp.getSuccessUserCount());
+                    atGroupTaskVO.setFailUserCount(atGroupTaskVO.getUsdUserCount() - atGroupTaskVO.getSuccessUserCount());
+                }
+            }
         }
         return PageUtils.<AtGroupTaskVO>page(page).setList(resultList);
     }

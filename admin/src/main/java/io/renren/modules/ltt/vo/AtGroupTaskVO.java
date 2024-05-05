@@ -88,4 +88,20 @@ public class AtGroupTaskVO implements Serializable {
 
 	private String sysUsername;
 
+	@ApiModelProperty(required=false,value="总使用账号数")
+	private Integer usdUserCount;
+
+	@ApiModelProperty(required=false,value="拉群成功数")
+	private Integer successGroupCount;
+
+	@ApiModelProperty(required=false,value="成功拉群账号数")
+	private Integer successUserCount;
+
+	@ApiModelProperty(required=false,value="拉取失败账号数量")
+	private Integer failUserCount;
+
+	public String getScheduleFloat() {
+		return String.format("%.2f", (double) successGroupCount / usdUserCount * 100);
+	}
+
 }

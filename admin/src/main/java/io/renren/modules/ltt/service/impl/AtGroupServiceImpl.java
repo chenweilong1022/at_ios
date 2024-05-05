@@ -24,6 +24,7 @@ import io.renren.modules.ltt.entity.AtGroupEntity;
 import io.renren.modules.ltt.entity.AtUserEntity;
 import io.renren.modules.ltt.enums.*;
 import io.renren.modules.ltt.service.*;
+import io.renren.modules.ltt.vo.AtGroupTaskVO;
 import io.renren.modules.ltt.vo.AtGroupVO;
 import io.renren.modules.ltt.vo.AtUserTokenVO;
 import io.renren.modules.ltt.vo.AtUserVO;
@@ -278,6 +279,7 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
         );
         //获取加粉任务
         Map<Integer, AtDataTaskEntity> integerAtDataTaskEntityMap = atDataTaskEntities.stream().collect(Collectors.toMap(AtDataTaskEntity::getGroupId, item -> item));
+
         //数据加粉任务子任务
         List<AtDataSubtaskEntity> atDataSubtaskEntities = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
                 .in(AtDataSubtaskEntity::getGroupId,atGroup.getIds())
@@ -311,13 +313,18 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
             dataTaskEntitiesUpdate.add(atDataTask);
 
 
-            Map<Integer, List<AtDataSubtaskEntity>> integerListMap1 = dataSubtaskEntities.stream().collect(Collectors.groupingBy(AtDataSubtaskEntity::getUserId));
+            Map<Integer, List<AtDataSubtaskEntity>> integerListMap1 = dataSubtaskEntities.stream()
+                    .collect(Collectors.groupingBy(AtDataSubtaskEntity::getUserId));
 
             List<AtDataSubtaskEntity> atDataSubtaskEntityListSave = new ArrayList<>();
             for (Integer key : integerListMap1.keySet()) {
                 //数据data
                 List<AtDataSubtaskEntity> atDataSubtaskEntities1 = integerListMap1.get(key);
-                long count = atDataSubtaskEntities1.stream().filter(item -> item.getTaskStatus().equals(TaskStatus.TaskStatus10.getKey()) ||item.getTaskStatus().equals(TaskStatus.TaskStatus13.getKey()) || item.getTaskStatus().equals(TaskStatus.TaskStatus8.getKey())  || item.getTaskStatus().equals(TaskStatus.TaskStatus5.getKey())).count();
+                long count = atDataSubtaskEntities1.stream()
+                        .filter(item -> item.getTaskStatus().equals(TaskStatus.TaskStatus10.getKey())
+                                ||item.getTaskStatus().equals(TaskStatus.TaskStatus13.getKey())
+                                || item.getTaskStatus().equals(TaskStatus.TaskStatus8.getKey())
+                                || item.getTaskStatus().equals(TaskStatus.TaskStatus5.getKey())).count();
                 if (count > 0) {
                     AtUserVO poll = atUserVOQueue.poll();
                     AtUserEntity atUserEntity = new AtUserEntity();
@@ -379,7 +386,26 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
         }
 
         if (CollUtil.isNotEmpty(atGroupEntityListUpdate)) {
-            this.updateBatchById(atGroupEntityListUpdate);
+            //新增一条拉群记录
+//            this.updateBatchById(atGroupEntityListUpdate);
+
+            for (AtGroupEntity atGroupDto : atGroupEntityListUpdate) {
+                Integer oldGroupId = atGroupDto.getId();
+                atGroupDto.setId(null);
+                this.save(atGroupDto);
+
+                //修改加粉任务
+                AtDataTaskEntity dataTask = new AtDataTaskEntity();
+                dataTask.setGroupId(atGroupDto.getId());
+                atDataTaskService.update(dataTask, new QueryWrapper<AtDataTaskEntity>().lambda()
+                        .eq(AtDataTaskEntity::getGroupId, oldGroupId));
+
+                //修改加粉子任务
+                AtDataSubtaskEntity dataSubtaskEntity = new AtDataSubtaskEntity();
+                dataSubtaskEntity.setGroupId(atGroupDto.getId());
+                atDataSubtaskService.update(dataSubtaskEntity, new QueryWrapper<AtDataSubtaskEntity>().lambda()
+                        .eq(AtDataSubtaskEntity::getGroupId, oldGroupId));
+            }
         }
 
     }
@@ -442,5 +468,12 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
         }
         return false;
     }
+
+    @Override
+    public Map<Integer, AtGroupTaskVO> groupDataSummary(List<Integer> groupTaskIdList) {
+        return baseMapper.groupDataSummary(groupTaskIdList).stream()
+                .collect(Collectors.toMap(AtGroupTaskVO::getId, i -> i));
+    }
+
 
 }
