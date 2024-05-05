@@ -1,6 +1,8 @@
 package io.renren.modules.task;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
@@ -29,6 +31,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -276,10 +279,22 @@ public class Data5Task {
                             return;
                         }
 
+                        AtGroupEntity atGroupEntityConfig = null;
+                        if (ObjectUtil.isNotNull(atDataSubtaskEntity.getGroupId())) {
+                            atGroupEntityConfig = atGroupService.getByIdCache(atDataSubtaskEntity.getGroupId());
+                            if (ObjectUtil.isNull(atGroupEntityConfig)) {
+                                return;
+                            }
+                        }
+
                         //获取代理
                         CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
                         cdLineIpProxyDTO.setTokenPhone(atUserTokenEntity.getTelephone());
                         cdLineIpProxyDTO.setLzPhone(atUserTokenEntity.getTelephone());
+                        //去设置区号
+                        if (ObjectUtil.isNotNull(atGroupEntityConfig.getIpCountryCode())) {
+                            cdLineIpProxyDTO.setCountryCode(atGroupEntityConfig.getIpCountryCode().longValue());
+                        }
                         String proxyIp = cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO);
                         if (StrUtil.isEmpty(proxyIp)) {
                             return;
