@@ -24,6 +24,7 @@ import io.renren.modules.ltt.entity.AtUserPortEntity;
 import io.renren.modules.ltt.enums.CountryCode;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -59,6 +60,9 @@ public class CardJpSFServiceImpl implements FirefoxService {
     private Cache<String, Queue<String>> jpSfPhoneCacheListString;
     @Resource(name = "caffeineCacheProjectWorkEntity")
     private Cache<String, ProjectWorkEntity> caffeineCacheProjectWorkEntity;
+
+    @Resource(name = "cardJpSFGetPhoneSmsVOCache")
+    private Cache<String, CardJpSFGetPhoneSmsVO> cardJpSFGetPhoneSmsVOCache;
 
     @Override
     public GetPhoneVO getPhone() {
@@ -97,10 +101,28 @@ public class CardJpSFServiceImpl implements FirefoxService {
         String timeZone = split[2];
         //发起操作时间
         Date date = cardJpSms.getIfPresent(pKey);
-        CloseableHttpClient httpClient = HttpClients.createDefault();
-        try {
-//            ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
 
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectTimeout(20000)
+                .setSocketTimeout(20000)
+                .build();
+        CloseableHttpClient httpClient = HttpClients.custom()
+                .setDefaultRequestConfig(requestConfig)
+                .build();
+        try {
+            //获取缓存里面的短信
+            CardJpSFGetPhoneSmsVO cardJpSFGetPhoneSmsVO = cardJpSFGetPhoneSmsVOCache.getIfPresent(pKey);
+            if (ObjectUtil.isNotNull(cardJpSFGetPhoneSmsVO)) {
+                Date time = cardJpSFGetPhoneSmsVO.getTime();
+                if (SfTimeZone.SfTimeZone2.getKey().equals(Integer.valueOf(timeZone))) {
+                    time = DateUtil.offsetHour(time,-1);
+                }
+                boolean before = date.before(time);
+                if (cardJpSFGetPhoneSmsVO != null && before) {
+                    String s = extractVerificationCode(cardJpSFGetPhoneSmsVO.getContent());
+                    return s;
+                }
+            }
             HttpGet request = new HttpGet(sfApi);
             request.addHeader("User-Agent", "Mozilla/5.0");
             String resp = httpClient.execute(request, httpResponse ->
@@ -111,9 +133,16 @@ public class CardJpSFServiceImpl implements FirefoxService {
             List<CardJpSFGetPhoneSmsVO> resultList = JSON.parseArray(resp, CardJpSFGetPhoneSmsVO.class);
 
             if (CollectionUtil.isNotEmpty(resultList)) {
-                CardJpSFGetPhoneSmsVO cardJpSFGetPhoneSmsVO = resultList.stream()
-                        .filter(i -> pKey.equals(i.getSimnum()))
-                        .max(Comparator.comparing(CardJpSFGetPhoneSmsVO::getTime)).orElse(null);
+                // 根据手机号分组并保留时间最大的一个
+                Map<String, CardJpSFGetPhoneSmsVO> cardJpSFGetPhoneSmsVOMap = resultList.stream()
+                        .collect(Collectors.groupingBy(CardJpSFGetPhoneSmsVO::getSimnum,
+                                Collectors.collectingAndThen(Collectors.maxBy(Comparator.comparing(CardJpSFGetPhoneSmsVO::getTime)),
+                                        Optional::get)));
+                //保存
+                for (String s : cardJpSFGetPhoneSmsVOMap.keySet()) {
+                    cardJpSFGetPhoneSmsVOCache.put(s,cardJpSFGetPhoneSmsVOMap.get(s));
+                }
+                cardJpSFGetPhoneSmsVO = cardJpSFGetPhoneSmsVOMap.get(pKey);
                 if (ObjectUtil.isNull(cardJpSFGetPhoneSmsVO)) {
                     return null;
                 }
