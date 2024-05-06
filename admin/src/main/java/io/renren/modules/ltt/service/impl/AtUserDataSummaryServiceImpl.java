@@ -50,7 +50,7 @@ public class AtUserDataSummaryServiceImpl extends ServiceImpl<AtUserDataSummaryD
                                 AtUserDataSummaryEntity::getSummaryDate, atUserDataSummary.getSearchStartTime())
                         .le(atUserDataSummary.getSearchEndTime() != null,
                                 AtUserDataSummaryEntity::getSummaryDate, atUserDataSummary.getSearchEndTime())
-                        .orderByDesc(AtUserDataSummaryEntity::getCreateTime));
+                        .orderByDesc(AtUserDataSummaryEntity::getSummaryDate));
 
         return PageUtils.<AtUserDataSummaryVO>page(page).setList(AtUserDataSummaryConver.MAPPER.conver(page.getRecords()));
     }
