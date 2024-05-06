@@ -114,7 +114,7 @@
           @size-change="sizeThChangeHandle"
           @current-change="currentThChangeHandle"
           :current-page="thDataForm.pageIndex"
-          :page-sizes="[1, 20, 50, 100]"
+          :page-sizes="[10, 20, 50, 100]"
           :page-size="thDataForm.pageSize"
           :total="thDataForm.totalPage"
           layout="total, sizes, prev, pager, next, jumper">
