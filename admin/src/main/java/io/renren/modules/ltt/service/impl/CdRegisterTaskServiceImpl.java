@@ -187,7 +187,7 @@ public class CdRegisterTaskServiceImpl extends ServiceImpl<CdRegisterTaskDao, Cd
                         cdGetPhoneEntity.setSubtasksId(cdRegisterSubtasksEntity.getId());
                         cdGetPhoneEntity.setSfApi(urlString);
                         cdGetPhoneEntity.setTimeZone(SfTimeZone.SfTimeZone2.getKey());
-                        if (urlString.contains("vpi")) {
+                        if (urlString.contains("vip")) {
                             cdGetPhoneEntity.setTimeZone(SfTimeZone.SfTimeZone1.getKey());
                         }
                         cdGetPhoneEntities.add(cdGetPhoneEntity);
