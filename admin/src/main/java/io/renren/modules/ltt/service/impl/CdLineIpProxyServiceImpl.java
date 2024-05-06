@@ -230,6 +230,10 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                         String[] split = resp.split("\r\n");
                         Queue<String> getflowipNew = new LinkedList<>();
                         for (String s : split) {
+                            s = s.trim();
+                            if (StrUtil.isEmpty(s)) {
+                                continue;
+                            }
                             getflowipNew.offer(s);
                         }
                         ip = getflowipNew.poll();
@@ -303,10 +307,14 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         }
         if (proxy == 1) {
             //lunaproxy
-            return getLunaIpResp(regions);
+            String lunaIpResp = getLunaIpResp(regions);
+            String ip2World = getIp2World(regions);
+            return lunaIpResp + "\r\n" + ip2World;
         } else if (proxy == 2) {
             //ip2world
-            return getIp2World(regions);
+            String ip2World = getIp2World(regions);
+            String lunaIpResp = getLunaIpResp(regions);
+            return ip2World + "\r\n" + lunaIpResp;
         } else if (proxy == 3) {
             //静态代理
             return getStaticIpResp(regions);
@@ -330,7 +338,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 
 
     private static String getLunaIpResp(String regions) {
-        String getPhoneHttp = String.format("https://tq.lunaproxy.com/getflowip?neek=1136881&num=500&type=1&sep=1&regions=%s&ip_si=1&level=1&sb=", regions);
+        String getPhoneHttp = String.format("https://tq.lunaproxy.com/getflowip?neek=1136881&num=50&type=1&sep=1&regions=%s&ip_si=1&level=1&sb=", regions);
         String resp = HttpUtil.get(getPhoneHttp);
         if (JSONUtil.isJson(resp)) {
             return null;
@@ -339,7 +347,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
     }
 
     private static String getIp2World(String regions) {
-        String getPhoneHttp = String.format("http://api.proxy.ip2world.com/getProxyIp?return_type=txt&protocol=http&num=500&regions=%s&lb=1", regions);
+        String getPhoneHttp = String.format("http://api.proxy.ip2world.com/getProxyIp?return_type=txt&protocol=http&num=50&regions=%s&lb=1", regions);
         String resp = HttpUtil.get(getPhoneHttp);
         if (JSONUtil.isJson(resp)) {
             return null;

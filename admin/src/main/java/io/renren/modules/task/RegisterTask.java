@@ -273,8 +273,9 @@ public class RegisterTask {
                                     phoneCode = cardJpService.getPhoneCode(cdGetPhoneEntity.getPkey());
                                 }else if (CountryCode.CountryCode8.getValue().equals(cdGetPhoneEntity.getCountrycode())  && CountryCode.CountryCode8.getKey().toString().equals(cdGetPhoneEntity.getCountry())) {
                                     cardJpSms.put(cdGetPhoneEntity.getPkey(), cdGetPhoneEntity.getCreateTime());
+                                    String s = cdGetPhoneEntity.getPkey() + "#" + cdGetPhoneEntity.getSfApi() + "#" + cdGetPhoneEntity.getTimeZone();
                                     //日本-四方
-                                    phoneCode = cardJpSFService.getPhoneCode(cdGetPhoneEntity.getPkey());
+                                    phoneCode = cardJpSFService.getPhoneCode(s);
                                 } else if (CountryCode.CountryCode5.getValue().equals(cdGetPhoneEntity.getCountrycode())) {
                                     //香港
                                     phoneCode = firefoxServiceImpl.getPhoneCode(cdGetPhoneEntity.getPkey());
@@ -627,6 +628,10 @@ public class RegisterTask {
                 log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
                 if(triedLock) {
                     try{
+                        //如果是注册四方直接返回
+                        if (CountryCode.CountryCode8.getKey().equals(cdRegisterTaskEntity.getCountryCode())) {
+                            return;
+                        }
                         //获取子任务数量
                         int count = cdRegisterSubtasksService.count(new QueryWrapper<CdRegisterSubtasksEntity>().lambda()
                                 .eq(CdRegisterSubtasksEntity::getTaskId, cdRegisterTaskEntity.getId())

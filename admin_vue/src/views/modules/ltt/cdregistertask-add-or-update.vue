@@ -27,13 +27,14 @@
           <el-option
             v-for="item in countryCodes"
             :key="item.key"
-            :label="item.value"
+            :label="item.value2"
             :value="item.key">
           </el-option>
         </el-select>
       </el-form-item>
-
-
+      <el-form-item v-if="8101 === dataForm.countryCode" label="卡数据" prop="sfData">
+        <el-input   :autosize="{ minRows: 20, maxRows: 20}" type="textarea" v-model="dataForm.sfData" placeholder="卡数据"></el-input>
+      </el-form-item>
     </el-form>
     <span slot="footer" class="dialog-footer">
       <el-button @click="visible = false">取消</el-button>
@@ -89,6 +90,7 @@ export default {
         registrationStatus: '',
         realMachine: 1,
         deleteFlag: '',
+        sfData: '',
         countryCode: 66,
         fillUp: 1,
         createTime: ''
@@ -179,6 +181,7 @@ export default {
               'fillUp': this.dataForm.fillUp,
               'realMachine': this.dataForm.realMachine,
               'countryCode': this.dataForm.countryCode,
+              'sfData': this.dataForm.sfData,
               'deleteFlag': this.dataForm.deleteFlag,
               'createTime': this.dataForm.createTime
             })

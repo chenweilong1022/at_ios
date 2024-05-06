@@ -2,6 +2,7 @@ package io.renren.modules.ltt.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -279,7 +280,6 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
         );
         //获取加粉任务
         Map<Integer, AtDataTaskEntity> integerAtDataTaskEntityMap = atDataTaskEntities.stream().collect(Collectors.toMap(AtDataTaskEntity::getGroupId, item -> item));
-
         //数据加粉任务子任务
         List<AtDataSubtaskEntity> atDataSubtaskEntities = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
                 .in(AtDataSubtaskEntity::getGroupId,atGroup.getIds())
@@ -297,7 +297,10 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
         List<AtDataTaskEntity> dataTaskEntitiesUpdate = new ArrayList<>();
         List<AtGroupEntity> atGroupEntityListUpdate = new ArrayList<>();
 
+        List<AtGroupEntity> atGroupEntities1 = AtGroupConver.MAPPER.conver1(atGroupEntities);
+
         for (AtGroupEntity atGroupEntity : atGroupEntities) {
+            Assert.isTrue(StrUtil.isNotEmpty(atGroupEntity.getRoomId()),"当前群已经有群号，不能去重新分配");
             AtDataTaskEntity atDataTask = integerAtDataTaskEntityMap.get(atGroupEntity.getId());
             if (ObjectUtil.isNull(atDataTask)) {
                 continue;
@@ -313,18 +316,13 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
             dataTaskEntitiesUpdate.add(atDataTask);
 
 
-            Map<Integer, List<AtDataSubtaskEntity>> integerListMap1 = dataSubtaskEntities.stream()
-                    .collect(Collectors.groupingBy(AtDataSubtaskEntity::getUserId));
+            Map<Integer, List<AtDataSubtaskEntity>> integerListMap1 = dataSubtaskEntities.stream().collect(Collectors.groupingBy(AtDataSubtaskEntity::getUserId));
 
             List<AtDataSubtaskEntity> atDataSubtaskEntityListSave = new ArrayList<>();
             for (Integer key : integerListMap1.keySet()) {
                 //数据data
                 List<AtDataSubtaskEntity> atDataSubtaskEntities1 = integerListMap1.get(key);
-                long count = atDataSubtaskEntities1.stream()
-                        .filter(item -> item.getTaskStatus().equals(TaskStatus.TaskStatus10.getKey())
-                                ||item.getTaskStatus().equals(TaskStatus.TaskStatus13.getKey())
-                                || item.getTaskStatus().equals(TaskStatus.TaskStatus8.getKey())
-                                || item.getTaskStatus().equals(TaskStatus.TaskStatus5.getKey())).count();
+                long count = atDataSubtaskEntities1.stream().filter(item -> item.getTaskStatus().equals(TaskStatus.TaskStatus13.getKey()) || item.getTaskStatus().equals(TaskStatus.TaskStatus8.getKey())  || item.getTaskStatus().equals(TaskStatus.TaskStatus5.getKey())).count();
                 if (count > 0) {
                     AtUserVO poll = atUserVOQueue.poll();
                     AtUserEntity atUserEntity = new AtUserEntity();
@@ -386,26 +384,15 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
         }
 
         if (CollUtil.isNotEmpty(atGroupEntityListUpdate)) {
-            //新增一条拉群记录
-//            this.updateBatchById(atGroupEntityListUpdate);
+            this.updateBatchById(atGroupEntityListUpdate);
+        }
 
-            for (AtGroupEntity atGroupDto : atGroupEntityListUpdate) {
-                Integer oldGroupId = atGroupDto.getId();
-                atGroupDto.setId(null);
-                this.save(atGroupDto);
-
-                //修改加粉任务
-                AtDataTaskEntity dataTask = new AtDataTaskEntity();
-                dataTask.setGroupId(atGroupDto.getId());
-                atDataTaskService.update(dataTask, new QueryWrapper<AtDataTaskEntity>().lambda()
-                        .eq(AtDataTaskEntity::getGroupId, oldGroupId));
-
-                //修改加粉子任务
-                AtDataSubtaskEntity dataSubtaskEntity = new AtDataSubtaskEntity();
-                dataSubtaskEntity.setGroupId(atGroupDto.getId());
-                atDataSubtaskService.update(dataSubtaskEntity, new QueryWrapper<AtDataSubtaskEntity>().lambda()
-                        .eq(AtDataSubtaskEntity::getGroupId, oldGroupId));
+        //保存一份历史数据，方便统计报表
+        if (CollUtil.isNotEmpty(atGroupEntities1)) {
+            for (AtGroupEntity atGroupEntity : atGroupEntities1) {
+                atGroupEntity.setId(null);
             }
+            this.saveBatch(atGroupEntities1);
         }
 
     }

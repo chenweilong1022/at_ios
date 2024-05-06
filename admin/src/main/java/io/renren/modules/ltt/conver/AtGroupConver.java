@@ -26,4 +26,7 @@ public interface AtGroupConver {
 
     List<AtGroupVO> conver(List<AtGroupEntity> atGroupEntities);
 
+    AtGroupEntity conver1(AtGroupEntity atGroupEntities);
+    List<AtGroupEntity> conver1(List<AtGroupEntity> atGroupEntities);
+
 }
