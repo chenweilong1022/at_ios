@@ -11,6 +11,8 @@ import io.renren.modules.ltt.vo.GetCountBySubTaskIdVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -32,5 +34,5 @@ public interface CdLineRegisterDao extends BaseMapper<CdLineRegisterEntity> {
     IPage<CdLineRegisterVO> listPage(Page<CdLineRegisterEntity> page,@Param("dto")  CdLineRegisterDTO cdLineRegister);
 
 
-    List<LineRegisterSummaryResultDto> queryLineRegisterSummary();
+    List<LineRegisterSummaryResultDto> queryLineRegisterSummary(@Param("searchTime") LocalDate searchTime);
 }

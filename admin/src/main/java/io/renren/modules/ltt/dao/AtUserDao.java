@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import io.renren.modules.ltt.vo.AtUserVO;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -38,7 +39,7 @@ public interface AtUserDao extends BaseMapper<AtUserEntity> {
      * 已使用账户汇总
      * @return
      */
-    List<UserSummaryResultDto> queryUsedUserSummary();
+    List<UserSummaryResultDto> queryUsedUserSummary(LocalDate searchTime);
 
 
     /**

@@ -1,120 +1,127 @@
 <template>
   <div class="mod-home">
 
-      <div class="summary">
+    <div class="summary">
       <div class="summary-item">
+        <el-form :inline="true" :model="jpDataForm.dataForm" @keyup.enter.native="queryJpDataSummary()">
+          <div>line信息 JP</div>
+          <el-form-item>
+            <el-date-picker
+              v-model="jpDataForm.dataForm.timeKey"
+              type="daterange" format="yyyy-MM-dd"
+              value-format="yyyy-MM-dd"
+              range-separator="至"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期">
+            </el-date-picker>
+          </el-form-item>
+          <el-form-item>
+            <el-button @click="queryJpDataSummary()">查询</el-button>
+          </el-form-item>
+        </el-form>
         <el-table
-          :data="lineRegisterSummary"
+          :data="jpDataForm.dataList"
           row-class-name="custom-row"
+          v-loading="jpDataForm.dataListLoading"
           style="width: 100%;">
           <el-table-column
-            prop="countryCode"
-            label="line信息"
+            prop="summaryDate"
+            label="日期"
             width="130">
           </el-table-column>
-          <el-table-column :label="'库存总数: ' + dataForm.registerTotalStock">
-            <el-table-column :label="'今日注册总数: ' + dataForm.todayRegisterTotalNum">
-              <el-table-column
-                prop="registerStock"
-                label="库存"
-                width="130">
-              </el-table-column>
-              <el-table-column
-                prop="todayRegisterNum"
-                label="今日注册量"
-                width="130">
-              </el-table-column>
-              <el-table-column
-                prop="yesterdayRegisterNum"
-                label="昨日注册量"
-                width="130">
-              </el-table-column>
-              <el-table-column
-                prop="beforeRegisterNum"
-                label="前天注册量"
-                width="120">
-              </el-table-column>
-            </el-table-column>
+          <el-table-column
+            prop="lineStock"
+            label="line库存"
+            width="130">
+          </el-table-column>
+          <el-table-column
+            prop="userOnlineCount"
+            label="在线账户"
+            width="130">
+          </el-table-column>
+          <el-table-column
+            prop="lineRegisterCount"
+            label="今日注册量"
+            width="130">
+          </el-table-column>
+          <el-table-column
+            prop="userUseCount"
+            label="今日使用量"
+            width="120">
           </el-table-column>
         </el-table>
+        <el-pagination
+          @size-change="sizeJpChangeHandle"
+          @current-change="currentJpChangeHandle"
+          :current-page="jpDataForm.pageIndex"
+          :page-sizes="[10, 20, 50, 100]"
+          :page-size="jpDataForm.pageSize"
+          :total="jpDataForm.totalPage"
+          layout="total, sizes, prev, pager, next, jumper">
+        </el-pagination>
       </div>
 
 
       <div class="summary-item">
+        <el-form :inline="true" :model="thDataForm.dataForm" @keyup.enter.native="queryThDataSummary()">
+          <div>line信息 TH</div>
+          <el-form-item>
+            <el-date-picker
+              v-model="thDataForm.dataForm.timeKey"
+              type="daterange" format="yyyy-MM-dd"
+              value-format="yyyy-MM-dd"
+              range-separator="至"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期">
+            </el-date-picker>
+          </el-form-item>
+          <el-form-item>
+            <el-button @click="queryThDataSummary()">查询</el-button>
+          </el-form-item>
+        </el-form>
         <el-table
-          :data="userSummary"
+          :data="thDataForm.dataList"
           row-class-name="custom-row"
-          style="width: 100%">
+          v-loading="thDataForm.dataListLoading"
+          style="width: 100%;">
           <el-table-column
-            prop="countryCode"
-            label="账号信息"
-            width="220">
+            prop="summaryDate"
+            label="日期"
+            width="130">
           </el-table-column>
-          <el-table-column :label="'在线总数: ' + dataForm.onlineUserTotalNum">
-            <el-table-column :label="'今日已使用总数: ' + dataForm.usedUserTotalStock">
-              <el-table-column
-                prop="onlineUserNum"
-                label="在线数量"
-                width="220">
-              </el-table-column>
-              <el-table-column
-                prop="usedUserStock"
-                label="今日已使用数量"
-                width="220">
-              </el-table-column>
-            </el-table-column>
+          <el-table-column
+            prop="lineStock"
+            label="line库存"
+            width="130">
+          </el-table-column>
+          <el-table-column
+            prop="userOnlineCount"
+            label="在线账户"
+            width="130">
+          </el-table-column>
+          <el-table-column
+            prop="lineRegisterCount"
+            label="今日注册量"
+            width="130">
+          </el-table-column>
+          <el-table-column
+            prop="userUseCount"
+            label="今日使用量"
+            width="120">
           </el-table-column>
         </el-table>
+        <el-pagination
+          @size-change="sizeThChangeHandle"
+          @current-change="currentThChangeHandle"
+          :current-page="thDataForm.pageIndex"
+          :page-sizes="[1, 20, 50, 100]"
+          :page-size="thDataForm.pageSize"
+          :total="thDataForm.totalPage"
+          layout="total, sizes, prev, pager, next, jumper">
+        </el-pagination>
       </div>
-      <!--        <div class="container-item">line库存:-->
-      <!--          <div style="color: #007BFF;display: inline;"> {{ dataForm.registerTotalStock }}</div>-->
-      <!--        </div>-->
-      <!--        <div class="container-item">今日注册line数量:-->
-      <!--          <div style="color: #28a745;display: inline;"> {{ dataForm.todayRegisterTotalNum }}</div>-->
-      <!--        </div>-->
-      <!--        <div v-for="(scope, index) in lineRegisterSummary"-->
-      <!--             :key="index"-->
-      <!--             class="type"-->
-      <!--             :data="scope">-->
-      <!--          <h3>{{ scope.countryCode }}</h3>-->
-      <!--          <p>line库存: {{ scope.registerStock }}</p>-->
-      <!--          <p>今日注册line数量: {{ scope.todayRegisterNum }}</p>-->
-      <!--          <p>昨日注册line数量: {{ scope.yesterdayRegisterNum }}</p>-->
-      <!--          <p>前天注册line数量: {{ scope.beforeRegisterNum }}</p>-->
-      <!--        </div>-->
-      <!--      </div>-->
-      <!--      <div class="box">-->
-      <!--        <div class="container-item">在线账户:-->
-      <!--          <div style="color: #28a745;display: inline;"> {{ dataForm.onlineUserTotalNum }}</div>-->
-      <!--        </div>-->
-      <!--        <div class="container-item">今日已使用账户:-->
-      <!--          <div style="color: #007BFF;display: inline;"> {{ dataForm.usedUserTotalStock }}</div>-->
-      <!--        </div>-->
-      <!--        <div v-for="(scope, index) in userSummary"-->
-      <!--             :key="index"-->
-      <!--             class="type"-->
-      <!--             :data="scope">-->
-      <!--          <h3>{{ scope.countryCode }}</h3>-->
-      <!--          <p>在线账户: {{ scope.onlineUserNum}}</p>-->
-      <!--          <p>今日已使用账户: {{ scope.usedUserStock}}</p>-->
-      <!--        </div>-->
 
     </div>
-
-    <!--    <div class="summary" style="display: flex;flex-direction: row;align-items: center;width: 113%">-->
-    <!--      <div class="summary-item">line库存:-->
-    <!--        <div style="color: #007BFF;display: inline;"> {{ dataForm.registerTotalStock }}</div>-->
-    <!--      </div>-->
-    <!--      <div class="summary-item">今日注册line:-->
-    <!--        <div style="color: #28a745;display: inline;"> {{ dataForm.todayRegisterTotalNum }}</div>-->
-    <!--      </div>-->
-    <!--      <div class="summary-item">今日已使用账户:-->
-    <!--        <div style="color: #dc3545;display: inline;">{{ dataForm.usedUserTotalStock }}</div>-->
-    <!--      </div>-->
-    <!--      <div class="summary-item">在线账户:-->
-    <!--        <div style="color: #ffc107;display: inline;"> {{ dataForm.onlineUserTotalNum }}</div>-->
-    <!--      </div>-->
-    <!--    </div>-->
   </div>
 </template>
 
@@ -129,65 +136,116 @@ export default {
   },
   data() {
     return {
-      dataForm: {
-        registerTotalStock: 0,
-        todayRegisterTotalNum: 0,
-        usedUserTotalStock: 0,
-        onlineUserTotalNum: 0
+      jpDataForm: {
+        dataForm: {
+          timeKey: null
+        },
+        searchStartTime: null,
+        searchEndTime: null,
+        dataList: [],
+        pageIndex: 1,
+        pageSize: 10,
+        totalPage: 0,
+        dataListLoading: false
       },
-      lineRegisterSummary: [],
+      thDataForm: {
+        dataForm: {
+          timeKey: null
+        },
+        searchStartTime: null,
+        searchEndTime: null,
+        dataList: [],
+        pageIndex: 1,
+        pageSize: 10,
+        totalPage: 0,
+        dataListLoading: false
+      },
       userSummary: []
     }
   },
   activated() {
-    this.queryLineRegisterCount()
-    this.queryUserSummary()
+    this.queryJpDataSummary()
+    this.queryThDataSummary()
   },
   methods: {
-    queryLineRegisterCount() {
+    queryJpDataSummary () {
+      var searchStartTime = null
+      var searchEndTime = null
+      if (this.jpDataForm.dataForm.timeKey != null && this.jpDataForm.dataForm.timeKey.length >= 2) {
+        searchStartTime = this.jpDataForm.dataForm.timeKey[0]
+        searchEndTime = this.jpDataForm.dataForm.timeKey[1]
+      }
       this.$http({
-        url: this.$http.adornUrl(`/ltt/cdlineregister/queryLineRegisterSummary`),
-        method: 'get'
+        url: this.$http.adornUrl('/ltt/atuserdatasummary/list'),
+        method: 'get',
+        params: this.$http.adornParams({
+          'page': this.jpDataForm.pageIndex,
+          'limit': this.jpDataForm.pageSize,
+          'searchStartTime': searchStartTime,
+          'searchEndTime': searchEndTime,
+          'countryCode': 'jp'
+        })
       }).then(({data}) => {
-        if (data && data.code === 0 && data.lineRegisterSummary != null) {
-          this.lineRegisterSummary = data.lineRegisterSummary
-          let registerStockTemp = 0
-          let todayRegisterNumTemp = 0
-          for (let i = 0; i < data.lineRegisterSummary.length; i++) {
-            registerStockTemp += data.lineRegisterSummary[i].registerStock
-            todayRegisterNumTemp += data.lineRegisterSummary[i].todayRegisterNum
-          }
-          this.dataForm.registerTotalStock = registerStockTemp
-          this.dataForm.todayRegisterTotalNum = todayRegisterNumTemp
+        if (data && data.code === 0) {
+          this.jpDataForm.dataList = data.page.list
+          this.jpDataForm.totalPage = data.page.totalCount
         } else {
-          this.dataForm.registerTotalStock = 0
-          this.dataForm.todayRegisterTotalNum = 0
-          this.lineRegisterSummary = []
+          this.jpDataForm.dataList = []
+          this.jpDataForm.totalPage = 0
         }
+        this.jpDataForm.dataListLoading = false
       })
     },
-    queryUserSummary() {
+    queryThDataSummary () {
+      var searchStartTime = null
+      var searchEndTime = null
+      if (this.thDataForm.dataForm.timeKey != null && this.thDataForm.dataForm.timeKey.length >= 2) {
+        searchStartTime = this.thDataForm.dataForm.timeKey[0]
+        searchEndTime = this.thDataForm.dataForm.timeKey[1]
+      }
       this.$http({
-        url: this.$http.adornUrl(`/ltt/atuser/queryUserSummary`),
-        method: 'get'
+        url: this.$http.adornUrl('/ltt/atuserdatasummary/list'),
+        method: 'get',
+        params: this.$http.adornParams({
+          'page': this.thDataForm.pageIndex,
+          'limit': this.thDataForm.pageSize,
+          'searchStartTime': searchStartTime,
+          'searchEndTime': searchEndTime,
+          'countryCode': 'th'
+        })
       }).then(({data}) => {
-        if (data && data.code === 0 && data.userSummary != null) {
-          this.userSummary = data.userSummary
-          let usedUserStockTemp = 0
-          let onlineUserNumTemp = 0
-          for (let i = 0; i < data.userSummary.length; i++) {
-            usedUserStockTemp += data.userSummary[i].usedUserStock
-            onlineUserNumTemp += data.userSummary[i].onlineUserNum
-          }
-          this.dataForm.usedUserTotalStock = usedUserStockTemp
-          this.dataForm.onlineUserTotalNum = onlineUserNumTemp
+        if (data && data.code === 0) {
+          this.thDataForm.dataList = data.page.list
+          this.thDataForm.totalPage = data.page.totalCount
         } else {
-          this.dataForm.usedUserTotalStock = 0
-          this.dataForm.onlineUserTotalNum = 0
-          this.userSummary = []
+          this.thDataForm.dataList = []
+          this.thDataForm.totalPage = 0
         }
+        this.thDataForm.dataListLoading = false
       })
-    }
+    },
+    // 每页数-th
+    sizeThChangeHandle (val) {
+      this.thDataForm.pageSize = val
+      this.thDataForm.pageIndex = 1
+      this.queryThDataSummary()
+    },
+    // 当前页-th
+    currentThChangeHandle (val) {
+      this.thDataForm.pageIndex = val
+      this.queryThDataSummary()
+    },
+    // 每页数-jp
+    sizeJpChangeHandle (val) {
+      this.jpDataForm.pageSize = val
+      this.jpDataForm.pageIndex = 1
+      this.queryJpDataSummary()
+    },
+    // 当前页-jp
+    currentJpChangeHandle (val) {
+      this.jpDataForm.pageIndex = val
+      this.queryJpDataSummary()
+    },
   }
 }
 </script>
@@ -206,7 +264,7 @@ export default {
   text-align: center;
   //在容器的内部边界添加填充
   padding: 20px;
-  margin: 10px;         /* 添加外边距避免模块紧贴在一起 */
+  margin: 10px; /* 添加外边距避免模块紧贴在一起 */
   min-height: 100px;
 }
 
@@ -217,11 +275,11 @@ export default {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   overflow-x: auto; /* 如果内容太多，出现水平滚动条 */
   border: 2px solid #dcdcdc; /* 明显的边框 */
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15); /* 更深的阴影效果 */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* 更深的阴影效果 */
   width: 80%; /* 全宽度使得居中更为明显，也可根据实际需要调整宽度 */
   margin: 10px 10px; /* Optional: Add margins to each item for better spacing */
-  padding: 20px 20px;  /* 增大内边距，使文字与边框之间的空间更大 */
-  font-size: 18px;     /* 特别大的字体大小 */
+  padding: 20px 20px; /* 增大内边距，使文字与边框之间的空间更大 */
+  font-size: 18px; /* 特别大的字体大小 */
   text-align: center;
   justify-content: center; /* 水平居中 */
   flex-direction: row;
@@ -230,14 +288,13 @@ export default {
   display: inline;
 
 
-
   table {
     color: black; /* 设置字体颜色 */
   }
 
   .cell {
     color: black; /* 设置字体颜色 */
-    font-size: 18px;     /* 特别大的字体大小 */
+    font-size: 18px; /* 特别大的字体大小 */
 
     //font-weight: bold; /* 加粗字体 */
   }

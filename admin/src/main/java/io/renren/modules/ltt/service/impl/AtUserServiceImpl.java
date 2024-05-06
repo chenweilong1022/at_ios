@@ -8,7 +8,6 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.benmanes.caffeine.cache.Cache;
-import io.renren.common.utils.DateUtils;
 import io.renren.common.utils.PageUtils;
 import io.renren.common.utils.Query;
 import io.renren.common.validator.Assert;
@@ -21,7 +20,6 @@ import io.renren.modules.ltt.dao.UpdateAtUserCustomerParamDto;
 import io.renren.modules.ltt.dao.UpdateUserGroupParamDto;
 import io.renren.modules.ltt.dao.ValidateAtUserStatusParamDto;
 import io.renren.modules.ltt.dto.AtUserDTO;
-import io.renren.modules.ltt.dto.CustomerUserResultDto;
 import io.renren.modules.ltt.dto.UserSummaryResultDto;
 import io.renren.modules.ltt.entity.AtUserEntity;
 import io.renren.modules.ltt.entity.AtUserTokenEntity;
@@ -48,6 +46,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringWriter;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -442,35 +441,18 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
 
 
     @Override
-    public List<UserSummaryResultDto> queryUserSummary() {
+    public Map<String, Integer> queryUsedUserSummary(LocalDate searchTime) {
         //今日已使用数量
-        Map<String, Integer> usedUserMap = baseMapper.queryUsedUserSummary().stream()
+        Map<String, Integer> usedUserMap = baseMapper.queryUsedUserSummary(searchTime).stream()
                 .collect(Collectors.toMap(UserSummaryResultDto::getCountryCode, UserSummaryResultDto::getUsedUserStock));
+        return usedUserMap;
+    }
+
+    @Override
+    public Map<String, Integer> queryOnlineUserSummary() {
         //当前在线数量
         Map<String, Integer> onlineUserMap = baseMapper.queryOnlineUserSummary().stream()
                 .collect(Collectors.toMap(UserSummaryResultDto::getCountryCode, UserSummaryResultDto::getOnlineUserNum));
-
-        List<UserSummaryResultDto> resultList = new ArrayList<>(2);
-        UserSummaryResultDto resultDto = null;
-        String countryCode = null;
-
-
-
-        for (CountryCode typeEnum : CountryCode.values()) {
-            countryCode = typeEnum.getValue().toUpperCase();
-            resultDto = new UserSummaryResultDto();
-            if (usedUserMap.get(countryCode) != null) {
-                resultDto.setCountryCode(typeEnum.getValue());
-                resultDto.setUsedUserStock(usedUserMap.get(countryCode));
-            }
-            if (onlineUserMap.get(countryCode) != null) {
-                resultDto.setCountryCode(typeEnum.getValue());
-                resultDto.setOnlineUserNum(onlineUserMap.get(countryCode));
-            }
-            if (StringUtils.isNotEmpty(resultDto.getCountryCode())) {
-                resultList.add(resultDto);
-            }
-        }
-        return resultList;
+        return onlineUserMap;
     }
 }

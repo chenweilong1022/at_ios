@@ -118,16 +118,4 @@ public class CdLineRegisterController {
 
         return R.ok().put("lineRegisterCount", count);
     }
-
-    /**
-     * 注册数据汇总
-     *
-     */
-    @RequestMapping("/queryLineRegisterSummary")
-    @RequiresPermissions("ltt:cdregistertask:info")
-    public R queryLineRegisterSummary() {
-        List<LineRegisterSummaryResultDto> resultDto = cdLineRegisterService.queryLineRegisterSummary();
-
-        return R.ok().put("lineRegisterSummary", resultDto);
-    }
 }

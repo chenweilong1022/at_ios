@@ -87,9 +87,7 @@
         SELECT
             country_code as countryCode,
             SUM( CASE WHEN register_status = 4 THEN 1 ELSE 0 END ) AS registerStock,
-            SUM( CASE WHEN register_status in(4,11) AND DATE ( create_time ) = CURDATE() THEN 1 ELSE 0 END ) AS todayRegisterNum,
-            SUM( CASE WHEN register_status in(4,11) AND DATE ( create_time ) = CURDATE() - INTERVAL 1 DAY THEN 1 ELSE 0 END ) AS yesterdayRegisterNum,
-            SUM( CASE WHEN register_status in(4,11) AND DATE ( create_time ) = CURDATE() - INTERVAL 2 DAY THEN 1 ELSE 0 END ) AS beforeRegisterNum
+            SUM( CASE WHEN register_status in(4,11) AND DATE ( create_time ) = #{searchTime} THEN 1 ELSE 0 END ) AS registerNum
         FROM
             cd_line_register
         WHERE

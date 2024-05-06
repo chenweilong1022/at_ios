@@ -17,6 +17,7 @@ public enum LockMapKeyResource implements BaseEnum {
     LockMapKeyResource8(8,"AtGroupEntity"),
     LockMapKeyResource9(9,"AtUserEntity"),
     LockMapKeyResource10(10,"AtUserTokenEntity"),
+    LockMapKeyResource11(11,"AtUserDataSummaryEntity"),
     ;
 
     LockMapKeyResource(int key, String value) {

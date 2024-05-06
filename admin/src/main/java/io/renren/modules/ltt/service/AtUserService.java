@@ -13,6 +13,7 @@ import io.renren.modules.ltt.entity.AtUserEntity;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -138,6 +139,8 @@ public interface AtUserService extends IService<AtUserEntity> {
      * 账号使用情况汇总
      * @return
      */
-    List<UserSummaryResultDto> queryUserSummary();
+    Map<String, Integer> queryUsedUserSummary(LocalDate searchTime);
+
+    Map<String, Integer> queryOnlineUserSummary();
 }
 

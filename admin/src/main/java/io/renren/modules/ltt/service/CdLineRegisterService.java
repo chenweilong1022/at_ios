@@ -9,7 +9,9 @@ import io.renren.modules.ltt.entity.CdLineRegisterEntity;
 import io.renren.modules.ltt.vo.GetCountBySubTaskIdVO;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 
@@ -121,6 +123,6 @@ public interface CdLineRegisterService extends IService<CdLineRegisterEntity> {
      * 注册数据汇总
      * @return
      */
-    List<LineRegisterSummaryResultDto> queryLineRegisterSummary();
+    List<LineRegisterSummaryResultDto> queryLineRegisterSummary(LocalDate searchTime);
 }
 

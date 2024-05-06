@@ -32,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -161,8 +162,8 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
     }
 
     @Override
-    public List<LineRegisterSummaryResultDto> queryLineRegisterSummary() {
-        List<LineRegisterSummaryResultDto> summaryResultDtos = baseMapper.queryLineRegisterSummary();
+    public List<LineRegisterSummaryResultDto> queryLineRegisterSummary(LocalDate searchTime) {
+        List<LineRegisterSummaryResultDto> summaryResultDtos = baseMapper.queryLineRegisterSummary(searchTime);
         return summaryResultDtos;
     }
 

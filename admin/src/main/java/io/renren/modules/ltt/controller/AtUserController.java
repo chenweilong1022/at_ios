@@ -167,15 +167,4 @@ public class AtUserController extends AbstractController {
         return R.ok();
     }
 
-    /**
-     * 账号使用情况汇总
-     */
-    @RequestMapping("/queryUserSummary")
-    @RequiresPermissions("ltt:atuser:info")
-    public R queryUserSummary(){
-        List<UserSummaryResultDto> resultDto = atUserService.queryUserSummary();
-
-        return R.ok().put("userSummary", resultDto);
-    }
-
 }

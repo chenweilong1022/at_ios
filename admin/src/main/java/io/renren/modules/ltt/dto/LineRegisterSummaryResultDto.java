@@ -18,11 +18,5 @@ public class LineRegisterSummaryResultDto implements Serializable {
     private Integer registerStock;
 
     @ApiModelProperty("今日注册数量")
-    private Integer todayRegisterNum;
-
-    @ApiModelProperty("昨日注册数量")
-    private Integer yesterdayRegisterNum;
-
-    @ApiModelProperty("前天注册数量")
-    private Integer beforeRegisterNum;
+    private Integer registerNum;
 }
