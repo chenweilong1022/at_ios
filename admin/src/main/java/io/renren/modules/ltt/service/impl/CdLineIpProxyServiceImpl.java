@@ -230,6 +230,10 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                         String[] split = resp.split("\r\n");
                         Queue<String> getflowipNew = new LinkedList<>();
                         for (String s : split) {
+                            s = s.trim();
+                            if (StrUtil.isEmpty(s)) {
+                                continue;
+                            }
                             getflowipNew.offer(s);
                         }
                         ip = getflowipNew.poll();
@@ -305,12 +309,12 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
             //lunaproxy
             String lunaIpResp = getLunaIpResp(regions);
             String ip2World = getIp2World(regions);
-            return lunaIpResp + ip2World;
+            return lunaIpResp + "\r\n" + ip2World;
         } else if (proxy == 2) {
             //ip2world
             String ip2World = getIp2World(regions);
             String lunaIpResp = getLunaIpResp(regions);
-            return ip2World + lunaIpResp;
+            return ip2World + "\r\n" + lunaIpResp;
         } else if (proxy == 3) {
             //静态代理
             return getStaticIpResp(regions);
