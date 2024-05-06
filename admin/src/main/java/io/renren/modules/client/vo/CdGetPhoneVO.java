@@ -101,5 +101,15 @@ public class CdGetPhoneVO implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="")
 	private Integer lineRegisterId;
+	/**
+	 *
+	 */
+	@ApiModelProperty(required=false,value="")
+	private String sfApi;
+	/**
+	 *
+	 */
+	@ApiModelProperty(required=false,value="")
+	private Integer timeZone;
 
 }

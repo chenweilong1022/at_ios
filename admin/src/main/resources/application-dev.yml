@@ -3,7 +3,7 @@ project:
         name: ${PROJECT_HOST_NAME:127.0.0.1:8880}
         pre: ${PROJECT_HOST_PRE:http}
     mysql:
-        hostname: ${PROJECT_MYSQL_HOSTNAME:143.92.40.151}
+        hostname: ${PROJECT_MYSQL_HOSTNAME:127.0.0.1}
         port: ${PROJECT_MYSQL_PORT:3308}
         url: ${project.mysql.hostname}:${project.mysql.port}
         username: ${PROJECT_MYSQL_USERNAME:root}

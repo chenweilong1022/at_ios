@@ -86,14 +86,22 @@ public class CardJpSFServiceImpl implements FirefoxService {
     private Cache<String, Date> cardJpSms;
 
     @Override
-    public String getPhoneCode(String pKey) {
+    public String getPhoneCode(String pKeys) {
+
+        String[] split = pKeys.split("#");
+        if (split.length != 3) {
+            return null;
+        }
+        String pKey = split[0];
+        String sfApi = split[1];
+        String timeZone = split[2];
         //发起操作时间
         Date date = cardJpSms.getIfPresent(pKey);
         CloseableHttpClient httpClient = HttpClients.createDefault();
         try {
-            ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
+//            ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
 
-            HttpGet request = new HttpGet(projectWorkEntity.getSfGetPhoneCodeUrl());
+            HttpGet request = new HttpGet(sfApi);
             request.addHeader("User-Agent", "Mozilla/5.0");
             String resp = httpClient.execute(request, httpResponse ->
                     EntityUtils.toString(httpResponse.getEntity()));
@@ -110,7 +118,7 @@ public class CardJpSFServiceImpl implements FirefoxService {
                     return null;
                 }
                 Date time = cardJpSFGetPhoneSmsVO.getTime();
-                if (projectWorkEntity.getSfTimeZone().equals(SfTimeZone.SfTimeZone2.getKey())) {
+                if (SfTimeZone.SfTimeZone2.getKey().equals(Integer.valueOf(timeZone))) {
                     time = DateUtil.offsetHour(time,-1);
                 }
                 boolean before = date.before(time);
