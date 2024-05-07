@@ -101,8 +101,11 @@
         <if test="telephone != null and telephone!=''">
             and u.telephone = #{telephone}
         </if>
-        <if test="userGroupId != null">
+        <if test="userGroupId != null and userGroupId != 0">
             and u.user_group_id = #{userGroupId}
+        </if>
+        <if test="userGroupId != null and userGroupId == 0">
+            and u.user_group_id is null
         </if>
         <if test="customerServiceId != null and customerServiceId != 0">
             and u.customer_service_id = #{customerServiceId}

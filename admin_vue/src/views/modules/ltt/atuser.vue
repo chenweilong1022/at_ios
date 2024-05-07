@@ -682,7 +682,7 @@
           params: this.$http.adornParams()
         }).then(({data}) => {
           if (data && data.code === 0) {
-            this.userGroupOptions = data.groupList
+            this.userGroupOptions = [{id: 0, name: '未分组'},...data.groupList]
           }
         })
       },
