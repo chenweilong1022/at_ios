@@ -39,6 +39,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -291,9 +292,14 @@ public class RegisterTask {
                                 cdGetPhoneEntity.setCode(phoneCode);
                                 cdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus3.getKey());
 
-                                CdLineRegisterVO lineRegisterVO = cdLineRegisterService.getById(cdGetPhoneEntity.getLineRegisterId());
+                                CdLineRegisterEntity lineRegisterVO = cdLineRegisterService.getById((Serializable) cdGetPhoneEntity.getLineRegisterId());
                                 if (ObjectUtil.isNull(lineRegisterVO)) {
-                                    return;
+                                    lineRegisterVO = cdLineRegisterService.getOne(new QueryWrapper<CdLineRegisterEntity>().lambda()
+                                            .eq(CdLineRegisterEntity::getGetPhoneId,cdGetPhoneEntity.getId())
+                                    );
+                                    if (ObjectUtil.isNull(lineRegisterVO)) {
+                                        return;
+                                    }
                                 }
 
                                 SMSCodeDTO smsCodeDTO = new SMSCodeDTO();

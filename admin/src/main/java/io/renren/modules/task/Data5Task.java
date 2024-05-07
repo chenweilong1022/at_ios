@@ -292,7 +292,7 @@ public class Data5Task {
                         cdLineIpProxyDTO.setTokenPhone(atUserTokenEntity.getTelephone());
                         cdLineIpProxyDTO.setLzPhone(atUserTokenEntity.getTelephone());
                         //去设置区号
-                        if (ObjectUtil.isNotNull(atGroupEntityConfig.getIpCountryCode())) {
+                        if (ObjectUtil.isNotNull(atGroupEntityConfig) && ObjectUtil.isNotNull(atGroupEntityConfig.getIpCountryCode())) {
                             cdLineIpProxyDTO.setCountryCode(atGroupEntityConfig.getIpCountryCode().longValue());
                         }
                         String proxyIp = cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO);

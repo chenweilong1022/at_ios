@@ -322,92 +322,92 @@ public class UserTask {
 //        }
 //    }
 
-
-    /**
-     * 同步token信息到用户表
-     */
-    @Scheduled(fixedDelay = 5000)
-    @Transactional(rollbackFor = Exception.class)
-    @Async
-    public void task2() {
-
-        //获取用户未验证的状态
-        List<AtUserEntity> atUserEntities = atUserService.list(new QueryWrapper<AtUserEntity>().lambda()
-                .eq(AtUserEntity::getStatus,UserStatus.UserStatus1.getKey())
-                .last("limit 50")
-                .orderByAsc(AtUserEntity::getStatus)
-        );
-        if (CollUtil.isEmpty(atUserEntities)) {
-            log.info("UserTask task2 atUserEntities isEmpty");
-            return;
-        }
-        //用户tokenIds
-        List<Integer> userTokenIds = atUserEntities.stream().map(AtUserEntity::getUserTokenId).collect(Collectors.toList());
-        List<AtUserTokenEntity> atUserTokenEntities = atUserTokenService.listByIds(userTokenIds);
-        if (CollUtil.isEmpty(atUserEntities)) {
-            log.info("UserTask task2 atUserTokenEntities isEmpty");
-            return;
-        }
-        //用户tokenMap
-        Map<Integer, AtUserTokenEntity> atUserTokenEntityMap = atUserTokenEntities.stream().collect(Collectors.toMap(AtUserTokenEntity::getId, item -> item));
-        for (AtUserEntity atUserEntity : atUserEntities) {
-            threadPoolTaskExecutor.execute(() -> {
-                String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource9, atUserEntity.getId());
-                Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
-                boolean triedLock = lock.tryLock();
-                log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
-                if(triedLock) {
-                    try{
-                        AtUserTokenEntity atUserTokenEntity = atUserTokenEntityMap.get(atUserEntity.getUserTokenId());
-                        if (ObjectUtil.isNull(atUserTokenEntity)) {
-                            return;
-                        }
-
-                        //获取代理
-                        CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
-                        cdLineIpProxyDTO.setTokenPhone(atUserEntity.getTelephone());
-                        cdLineIpProxyDTO.setLzPhone(atUserEntity.getTelephone());
-                        String proxyIp = cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO);
-                        if (StrUtil.isEmpty(proxyIp)) {
-                            return;
-                        }
-
-                        IssueLiffViewDTO issueLiffViewDTO = new IssueLiffViewDTO();
-                        issueLiffViewDTO.setProxy(proxyIp);
-                        issueLiffViewDTO.setToken(atUserTokenEntity.getToken());
-                        IssueLiffViewVO issueLiffViewVO = lineService.issueLiffView(issueLiffViewDTO);
-                        AtUserEntity update = new AtUserEntity();
-                        update.setId(atUserEntity.getId());
-                        if (ObjectUtil.isNull(issueLiffViewVO)) {
-                            return;
-                        }
-                        update.setMsg(issueLiffViewVO.getMsg());
-                        update.setStatus(UserStatus.UserStatus4.getKey());
-                        //号被封号了
-                        if (201 == issueLiffViewVO.getCode()) {
-                            //用户添加群过多 封号
-                            if (issueLiffViewVO.getMsg().contains(UserStatusCode.UserStatusCode9.getValue())) {
-                                update.setStatus(UserStatus.UserStatus2.getKey());
-                            }else  if (issueLiffViewVO.getMsg().contains(UserStatusCode.UserStatusCode13.getValue())) {
-                                update.setStatus(UserStatus.UserStatus2.getKey());
-                            }else  if (issueLiffViewVO.getMsg().contains(UserStatusCode.UserStatusCode14.getValue())) {
-                                update.setStatus(UserStatus.UserStatus3.getKey());
-                            }
-                        }else if(300 == issueLiffViewVO.getCode()) {
-                            update.setStatus(UserStatus.UserStatus1.getKey());
-                        }
-                        atUserService.updateById(update);
-                    }finally {
-                        lock.unlock();
-                    }
-                }else {
-                    log.info("keyByResource = {} 在执行",keyByResource);
-                }
-            });
-
-        }
-
-    }
+//
+//    /**
+//     * 同步token信息到用户表
+//     */
+//    @Scheduled(fixedDelay = 5000)
+//    @Transactional(rollbackFor = Exception.class)
+//    @Async
+//    public void task2() {
+//
+//        //获取用户未验证的状态
+//        List<AtUserEntity> atUserEntities = atUserService.list(new QueryWrapper<AtUserEntity>().lambda()
+//                .eq(AtUserEntity::getStatus,UserStatus.UserStatus1.getKey())
+//                .last("limit 50")
+//                .orderByAsc(AtUserEntity::getStatus)
+//        );
+//        if (CollUtil.isEmpty(atUserEntities)) {
+//            log.info("UserTask task2 atUserEntities isEmpty");
+//            return;
+//        }
+//        //用户tokenIds
+//        List<Integer> userTokenIds = atUserEntities.stream().map(AtUserEntity::getUserTokenId).collect(Collectors.toList());
+//        List<AtUserTokenEntity> atUserTokenEntities = atUserTokenService.listByIds(userTokenIds);
+//        if (CollUtil.isEmpty(atUserEntities)) {
+//            log.info("UserTask task2 atUserTokenEntities isEmpty");
+//            return;
+//        }
+//        //用户tokenMap
+//        Map<Integer, AtUserTokenEntity> atUserTokenEntityMap = atUserTokenEntities.stream().collect(Collectors.toMap(AtUserTokenEntity::getId, item -> item));
+//        for (AtUserEntity atUserEntity : atUserEntities) {
+//            threadPoolTaskExecutor.execute(() -> {
+//                String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource9, atUserEntity.getId());
+//                Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
+//                boolean triedLock = lock.tryLock();
+//                log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
+//                if(triedLock) {
+//                    try{
+//                        AtUserTokenEntity atUserTokenEntity = atUserTokenEntityMap.get(atUserEntity.getUserTokenId());
+//                        if (ObjectUtil.isNull(atUserTokenEntity)) {
+//                            return;
+//                        }
+//
+//                        //获取代理
+//                        CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
+//                        cdLineIpProxyDTO.setTokenPhone(atUserEntity.getTelephone());
+//                        cdLineIpProxyDTO.setLzPhone(atUserEntity.getTelephone());
+//                        String proxyIp = cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO);
+//                        if (StrUtil.isEmpty(proxyIp)) {
+//                            return;
+//                        }
+//
+//                        IssueLiffViewDTO issueLiffViewDTO = new IssueLiffViewDTO();
+//                        issueLiffViewDTO.setProxy(proxyIp);
+//                        issueLiffViewDTO.setToken(atUserTokenEntity.getToken());
+//                        IssueLiffViewVO issueLiffViewVO = lineService.issueLiffView(issueLiffViewDTO);
+//                        AtUserEntity update = new AtUserEntity();
+//                        update.setId(atUserEntity.getId());
+//                        if (ObjectUtil.isNull(issueLiffViewVO)) {
+//                            return;
+//                        }
+//                        update.setMsg(issueLiffViewVO.getMsg());
+//                        update.setStatus(UserStatus.UserStatus4.getKey());
+//                        //号被封号了
+//                        if (201 == issueLiffViewVO.getCode()) {
+//                            //用户添加群过多 封号
+//                            if (issueLiffViewVO.getMsg().contains(UserStatusCode.UserStatusCode9.getValue())) {
+//                                update.setStatus(UserStatus.UserStatus2.getKey());
+//                            }else  if (issueLiffViewVO.getMsg().contains(UserStatusCode.UserStatusCode13.getValue())) {
+//                                update.setStatus(UserStatus.UserStatus2.getKey());
+//                            }else  if (issueLiffViewVO.getMsg().contains(UserStatusCode.UserStatusCode14.getValue())) {
+//                                update.setStatus(UserStatus.UserStatus3.getKey());
+//                            }
+//                        }else if(300 == issueLiffViewVO.getCode()) {
+//                            update.setStatus(UserStatus.UserStatus1.getKey());
+//                        }
+//                        atUserService.updateById(update);
+//                    }finally {
+//                        lock.unlock();
+//                    }
+//                }else {
+//                    log.info("keyByResource = {} 在执行",keyByResource);
+//                }
+//            });
+//
+//        }
+//
+//    }
 
 
 
@@ -443,24 +443,21 @@ public class UserTask {
                 log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
                 if(triedLock) {
                     try{
-
-
-
                         //格式化token
                         LineTokenJson lineTokenJson = JSON.parseObject(atUserTokenEntity.getToken(), LineTokenJson.class);
                         AtUserEntity atUserEntity = new AtUserEntity();
                         atUserEntity.setNation(lineTokenJson.getCountryCode());
                         String telephone = StrUtil.cleanBlank(lineTokenJson.getPhone()).replaceAll("-", "");
-                        AtUserEntity one = atUserService.getOne(new QueryWrapper<AtUserEntity>().lambda()
-                                .eq(AtUserEntity::getTelephone,telephone)
-                        );
+//                        AtUserEntity one = atUserService.getOne(new QueryWrapper<AtUserEntity>().lambda()
+//                                .eq(AtUserEntity::getTelephone,telephone)
+//                        );
                         atUserEntity.setTelephone(telephone);
                         atUserEntity.setNickName(lineTokenJson.getNickName());
                         atUserEntity.setPassword(lineTokenJson.getPassword());
                         atUserEntity.setUserGroupId(atUserTokenEntity.getUserGroupId());
                         atUserEntity.setNumberFriends(0);
                         //未验证账号
-                        atUserEntity.setStatus(UserStatus.UserStatus1.getKey());
+                        atUserEntity.setStatus(UserStatus.UserStatus4.getKey());
                         atUserEntity.setUserGroupName(atUserGroupMap.get(atUserTokenEntity.getUserGroupId()));
                         //将添加token添加到用户
                         atUserEntity.setDeleteFlag(DeleteFlag.NO.getKey());
@@ -471,12 +468,12 @@ public class UserTask {
                                 && AtUserTokenType2.getKey().equals(atUserTokenEntity.getTokenType())) {
                             atUserEntity.setUserSource(AtUserSourceEnum.AtUserSource2.getKey());
                         }
-                        if (ObjectUtil.isNotNull(one)) {
-                            atUserEntity.setId(one.getId());
-                            atUserService.updateById(atUserEntity);
-                        }else {
+//                        if (ObjectUtil.isNotNull(one)) {
+//                            atUserEntity.setId(one.getId());
+//                            atUserService.updateById(atUserEntity);
+//                        }else {
                             atUserService.save(atUserEntity);
-                        }
+//                        }
                         //修改数据使用状态
                         AtUserTokenEntity update = new AtUserTokenEntity();
                         update.setId(atUserTokenEntity.getId());
