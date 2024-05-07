@@ -108,15 +108,21 @@ public class AtUserDataSummaryServiceImpl extends ServiceImpl<AtUserDataSummaryD
         for (String key : countryCodeList) {
             dataSummaryVO = new AtUserDataSummaryVO();
             dataSummaryVO.setCountryCode(key);
-            if (usedUserMap.get(key.toUpperCase()) != null) {
-                dataSummaryVO.setUserUseCount(usedUserMap.get(key.toUpperCase()));
-            }
-            if (onlineUserMap.get(key.toUpperCase()) != null) {
-                dataSummaryVO.setUserOnlineCount(onlineUserMap.get(key.toUpperCase()));
-            }
+
+            //账号使用数量
+            dataSummaryVO.setUserUseCount(usedUserMap.get(key.toUpperCase()) != null ?
+                    usedUserMap.get(key.toUpperCase()) : 0);
+
+            //在线账号数量
+            dataSummaryVO.setUserOnlineCount(onlineUserMap.get(key.toUpperCase()) != null ?
+                    onlineUserMap.get(key.toUpperCase()) : 0);
+
             if (lineSummary.get(key) != null) {
                 dataSummaryVO.setLineRegisterCount(lineSummary.get(key).getRegisterNum());
                 dataSummaryVO.setLineStock(lineSummary.get(key).getRegisterStock());
+            } else {
+                dataSummaryVO.setLineRegisterCount(0);
+                dataSummaryVO.setLineStock(0);
             }
             resultMap.put(key, dataSummaryVO);
         }
