@@ -443,24 +443,21 @@ public class UserTask {
                 log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
                 if(triedLock) {
                     try{
-
-
-
                         //格式化token
                         LineTokenJson lineTokenJson = JSON.parseObject(atUserTokenEntity.getToken(), LineTokenJson.class);
                         AtUserEntity atUserEntity = new AtUserEntity();
                         atUserEntity.setNation(lineTokenJson.getCountryCode());
                         String telephone = StrUtil.cleanBlank(lineTokenJson.getPhone()).replaceAll("-", "");
-                        AtUserEntity one = atUserService.getOne(new QueryWrapper<AtUserEntity>().lambda()
-                                .eq(AtUserEntity::getTelephone,telephone)
-                        );
+//                        AtUserEntity one = atUserService.getOne(new QueryWrapper<AtUserEntity>().lambda()
+//                                .eq(AtUserEntity::getTelephone,telephone)
+//                        );
                         atUserEntity.setTelephone(telephone);
                         atUserEntity.setNickName(lineTokenJson.getNickName());
                         atUserEntity.setPassword(lineTokenJson.getPassword());
                         atUserEntity.setUserGroupId(atUserTokenEntity.getUserGroupId());
                         atUserEntity.setNumberFriends(0);
                         //未验证账号
-                        atUserEntity.setStatus(UserStatus.UserStatus1.getKey());
+                        atUserEntity.setStatus(UserStatus.UserStatus4.getKey());
                         atUserEntity.setUserGroupName(atUserGroupMap.get(atUserTokenEntity.getUserGroupId()));
                         //将添加token添加到用户
                         atUserEntity.setDeleteFlag(DeleteFlag.NO.getKey());
@@ -471,12 +468,12 @@ public class UserTask {
                                 && AtUserTokenType2.getKey().equals(atUserTokenEntity.getTokenType())) {
                             atUserEntity.setUserSource(AtUserSourceEnum.AtUserSource2.getKey());
                         }
-                        if (ObjectUtil.isNotNull(one)) {
-                            atUserEntity.setId(one.getId());
-                            atUserService.updateById(atUserEntity);
-                        }else {
+//                        if (ObjectUtil.isNotNull(one)) {
+//                            atUserEntity.setId(one.getId());
+//                            atUserService.updateById(atUserEntity);
+//                        }else {
                             atUserService.save(atUserEntity);
-                        }
+//                        }
                         //修改数据使用状态
                         AtUserTokenEntity update = new AtUserTokenEntity();
                         update.setId(atUserTokenEntity.getId());
