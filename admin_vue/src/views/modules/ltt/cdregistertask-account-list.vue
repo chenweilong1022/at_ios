@@ -89,8 +89,9 @@
           <template slot-scope="scope">
 <!--            <el-button type="text" size="small" @click="addOrUpdateHandle(scope.row.id)">修改</el-button>-->
 <!--            <el-button type="text" size="small" @click="deleteHandle(scope.row.id)">删除</el-button>-->
+<!--            v-if="scope.row.registerStatus === 5 && scope.row.countryCode === 'jp'"-->
             <el-button type="text" size="small"
-                       v-if="scope.row.registerStatus === 5 && scope.row.countryCode === 'jp'"
+
                        @click="registerRetryHandle(scope.row.id)">错误重试</el-button>
           </template>
         </el-table-column>
