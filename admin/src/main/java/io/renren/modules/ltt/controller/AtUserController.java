@@ -133,8 +133,8 @@ public class AtUserController extends AbstractController {
      */
     @RequestMapping("/cleanBlockData")
     @RequiresPermissions("ltt:atuser:update")
-    public R cleanBlockData(){
-		atUserService.cleanBlockData(getAuthUserId());
+    public R cleanBlockData(@RequestBody Integer[] ids){
+		atUserService.cleanBlockData(getAuthUserId(),ids);
 
         return R.ok();
     }

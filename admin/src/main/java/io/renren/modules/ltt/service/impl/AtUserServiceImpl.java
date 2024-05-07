@@ -406,12 +406,13 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void cleanBlockData(Long sysUserId) {
+    public void cleanBlockData(Long sysUserId, Integer[] removeIds) {
         //清理封号数据
         List<AtUserEntity> userList = baseMapper
                 .selectList(new QueryWrapper<AtUserEntity>().lambda()
                 .eq(AtUserEntity::getStatus, UserStatus.UserStatus2.getKey())
                 .eq(ObjectUtil.isNotNull(sysUserId), AtUserEntity::getSysUserId, sysUserId)
+                .in(CollUtil.isNotEmpty(Arrays.asList(removeIds)), AtUserEntity::getId, Arrays.asList(removeIds))
                 );
         if (CollectionUtils.isNotEmpty(userList)) {
             List<Integer> ids = userList.stream().map(AtUserEntity::getId).distinct().collect(Collectors.toList());
@@ -425,18 +426,18 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
             }
         }
 
-        //清理token中过期的数据
-        List<AtUserTokenEntity> tokenList = atUserTokenService.list(new QueryWrapper<AtUserTokenEntity>().lambda()
-                .eq(ObjectUtil.isNotNull(sysUserId), AtUserTokenEntity::getSysUserId, sysUserId)
-                .in(AtUserTokenEntity::getOpenStatus, Arrays.asList(OpenStatus3.getKey(), OpenStatus4.getKey())));
-        if (CollectionUtils.isNotEmpty(tokenList)) {
-            List<Integer> tokenIdList = tokenList.stream().map(AtUserTokenEntity::getId).distinct().collect(Collectors.toList());
-            atUserTokenService.removeByIds(tokenIdList);
-
-            //清理账号数据
-            baseMapper.delete(new QueryWrapper<AtUserEntity>().lambda().in(AtUserEntity::getUserTokenId, tokenIdList));
-
-        }
+//        //清理token中过期的数据
+//        List<AtUserTokenEntity> tokenList = atUserTokenService.list(new QueryWrapper<AtUserTokenEntity>().lambda()
+//                .eq(ObjectUtil.isNotNull(sysUserId), AtUserTokenEntity::getSysUserId, sysUserId)
+//                .in(AtUserTokenEntity::getOpenStatus, Arrays.asList(OpenStatus3.getKey(), OpenStatus4.getKey())));
+//        if (CollectionUtils.isNotEmpty(tokenList)) {
+//            List<Integer> tokenIdList = tokenList.stream().map(AtUserTokenEntity::getId).distinct().collect(Collectors.toList());
+//            atUserTokenService.removeByIds(tokenIdList);
+//
+//            //清理账号数据
+//            baseMapper.delete(new QueryWrapper<AtUserEntity>().lambda().in(AtUserEntity::getUserTokenId, tokenIdList));
+//
+//        }
     }
 
 

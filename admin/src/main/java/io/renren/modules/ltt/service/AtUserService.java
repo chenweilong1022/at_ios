@@ -133,7 +133,7 @@ public interface AtUserService extends IService<AtUserEntity> {
     /**
      * 清理封号数据
      */
-    void cleanBlockData(Long sysUserId);
+    void cleanBlockData(Long sysUserId, Integer[] ids);
 
     /**
      * 账号使用情况汇总

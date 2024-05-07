@@ -646,7 +646,10 @@
         })
       },
       // 清理封号账号
-      cleanBlockData () {
+      cleanBlockData (id) {
+        var ids = id ? [id] : this.dataListSelections.map(item => {
+          return item.id
+        })
         this.$confirm(`确定对封号数据进行清理?`, '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
@@ -654,7 +657,8 @@
         }).then(() => {
           this.$http({
             url: this.$http.adornUrl('/ltt/atuser/cleanBlockData'),
-            method: 'post'
+            method: 'post',
+            data: this.$http.adornData(ids, false)
           }).then(({data}) => {
             if (data && data.code === 0) {
               this.$message({
