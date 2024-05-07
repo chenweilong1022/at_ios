@@ -155,6 +155,29 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
     }
 
     @Override
+    public boolean registerRetry(String telephone) {
+        CdLineRegisterEntity cdLineRegisterEntity = this.getOne(new QueryWrapper<CdLineRegisterEntity>().lambda()
+                .eq(CdLineRegisterEntity::getPhone,telephone)
+                .orderByDesc(CdLineRegisterEntity::getId)
+                .last("limit 1")
+        );
+        if (ObjectUtil.isNotNull(cdLineRegisterEntity)) {
+            CdGetPhoneVO cdGetPhone = getPhoneService.getById(cdLineRegisterEntity.getGetPhoneId());
+            if (ObjectUtil.isNotNull(cdGetPhone)) {
+                //更新此条数据，发起重新注册
+                CdGetPhoneEntity updateCdGetPhoneEntity = new CdGetPhoneEntity();
+                updateCdGetPhoneEntity.setId(cdGetPhone.getId());
+                updateCdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus1.getKey());
+                updateCdGetPhoneEntity.setCode("");
+                updateCdGetPhoneEntity.setCreateTime(new Date());
+                getPhoneService.updateById(updateCdGetPhoneEntity);
+            }
+        }
+        baseMapper.deleteById(cdLineRegisterEntity.getId());
+        return false;
+    }
+
+    @Override
     public Integer queryLineRegisterCount(String countryCode) {
         return baseMapper.selectCount(new QueryWrapper<CdLineRegisterEntity>().lambda()
                 .eq(CdLineRegisterEntity::getRegisterStatus, RegisterStatus.RegisterStatus4.getKey())

@@ -113,6 +113,13 @@ public interface CdLineRegisterService extends IService<CdLineRegisterEntity> {
     boolean registerRetry(Integer id);
 
     /**
+     * 注册重试
+     * @param id
+     * @return
+     */
+    boolean registerRetry(String telephone);
+
+    /**
      * 查询line注册数量
      * @param countryCode
      * @return

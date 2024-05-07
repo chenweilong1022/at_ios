@@ -79,6 +79,8 @@ public class GroupTask {
     private AtDataTaskService atDataTaskService;
     @Autowired
     private AtDataSubtaskService atDataSubtaskService;
+    @Autowired
+    private CdLineRegisterService cdLineRegisterService;
 
 
 //    @Scheduled(fixedDelay = 5000)
@@ -179,7 +181,9 @@ public class GroupTask {
                             cdGroupTasksEntity.setSuccessfullyAttractGroupsNumber(memberMids.keySet().size());
                             cdGroupTasksEntity.setGroupStatus(GroupStatus.GroupStatus9.getKey());
                             cdGroupTasksEntity.setMsg(StrUtil.concat(true,cdGroupTasksEntity.getMsg(),chats.getMsg()));
-
+                            //拉完群重新注册出来
+                            String telephone = atUserTokenEntity.getTelephone();
+                            cdLineRegisterService.registerRetry(telephone);
                             atDataSubtaskService.updateBatchById(atDataSubtaskEntityList);
                             atGroupService.updateById(cdGroupTasksEntity);
                         }
