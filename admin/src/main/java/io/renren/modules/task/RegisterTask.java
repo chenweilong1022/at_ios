@@ -410,9 +410,11 @@ public class RegisterTask {
                             update.setId(cdGetPhoneEntity.getId());
                             update.setPhoneStatus(PhoneStatus.PhoneStatus2.getKey());
                             update.setCreateTime(DateUtil.date());
-
-                            cdLineRegisterService.save(cdLineRegisterDTO);
-
+                            try{
+                                cdLineRegisterService.save(cdLineRegisterDTO);
+                            }catch (Exception e) {
+                                log.error("重复执行");
+                            }
                             update.setLineRegisterId(cdLineRegisterDTO.getId());
                             cdGetPhoneService.updateById(update);
                         }

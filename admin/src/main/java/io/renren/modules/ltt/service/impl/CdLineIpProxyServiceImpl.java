@@ -381,7 +381,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         }
         if (proxy == 1) {
             //lunaproxy
-           return isProxyUseMe(ip, country);
+           return isProxyUse(ip, country);
         } else if (proxy == 2) {
             //ip2world
             return isProxyUseMe(ip, country);
