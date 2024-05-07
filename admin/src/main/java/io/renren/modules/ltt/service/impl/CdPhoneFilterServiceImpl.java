@@ -150,7 +150,7 @@ public class CdPhoneFilterServiceImpl extends ServiceImpl<CdPhoneFilterDao, CdPh
 
                     String regions = EnumUtil.queryValueByKey(key.intValue(), CountryCode.values());
                     List<AtUserEntity> atUserEntities = atUserService.list(new QueryWrapper<AtUserEntity>().lambda()
-                            .in(AtUserEntity::getStatus, UserStatus.UserStatus4.getKey(),UserStatus.UserStatus6.getKey())
+                            .in(AtUserEntity::getStatus, UserStatus.UserStatus4.getKey())
                             .eq(AtUserEntity::getNation, regions)
                             .orderByDesc(AtUserEntity::getId)
                             .last("limit 1")
