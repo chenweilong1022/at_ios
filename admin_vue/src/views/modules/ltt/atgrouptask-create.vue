@@ -387,7 +387,8 @@
             <template slot-scope="scope">
               <el-button type="text" size="small" @click="errLogsHandle(scope.row.id)">错误日志</el-button>
               <el-button type="text" size="small"
-                         v-if="scope.row.msg === 'NetError：网络异常'"
+                         v-if="scope.row.msg.includes('NetError：网络异常') ||
+                         (scope.row.roomId != null && scope.row.successfullyAttractGroupsNumber == 0)"
                          @click="errRetryHandle(scope.row.id)">错误重试</el-button>
             </template>
           </el-table-column>

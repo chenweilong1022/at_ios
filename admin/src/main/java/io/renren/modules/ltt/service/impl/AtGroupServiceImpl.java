@@ -451,6 +451,15 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
                 cdLineIpProxyService.clearTokenPhone(atUser.getTelephone());
             }
             return count > 0;
+        } else if (StringUtils.isNotEmpty(atGroup.getRoomId())
+                && atGroup.getSuccessfullyAttractGroupsNumber() != null
+                && atGroup.getSuccessfullyAttractGroupsNumber() == 0) {
+            //已有群号，代表已经成功，状态改成
+            AtGroupEntity updateGroup = new AtGroupEntity();
+            updateGroup.setId(atGroup.getId());
+            updateGroup.setGroupStatus(GroupStatus.GroupStatus5.getKey());
+            int count = baseMapper.updateById(updateGroup);
+            return count > 0;
         }
         return false;
     }
