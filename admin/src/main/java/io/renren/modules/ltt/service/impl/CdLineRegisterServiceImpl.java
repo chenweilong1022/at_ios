@@ -172,8 +172,8 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
                 updateCdGetPhoneEntity.setCreateTime(new Date());
                 getPhoneService.updateById(updateCdGetPhoneEntity);
             }
+            baseMapper.deleteById(cdLineRegisterEntity.getId());
         }
-        baseMapper.deleteById(cdLineRegisterEntity.getId());
         return false;
     }
 
