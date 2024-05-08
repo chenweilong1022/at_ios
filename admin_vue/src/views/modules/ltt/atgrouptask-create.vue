@@ -218,7 +218,7 @@
             </el-select>
           </el-form-item>
           <el-form-item label="加粉结束自动拉群">
-            <el-select v-model="dataForm.openApp" placeholder="加粉结束自动拉群" clearable>
+            <el-select v-model="dataForm.autoPullGroup" placeholder="加粉结束自动拉群" clearable>
               <el-option
                 v-for="item in openAppOptions"
                 :key="item.key"
