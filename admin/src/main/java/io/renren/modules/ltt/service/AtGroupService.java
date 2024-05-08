@@ -101,5 +101,7 @@ public interface AtGroupService extends IService<AtGroupEntity> {
      * @return
      */
     Map<Integer, AtGroupTaskVO> groupDataSummary(List<Integer> groupTaskIdList);
+
+    Boolean startGroup(List<Integer> list);
 }
 

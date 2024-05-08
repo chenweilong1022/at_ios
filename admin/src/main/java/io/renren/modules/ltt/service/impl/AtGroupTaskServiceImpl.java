@@ -258,6 +258,7 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
             atGroupTaskEntity.setCreateTime(DateUtil.date());
             atGroupTaskEntity.setIpCountryCode(atGroupTask.getIpCountryCode());
             atGroupTaskEntity.setIntervalSecond(atGroupTask.getIntervalSecond());
+            atGroupTaskEntity.setAutoPullGroup(atGroupTask.getAutoPullGroup());
             atGroupTaskEntity.setSearchIntervalSecond(atGroupTask.getSearchIntervalSecond());
             onGroupPreVO.setAtGroupTaskEntity(atGroupTaskEntity);
             atGroupEntitiesSave.add(atGroupTaskEntity);

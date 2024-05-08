@@ -159,7 +159,8 @@ public class AtGroupDTO extends PageParam implements Serializable {
 	@ApiModelProperty(required=false,value="间隔秒数")
 	private Integer intervalSecond;
 
-
+	@ApiModelProperty(required=false,value="自动拉群")
+	private Integer autoPullGroup;
 	/**
 	 * 代理ip
 	 */

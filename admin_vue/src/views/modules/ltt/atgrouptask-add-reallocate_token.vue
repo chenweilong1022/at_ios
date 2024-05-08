@@ -46,7 +46,7 @@
           id: 0,
           countryCode: null,
           userGroupId: null,
-          pullGroupNumber: 2,
+          pullGroupNumber: 1,
           ids: [],
           taskName: '',
           groupType: '',

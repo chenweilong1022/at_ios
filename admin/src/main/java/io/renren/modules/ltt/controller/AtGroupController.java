@@ -72,6 +72,16 @@ public class AtGroupController extends AbstractController {
     }
 
     /**
+     * 开始拉群
+     */
+    @RequestMapping("/startGroup")
+    @RequiresPermissions("ltt:atgrouptask:update")
+    public R startGroup(@RequestBody Integer[] ids){
+        Boolean flag = atGroupService.startGroup(Arrays.asList(ids));
+        return R.data(flag);
+    }
+
+    /**
      * 保存
      */
     @RequestMapping("/save")

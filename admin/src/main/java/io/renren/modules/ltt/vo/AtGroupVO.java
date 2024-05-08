@@ -211,6 +211,9 @@ public class AtGroupVO implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="国家")
 	private Integer countryCode;
+
+	@ApiModelProperty(required=false,value="自动拉群")
+	private Integer autoPullGroup;
 	/**
 	 * 间隔秒数
 	 */

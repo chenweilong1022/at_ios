@@ -6,99 +6,7 @@
         <div class="img-logo">
           <img src="~@/assets/250px-Bagua-name-earlier.svg.png">
 
-          <div class="title">拉群配置</div>
-          <el-form-item label="拉群号国家">
-            <el-select v-model="dataForm.countryCode" placeholder="拉群号国家" clearable>
-              <el-option
-                v-for="item in countryCodes"
-                :key="item.key"
-                :label="item.value"
-                :value="item.key">
-              </el-option>
-            </el-select>
-          </el-form-item>
 
-          <el-form-item label="拉群号分组" prop="userGroupId">
-            <el-select v-model="dataForm.userGroupId" placeholder="账户分组">
-              <el-option
-                v-for="item in dataUserGroupList"
-                :key="item.id"
-                :label="item.name"
-                :value="item.id">
-              </el-option>
-            </el-select>
-          </el-form-item>
-
-          <el-form-item v-if="groupType === 6" label="合群号国家">
-            <el-select v-model="dataForm.countryCodeH" placeholder="合群号国家" clearable>
-              <el-option
-                v-for="item in countryCodes"
-                :key="item.key"
-                :label="item.value"
-                :value="item.key">
-              </el-option>
-            </el-select>
-          </el-form-item>
-
-          <el-form-item v-if="groupType === 6" label="合群号分组" prop="userGroupIdH">
-            <el-select v-model="dataForm.userGroupIdH" placeholder="合群号分组">
-              <el-option
-                v-for="item in dataUserGroupList"
-                :key="item.id"
-                :label="item.name"
-                :value="item.id">
-              </el-option>
-            </el-select>
-          </el-form-item>
-
-          <el-form-item label="拉群类型" prop="groupType">
-            <el-select
-              v-model="groupType"
-              @change="groupTypeChangeHandler"
-              class="m-2"
-              placeholder="选择类型"
-              size="large"
-              style="width: 240px">
-              <el-option
-                v-for="item in options"
-                :key="item.key"
-                :label="item.value"
-                :value="item.key"
-              />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="群人数" prop="groupCountTotal">
-            <el-input v-model="dataForm.groupCountTotal" placeholder="群人数" style="width: 70%;"></el-input>
-          </el-form-item>
-          <el-form-item label="拉群号数量" prop="pullGroupNumber">
-            <el-input v-model="dataForm.pullGroupNumber" placeholder="拉群号数量" style="width: 70%;"></el-input>
-          </el-form-item>
-          <el-form-item label="加粉间隔秒数" prop="intervalSecond">
-            <el-input v-model="dataForm.intervalSecond" placeholder="加粉间隔秒数" style="width: 70%;"></el-input>
-          </el-form-item>
-          <el-form-item v-if="groupType === 1" label="搜索间隔秒数" prop="searchIntervalSecond">
-            <el-input v-model="dataForm.searchIntervalSecond" placeholder="搜索间隔秒数" style="width: 70%;"></el-input>
-          </el-form-item>
-          <el-form-item label="代理ip">
-            <el-select v-model="dataForm.ipCountryCode" placeholder="代理ip" clearable>
-              <el-option
-                v-for="item in countryCodes"
-                :key="item.key"
-                :label="item.value"
-                :value="item.key">
-              </el-option>
-            </el-select>
-          </el-form-item>
-          <el-form-item label="加粉打开app">
-            <el-select v-model="dataForm.openApp" placeholder="加粉打开app" clearable>
-              <el-option
-                v-for="item in openAppOptions"
-                :key="item.key"
-                :label="item.value"
-                :value="item.key">
-              </el-option>
-            </el-select>
-          </el-form-item>
         </div>
 
         <div class="group-content">
@@ -216,7 +124,109 @@
         </div>
 
         <div class="money-container">
+          <div class="title">拉群配置</div>
+          <el-form-item label="拉群号国家">
+            <el-select v-model="dataForm.countryCode" placeholder="拉群号国家" clearable>
+              <el-option
+                v-for="item in countryCodes"
+                :key="item.key"
+                :label="item.value"
+                :value="item.key">
+              </el-option>
+            </el-select>
+          </el-form-item>
 
+          <el-form-item label="拉群号分组" prop="userGroupId">
+            <el-select v-model="dataForm.userGroupId" placeholder="账户分组">
+              <el-option
+                v-for="item in dataUserGroupList"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id">
+              </el-option>
+            </el-select>
+          </el-form-item>
+
+          <el-form-item v-if="groupType === 6" label="合群号国家">
+            <el-select v-model="dataForm.countryCodeH" placeholder="合群号国家" clearable>
+              <el-option
+                v-for="item in countryCodes"
+                :key="item.key"
+                :label="item.value"
+                :value="item.key">
+              </el-option>
+            </el-select>
+          </el-form-item>
+
+          <el-form-item v-if="groupType === 6" label="合群号分组" prop="userGroupIdH">
+            <el-select v-model="dataForm.userGroupIdH" placeholder="合群号分组">
+              <el-option
+                v-for="item in dataUserGroupList"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id">
+              </el-option>
+            </el-select>
+          </el-form-item>
+
+          <el-form-item label="拉群类型" prop="groupType">
+            <el-select
+              v-model="groupType"
+              @change="groupTypeChangeHandler"
+              class="m-2"
+              placeholder="选择类型"
+              size="large"
+              style="width: 240px">
+              <el-option
+                v-for="item in options"
+                :key="item.key"
+                :label="item.value"
+                :value="item.key"
+              />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="群人数" prop="groupCountTotal">
+            <el-input v-model="dataForm.groupCountTotal" placeholder="群人数" style="width: 70%;"></el-input>
+          </el-form-item>
+          <el-form-item label="拉群号数量" prop="pullGroupNumber">
+            <el-input v-model="dataForm.pullGroupNumber" placeholder="拉群号数量" style="width: 70%;"></el-input>
+          </el-form-item>
+          <el-form-item label="加粉间隔秒数" prop="intervalSecond">
+            <el-input v-model="dataForm.intervalSecond" placeholder="加粉间隔秒数" style="width: 70%;"></el-input>
+          </el-form-item>
+          <el-form-item v-if="groupType === 1" label="搜索间隔秒数" prop="searchIntervalSecond">
+            <el-input v-model="dataForm.searchIntervalSecond" placeholder="搜索间隔秒数" style="width: 70%;"></el-input>
+          </el-form-item>
+          <el-form-item label="代理ip">
+            <el-select v-model="dataForm.ipCountryCode" placeholder="代理ip" clearable>
+              <el-option
+                v-for="item in countryCodes"
+                :key="item.key"
+                :label="item.value"
+                :value="item.key">
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="加粉打开app">
+            <el-select v-model="dataForm.openApp" placeholder="加粉打开app" clearable>
+              <el-option
+                v-for="item in openAppOptions"
+                :key="item.key"
+                :label="item.value"
+                :value="item.key">
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="加粉结束自动拉群">
+            <el-select v-model="dataForm.openApp" placeholder="加粉结束自动拉群" clearable>
+              <el-option
+                v-for="item in openAppOptions"
+                :key="item.key"
+                :label="item.value"
+                :value="item.key">
+              </el-option>
+            </el-select>
+          </el-form-item>
         </div>
       </div>
       <div v-else>
@@ -239,6 +249,7 @@
           <el-button @click="getDataList()">查询</el-button>
           <el-button type="primary" @click="nextGroup()">继续拉群</el-button>
           <el-button type="danger" @click="exportHandle()" :disabled="dataListSelections.length <= 0">导出报表</el-button>
+          <el-button type="danger" @click="startGroup14Handler()" :disabled="dataListSelections.length <= 0">开始拉群</el-button>
           <el-button type="danger" @click="reallocateTokenHandle()" :disabled="dataListSelections.length <= 0">重新分配账号拉群</el-button>
           <el-button type="danger" @click="startTaskHandle()" :disabled="dataListSelections.length <= 0">启动任务</el-button>
         </el-form-item>
@@ -329,24 +340,6 @@
             align="center"
             label="下次加粉时间">
           </el-table-column>
-<!--          <el-table-column-->
-<!--            prop="addTotalQuantity"-->
-<!--            header-align="center"-->
-<!--            align="center"-->
-<!--            label="加粉总数">-->
-<!--          </el-table-column>-->
-<!--          <el-table-column-->
-<!--            prop="successfulQuantity"-->
-<!--            header-align="center"-->
-<!--            align="center"-->
-<!--            label="成功数">-->
-<!--          </el-table-column>-->
-<!--          <el-table-column-->
-<!--            prop="failuresQuantity"-->
-<!--            header-align="center"-->
-<!--            align="center"-->
-<!--            label="失败数">-->
-<!--          </el-table-column>-->
           <el-table-column
             prop="taskStatus"
             header-align="center"
@@ -464,14 +457,14 @@ import ErrLogs from "./atdatatask-err-logs.vue";
           groupName: '',
           countryCode: 66,
           countryCodeH: 81,
-          groupCountTotal: 99,
+          groupCountTotal: 94,
           pullGroupNumber: 1,
           groupCount: null,
           groupCountStart: 0,
-          intervalSecond: null,
+          intervalSecond: 7,
           searchIntervalSecond: null,
           ipCountryCode: null,
-          openApp: null,
+          autoPullGroup: 1,
           navyUrlList: [],
           materialUrlList: []
         }
@@ -721,6 +714,35 @@ import ErrLogs from "./atdatatask-err-logs.vue";
           window.open(this.$http.adornUrl(`/ltt/atgroup/importZip?token=${this.$cookie.get('token')}&ids=${ids.join(',')}`))
         })
       },
+      startGroup14Handler (id) {
+        var ids = id ? [id] : this.dataListSelections.map(item => {
+          return item.id
+        })
+        this.$confirm(`确定对[id=${ids.join(',')}]进行[${id ? '开始拉群' : '批量开始拉群'}]操作?`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$http({
+            url: this.$http.adornUrl('/ltt/atgroup/startGroup'),
+            method: 'post',
+            data: this.$http.adornData(ids, false)
+          }).then(({data}) => {
+            if (data && data.code === 0) {
+              this.$message({
+                message: '操作成功',
+                type: 'success',
+                duration: 1500,
+                onClose: () => {
+                  this.getDataList()
+                }
+              })
+            } else {
+              this.$message.error(data.msg)
+            }
+          })
+        })
+      },
       startGroupHandler () {
         this.isLoading = true
         this.$http({
@@ -734,6 +756,7 @@ import ErrLogs from "./atdatatask-err-logs.vue";
             'intervalSecond': this.dataForm.intervalSecond,
             'searchIntervalSecond': this.dataForm.searchIntervalSecond,
             'ipCountryCode': this.dataForm.ipCountryCode,
+            'autoPullGroup': this.dataForm.autoPullGroup,
             'userGroupId': this.dataForm.userGroupId,
             'userGroupIdH': this.dataForm.userGroupIdH,
             'navyUrlList': this.dataForm.navyUrlList,
@@ -901,6 +924,13 @@ import ErrLogs from "./atdatatask-err-logs.vue";
       }
       .money-container {
         flex: 1;
+        margin-left: 66px;
+        .title {
+          margin: 10px 0px;
+          text-align: center;
+          font-size: 30px;
+          font-weight: bold;
+        }
       }
     }
   }

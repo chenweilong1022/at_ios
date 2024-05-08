@@ -470,5 +470,16 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
                 .collect(Collectors.toMap(AtGroupTaskVO::getId, i -> i));
     }
 
+    @Override
+    public Boolean startGroup(List<Integer> ids) {
+        List<AtGroupEntity> atGroupEntities = this.listByIds(ids);
+        for (AtGroupEntity atGroupEntity : atGroupEntities) {
+            Assert.isTrue(!GroupStatus.GroupStatus14.getKey().equals(atGroupEntity.getGroupStatus()), "启动拉群状态必须为等待拉群");
+            atGroupEntity.setGroupStatus(GroupStatus.GroupStatus7.getKey());
+        }
+        boolean b = this.updateBatchById(atGroupEntities);
+        return b;
+    }
+
 
 }

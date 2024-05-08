@@ -166,6 +166,9 @@ public class AtGroupTaskDTO extends PageParam implements Serializable {
 	@ApiModelProperty(required=false,value="打开app")
 	private Integer openApp;
 
+	@ApiModelProperty(required=false,value="自动拉群")
+	private Integer autoPullGroup;
+
 
 	/**
 	 * 代理ip

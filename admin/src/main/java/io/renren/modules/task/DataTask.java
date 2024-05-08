@@ -30,6 +30,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
@@ -163,10 +164,18 @@ public class DataTask {
                 //如果拉群成功
                 if (TaskStatus.TaskStatus3.getKey().equals(update.getTaskStatus())) {
                     if (ObjectUtil.isNotNull(groupCountByDataTaskIdVO.getGroupId())) {
-                        AtGroupEntity atGroupEntity = new AtGroupEntity();
-                        atGroupEntity.setId(groupCountByDataTaskIdVO.getGroupId());
-                        atGroupEntity.setGroupStatus(GroupStatus.GroupStatus7.getKey());
-                        atGroupService.updateById(atGroupEntity);
+
+                        AtGroupEntity atGroupEntity = atGroupService.getById((Serializable) groupCountByDataTaskIdVO.getGroupId());
+                        if (ObjectUtil.isNotNull(atGroupEntity)) {
+                            if (OpenApp.OpenApp1.getKey().equals(atGroupEntity.getAutoPullGroup())) {
+                                atGroupEntity.setGroupStatus(GroupStatus.GroupStatus14.getKey());
+                            }else if (OpenApp.OpenApp2.getKey().equals(atGroupEntity.getAutoPullGroup())) {
+                                atGroupEntity.setGroupStatus(GroupStatus.GroupStatus7.getKey());
+                            }else {
+                                atGroupEntity.setGroupStatus(GroupStatus.GroupStatus14.getKey());
+                            }
+                            atGroupService.updateById(atGroupEntity);
+                        }
                     }
                 }
             }
