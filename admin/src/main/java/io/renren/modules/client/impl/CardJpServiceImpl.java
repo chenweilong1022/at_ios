@@ -64,17 +64,14 @@ public class CardJpServiceImpl implements FirefoxService {
     //{"code":1,"msg":"SUCCESS","time":"1712060836","data":[{"take_id":129101,"phone_number":"08092924050"}]}
     @Override
     public GetPhoneVO getPhone() {
-        for (int i = 0; i < 5; i++) {
-            log.info("jp_getPhone 第{}次取号开始", i);
-            GetPhoneVO phone = getPhoneBatch(100);
-            if (phone == null) {
-                phone = getPhoneBatch(100);
-            } else if (phone.getMaxGetPhoneCount() != null) {
-                phone = getPhoneBatch(phone.getMaxGetPhoneCount());
-            }
-            if (phone != null && CollectionUtil.isNotEmpty(phone.getPhones())) {
-                return phone;
-            }
+        GetPhoneVO phone = getPhoneBatch(100);
+        if (phone == null) {
+            phone = getPhoneBatch(100);
+        } else if (phone.getMaxGetPhoneCount() != null) {
+            phone = getPhoneBatch(phone.getMaxGetPhoneCount());
+        }
+        if (phone != null && CollectionUtil.isNotEmpty(phone.getPhones())) {
+            return phone;
         }
         return null;
     }
