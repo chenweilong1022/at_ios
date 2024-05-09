@@ -22,6 +22,7 @@ public enum GroupStatus implements BaseEnum {
     GroupStatus12(12,"重新分配token去拉群"),
     GroupStatus13(13,"手机号搜索失败"),
     GroupStatus14(14,"等待启动拉群"),
+    GroupStatus15(15,"群名修改成功"),
     ;
 
     GroupStatus(int key, String value) {

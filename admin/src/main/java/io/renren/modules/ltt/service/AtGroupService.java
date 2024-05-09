@@ -81,6 +81,8 @@ public interface AtGroupService extends IService<AtGroupEntity> {
      */
     void startTask(AtGroupDTO atGroup);
 
+    Integer updateGroupName(AtGroupDTO atGroup);
+
     /**
      * 获取缓存
      * @param groupId

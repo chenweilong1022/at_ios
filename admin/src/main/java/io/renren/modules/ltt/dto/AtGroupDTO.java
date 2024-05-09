@@ -170,6 +170,18 @@ public class AtGroupDTO extends PageParam implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="代理ip")
 	private Integer ipCountryCode;
+
+	/**
+	 * 修改群名称账号对应的国家
+	 */
+	@ApiModelProperty(required=false,value="修改群名称账号对应的国家")
+	private Integer changeGroupCountryCode;
+
+	/**
+	 * 修改群名称账号对应的分组
+	 */
+	@ApiModelProperty(required=false,value="修改群名称账号对应的分组")
+	private Integer changeGroupId;
 	/**
 	 * 间隔秒数
 	 */

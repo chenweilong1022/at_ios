@@ -13,6 +13,7 @@ public enum DataType implements BaseEnum {
     DataType2(2,"水军"),
     DataType3(3,"加粉号"),
     DataType4(4,"筛水军"),
+    DataType5(5,"改群名"),
     ;
 
     DataType(int key, String value) {

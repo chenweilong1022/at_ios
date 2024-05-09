@@ -137,6 +137,17 @@ public class AtGroupEntity implements Serializable {
 	private Integer randomGroupName;
 
 	/**
+	 * 修改群名称账号对应的国家
+	 */
+	@ApiModelProperty(required=false,value="修改群名称账号对应的国家")
+	private Integer changeGroupCountryCode;
+
+	/**
+	 * 修改群名称账号对应的分组
+	 */
+	@ApiModelProperty(required=false,value="修改群名称账号对应的分组")
+	private Integer changeGroupId;
+	/**
 	 * 代理ip
 	 */
 	@ApiModelProperty(required=false,value="代理ip")

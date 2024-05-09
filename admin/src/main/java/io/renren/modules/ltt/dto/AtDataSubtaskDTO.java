@@ -41,6 +41,8 @@ public class AtDataSubtaskDTO extends PageParam implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="账户id")
 	private Integer userId;
+	@ApiModelProperty(required=false,value="修改群信息水军id")
+	private Integer changeUserId;
 	/**
 	 * 任务状态
 	 */

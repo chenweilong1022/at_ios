@@ -237,6 +237,29 @@
               </el-option>
             </el-select>
           </el-form-item>
+
+          <el-form-item label="改群名号国家" prop="changeGroupCountryCode" v-if="dataForm.randomGroupName === 2">
+            <el-select v-model="dataForm.changeGroupCountryCode"   placeholder="改群名号国家" clearable>
+              <el-option
+                v-for="item in countryCodes"
+                :key="item.key"
+                :label="item.value"
+                :value="item.key">
+              </el-option>
+            </el-select>
+          </el-form-item>
+
+          <el-form-item label="改群名号分组" prop="changeGroupId" v-if="dataForm.randomGroupName === 2" >
+            <el-select v-model="dataForm.changeGroupId"   placeholder="改群名号分组">
+              <el-option
+                v-for="item in dataUserGroupList"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id">
+              </el-option>
+            </el-select>
+          </el-form-item>
+
         </div>
       </div>
       <div v-else>
@@ -261,6 +284,7 @@
           <el-button type="danger" @click="exportHandle()" :disabled="dataListSelections.length <= 0">导出报表</el-button>
           <el-button type="danger" @click="startGroup14Handler()" :disabled="dataListSelections.length <= 0">开始拉群</el-button>
           <el-button type="danger" @click="reallocateTokenHandle()" :disabled="dataListSelections.length <= 0">重新分配账号拉群</el-button>
+          <el-button type="danger" @click="updateGroupHandle()" :disabled="dataListSelections.length <= 0">修改群名</el-button>
           <el-button type="danger" @click="startTaskHandle()" :disabled="dataListSelections.length <= 0">启动任务</el-button>
         </el-form-item>
         </el-form>
@@ -464,6 +488,8 @@ import ErrLogs from "./atdatatask-err-logs.vue";
           id: null,
           userGroupId: null,
           userGroupIdH: null,
+          changeGroupCountryCode: null,
+          changeGroupId: null,
           groupType: null,
           groupName: '',
           countryCode: 66,
@@ -678,6 +704,42 @@ import ErrLogs from "./atdatatask-err-logs.vue";
           })
         })
       },
+      updateGroupHandle (id) {
+        var ids = id ? [id] : this.dataListSelections.map(item => {
+          return item.id
+        })
+        this.$confirm(`确定对[id=${ids.join(',')}]进行[${id ? '重新修改群名称' : '批量重新修改群名称'}]操作?`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.isLoading = true
+          this.$nextTick(() => {
+            this.$http({
+              url: this.$http.adornUrl('/ltt/atgroup/updateGroupName'),
+              method: 'post',
+              data: this.$http.adornData({
+                'ids': ids
+              })
+            }).then(({data}) => {
+              if (data && data.code === 0) {
+                this.$message({
+                  message: '操作成功，成功修改' + data.successCount + '条',
+                  type: 'success',
+                  duration: 1500,
+                  onClose: () => {
+                    this.getDataList()
+                  }
+                })
+              } else {
+                this.$message.error(data.msg)
+              }
+            }).finally(() => {
+              this.isLoading = false
+            })
+          })
+        })
+      },
       startTaskHandle (id) {
         var ids = id ? [id] : this.dataListSelections.map(item => {
           return item.id
@@ -771,6 +833,8 @@ import ErrLogs from "./atdatatask-err-logs.vue";
             'autoPullGroup': this.dataForm.autoPullGroup,
             'randomGroupName': this.dataForm.randomGroupName,
             'userGroupId': this.dataForm.userGroupId,
+            'changeGroupCountryCode': this.dataForm.changeGroupCountryCode,
+            'changeGroupId': this.dataForm.changeGroupId,
             'userGroupIdH': this.dataForm.userGroupIdH,
             'navyUrlList': this.dataForm.navyUrlList,
             'groupCountStart': this.dataForm.groupCountStart,

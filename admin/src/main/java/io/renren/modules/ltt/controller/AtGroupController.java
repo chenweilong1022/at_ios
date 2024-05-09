@@ -130,6 +130,17 @@ public class AtGroupController extends AbstractController {
     }
 
     /**
+     * 修改群名
+     */
+    @RequestMapping("updateGroupName")
+    @RequiresPermissions("ltt:atgrouptask:save")
+    public R updateGroupName(@RequestBody AtGroupDTO atGroup) {
+        atGroup.setSysUserId(getAuthUserId());
+        Integer successCount = atGroupService.updateGroupName(atGroup);
+        return R.ok().put("successCount", successCount);
+    }
+
+    /**
      * 修改
      */
     @RequestMapping("/update")

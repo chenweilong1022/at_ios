@@ -228,6 +228,18 @@ public class AtGroupVO implements Serializable {
 	@ApiModelProperty("下次加粉时间")
 	private Date nextTime;
 
+	/**
+	 * 修改群名称账号对应的国家
+	 */
+	@ApiModelProperty(required=false,value="修改群名称账号对应的国家")
+	private Integer changeGroupCountryCode;
+
+	/**
+	 * 修改群名称账号对应的分组
+	 */
+	@ApiModelProperty(required=false,value="修改群名称账号对应的分组")
+	private Integer changeGroupId;
+
 	public String getScheduleFloat() {
 		double v = (double) (successfulQuantity + failuresQuantity) / addTotalQuantity * 100;
 		return String.format("%.2f", v);

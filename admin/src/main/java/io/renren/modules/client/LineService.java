@@ -30,6 +30,13 @@ public interface LineService {
 
     LineRegisterVO createGroupMax(CreateGroupMax createGroupMax);
 
+    /**
+     * 修改群名称
+     * @param updateGroup
+     * @return
+     */
+    Boolean updateChat(UpdateGroup updateGroup);
+
     SearchPhoneVO findAndAddContactsByPhone(SearchPhoneDTO searchPhoneDTO);
 
     SearchPhoneVO addFriendsByMid(AddFriendsByMid addFriendsByMid);
