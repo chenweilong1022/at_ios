@@ -183,7 +183,7 @@ public class Data2Task {
                             return;
                         }
                         SearchPhoneVO searchPhoneVO = null;
-                        if (DataType.DataType3.getKey().equals(atDataSubtaskEntity.getDataType()) || DataType.DataType5.getKey().equals(atDataSubtaskEntity.getDataType())) {
+                        if (DataType.DataType3.getKey().equals(atDataSubtaskEntity.getDataType())) {
 //                            AtUserEntity one = atUserService.getOne(new QueryWrapper<AtUserEntity>().lambda()
 //                                    .eq(AtUserEntity::getTelephone,atDataSubtaskVO.getContactKey())
 //                            );
