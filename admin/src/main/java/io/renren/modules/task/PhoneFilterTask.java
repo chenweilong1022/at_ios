@@ -101,7 +101,7 @@ public class PhoneFilterTask {
                 if (CollUtil.isEmpty(atDataSubtaskEntityList)) {
                     continue;
                 }
-                Map<String, AtDataSubtaskEntity> stringAtDataSubtaskEntityMap = atDataSubtaskEntityList.stream().collect(Collectors.toMap(AtDataSubtaskEntity::getContactKey, item -> item));
+                Map<String, AtDataSubtaskEntity> stringAtDataSubtaskEntityMap = atDataSubtaskEntityList.stream().collect(Collectors.toMap(AtDataSubtaskEntity::getContactKey, item -> item,(a, c) -> a));
 
                 for (CdPhoneFilterEntity cdPhoneFilterEntity : cdPhoneFilterEntities1) {
                     cdPhoneFilterEntity.setTaskStatus(PhoneFilterStatus4.getKey());
