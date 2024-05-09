@@ -45,6 +45,7 @@
         <result property="materialId" column="material_id"/>
         <result property="materialPhoneType" column="material_phone_type"/>
         <result property="userId" column="user_id"/>
+        <result property="randomGroupName" column="random_group_name"/>
 
 
         <result property="taskName" column="task_name"/>
@@ -84,6 +85,7 @@
             g.material_id,
             g.material_phone_type,
             g.msg,
+            g.random_group_name,
             t.add_total_quantity,
             t.group_type,
             t.successful_quantity,

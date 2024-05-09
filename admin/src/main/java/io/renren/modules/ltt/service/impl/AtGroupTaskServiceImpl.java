@@ -345,7 +345,9 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
                 save.setMid(lineTokenJson.getMid());
                 save.setChangeUserId(changeGroupAtUser.getId());
                 save.setDisplayName(lineTokenJson.getNickName());
-                atDataSubtaskEntityListNew.add(save);
+                save.setDeleteFlag(DeleteFlag.NO.getKey());
+                save.setCreateTime(DateUtil.date());
+                atDataSubtaskEntities.add(save);
 
                 //修改账号使用状态
                 AtUserEntity atUserEntity = new AtUserEntity();

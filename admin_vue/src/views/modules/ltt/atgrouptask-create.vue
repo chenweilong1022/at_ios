@@ -369,10 +369,15 @@
             </template>
           </el-table-column>
           <el-table-column
-            prop="nextTime"
+            prop="randomGroupName"
             header-align="center"
             align="center"
-            label="下次加粉时间">
+            label="群名是否随机">
+            <template slot-scope="scope">
+              <el-tag v-for="item in openAppOptions" :key="item.key" v-if="scope.row.randomGroupName === item.key">
+                {{ item.value }}
+              </el-tag>
+            </template>
           </el-table-column>
           <el-table-column
             prop="taskStatus"
