@@ -227,6 +227,16 @@
               </el-option>
             </el-select>
           </el-form-item>
+          <el-form-item label="群名是否随机">
+            <el-select v-model="dataForm.randomGroupName" placeholder="群名是否随机" clearable>
+              <el-option
+                v-for="item in openAppOptions"
+                :key="item.key"
+                :label="item.value"
+                :value="item.key">
+              </el-option>
+            </el-select>
+          </el-form-item>
         </div>
       </div>
       <div v-else>
@@ -433,6 +443,7 @@ import ErrLogs from "./atdatatask-err-logs.vue";
         remaining: '',
         countryCodes: [],
         openAppOptions: [],
+        judgeOptions: [],
         dataRule: {
         },
         dataFormGroupTask: {
@@ -465,6 +476,7 @@ import ErrLogs from "./atdatatask-err-logs.vue";
           searchIntervalSecond: null,
           ipCountryCode: null,
           autoPullGroup: 1,
+          randomGroupName: 1,
           navyUrlList: [],
           materialUrlList: []
         }
@@ -757,6 +769,7 @@ import ErrLogs from "./atdatatask-err-logs.vue";
             'searchIntervalSecond': this.dataForm.searchIntervalSecond,
             'ipCountryCode': this.dataForm.ipCountryCode,
             'autoPullGroup': this.dataForm.autoPullGroup,
+            'randomGroupName': this.dataForm.randomGroupName,
             'userGroupId': this.dataForm.userGroupId,
             'userGroupIdH': this.dataForm.userGroupIdH,
             'navyUrlList': this.dataForm.navyUrlList,

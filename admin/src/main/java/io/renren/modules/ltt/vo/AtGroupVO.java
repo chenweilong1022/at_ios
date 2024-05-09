@@ -214,6 +214,11 @@ public class AtGroupVO implements Serializable {
 
 	@ApiModelProperty(required=false,value="自动拉群")
 	private Integer autoPullGroup;
+
+
+
+	@ApiModelProperty(required=false,value="群名是否随机")
+	private Integer randomGroupName;
 	/**
 	 * 间隔秒数
 	 */

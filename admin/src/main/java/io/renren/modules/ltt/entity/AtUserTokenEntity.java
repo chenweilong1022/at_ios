@@ -72,6 +72,10 @@ public class AtUserTokenEntity implements Serializable {
 	@TableField(exist = false)
 	private String telephone;
 
+	@ApiModelProperty(required=false,value="昵称")
+	@TableField(exist = false)
+	private String nickName;
+
 	@ApiModelProperty(required=false,value="token类型 1协议token 2真机token'")
 	private Integer tokenType;
 	/**

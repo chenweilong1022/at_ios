@@ -18,6 +18,7 @@ import io.renren.modules.ltt.entity.AtGroupEntity;
 import io.renren.modules.ltt.entity.AtUserEntity;
 import io.renren.modules.ltt.entity.AtUserTokenEntity;
 import io.renren.modules.ltt.enums.*;
+import io.renren.modules.ltt.enums.OpenApp;
 import io.renren.modules.ltt.service.*;
 import io.renren.modules.ltt.vo.AtDataTaskVO;
 import io.renren.modules.ltt.vo.AtUserTokenVO;
@@ -330,7 +331,9 @@ public class GroupTask {
         }
         List<AtUserTokenEntity> tokenEntities = atUserTokenService.listByIds(userTokenIds);
         Map<Integer, AtUserTokenEntity> atUserTokenEntityMap = tokenEntities.stream().collect(Collectors.toMap(AtUserTokenEntity::getId, item -> item));
-        Map<Integer, AtUserTokenEntity> userIdAtUserTokenEntityMap = atUserEntities.stream().collect(Collectors.toMap(AtUserEntity::getId, item -> atUserTokenEntityMap.get(item.getUserTokenId()).setTelephone(item.getTelephone())));
+        Map<Integer, AtUserTokenEntity> userIdAtUserTokenEntityMap = atUserEntities.stream().collect(Collectors.toMap(AtUserEntity::getId,
+                item -> atUserTokenEntityMap.get(item.getUserTokenId()).setTelephone(item.getTelephone()).setNickName(item.getNickName())));
+
 
         for (AtGroupEntity cdGroupTasksEntity : cdGroupTasksEntities) {
              threadPoolTaskExecutor.execute(() -> {
@@ -400,7 +403,12 @@ public class GroupTask {
                         CreateGroupMax createGroupMax = new CreateGroupMax();
                         createGroupMax.setUserMidList(mids);
                         createGroupMax.setProxy(proxyIp);
-                        createGroupMax.setGroupName(cdGroupTasksEntity.getGroupName());
+                        if (cdGroupTasksEntity.getRandomGroupName() != null
+                                && OpenApp.OpenApp2.getKey().equals(cdGroupTasksEntity.getRandomGroupName())) {
+                            createGroupMax.setGroupName(atUserTokenEntity.getNickName());
+                        } else {
+                            createGroupMax.setGroupName(cdGroupTasksEntity.getGroupName());
+                        }
                         createGroupMax.setToken(atUserTokenEntity.getToken());
                         LineRegisterVO lineRegisterVO = lineService.createGroupMax(createGroupMax);
                         if (ObjectUtil.isNotNull(lineRegisterVO) && 200 == lineRegisterVO.getCode()) {

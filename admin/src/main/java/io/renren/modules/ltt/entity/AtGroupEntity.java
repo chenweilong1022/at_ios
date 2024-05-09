@@ -133,6 +133,9 @@ public class AtGroupEntity implements Serializable {
 	@ApiModelProperty(required=false,value="自动拉群")
 	private Integer autoPullGroup;
 
+	@ApiModelProperty(required=false,value="群名是否随机")
+	private Integer randomGroupName;
+
 	/**
 	 * 代理ip
 	 */
