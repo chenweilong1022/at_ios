@@ -73,7 +73,7 @@ public class CardJpServiceImpl implements FirefoxService {
         } else if (phone.getMaxGetPhoneCount() != null) {
             phone = getPhoneBatch(phone.getMaxGetPhoneCount());
         }
-        if (phone != null && CollectionUtil.isNotEmpty(phone.getPhones())) {
+        if (phone != null) {
             return phone;
         }
         return null;
@@ -82,6 +82,10 @@ public class CardJpServiceImpl implements FirefoxService {
 
     public GetPhoneVO getPhoneBatch(Integer count) {
         try {
+            if (cardJpSmsOver.getIfPresent("jpSmsOverFlag") != null) {
+                return null;
+            }
+
             HashMap<String, String> paramMap = new HashMap<>();
             paramMap.put("user_code", systemConstant.getJpSmsConfigUserCode());//必填，用户号
             paramMap.put("platform_id", "4");//必填，平台ID {"platform_id":4,"platform_name":"line","price":50,"repeat_price":0}
@@ -98,6 +102,11 @@ public class CardJpServiceImpl implements FirefoxService {
             log.info("CardJpServiceImpl_getPhone_result {}", resp);
 
             CardJpGetPhoneVO resultDto = JSON.parseObject(resp, CardJpGetPhoneVO.class);
+
+            if (StringUtils.isNotEmpty(resultDto.getMsg()) && resultDto.getMsg().contains("API超限")) {
+                cardJpSmsOver.put("jpSmsOverFlag", "true");
+                return null;
+            }
 
             if (StringUtils.isNotEmpty(resultDto.getMsg()) && resultDto.getMsg().contains("本次最多只能")) {
                 Integer maxGetPhoneCount = getNumberByText(resultDto.getMsg());

@@ -3,6 +3,7 @@ package io.renren.modules.ltt.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.github.benmanes.caffeine.cache.Cache;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.client.FirefoxService;
 import io.renren.modules.client.vo.GetPhoneVO;
@@ -86,6 +87,9 @@ public class CdGetPhoneServiceImpl extends ServiceImpl<CdGetPhoneDao, CdGetPhone
     @Resource(name = "firefoxServiceImpl")
     private FirefoxService firefoxService;
 
+    @Resource(name = "cardJpSmsOver")
+    private Cache<String, String> cardJpSmsOver;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public List<CdGetPhoneEntity> addCount(CdGetPhoneDTO cdGetPhone){
@@ -102,6 +106,9 @@ public class CdGetPhoneServiceImpl extends ServiceImpl<CdGetPhoneDao, CdGetPhone
             GetPhoneVO phone = null;
             if (CountryCode.CountryCode3.getKey().equals(cdGetPhone.getCountrycodeKey()) && CountryCode.CountryCode3.getValue().equals(cdGetPhone.getCountrycode())) {
                 //日本
+                if (cardJpSmsOver.getIfPresent("jpSmsOverFlag") != null) {
+                    break;
+                }
                 phone = cardJpService.getPhone();
             }else if (CountryCode.CountryCode8.getKey().equals(cdGetPhone.getCountrycodeKey()) && CountryCode.CountryCode8.getValue().equals(cdGetPhone.getCountrycode())) {
                 phone = cardJpSFService.getPhone();
