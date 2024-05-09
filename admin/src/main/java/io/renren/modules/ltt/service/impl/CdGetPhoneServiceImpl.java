@@ -114,20 +114,45 @@ public class CdGetPhoneServiceImpl extends ServiceImpl<CdGetPhoneDao, CdGetPhone
 
             //获取到一个算一个，如果获取不到，直接返回
             if (ObjectUtil.isNotNull(phone)) {
-                CdGetPhoneEntity cdGetPhoneEntity = new CdGetPhoneEntity();
-                cdGetPhoneEntity.setNumber(phone.getNumber());
-                cdGetPhoneEntity.setPkey(phone.getPkey());
-                cdGetPhoneEntity.setTime(phone.getTime());
-                cdGetPhoneEntity.setCountry(cdGetPhone.getCountrycodeKey().toString());
-                cdGetPhoneEntity.setCountrycode(cdGetPhone.getCountrycode());
-                cdGetPhoneEntity.setOther(phone.getOther());
-                cdGetPhoneEntity.setCom(phone.getCom());
-                cdGetPhoneEntity.setPhone(phone.getPhone());
-                cdGetPhoneEntity.setDeleteFlag(DeleteFlag.NO.getKey());
-                cdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus1.getKey());
-                cdGetPhoneEntity.setCreateTime(DateUtil.date());
-                cdGetPhoneEntity.setSubtasksId(cdGetPhone.getSubtasksId());
-                cdGetPhoneEntities.add(cdGetPhoneEntity);
+                List<String> pkeys = phone.getPkeys();
+                List<String> phones = phone.getPhones();
+
+                if (CollUtil.isNotEmpty(pkeys)) {
+                    for (int i1 = 0; i1 < pkeys.size(); i1++) {
+                        String pkey = pkeys.get(i1);
+                        String phoneNumber = phones.get(i1);
+
+                        CdGetPhoneEntity cdGetPhoneEntity = new CdGetPhoneEntity();
+                        cdGetPhoneEntity.setNumber(phone.getNumber());
+                        cdGetPhoneEntity.setPkey(pkey);
+                        cdGetPhoneEntity.setTime(phone.getTime());
+                        cdGetPhoneEntity.setCountry(cdGetPhone.getCountrycodeKey().toString());
+                        cdGetPhoneEntity.setCountrycode(cdGetPhone.getCountrycode());
+                        cdGetPhoneEntity.setOther(phone.getOther());
+                        cdGetPhoneEntity.setCom(phone.getCom());
+                        cdGetPhoneEntity.setPhone(phoneNumber);
+                        cdGetPhoneEntity.setDeleteFlag(DeleteFlag.NO.getKey());
+                        cdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus1.getKey());
+                        cdGetPhoneEntity.setCreateTime(DateUtil.date());
+                        cdGetPhoneEntity.setSubtasksId(cdGetPhone.getSubtasksId());
+                        cdGetPhoneEntities.add(cdGetPhoneEntity);
+                    }
+                }else {
+                    CdGetPhoneEntity cdGetPhoneEntity = new CdGetPhoneEntity();
+                    cdGetPhoneEntity.setNumber(phone.getNumber());
+                    cdGetPhoneEntity.setPkey(phone.getPkey());
+                    cdGetPhoneEntity.setTime(phone.getTime());
+                    cdGetPhoneEntity.setCountry(cdGetPhone.getCountrycodeKey().toString());
+                    cdGetPhoneEntity.setCountrycode(cdGetPhone.getCountrycode());
+                    cdGetPhoneEntity.setOther(phone.getOther());
+                    cdGetPhoneEntity.setCom(phone.getCom());
+                    cdGetPhoneEntity.setPhone(phone.getPhone());
+                    cdGetPhoneEntity.setDeleteFlag(DeleteFlag.NO.getKey());
+                    cdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus1.getKey());
+                    cdGetPhoneEntity.setCreateTime(DateUtil.date());
+                    cdGetPhoneEntity.setSubtasksId(cdGetPhone.getSubtasksId());
+                    cdGetPhoneEntities.add(cdGetPhoneEntity);
+                }
             }else {
                 break;
             }

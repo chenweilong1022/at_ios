@@ -29,10 +29,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -71,7 +68,7 @@ public class CardJpServiceImpl implements FirefoxService {
             HashMap<String, String> paramMap = new HashMap<>();
             paramMap.put("user_code", systemConstant.getJpSmsConfigUserCode());//必填，用户号
             paramMap.put("platform_id", "4");//必填，平台ID {"platform_id":4,"platform_name":"line","price":50,"repeat_price":0}
-            paramMap.put("take_count", "1");//必填，取号数量
+            paramMap.put("take_count", "100");//必填，取号数量
             paramMap.put("notify_url", "123");//必填，回调地址,取号成功将会回调该地址
             paramMap.put("timestamp", DateUtils.getTimestampMillis());//必填，请求时间戳(秒)
             paramMap.put("sign", getSign(paramMap));//必填，签名
@@ -86,10 +83,18 @@ public class CardJpServiceImpl implements FirefoxService {
             CardJpGetPhoneVO resultDto = JSON.parseObject(resp, CardJpGetPhoneVO.class);
             if (ObjectUtil.isNotNull(resultDto)
                     && CollectionUtil.isNotEmpty(resultDto.getData())) {
-                CardJpGetPhoneVO.Data data = resultDto.getData().get(0);
+
+                List<String> phones = new ArrayList<>();
+                List<String> pkeys = new ArrayList<>();
+
+                for (CardJpGetPhoneVO.Data datum : resultDto.getData()) {
+                    String format = String.format("%s%s", CountryCode.CountryCode3.getKey(), datum.getPhone_number());
+                    phones.add(format);
+                    pkeys.add(datum.getTake_id());
+                }
                 GetPhoneVO getPhoneVo = new GetPhoneVO()
-                        .setPkey(data.getTake_id())
-                        .setPhone(String.format("%s%s", CountryCode.CountryCode3.getKey(), data.getPhone_number()))
+                        .setPkeys(pkeys)
+                        .setPhones(phones)
                         .setNumber("").setTime(null).setCom("").setCountry("").setCountryCode("").setOther("");
                 return getPhoneVo;
             }
