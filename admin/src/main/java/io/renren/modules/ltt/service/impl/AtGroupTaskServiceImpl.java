@@ -292,11 +292,15 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
 
             AtDataTaskEntity atDataTask = new AtDataTaskEntity();
             atDataTask.setUserGroupId(atGroupTask.getUserGroupId());
-            atDataTask.setTaskName(String.format("%s加粉-%s",onGroupPreVO.getGroupName(),groupType4.getValue()));
+            atDataTask.setTaskName(String.format("%s加粉-%s", onGroupPreVO.getGroupName(), groupType4.getValue()));
             atDataTask.setGroupType(groupType4.getKey());
             atDataTask.setCreateTime(DateUtil.date());
             atDataTask.setDeleteFlag(DeleteFlag.NO.getKey());
             atDataTask.setAddTotalQuantity(navyTextLists.size() + materialUrls.size() + atGroupTask.getPullGroupNumber() - 1);
+            if (atGroupTask.getRandomGroupName() != null
+                    && OpenApp.OpenApp2.getKey().equals(atGroupTask.getRandomGroupName())){
+                atDataTask.setAddTotalQuantity(atDataTask.getAddTotalQuantity() + 1);
+             }
             atDataTask.setSuccessfulQuantity(0);
             atDataTask.setFailuresQuantity(0);
             atDataTask.setUpdateTime(DateUtil.date());
