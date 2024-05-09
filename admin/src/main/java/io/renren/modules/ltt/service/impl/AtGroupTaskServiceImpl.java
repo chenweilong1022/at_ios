@@ -599,7 +599,8 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
             Assert.isNull(atGroupTask.getChangeGroupCountryCode(), "随机群名时，改群名国家不能为空");
             Assert.isNull(atGroupTask.getChangeGroupId(), "随机群名时，改群名分组不能为空");
         }
-        if (atGroupTask.getChangeGroupCountryCode() != null && atGroupTask.getChangeGroupId() != null) {
+        if (atGroupTask.getRandomGroupName() != null
+                && OpenApp.OpenApp2.getKey().equals(atGroupTask.getRandomGroupName())) {
             //改群号号国家
             AtUserDTO atUserDTO = new AtUserDTO();
             atUserDTO.setSysUserId(atGroupTask.getSysUserId());
