@@ -465,25 +465,42 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
                                 log.error("updateGroupName_error atUserIsNull {}", dataSubtaskEntity);
                                 return;
                             }
-                            AtUserTokenVO tokenEntitie = atUserTokenService.getById(atUserVO.getUserTokenId());
-                            if (ObjectUtil.isNull(tokenEntitie)) {
+                            AtUserTokenVO atUserTokenVO = atUserTokenService.getById(atUserVO.getUserTokenId());
+                            if (ObjectUtil.isNull(atUserTokenVO)) {
                                 log.error("updateGroupName_error atUserTokenIsNull {}", atUserVO);
                                 return;
                             }
 
-                            //修改群名
-                            UpdateGroup updateGroup = new UpdateGroup();
-                            updateGroup.setChatName(atGroupEntity.getGroupName());
-                            updateGroup.setChatRoomId(atGroupEntity.getRoomId());
-                            updateGroup.setGroupMidCount(atGroupEntity.getSuccessfullyAttractGroupsNumber());
-                            updateGroup.setProxy(proxyIp);
-                            updateGroup.setToken(tokenEntitie.getToken());
-                            SearchPhoneVO searchPhoneVO = lineService.updateChat(updateGroup);
-                            if (ObjectUtil.isNotNull(searchPhoneVO) && 200 == searchPhoneVO.getCode()) {
-                                AtGroupEntity update = new AtGroupEntity();
-                                update.setId(atGroupEntity.getId());
-                                update.setGroupStatus(GroupStatus15.getKey());
-                                this.updateById(update);
+                            GetChatsDTO getChatsDTO = new GetChatsDTO();
+                            getChatsDTO.setProxy(proxyIp);
+                            getChatsDTO.setChatRoomId(atGroupEntity.getRoomId());
+                            getChatsDTO.setToken(atUserTokenVO.getToken());
+                            GetChatsVO chats = lineService.getChats(getChatsDTO);
+                            if (ObjectUtil.isNotNull(chats) && 200 == chats.getCode()) {
+                                GetChatsVO.Data data = chats.getData();
+                                if (ObjectUtil.isNull(data)) return;
+                                List<GetChatsVO.Data.Chat> dataChats = data.getChats();
+                                if (CollUtil.isEmpty(dataChats)) return;
+                                GetChatsVO.Data.Chat chat = dataChats.get(0);
+                                if (ObjectUtil.isNull(chat)) return;
+                                GetChatsVO.Data.Chat.Extra extra = chat.getExtra();
+                                if (ObjectUtil.isNull(extra)) return;
+                                GetChatsVO.Data.Chat.Extra.GroupExtra groupExtra = extra.getGroupExtra();
+                                if (ObjectUtil.isNull(groupExtra)) return;
+                                //修改群名
+                                UpdateGroup updateGroup = new UpdateGroup();
+                                updateGroup.setChatName(atGroupEntity.getGroupName());
+                                updateGroup.setChatRoomId(atGroupEntity.getRoomId());
+                                updateGroup.setGroupMidCount(groupExtra.getMemberMids().keySet().size());
+                                updateGroup.setProxy(proxyIp);
+                                updateGroup.setToken(atUserTokenVO.getToken());
+                                SearchPhoneVO searchPhoneVO = lineService.updateChat(updateGroup);
+                                if (ObjectUtil.isNotNull(searchPhoneVO) && 200 == searchPhoneVO.getCode()) {
+                                    AtGroupEntity update = new AtGroupEntity();
+                                    update.setId(atGroupEntity.getId());
+                                    update.setGroupStatus(GroupStatus15.getKey());
+                                    this.updateById(update);
+                                }
                             }
                         }
                     }finally {

@@ -20,6 +20,7 @@ import io.renren.modules.ltt.enums.*;
 import io.renren.modules.ltt.service.*;
 import io.renren.modules.ltt.vo.AtDataSubtaskVO;
 import io.renren.modules.ltt.vo.AtUserTokenVO;
+import io.renren.modules.ltt.vo.AtUserVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
@@ -183,9 +184,10 @@ public class Data2Task {
                         }
                         SearchPhoneVO searchPhoneVO = null;
                         if (DataType.DataType3.getKey().equals(atDataSubtaskEntity.getDataType())) {
-                            AtUserEntity one = atUserService.getOne(new QueryWrapper<AtUserEntity>().lambda()
-                                    .eq(AtUserEntity::getTelephone,atDataSubtaskVO.getContactKey())
-                            );
+//                            AtUserEntity one = atUserService.getOne(new QueryWrapper<AtUserEntity>().lambda()
+//                                    .eq(AtUserEntity::getTelephone,atDataSubtaskVO.getContactKey())
+//                            );
+                            AtUserVO one = atUserService.getById(atDataSubtaskEntity.getChangeUserId());
                             if (ObjectUtil.isNull(one)) {
                                 return;
                             }
@@ -200,7 +202,7 @@ public class Data2Task {
                             cdLineIpProxyDTO1.setLzPhone(one.getTelephone());
                             //去设置区号
                             if (ObjectUtil.isNotNull(atGroupEntityConfig.getIpCountryCode())) {
-                                cdLineIpProxyDTO.setCountryCode(atGroupEntityConfig.getIpCountryCode().longValue());
+                                cdLineIpProxyDTO1.setCountryCode(atGroupEntityConfig.getIpCountryCode().longValue());
                             }
                             String proxyIp1 = cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO1);
                             if (StrUtil.isEmpty(proxyIp1)) {
