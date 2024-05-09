@@ -229,6 +229,8 @@ public class RegisterTask {
         //获取验证码
         List<CdGetPhoneEntity> list = cdGetPhoneService.list(new QueryWrapper<CdGetPhoneEntity>().lambda()
                 .in(CdGetPhoneEntity::getPhoneStatus, PhoneStatus.PhoneStatus2.getKey(), PhoneStatus5.getKey())
+                .last("limit 20")
+                .orderByDesc(CdGetPhoneEntity::getId)
         );
         if (CollUtil.isEmpty(list)) {
             log.info("RegisterTask task6 list isEmpty");
@@ -356,6 +358,8 @@ public class RegisterTask {
         }
         List<CdGetPhoneEntity> list = cdGetPhoneService.list(new QueryWrapper<CdGetPhoneEntity>().lambda()
                 .eq(CdGetPhoneEntity::getPhoneStatus, PhoneStatus.PhoneStatus1.getKey())
+                .last("limit 20")
+                .orderByDesc(CdGetPhoneEntity::getId)
         );
         if (CollUtil.isEmpty(list)) {
             log.info("RegisterTask task5 list isEmpty");
