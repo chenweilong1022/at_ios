@@ -119,6 +119,11 @@ public class RegisterTask {
 
     @Resource(name = "cardJpSms")
     private Cache<String, Date> cardJpSms;
+
+
+    @Resource(name = "cardJpSmsOver")
+    private Cache<String, String> cardJpSmsOver;
+
     /**
      *
      */
@@ -270,6 +275,9 @@ public class RegisterTask {
                             if (StrUtil.isEmpty(phoneCode) && StringUtils.isNotEmpty(cdGetPhoneEntity.getCountrycode())) {
                                 if (CountryCode.CountryCode3.getValue().equals(cdGetPhoneEntity.getCountrycode()) && CountryCode.CountryCode3.getKey().toString().equals(cdGetPhoneEntity.getCountry())) {
                                     //日本
+                                    if (cardJpSmsOver.getIfPresent("jpSmsOverFlag") != null) {
+                                        return;
+                                    }
                                     cardJpSms.put(cdGetPhoneEntity.getPkey(), cdGetPhoneEntity.getCreateTime());
                                     phoneCode = cardJpService.getPhoneCode(cdGetPhoneEntity.getPkey());
                                 }else if (CountryCode.CountryCode8.getValue().equals(cdGetPhoneEntity.getCountrycode())  && CountryCode.CountryCode8.getKey().toString().equals(cdGetPhoneEntity.getCountry())) {

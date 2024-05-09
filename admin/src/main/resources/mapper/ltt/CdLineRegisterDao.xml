@@ -83,7 +83,7 @@
                 AND r.register_status is null
             </if>
         </where>
-        order by r.id desc
+        order by p.id desc
     </select>
 
     <select id="queryLineRegisterSummary" resultType="io.renren.modules.ltt.dto.LineRegisterSummaryResultDto">

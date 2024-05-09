@@ -53,6 +53,9 @@ public class CardJpServiceImpl implements FirefoxService {
     @Resource(name = "cardJpSms")
     private Cache<String, Date> cardJpSms;
 
+    @Resource(name = "cardJpSmsOver")
+    private Cache<String, String> cardJpSmsOver;
+
     @EventListener
     @Order(value = 8888)
     public void test(ApplicationReadyEvent event) {
@@ -175,6 +178,11 @@ public class CardJpServiceImpl implements FirefoxService {
 
             CardJpGetPhoneSmsVO resultDto = JSON.parseObject(resp, CardJpGetPhoneSmsVO.class);
             log.info("CardJpServiceImpl_getPhoneCode_resultDto {}", resultDto);
+
+            if (StringUtils.isNotEmpty(resultDto.getMsg()) && resultDto.getMsg().contains("API超限")) {
+                cardJpSmsOver.put("jpSmsOverFlag", "true");
+                return null;
+            }
 
             if (resultDto.getCode() != 1 || resultDto.getData() == null) {
                 log.error("CardJpServiceImpl_getPhoneCode_error {}, result :{}", paramStr, resultDto);
