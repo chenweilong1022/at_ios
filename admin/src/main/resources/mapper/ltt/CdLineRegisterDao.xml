@@ -53,31 +53,34 @@
     <select id="listPage" resultType="io.renren.modules.ltt.vo.CdLineRegisterVO">
 
         SELECT
-        r.id as id,
+        p.country,
+        p.id as id,
         r.ab as ab,
         r.app_version as appVersion,
         r.country_code as countryCode,
-        r.phone as phone,
+        p.phone as phone,
         r.token as token,
         r.proxy as proxy,
         r.txt_token as txtToken,
         r.task_id as taskId,
-        r.sms_code as smsCode,
+        COALESCE(r.sms_code, p.code) as smsCode,
         r.err_msg as errMsg,
-        r.register_status as registerStatus,
+        COALESCE(r.register_status, 0) as registerStatus,
         r.delete_flag as deleteFlag,
-        r.create_time as createTime,
+        p.create_time as createTime,
         r.get_phone_id as getPhoneId
-        FROM
-        cd_line_register r
-        LEFT JOIN cd_register_subtasks s ON r.subtasks_id = s.id
-        LEFT JOIN cd_register_task t ON s.task_id = t.id
+        FROM cd_get_phone p
+        LEFT JOIN cd_line_register r on r.get_phone_id = p.id
+        LEFT JOIN cd_register_subtasks s ON p.subtasks_id = s.id
         <where>
             <if test="dto.tasksId != null">
-                AND t.id = #{dto.tasksId}
+                AND s.task_id = #{dto.tasksId}
             </if>
-            <if test="dto.registerStatus != null">
+            <if test="dto.registerStatus != null and dto.registerStatus != 0">
                 AND r.register_status = #{dto.registerStatus}
+            </if>
+            <if test="dto.registerStatus != null and dto.registerStatus == 0">
+                AND r.register_status is null
             </if>
         </where>
         order by r.id desc

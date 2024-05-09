@@ -248,7 +248,7 @@
           method: 'get'
         }).then(({data}) => {
           if (data && data.code === 0) {
-            this.registerStatusCodes = data.data
+            this.registerStatusCodes = [{key: 0, value: '待处理'},...data.data]
           } else {
             this.$message.error(data.msg)
           }

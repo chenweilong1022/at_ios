@@ -3,10 +3,14 @@ package io.renren.modules.ltt.vo;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.renren.common.utils.EnumUtil;
+import io.renren.modules.ltt.enums.CountryCode;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.apache.commons.lang.StringUtils;
+
 import java.io.Serializable;
 import java.util.Date;
 
@@ -43,6 +47,9 @@ public class CdLineRegisterVO implements Serializable {
 	/**
 	 *
 	 */
+	@ApiModelProperty(required=false,value="数字代码")
+	private Integer country;
+
 	@ApiModelProperty(required=false,value="")
 	private String countryCode;
 	/**
@@ -151,4 +158,12 @@ public class CdLineRegisterVO implements Serializable {
 	@ApiModelProperty(required=false,value="")
 	private Integer exportStatus;
 
+	public String getCountryCode() {
+		if (StringUtils.isNotEmpty(this.countryCode)) {
+			return this.countryCode;
+		} else if (this.country != null) {
+			return EnumUtil.queryValueByKey(this.country, CountryCode.values());
+		}
+		return null;
+	}
 }

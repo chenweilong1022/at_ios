@@ -122,13 +122,7 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean registerRetry(Integer id) {
-        CdLineRegisterEntity cdLineRegisterEntity = baseMapper.selectById(id);
-        Assert.isTrue(ObjectUtil.isNull(cdLineRegisterEntity), "数据为空");
-        Assert.isTrue(ObjectUtil.isNull(cdLineRegisterEntity.getGetPhoneId()), "无对应的手机记录，请确认");
-        Assert.isTrue(!RegisterStatus.RegisterStatus5.getKey().equals(cdLineRegisterEntity.getRegisterStatus()), "注册状态正常，无需重试");
-
-
-        CdGetPhoneVO cdGetPhone = getPhoneService.getById(cdLineRegisterEntity.getGetPhoneId());
+        CdGetPhoneVO cdGetPhone = getPhoneService.getById(id);
         Assert.isTrue(ObjectUtil.isNull(cdGetPhone), "数据为空");
 
         //更新此条数据，发起重新注册
@@ -139,6 +133,15 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
         updateCdGetPhoneEntity.setCreateTime(new Date());
         getPhoneService.updateById(updateCdGetPhoneEntity);
 
+
+        CdLineRegisterEntity cdLineRegisterEntity = baseMapper.selectList(new QueryWrapper<CdLineRegisterEntity>().lambda()
+                .eq(CdLineRegisterEntity::getGetPhoneId, id)).stream().findFirst().orElse(null);
+        if (cdLineRegisterEntity != null) {
+            Assert.isTrue(!RegisterStatus.RegisterStatus5.getKey().equals(cdLineRegisterEntity.getRegisterStatus()), "注册状态正常，无需重试");
+            //删除line注册此条记录
+            baseMapper.deleteById(cdLineRegisterEntity.getId());
+        }
+        return true;
         //获取代理
 //        CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
 //        cdLineIpProxyDTO.setTokenPhone(cdGetPhone.getPhone());
@@ -150,8 +153,6 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
 //        cdLineIpProxyEntity.setTokenPhone("");
 //        cdLineIpProxyService.update(cdLineIpProxyEntity,new QueryWrapper<CdLineIpProxyEntity>().lambda().eq(CdLineIpProxyEntity::getTokenPhone, cdGetPhone.getPhone()));
 
-        //删除line注册此条记录
-        return baseMapper.deleteById(cdLineRegisterEntity.getId()) > 0;
     }
 
     @Override
