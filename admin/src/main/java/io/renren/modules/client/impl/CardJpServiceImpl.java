@@ -68,7 +68,7 @@ public class CardJpServiceImpl implements FirefoxService {
             HashMap<String, String> paramMap = new HashMap<>();
             paramMap.put("user_code", systemConstant.getJpSmsConfigUserCode());//必填，用户号
             paramMap.put("platform_id", "4");//必填，平台ID {"platform_id":4,"platform_name":"line","price":50,"repeat_price":0}
-            paramMap.put("take_count", "100");//必填，取号数量
+            paramMap.put("take_count", "90");//必填，取号数量
             paramMap.put("notify_url", "123");//必填，回调地址,取号成功将会回调该地址
             paramMap.put("timestamp", DateUtils.getTimestampMillis());//必填，请求时间戳(秒)
             paramMap.put("sign", getSign(paramMap));//必填，签名
