@@ -16,6 +16,9 @@
             </el-option>
           </el-select>
         </el-form-item>
+        <el-form-item>
+          <el-input v-model="dataForm.phone" placeholder="手机号" clearable></el-input>
+        </el-form-item>
 
         <el-form-item>
           <el-button @click="getDataList()">查询</el-button>
@@ -129,6 +132,7 @@
         visible: false,
         dataForm: {
           id: 0,
+          phone: null,
           totalAmount: '',
           numberThreads: '',
           numberRegistered: '',
@@ -181,7 +185,8 @@
             'page': this.pageIndex,
             'limit': this.pageSize,
             'registerStatus': this.registerStatus,
-            'tasksId': this.dataForm.id
+            'tasksId': this.dataForm.id,
+            'phone': this.dataForm.phone
           })
         }).then(({data}) => {
           if (data && data.code === 0) {
