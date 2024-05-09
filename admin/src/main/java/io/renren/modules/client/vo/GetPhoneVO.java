@@ -24,4 +24,6 @@ public class GetPhoneVO {
     private String com;
     private String phone;
     private List<String> phones;
+
+    private Integer maxGetPhoneCount;
 }

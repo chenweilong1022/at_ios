@@ -64,11 +64,28 @@ public class CardJpServiceImpl implements FirefoxService {
     //{"code":1,"msg":"SUCCESS","time":"1712060836","data":[{"take_id":129101,"phone_number":"08092924050"}]}
     @Override
     public GetPhoneVO getPhone() {
+        for (int i = 0; i < 5; i++) {
+            log.info("jp_getPhone 第{}次取号开始", i);
+            GetPhoneVO phone = getPhoneBatch(100);
+            if (phone == null) {
+                phone = getPhoneBatch(100);
+            } else if (phone.getMaxGetPhoneCount() != null) {
+                phone = getPhoneBatch(phone.getMaxGetPhoneCount());
+            }
+            if (phone != null && CollectionUtil.isNotEmpty(phone.getPhones())) {
+                return phone;
+            }
+        }
+        return null;
+    }
+
+
+    public GetPhoneVO getPhoneBatch(Integer count) {
         try {
             HashMap<String, String> paramMap = new HashMap<>();
             paramMap.put("user_code", systemConstant.getJpSmsConfigUserCode());//必填，用户号
             paramMap.put("platform_id", "4");//必填，平台ID {"platform_id":4,"platform_name":"line","price":50,"repeat_price":0}
-            paramMap.put("take_count", "90");//必填，取号数量
+            paramMap.put("take_count", String.valueOf(count));//必填，取号数量
             paramMap.put("notify_url", "123");//必填，回调地址,取号成功将会回调该地址
             paramMap.put("timestamp", DateUtils.getTimestampMillis());//必填，请求时间戳(秒)
             paramMap.put("sign", getSign(paramMap));//必填，签名
@@ -81,6 +98,15 @@ public class CardJpServiceImpl implements FirefoxService {
             log.info("CardJpServiceImpl_getPhone_result {}", resp);
 
             CardJpGetPhoneVO resultDto = JSON.parseObject(resp, CardJpGetPhoneVO.class);
+
+            if (StringUtils.isNotEmpty(resultDto.getMsg()) && resultDto.getMsg().contains("本次最多只能")) {
+                Integer maxGetPhoneCount = getNumberByText(resultDto.getMsg());
+                if (maxGetPhoneCount != null) {
+                    GetPhoneVO getPhoneVo = new GetPhoneVO().setMaxGetPhoneCount(maxGetPhoneCount) ;
+                    return getPhoneVo;
+                }
+            }
+
             if (ObjectUtil.isNotNull(resultDto)
                     && CollectionUtil.isNotEmpty(resultDto.getData())) {
 
@@ -104,29 +130,29 @@ public class CardJpServiceImpl implements FirefoxService {
         return null;
     }
 
-    public static void main(String[] args) {
-        String resp = "{\"code\":1,\"msg\":\"SUCCESS\",\"time\":\"1712394634\",\"data\":{\"ret\":[{\"take_id\":146107,\"state\":1,\"phone_number\":\"08013881651\",\"take_time\":1712391241,\"sms\":[{\"recv_time\":1712393514,\"content\":\"認証番号「255982」をLINEで入力して下で下さい。30分間有効です。\"},{\"recv_time\":1712394272,\"content\":\"認証番号「514325」をLINEで入力して下さい。\\n他人には教えないで下さい。30分間有効です。\"}]}]}}";
-        CardJpGetPhoneSmsVO resultDto = JSON.parseObject(resp, CardJpGetPhoneSmsVO.class);
-        log.info("CardJpServiceImpl_getPhoneCode_resultDto {}", resultDto);
-
-        if (resultDto.getCode() != 1 || resultDto.getData() == null) {
-            log.error("CardJpServiceImpl_getPhoneCode_error {}, result :{}", resultDto);
-            System.out.println("null");
-        }
-        List<CardJpGetPhoneSmsVO.Data.Ret> ret = resultDto.getData().getRet();
-        if (CollectionUtil.isNotEmpty(ret)) {
-            CardJpGetPhoneSmsVO.Data.Ret ret1 = ret.stream().filter(i -> CollectionUtil.isNotEmpty(i.getSms())).findFirst().orElse(null);
-            if (ObjectUtil.isNotNull(ret1) && CollectionUtil.isNotEmpty(ret1.getSms())) {
-                CardJpGetPhoneSmsVO.Data.Ret.Sm sms = ret1.getSms().stream()
-                        .filter(i -> DateUtils.comparisonTime(i.getRecvTime(), "1712394271"))
-                        .findFirst().orElse(null);
-                System.out.println("ObjectUtil.isNotNull(sms)"+ObjectUtil.isNotNull(sms));
-                System.out.println(sms);
-                System.out.println(sms.getContent());
-                System.out.println(extractVerificationCode(sms.getContent()));
-            }
-        }
-    }
+//    public static void main(String[] args) {
+//        String resp = "{\"code\":1,\"msg\":\"SUCCESS\",\"time\":\"1712394634\",\"data\":{\"ret\":[{\"take_id\":146107,\"state\":1,\"phone_number\":\"08013881651\",\"take_time\":1712391241,\"sms\":[{\"recv_time\":1712393514,\"content\":\"認証番号「255982」をLINEで入力して下で下さい。30分間有効です。\"},{\"recv_time\":1712394272,\"content\":\"認証番号「514325」をLINEで入力して下さい。\\n他人には教えないで下さい。30分間有効です。\"}]}]}}";
+//        CardJpGetPhoneSmsVO resultDto = JSON.parseObject(resp, CardJpGetPhoneSmsVO.class);
+//        log.info("CardJpServiceImpl_getPhoneCode_resultDto {}", resultDto);
+//
+//        if (resultDto.getCode() != 1 || resultDto.getData() == null) {
+//            log.error("CardJpServiceImpl_getPhoneCode_error {}, result :{}", resultDto);
+//            System.out.println("null");
+//        }
+//        List<CardJpGetPhoneSmsVO.Data.Ret> ret = resultDto.getData().getRet();
+//        if (CollectionUtil.isNotEmpty(ret)) {
+//            CardJpGetPhoneSmsVO.Data.Ret ret1 = ret.stream().filter(i -> CollectionUtil.isNotEmpty(i.getSms())).findFirst().orElse(null);
+//            if (ObjectUtil.isNotNull(ret1) && CollectionUtil.isNotEmpty(ret1.getSms())) {
+//                CardJpGetPhoneSmsVO.Data.Ret.Sm sms = ret1.getSms().stream()
+//                        .filter(i -> DateUtils.comparisonTime(i.getRecvTime(), "1712394271"))
+//                        .findFirst().orElse(null);
+//                System.out.println("ObjectUtil.isNotNull(sms)"+ObjectUtil.isNotNull(sms));
+//                System.out.println(sms);
+//                System.out.println(sms.getContent());
+//                System.out.println(extractVerificationCode(sms.getContent()));
+//            }
+//        }
+//    }
 
     @Override
     public String getPhoneCode(String pKey) {
@@ -280,6 +306,23 @@ public class CardJpServiceImpl implements FirefoxService {
         Matcher matcher = pattern.matcher(smsText);
         if (matcher.find()) {
             return matcher.group();
+        }
+        return null;
+    }
+
+
+    public static Integer getNumberByText(String text) {
+        if (StringUtils.isEmpty(text)) {
+            return null;
+        }
+        // 使用正则表达式匹配数字
+        Pattern pattern = Pattern.compile("\\d+"); // 匹配一个或多个数字
+        Matcher matcher = pattern.matcher(text);
+
+        // 循环匹配并输出结果
+        while (matcher.find()) {
+            String number = matcher.group(); // 获取匹配到的数字
+            return Integer.valueOf(number);
         }
         return null;
     }
