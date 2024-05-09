@@ -319,18 +319,18 @@
             align="center"
             label="群号">
           </el-table-column>
-          <el-table-column
-            prop="chatRoomUrl"
-            header-align="center"
-            align="center"
-            label="群链接">
-          </el-table-column>
-          <el-table-column
-            prop="roomTicketId"
-            header-align="center"
-            align="center"
-            label="群二维码">
-          </el-table-column>
+<!--          <el-table-column-->
+<!--            prop="chatRoomUrl"-->
+<!--            header-align="center"-->
+<!--            align="center"-->
+<!--            label="群链接">-->
+<!--          </el-table-column>-->
+<!--          <el-table-column-->
+<!--            prop="roomTicketId"-->
+<!--            header-align="center"-->
+<!--            align="center"-->
+<!--            label="群二维码">-->
+<!--          </el-table-column>-->
           <el-table-column
             prop="successfullyAttractGroupsNumber"
             header-align="center"
@@ -340,10 +340,12 @@
           <el-table-column
             prop="userTelephone"
             header-align="center"
-            align="center" width="120"
+            align="center" width="180"
             label="拉群手机号">
             <template slot-scope="scope">
               <el-button type="text" @click="atUserHandle(scope.row.userId)">{{scope.row.userTelephone}}</el-button>
+              <!-- 复制按钮 -->
+              <el-button type="text" @click="copyToClipboard(scope.row.userTelephone)">复制</el-button>
             </template>
           </el-table-column>
           <el-table-column
@@ -591,6 +593,24 @@ import ErrLogs from "./atdatatask-err-logs.vue";
         this.$nextTick(() => {
           this.$router.push({name: 'ltt-atuser', query:{ userId: userId}})
         })
+      },
+      copyToClipboard (telephone) {
+        // 使用浏览器的 Clipboard API 将文本复制到剪贴板
+        const el = document.createElement('textarea')
+        el.value = telephone
+        el.setAttribute('readonly', '')
+        el.style.position = 'absolute'
+        el.style.left = '-9999px'
+        document.body.appendChild(el)
+        const successful = el.select()
+        const range = document.createRange()
+        range.selectNode(el)
+        const selection = window.getSelection()
+        selection.removeAllRanges()
+        selection.addRange(range)
+        document.execCommand('copy')
+        document.body.removeChild(el)
+        this.$message.success('手机号复制成功！')
       },
       infoById () {
         this.$http({
