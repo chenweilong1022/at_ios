@@ -163,6 +163,9 @@ public class GroupTask {
                             if (CollUtil.isEmpty(dataChats)) return;
                             GetChatsVO.Data.Chat chat = dataChats.get(0);
                             if (ObjectUtil.isNull(chat)) return;
+                            if (StrUtil.isNotEmpty(chat.getChatName())) {
+                                cdGroupTasksEntity.setRealGroupName(chat.getChatName());
+                            }
                             GetChatsVO.Data.Chat.Extra extra = chat.getExtra();
                             if (ObjectUtil.isNull(extra)) return;
                             GetChatsVO.Data.Chat.Extra.GroupExtra groupExtra = extra.getGroupExtra();

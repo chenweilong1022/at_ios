@@ -105,5 +105,12 @@ public interface AtGroupService extends IService<AtGroupEntity> {
     Map<Integer, AtGroupTaskVO> groupDataSummary(List<Integer> groupTaskIdList);
 
     Boolean startGroup(List<Integer> list);
+
+    /**
+     * 获取真实群名称
+     * @param atGroup
+     */
+    void getRealGroupName(AtGroupDTO atGroup);
+
 }
 

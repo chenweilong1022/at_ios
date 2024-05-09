@@ -43,6 +43,11 @@ public class AtGroupVO implements Serializable {
 	 *
 	 */
 	@ApiModelProperty(required=false,value="")
+	private String realGroupName;
+	/**
+	 *
+	 */
+	@ApiModelProperty(required=false,value="")
 	private String proxy;
 	/**
 	 *

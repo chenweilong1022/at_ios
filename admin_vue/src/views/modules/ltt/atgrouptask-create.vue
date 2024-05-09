@@ -285,6 +285,7 @@
           <el-button type="danger" @click="startGroup14Handler()" :disabled="dataListSelections.length <= 0">开始拉群</el-button>
           <el-button type="danger" @click="reallocateTokenHandle()" :disabled="dataListSelections.length <= 0">重新分配账号拉群</el-button>
           <el-button type="danger" @click="updateGroupHandle()" :disabled="dataListSelections.length <= 0">修改群名</el-button>
+          <el-button type="danger" @click="getRealGroupNameHandle()" :disabled="dataListSelections.length <= 0">获取真实群名称</el-button>
           <el-button type="danger" @click="startTaskHandle()" :disabled="dataListSelections.length <= 0">启动任务</el-button>
         </el-form-item>
         </el-form>
@@ -305,6 +306,12 @@
             header-align="center"
             align="center"
             label="群名称">
+          </el-table-column>
+          <el-table-column
+            prop="realGroupName"
+            header-align="center"
+            align="center"
+            label="真实群名称">
           </el-table-column>
           <el-table-column
             prop="roomId"
@@ -730,6 +737,42 @@ import ErrLogs from "./atdatatask-err-logs.vue";
               if (data && data.code === 0) {
                 this.$message({
                   message: '操作成功，成功修改' + data.successCount + '条',
+                  type: 'success',
+                  duration: 1500,
+                  onClose: () => {
+                    this.getDataList()
+                  }
+                })
+              } else {
+                this.$message.error(data.msg)
+              }
+            }).finally(() => {
+              this.isLoading = false
+            })
+          })
+        })
+      },
+      getRealGroupNameHandle (id) {
+        var ids = id ? [id] : this.dataListSelections.map(item => {
+          return item.id
+        })
+        this.$confirm(`确定对[id=${ids.join(',')}]进行[${id ? '获取真实群名称' : '批量获取真实群名称'}]操作?`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.isLoading = true
+          this.$nextTick(() => {
+            this.$http({
+              url: this.$http.adornUrl('/ltt/atgroup/getRealGroupName'),
+              method: 'post',
+              data: this.$http.adornData({
+                'ids': ids
+              })
+            }).then(({data}) => {
+              if (data && data.code === 0) {
+                this.$message({
+                  message: '操作成功',
                   type: 'success',
                   duration: 1500,
                   onClose: () => {

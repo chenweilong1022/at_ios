@@ -35,7 +35,7 @@ public interface LineService {
      * @param updateGroup
      * @return
      */
-    Boolean updateChat(UpdateGroup updateGroup);
+    SearchPhoneVO updateChat(UpdateGroup updateGroup);
 
     SearchPhoneVO findAndAddContactsByPhone(SearchPhoneDTO searchPhoneDTO);
 

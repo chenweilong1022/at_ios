@@ -257,17 +257,17 @@ public class LineServiceImpl implements LineService {
     }
 
     @Override
-    public Boolean updateChat(UpdateGroup updateGroup) {
+    public SearchPhoneVO updateChat(UpdateGroup updateGroup) {
         try {
             ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
             String getPhoneHttp = String.format("%s/api/v1/msg/updateChat", projectWorkEntity.getLineBaseHttp());
             String jsonStr = JSONUtil.toJsonStr(updateGroup);
             String resp = HttpUtil.post(getPhoneHttp, jsonStr, 20000);
             log.info("updateChat_result {}", resp);
-//            if (code300(updateGroup.getProxy(), jsonStr, resp)) return new LineRegisterVO().setCode(300).setMsg("网络异常");
-
+            if (code300(updateGroup.getProxy(), jsonStr, resp)) return new SearchPhoneVO().setCode(300).setMsg("网络异常");
+            SearchPhoneVO lineRegisterVO = JSON.parseObject(resp, SearchPhoneVO.class);
             extracted(jsonStr, resp);
-            return true;
+            return lineRegisterVO;
         }catch (Exception e) {
             log.error("err = {}",e.getMessage());
         }

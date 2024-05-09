@@ -29,6 +29,7 @@
     <resultMap type="io.renren.modules.ltt.vo.AtGroupVO" id="atGroupVO">
         <result property="id" column="id"/>
         <result property="groupName" column="group_name"/>
+        <result property="realGroupName" column="real_group_name"/>
         <result property="proxy" column="proxy"/>
         <result property="intervals" column="intervals"/>
         <result property="roomId" column="room_id"/>
@@ -67,6 +68,7 @@
         SELECT
             g.id,
             g.group_name,
+            g.real_group_name,
             g.proxy,
             g.intervals,
             g.room_id,
