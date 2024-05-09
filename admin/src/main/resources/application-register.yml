@@ -84,8 +84,8 @@ magicServer:
 
 #jp-sms配置
 jpSmsConfig:
-    userCode: 431657
-    interfaceKey: 1e1824c7c39d44cab61817fed90776bf
+    userCode: 623985
+    interfaceKey: 1187fe85af78450c9de4a02a560cb3e6
     interfaceUrl: https://api.yamadamms.com/api/Request/
 
 #静态ip最大使用次数
