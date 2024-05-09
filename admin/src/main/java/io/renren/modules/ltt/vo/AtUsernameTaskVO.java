@@ -89,8 +89,9 @@ public class AtUsernameTaskVO implements Serializable {
 	@ApiModelProperty(required=false,value="管理账户id")
 	private Long sysUserId;
 
-	public double getScheduleFloat() {
-		return (double) (successfulQuantity + failuresQuantity) / executionQuantity * 100;
+	public String getScheduleFloat() {
+		double v = (double) (successfulQuantity + failuresQuantity) / executionQuantity * 100;
+		return String.format("%.2f", v);
 	}
 
 	public String getTaskStatusStr() {

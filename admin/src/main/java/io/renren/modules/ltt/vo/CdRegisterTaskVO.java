@@ -91,7 +91,8 @@ public class CdRegisterTaskVO implements Serializable {
 		return EnumUtil.queryValueByKey(this.registrationStatus, RegistrationStatus.values());
 	}
 
-	public double getScheduleFloat() {
-		return (double) (numberSuccesses + 0) / totalAmount * 100;
+	public String getScheduleFloat() {
+		double v = (double) (numberSuccesses + 0) / totalAmount * 100;
+		return String.format("%.2f", v);
 	}
 }
