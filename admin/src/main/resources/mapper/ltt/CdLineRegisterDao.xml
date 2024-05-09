@@ -81,7 +81,7 @@
             <if test="dto.registerStatus != null and dto.registerStatus == 0">
                 AND r.register_status is null
             </if>
-            <if test="dto.phone != null">
+            <if test="dto.phone != null and dto.phone != ''">
                 AND p.phone = #{dto.phone}
             </if>
         </where>
