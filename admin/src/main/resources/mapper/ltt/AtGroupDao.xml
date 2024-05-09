@@ -104,7 +104,6 @@
                 #{item}
             </foreach>)
         </if>
-        order by g.create_time desc
     </select>
 
     <select id="groupDataSummary" resultType="io.renren.modules.ltt.vo.AtGroupTaskVO">
