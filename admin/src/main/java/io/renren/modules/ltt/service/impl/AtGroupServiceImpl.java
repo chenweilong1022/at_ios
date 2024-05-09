@@ -14,9 +14,10 @@ import io.renren.common.utils.Query;
 import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.client.LineService;
-import io.renren.modules.client.dto.ImportZipDTO;
-import io.renren.modules.client.dto.LineTokenJson;
-import io.renren.modules.client.dto.UpdateGroup;
+import io.renren.modules.client.dto.*;
+import io.renren.modules.client.vo.GetChatsVO;
+import io.renren.modules.client.vo.LineRegisterVO;
+import io.renren.modules.client.vo.SearchPhoneVO;
 import io.renren.modules.ltt.conver.AtGroupConver;
 import io.renren.modules.ltt.dao.AtGroupDao;
 import io.renren.modules.ltt.dto.AtGroupDTO;
@@ -24,11 +25,9 @@ import io.renren.modules.ltt.dto.AtUserDTO;
 import io.renren.modules.ltt.dto.CdLineIpProxyDTO;
 import io.renren.modules.ltt.entity.*;
 import io.renren.modules.ltt.enums.*;
+import io.renren.modules.ltt.enums.OpenApp;
 import io.renren.modules.ltt.service.*;
-import io.renren.modules.ltt.vo.AtGroupTaskVO;
-import io.renren.modules.ltt.vo.AtGroupVO;
-import io.renren.modules.ltt.vo.AtUserTokenVO;
-import io.renren.modules.ltt.vo.AtUserVO;
+import io.renren.modules.ltt.vo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -36,6 +35,7 @@ import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,6 +45,9 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -75,6 +78,10 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
 
     @Autowired
     private LineService lineService;
+    @Autowired
+    ThreadPoolTaskExecutor threadPoolTaskExecutor;
+    @Autowired
+    private ConcurrentHashMap<String, Lock> lockMap;
 
     @Override
     public PageUtils<AtGroupVO> queryPage(AtGroupDTO atGroup) {
@@ -425,61 +432,69 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
     @Override
     public Integer updateGroupName(AtGroupDTO atGroup) {
         List<Integer> ids = atGroup.getIds();
-
         List<AtGroupEntity> groupList = this.list(new QueryWrapper<AtGroupEntity>().lambda()
                 .in(AtGroupEntity::getId,ids)
         );
-        Integer successCount = 0;
         for (AtGroupEntity atGroupEntity : groupList) {
-            //查询对应的改群名账号
-            AtDataSubtaskEntity dataSubtaskEntity = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
-                    .eq(AtDataSubtaskEntity::getGroupId, atGroupEntity.getId())
-                    .eq(AtDataSubtaskEntity::getDataType, DataType.DataType5.getKey())).stream().findFirst().orElse(null);
-            if (dataSubtaskEntity != null) {
-                //获取代理
-                CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
-                cdLineIpProxyDTO.setTokenPhone(dataSubtaskEntity.getContactKey());
-                cdLineIpProxyDTO.setLzPhone(dataSubtaskEntity.getContactKey());
-                cdLineIpProxyDTO.setCountryCode(atGroupEntity.getChangeGroupCountryCode().longValue());
-                String proxyIp = cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO);
-                if (StrUtil.isEmpty(proxyIp)) {
-                    log.error("updateGroupName_error ipIsNull {}", cdLineIpProxyDTO);
-                    continue;
-                }
+            threadPoolTaskExecutor.execute(() -> {
+                String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource12, atGroupEntity.getId());
+                Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
+                boolean triedLock = lock.tryLock();
+                log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
+                if(triedLock) {
+                    try{
+                        //查询对应的改群名账号
+                        AtDataSubtaskEntity dataSubtaskEntity = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
+                                .eq(AtDataSubtaskEntity::getGroupId, atGroupEntity.getId())
+                                .eq(AtDataSubtaskEntity::getDataType, DataType.DataType5.getKey())).stream().findFirst().orElse(null);
+                        if (dataSubtaskEntity != null) {
+                            //获取代理
+                            CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
+                            cdLineIpProxyDTO.setTokenPhone(dataSubtaskEntity.getContactKey());
+                            cdLineIpProxyDTO.setLzPhone(dataSubtaskEntity.getContactKey());
+                            cdLineIpProxyDTO.setCountryCode(atGroupEntity.getChangeGroupCountryCode().longValue());
+                            String proxyIp = cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO);
+                            if (StrUtil.isEmpty(proxyIp)) {
+                                log.error("updateGroupName_error ipIsNull {}", cdLineIpProxyDTO);
+                                return;
+                            }
 
-                //获取token
-                AtUserVO atUserVO = atUserService.getById(dataSubtaskEntity.getChangeUserId());
-                if (ObjectUtil.isNull(atUserVO)) {
-                    log.error("updateGroupName_error atUserIsNull {}", dataSubtaskEntity);
-                    continue;
-                }
-                AtUserTokenVO tokenEntitie = atUserTokenService.getById(atUserVO.getUserTokenId());
-                if (ObjectUtil.isNull(tokenEntitie)) {
-                    log.error("updateGroupName_error atUserTokenIsNull {}", atUserVO);
-                    continue;
-                }
+                            //获取token
+                            AtUserVO atUserVO = atUserService.getById(dataSubtaskEntity.getChangeUserId());
+                            if (ObjectUtil.isNull(atUserVO)) {
+                                log.error("updateGroupName_error atUserIsNull {}", dataSubtaskEntity);
+                                return;
+                            }
+                            AtUserTokenVO tokenEntitie = atUserTokenService.getById(atUserVO.getUserTokenId());
+                            if (ObjectUtil.isNull(tokenEntitie)) {
+                                log.error("updateGroupName_error atUserTokenIsNull {}", atUserVO);
+                                return;
+                            }
 
-                //修改群名
-                UpdateGroup updateGroup = new UpdateGroup();
-                updateGroup.setChatName(atGroupEntity.getGroupName());
-                updateGroup.setChatRoomId(atGroupEntity.getRoomId());
-                updateGroup.setGroupMidCount(atGroupEntity.getSuccessfullyAttractGroupsNumber());
-                updateGroup.setProxy(proxyIp);
-                updateGroup.setToken(tokenEntitie.getToken());
-                Boolean flag = lineService.updateChat(updateGroup);
-
-
-                //修改群名
-                if (Boolean.TRUE.equals(flag)) {
-                    AtGroupEntity update = new AtGroupEntity();
-                    update.setId(atGroupEntity.getId());
-                    update.setGroupStatus(GroupStatus15.getKey());
-                    this.updateById(update);
-                    successCount += 1;
+                            //修改群名
+                            UpdateGroup updateGroup = new UpdateGroup();
+                            updateGroup.setChatName(atGroupEntity.getGroupName());
+                            updateGroup.setChatRoomId(atGroupEntity.getRoomId());
+                            updateGroup.setGroupMidCount(atGroupEntity.getSuccessfullyAttractGroupsNumber());
+                            updateGroup.setProxy(proxyIp);
+                            updateGroup.setToken(tokenEntitie.getToken());
+                            SearchPhoneVO searchPhoneVO = lineService.updateChat(updateGroup);
+                            if (ObjectUtil.isNotNull(searchPhoneVO) && 200 == searchPhoneVO.getCode()) {
+                                AtGroupEntity update = new AtGroupEntity();
+                                update.setId(atGroupEntity.getId());
+                                update.setGroupStatus(GroupStatus15.getKey());
+                                this.updateById(update);
+                            }
+                        }
+                    }finally {
+                        lock.unlock();
+                    }
+                }else {
+                    log.info("keyByResource = {} 在执行",keyByResource);
                 }
-            }
+            });
         }
-        return successCount;
+        return 0;
     }
 
     @Override
@@ -548,6 +563,80 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
         }
         boolean b = this.updateBatchById(atGroupEntities);
         return b;
+    }
+
+    @Override
+    public void getRealGroupName(AtGroupDTO atGroup) {
+        List<Integer> ids = atGroup.getIds();
+        List<AtGroupEntity> groupList = this.list(new QueryWrapper<AtGroupEntity>().lambda()
+                .in(AtGroupEntity::getId,ids)
+        );
+        for (AtGroupEntity atGroupEntity : groupList) {
+            threadPoolTaskExecutor.execute(() -> {
+                String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource12, atGroupEntity.getId());
+                Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
+                boolean triedLock = lock.tryLock();
+                log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
+                if(triedLock) {
+                    try{
+                        //如果roomid为空直接跳出
+                        if (StrUtil.isEmpty(atGroupEntity.getRoomId())) {
+                            return;
+                        }
+                        //查询对应的改群名账号
+                        AtDataSubtaskEntity dataSubtaskEntity = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
+                                .eq(AtDataSubtaskEntity::getGroupId, atGroupEntity.getId())
+                                .eq(AtDataSubtaskEntity::getDataType, DataType.DataType5.getKey())).stream().findFirst().orElse(null);
+                        if (dataSubtaskEntity != null) {
+                            CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
+                            cdLineIpProxyDTO.setTokenPhone(dataSubtaskEntity.getContactKey());
+                            cdLineIpProxyDTO.setLzPhone(dataSubtaskEntity.getContactKey());
+                            cdLineIpProxyDTO.setCountryCode(atGroupEntity.getChangeGroupCountryCode().longValue());
+                            String proxyIp = cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO);
+                            if (StrUtil.isEmpty(proxyIp)) {
+                                return;
+                            }
+                            //获取token
+                            AtUserVO atUserVO = atUserService.getById(dataSubtaskEntity.getChangeUserId());
+                            if (ObjectUtil.isNull(atUserVO)) {
+                                log.error("updateGroupName_error atUserIsNull {}", dataSubtaskEntity);
+                                return;
+                            }
+                            AtUserTokenVO atUserTokenVO = atUserTokenService.getById(atUserVO.getUserTokenId());
+                            if (ObjectUtil.isNull(atUserTokenVO)) {
+                                log.error("updateGroupName_error atUserTokenIsNull {}", atUserVO);
+                                return;
+                            }
+                            GetChatsDTO getChatsDTO = new GetChatsDTO();
+                            getChatsDTO.setProxy(proxyIp);
+                            getChatsDTO.setChatRoomId(atGroupEntity.getRoomId());
+                            getChatsDTO.setToken(atUserTokenVO.getToken());
+                            GetChatsVO chats = lineService.getChats(getChatsDTO);
+                            if (ObjectUtil.isNotNull(chats) && 200 == chats.getCode()) {
+                                GetChatsVO.Data data = chats.getData();
+                                if (ObjectUtil.isNull(data)) return;
+                                List<GetChatsVO.Data.Chat> dataChats = data.getChats();
+                                if (CollUtil.isEmpty(dataChats)) return;
+                                GetChatsVO.Data.Chat chat = dataChats.get(0);
+                                if (ObjectUtil.isNull(chat)) return;
+                                String chatName = chat.getChatName();
+                                if (StrUtil.isNotEmpty(chatName)) {
+                                    if (chatName.equals(atGroupEntity.getGroupName())) {
+                                        atGroupEntity.setGroupStatus(GroupStatus15.getKey());
+                                    }
+                                    atGroupEntity.setRealGroupName(chatName);
+                                    this.updateById(atGroupEntity);
+                                }
+                            }
+                        }
+                    }finally {
+                        lock.unlock();
+                    }
+                }else {
+                    log.info("keyByResource = {} 在执行",keyByResource);
+                }
+            });
+        }
     }
 
 

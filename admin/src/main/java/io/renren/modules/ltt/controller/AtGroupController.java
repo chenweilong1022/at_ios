@@ -141,6 +141,17 @@ public class AtGroupController extends AbstractController {
     }
 
     /**
+     * 获取真实名称
+     */
+    @RequestMapping("getRealGroupName")
+    @RequiresPermissions("ltt:atgrouptask:save")
+    public R getRealGroupName(@RequestBody AtGroupDTO atGroup) {
+        atGroup.setSysUserId(getAuthUserId());
+        atGroupService.getRealGroupName(atGroup);
+        return R.ok();
+    }
+
+    /**
      * 修改
      */
     @RequestMapping("/update")
