@@ -617,8 +617,16 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
             //获取符合账号的号码
             PageUtils pageUtils = atUserService.queryPageOld(atUserDTO);
             List<AtUserVO> atUserVOS = pageUtils.getList();
-            Assert.isTrue(onGroupPreVOS.size() > atUserVOS.size(), "改群名号不足，请增加改群名");
-            return atUserVOS;
+
+            Integer accountGroupDistributed = atGroupTask.getAccountGroupDistributed();
+            List<AtUserVO> newAtUserVOS = new ArrayList<>();
+            for (AtUserVO atUserVO : atUserVOS) {
+                for (Integer i = 0; i < accountGroupDistributed; i++) {
+                    newAtUserVOS.add(atUserVO);
+                }
+            }
+            Assert.isTrue(onGroupPreVOS.size() > newAtUserVOS.size(), "改群名号不足，请增加改群名");
+            return newAtUserVOS;
         } else {
             return Collections.emptyList();
         }

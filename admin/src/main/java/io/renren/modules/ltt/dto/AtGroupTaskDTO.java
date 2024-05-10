@@ -177,6 +177,11 @@ public class AtGroupTaskDTO extends PageParam implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="修改群名称账号对应的国家")
 	private Integer changeGroupCountryCode;
+	/**
+	 * 一号几群
+	 */
+	@ApiModelProperty(required=false,value="一号几群")
+	private Integer accountGroupDistributed;
 
 	/**
 	 * 国家
