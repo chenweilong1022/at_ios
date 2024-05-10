@@ -89,7 +89,7 @@ public class OpenAppTask {
                 .eq(AtUserTokenEntity::getTokenType, AtUserTokenTypeEnum.AtUserTokenType1.getKey())
                 .eq(AtUserTokenEntity::getUseFlag, UseFlag.YES.getKey())
                 .isNotNull(AtUserTokenEntity::getToken)
-                .last("limit 40")
+                .last("limit 100")
         );
 
         if (CollUtil.isEmpty(atUserTokenEntities)) {
@@ -157,7 +157,7 @@ public class OpenAppTask {
                     .eq(AtUserTokenEntity::getUseFlag, UseFlag.YES.getKey())
                     .isNotNull(AtUserTokenEntity::getToken)
                     .lt(AtUserTokenEntity::getOpenTime, DateUtil.date())
-                    .last("limit 40")
+                    .last("limit 100")
             );
 
             if (CollUtil.isEmpty(atUserTokenEntities)) {
@@ -249,7 +249,7 @@ public class OpenAppTask {
                 .isNotNull(AtUserTokenEntity::getToken)
                 .eq(AtUserTokenEntity::getUseFlag, UseFlag.YES.getKey())
                 .lt(AtUserTokenEntity::getOpenTime, DateUtil.date())
-                .last("limit 40")
+                .last("limit 100")
         );
 
 
