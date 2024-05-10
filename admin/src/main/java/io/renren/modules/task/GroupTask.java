@@ -95,7 +95,7 @@ public class GroupTask {
     public void task5() {
         //获取群名和真实名称不一样的列表，同步服务器真实群名
         List<AtGroupEntity> cdGroupTasksEntities = atGroupService.list(new QueryWrapper<AtGroupEntity>().lambda()
-                .last("limit 50")
+                .last("and MOD(change_user_id, 2) = "+systemConstant.getSERVERS_MOD()+" limit 50")
                 .eq(AtGroupEntity::getGroupStatus, GroupStatus.GroupStatus15.getKey())
                 .eq(AtGroupEntity::getRandomGroupName, OpenApp.OpenApp2.getKey())
                 .apply("group_name <> real_group_name")
@@ -115,7 +115,7 @@ public class GroupTask {
     public void task4() {
         //获取群人数同步,且需要更改群名的任务
         List<AtGroupEntity> cdGroupTasksEntities = atGroupService.list(new QueryWrapper<AtGroupEntity>().lambda()
-                .last("limit 50")
+                .last("and MOD(change_user_id, 2) = "+systemConstant.getSERVERS_MOD()+" limit 50")
                 .eq(AtGroupEntity::getGroupStatus, GroupStatus.GroupStatus9.getKey())
                 .eq(AtGroupEntity::getRandomGroupName, OpenApp.OpenApp2.getKey())
         );
@@ -139,7 +139,7 @@ public class GroupTask {
         for (AtGroupEntity cdGroupTasksEntity : cdGroupTasksEntities) {
             threadPoolTaskExecutor.execute(() -> {
                 String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource13,
-                        cdGroupTasksEntity.getChangeUserId() != null ? cdGroupTasksEntity.getChangeUserId() : cdGroupTasksEntity.getId());
+                         ObjectUtil.isNotNull(cdGroupTasksEntity.getChangeUserId()) ? cdGroupTasksEntity.getChangeUserId() : cdGroupTasksEntity.getId());
                 Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
                 boolean triedLock = lock.tryLock();
                 log.info("keyByResource = {} 获取的锁为 = {}", keyByResource, triedLock);

@@ -259,6 +259,9 @@
               </el-option>
             </el-select>
           </el-form-item>
+          <el-form-item label="一号几群" prop="accountGroupDistributed" v-if="dataForm.randomGroupName === 2">
+            <el-input v-model="dataForm.accountGroupDistributed" placeholder="一号几群" style="width: 70%;"></el-input>
+          </el-form-item>
 
         </div>
       </div>
@@ -531,6 +534,7 @@ import ErrLogs from "./atdatatask-err-logs.vue";
           ipCountryCode: null,
           autoPullGroup: 2,
           randomGroupName: 1,
+          accountGroupDistributed: 1,
           navyUrlList: [],
           materialUrlList: []
         }
@@ -923,6 +927,7 @@ import ErrLogs from "./atdatatask-err-logs.vue";
             'navyUrlList': this.dataForm.navyUrlList,
             'groupCountStart': this.dataForm.groupCountStart,
             'openApp': this.dataForm.openApp,
+            'accountGroupDistributed': this.dataForm.accountGroupDistributed,
             'pullGroupNumber': this.dataForm.pullGroupNumber,
             'groupCountTotal': this.dataForm.groupCountTotal,
             'materialUrlList': this.dataForm.materialUrlList,
