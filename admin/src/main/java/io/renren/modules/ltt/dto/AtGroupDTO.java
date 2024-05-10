@@ -187,6 +187,13 @@ public class AtGroupDTO extends PageParam implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="修改群名称账号对应的分组")
 	private Integer changeGroupId;
+
+	/**
+	 * 修改群名称账号对应的分组
+	 */
+	@ApiModelProperty(required=false,value="修改群信息水军id")
+	private Integer changeUserId;
+
 	/**
 	 * 间隔秒数
 	 */

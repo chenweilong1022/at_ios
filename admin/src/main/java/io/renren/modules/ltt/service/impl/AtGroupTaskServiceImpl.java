@@ -486,6 +486,10 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
                         atDataSubtaskEntity.setUserId(poll.getId());
                         atDataSubtaskEntityListNew.add(atDataSubtaskEntity);
                     }
+                    if (atDataSubtaskEntity.getChangeUserId() != null){
+                        atGroupTaskEntity.setChangeUserId(atDataSubtaskEntity.getChangeUserId());
+                    }
+
                 }
             }
 
