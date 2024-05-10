@@ -240,9 +240,8 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                                 if (CollUtil.isEmpty(getflowip)) {
                                     //获取ip
                                     getflowip = getIpResp(regions, proxy);
-                                    ip = getflowip.poll();
-                                    caffeineCacheListString.put(regions, getflowip);
-                                } else {
+                                }
+                                if (CollUtil.isNotEmpty(getflowip)) {
                                     ip = getflowip.poll();
                                     caffeineCacheListString.put(regions, getflowip);
                                 }
