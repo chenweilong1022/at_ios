@@ -170,48 +170,47 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         if(triedLock) {
             try{
                 String regions = EnumUtil.queryValueByKey(countryCode.intValue(), CountryCode.values());
-                if (!cdLineIpProxyDTO.isNewIp()) {
-                    //出口ip
-                    Object o2 = redisTemplate.opsForHash().get(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), cdLineIpProxyDTO.getTokenPhone());
-                    String outIpv4 = String.valueOf(o2);
-                    Object o1 = redisTemplate.opsForHash().get(RedisKeys.RedisKeys1.getValue(), outIpv4);
-                    String ipS5 = String.valueOf(o1);
+                //出口ip
+                Object o2 = redisTemplate.opsForHash().get(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), cdLineIpProxyDTO.getTokenPhone());
+                String outIpv4 = String.valueOf(o2);
+                Object o1 = redisTemplate.opsForHash().get(RedisKeys.RedisKeys1.getValue(), outIpv4);
+                String ipS5 = String.valueOf(o1);
 
-                    //如果有直接返回
-                    if (StrUtil.isNotEmpty(outIpv4) && StrUtil.isNotEmpty(ipS5)) {
-                        CurlVO proxyUse = getProxyUse(ipS5, regions, proxy);
-                        if (proxyUse.isProxyUse()) {
-                            //如果ip相同并且国家一样
-                            if (proxyUse.getIp().equals(outIpv4) && regions.toLowerCase().equals(proxyUse.getCountry().toLowerCase())) {
+                //如果有直接返回
+                if (StrUtil.isNotEmpty(outIpv4) && StrUtil.isNotEmpty(ipS5)) {
+                    CurlVO proxyUse = getProxyUse(ipS5, regions, proxy);
+                    if (proxyUse.isProxyUse()) {
+                        //如果ip相同并且国家一样
+                        if (proxyUse.getIp().equals(outIpv4) && regions.toLowerCase().equals(proxyUse.getCountry().toLowerCase())) {
+                            return socks5Pre(ipS5);
+                            //如果ip不相同相同并且国家一样
+                        } else if (regions.toLowerCase().equals(proxyUse.getCountry().toLowerCase())) {
+                            Boolean b = redisTemplate.opsForHash().putIfAbsent(RedisKeys.RedisKeys1.getValue(), proxyUse.getIp(), ipS5);
+                            if (b) {
+                                redisTemplate.opsForHash().delete(RedisKeys.RedisKeys1.getValue(), outIpv4);
+                                redisTemplate.opsForHash().putIfAbsent(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), cdLineIpProxyDTO.getTokenPhone(), proxyUse.getIp());
                                 return socks5Pre(ipS5);
-                                //如果ip不相同相同并且国家一样
-                            }else if (regions.toLowerCase().equals(proxyUse.getCountry().toLowerCase())) {
-                                Boolean b = redisTemplate.opsForHash().putIfAbsent(RedisKeys.RedisKeys1.getValue(), proxyUse.getIp(), ipS5);
-                                if (b) {
-                                    redisTemplate.opsForHash().delete(RedisKeys.RedisKeys1.getValue(),outIpv4);
-                                    redisTemplate.opsForHash().putIfAbsent(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), cdLineIpProxyDTO.getTokenPhone(),proxyUse.getIp());
-                                    return socks5Pre(ipS5);
-                                }
-                            } else {
-                                if (proxy == 3) {
-                                    //静态代理时，无法获取出口ip，人工处理，不重复取新的ip
-                                    log.error("getProxyIp_error 静态ip异常 {},", proxyUse);
-                                    return null;
-                                }
                             }
                         } else {
                             if (proxy == 3) {
                                 //静态代理时，无法获取出口ip，人工处理，不重复取新的ip
-                                log.error("getProxyIp_error 静态ip异常 {}", proxyUse);
+                                log.error("getProxyIp_error 静态ip异常 {},", proxyUse);
                                 return null;
                             }
                         }
+                    } else {
+                        if (proxy == 3) {
+                            //静态代理时，无法获取出口ip，人工处理，不重复取新的ip
+                            log.error("getProxyIp_error 静态ip异常 {}", proxyUse);
+                            return null;
+                        }
                     }
-                }else {
+
+                } else {
                     boolean flag = true;
                     int i = 0;
                     int len = 10;
-                    while(i < len) {
+                    while (i < len) {
                         i++;
                         String ip = null;
                         Queue<String> getflowip = caffeineCacheListString.getIfPresent(cdLineIpProxyDTO.getTokenPhone());
@@ -228,11 +227,11 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                                 getflowipNew.offer(s);
                             }
                             ip = getflowipNew.poll();
-                            caffeineCacheListString.put(cdLineIpProxyDTO.getTokenPhone(),getflowipNew);
+                            caffeineCacheListString.put(cdLineIpProxyDTO.getTokenPhone(), getflowipNew);
                             len = getflowipNew.size();
-                        }else {
+                        } else {
                             ip = getflowip.poll();
-                            caffeineCacheListString.put(cdLineIpProxyDTO.getTokenPhone(),getflowip);
+                            caffeineCacheListString.put(cdLineIpProxyDTO.getTokenPhone(), getflowip);
                             len = getflowip.size();
                         }
 
@@ -242,7 +241,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                             if (regions.toLowerCase().equals(proxyUse.getCountry().toLowerCase())) {
                                 Boolean b = redisTemplate.opsForHash().putIfAbsent(RedisKeys.RedisKeys1.getValue(), proxyUse.getIp(), ip);
                                 if (b) {
-                                    redisTemplate.opsForHash().putIfAbsent(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), cdLineIpProxyDTO.getTokenPhone(),proxyUse.getIp());
+                                    redisTemplate.opsForHash().putIfAbsent(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), cdLineIpProxyDTO.getTokenPhone(), proxyUse.getIp());
                                     return socks5Pre(ip);
                                 }
                                 return socks5Pre(ip);
@@ -263,14 +262,14 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 
                     }
                 }
-            }finally {
+            } finally {
                 try {
                     lock.unlock();
-                }catch (Exception e) {
-                    log.error("lock = {}","没有上锁");
+                } catch (Exception e) {
+                    log.error("lock = {}", "没有上锁");
                 }
             }
-        }else {
+        } else {
             log.info("keyByResource = {} 在执行",keyByResource);
         }
         return null;
