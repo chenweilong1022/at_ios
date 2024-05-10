@@ -1,6 +1,7 @@
 package io.renren.modules.ltt.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import io.renren.common.constant.SystemConstant;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.ltt.dto.AtDataSubtaskParamPageDTO;
 import io.renren.modules.ltt.dto.AtDataSubtaskResultDto;
@@ -18,6 +19,7 @@ import io.renren.modules.ltt.vo.AtDataSubtaskVO;
 import io.renren.modules.ltt.service.AtDataSubtaskService;
 import io.renren.modules.ltt.conver.AtDataSubtaskConver;
 
+import javax.annotation.Resource;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
@@ -87,8 +89,12 @@ public class AtDataSubtaskServiceImpl extends ServiceImpl<AtDataSubtaskDao, AtDa
         return PageUtils.<AtDataSubtaskVO>page(page).setList(AtDataSubtaskConver.MAPPER.conver(page.getRecords()));
     }
 
+    @Resource
+    private SystemConstant systemConstant;
+
     @Override
     public List<AtDataSubtaskVO> groupByUserId(AtDataSubtaskEntity dto) {
+        dto.setMod(systemConstant.getSERVERS_MOD());
         return baseMapper.groupByUserId(dto);
     }
 

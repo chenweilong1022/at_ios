@@ -8,6 +8,7 @@ import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.benmanes.caffeine.cache.Cache;
+import io.renren.common.constant.SystemConstant;
 import io.renren.modules.client.LineService;
 import io.renren.modules.client.dto.AddFriendsByMid;
 import io.renren.modules.client.dto.SearchPhoneDTO;
@@ -87,6 +88,8 @@ public class DataTask {
     private Cache<Integer, Date> caffeineCacheDate;
     @Resource(name = "caffeineCacheDateSearch")
     private Cache<Integer, Date> caffeineCacheDateSearch;
+    @Resource
+    private SystemConstant systemConstant;
 
 
     @Scheduled(fixedDelay = 8000)
@@ -568,7 +571,7 @@ public class DataTask {
             //需要添加好友的任务
             List<AtDataTaskEntity> atDataTaskEntities = atDataTaskService.list(new QueryWrapper<AtDataTaskEntity>().lambda()
                     .eq(AtDataTaskEntity::getTaskStatus, TaskStatus.TaskStatus1.getKey())
-                    .last("limit 15")
+                    .last("and MOD(id, 2) = "+systemConstant.getSERVERS_MOD()+" limit 15")
             );
             if (CollUtil.isEmpty(atDataTaskEntities)) {
                 log.info("DataTask task1 atDataTaskEntities isEmpty");

@@ -4,6 +4,7 @@ import io.renren.modules.client.vo.GroupCountByDataTaskIdVO;
 import io.renren.modules.ltt.entity.AtDataTaskEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -17,5 +18,5 @@ import java.util.List;
 @Mapper
 public interface AtDataTaskDao extends BaseMapper<AtDataTaskEntity> {
 
-    List<GroupCountByDataTaskIdVO> groupCountByDataTaskId();
+    List<GroupCountByDataTaskIdVO> groupCountByDataTaskId(@Param("mod") Integer mod);
 }

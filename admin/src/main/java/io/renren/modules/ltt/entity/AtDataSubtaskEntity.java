@@ -244,4 +244,10 @@ public class AtDataSubtaskEntity implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="打开app")
 	private Integer openApp;
+	/**
+	 * mod
+	 */
+	@ApiModelProperty(required=false,value="mod")
+	@TableField(exist = false)
+	private Integer mod;
 }

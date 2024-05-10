@@ -102,9 +102,10 @@
         WHERE
             task_status = #{dto.taskStatus}
           AND group_type = #{dto.groupType}
+          AND user_id % 2 = #{dto.mod}
         GROUP BY
             user_id
-        limit 120
+        limit 150
     </select>
 
     <sql id="page_where_if">

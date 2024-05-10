@@ -8,6 +8,7 @@ import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import io.renren.common.constant.SystemConstant;
 import io.renren.modules.client.LineService;
 import io.renren.modules.client.dto.*;
 import io.renren.modules.client.vo.CreateGroupResultVO;
@@ -79,7 +80,8 @@ public class GroupTask {
     private AtDataSubtaskService atDataSubtaskService;
     @Autowired
     private CdLineRegisterService cdLineRegisterService;
-
+    @Resource
+    private SystemConstant systemConstant;
 
 
 //    @Scheduled(fixedDelay = 5000)
@@ -182,7 +184,7 @@ public class GroupTask {
 
         //获取当前需要同步通讯的任务
         List<AtGroupEntity> cdGroupTasksEntities = atGroupService.list(new QueryWrapper<AtGroupEntity>().lambda()
-                .last("limit 50")
+                .last("and MOD(id, 2) = "+systemConstant.getSERVERS_MOD()+" limit 50")
                 .eq(AtGroupEntity::getGroupStatus,GroupStatus.GroupStatus5.getKey())
         );
         if (CollUtil.isEmpty(cdGroupTasksEntities)) {
@@ -302,6 +304,7 @@ public class GroupTask {
         //获取当前需要同步通讯的任务
         List<AtGroupEntity> cdGroupTasksEntities = atGroupService.list(new QueryWrapper<AtGroupEntity>().lambda()
                 .last("limit 50")
+                .last("and MOD(id, 2) = "+systemConstant.getSERVERS_MOD()+" limit 50")
                 .eq(AtGroupEntity::getGroupStatus,GroupStatus.GroupStatus3.getKey())
         );
         if (CollUtil.isEmpty(cdGroupTasksEntities)) {
@@ -395,7 +398,7 @@ public class GroupTask {
 
         //获取当前需要同步通讯的任务
         List<AtGroupEntity> cdGroupTasksEntities = atGroupService.list(new QueryWrapper<AtGroupEntity>().lambda()
-                .last("limit 50")
+                .last("and MOD(id, 2) = "+systemConstant.getSERVERS_MOD()+" limit 50")
                 .eq(AtGroupEntity::getGroupStatus,GroupStatus.GroupStatus7.getKey())
         );
         if (CollUtil.isEmpty(cdGroupTasksEntities)) {
