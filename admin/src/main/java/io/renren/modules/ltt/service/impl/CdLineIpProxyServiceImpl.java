@@ -58,8 +58,6 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 
     @Resource(name = "caffeineCacheListString")
     private Cache<String, Queue<String>> caffeineCacheListString;
-    @Resource(name = "ipCacheList")
-    private Cache<String, Queue<String>> ipCacheList;
     @Resource(name = "caffeineCacheProjectWorkEntity")
     private Cache<String, ProjectWorkEntity> caffeineCacheProjectWorkEntity;
     @Autowired
