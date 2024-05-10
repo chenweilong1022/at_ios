@@ -22,6 +22,12 @@
 
         <el-form-item>
           <el-button @click="getDataList()">查询</el-button>
+          <el-button v-if="isAuth('ltt:atuser:delete')" type="primary" @click="registerRetryHandle()"
+                     :disabled="dataListSelections.length <= 0">错误重试
+          </el-button>
+          <el-button type="primary" @click="copyPhoneHandle()"
+                     :disabled="dataListSelections.length <= 0">复制拉群手机号
+          </el-button>
         </el-form-item>
       </el-form>
       <el-table
@@ -30,6 +36,12 @@
         v-loading="dataListLoading"
         @selection-change="selectionChangeHandle"
         style="width: 100%;">
+        <el-table-column
+          type="selection"
+          header-align="center"
+          align="center"
+          width="50">
+        </el-table-column>
         <el-table-column
           prop="appVersion"
           header-align="center"
@@ -222,15 +234,18 @@
       },
       // 删除
       registerRetryHandle (id) {
+        var ids = id ? [id] : this.dataListSelections.map(item => {
+          return item.id
+        })
         this.$confirm(`确定重新注册操作?`, '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
           this.$http({
-            url: this.$http.adornUrl(`/ltt/cdlineregister/registerRetry/${id}`),
+            url: this.$http.adornUrl(`/ltt/cdlineregister/registerRetry`),
             method: 'post',
-            data: this.$http.adornData(id, false)
+            data: this.$http.adornData(ids, false)
           }).then(({data}) => {
             if (data && data.code === 0) {
               this.$message({
@@ -246,6 +261,25 @@
             }
           })
         })
+      },
+      copyPhoneHandle () {
+        var phones = this.dataListSelections.map(item => {
+          return item.phone
+        })
+        const el = document.createElement('textarea')
+        el.value = phones
+        el.setAttribute('readonly', '')
+        el.style.position = 'absolute'
+        el.style.left = '-9999px'
+        document.body.appendChild(el)
+        const range = document.createRange()
+        range.selectNode(el)
+        const selection = window.getSelection()
+        selection.removeAllRanges()
+        selection.addRange(range)
+        document.execCommand('copy')
+        document.body.removeChild(el)
+        this.$message.success('手机号复制成功！')
       },
       getRegisterStatus () {
         this.$http({

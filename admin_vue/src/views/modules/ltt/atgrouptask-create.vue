@@ -287,6 +287,9 @@
           <el-button type="danger" @click="updateGroupHandle()" :disabled="dataListSelections.length <= 0">修改群名</el-button>
           <el-button type="danger" @click="getRealGroupNameHandle()" :disabled="dataListSelections.length <= 0">获取真实群名称</el-button>
           <el-button type="danger" @click="startTaskHandle()" :disabled="dataListSelections.length <= 0">启动任务</el-button>
+          <el-button type="primary" @click="copyToClipboard()"
+                     :disabled="dataListSelections.length <= 0">复制手机号
+          </el-button>
         </el-form-item>
         </el-form>
         <el-table
@@ -606,14 +609,16 @@ import ErrLogs from "./atdatatask-err-logs.vue";
         })
       },
       copyToClipboard (telephone) {
+        var telephones = telephone ? [telephone] : this.dataListSelections.map(item => {
+          return item.userTelephone
+        })
         // 使用浏览器的 Clipboard API 将文本复制到剪贴板
         const el = document.createElement('textarea')
-        el.value = telephone
+        el.value = telephones
         el.setAttribute('readonly', '')
         el.style.position = 'absolute'
         el.style.left = '-9999px'
         document.body.appendChild(el)
-        const successful = el.select()
         const range = document.createRange()
         range.selectNode(el)
         const selection = window.getSelection()

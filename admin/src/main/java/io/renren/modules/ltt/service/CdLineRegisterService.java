@@ -110,7 +110,7 @@ public interface CdLineRegisterService extends IService<CdLineRegisterEntity> {
      * @param id
      * @return
      */
-    boolean registerRetry(Integer id);
+    boolean registerRetry(Integer[] ids);
 
     /**
      * 注册重试
