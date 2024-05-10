@@ -126,6 +126,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
     @Override
     @Transactional(rollbackFor = Exception.class)
     public String getProxyIp(CdLineIpProxyDTO cdLineIpProxyDTO) {
+        log.info("cdLineIpProxyDTO = {}",JSONUtil.toJsonStr(cdLineIpProxyDTO));
         //获取缓存
         ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
         if (ObjectUtil.isNull(projectWorkEntity)) {
