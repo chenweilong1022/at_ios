@@ -566,7 +566,7 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
             AtUserVO atUser = atUserService.getById(atGroup.getUserId());
             if (atUser != null) {
                 //代理清空
-                cdLineIpProxyService.clearTokenPhone(atUser.getTelephone());
+                cdLineIpProxyService.clearTokenPhone(atUser.getTelephone(), CountryCode.getKeyByValue(atUser.getNation()));
             }
             return count > 0;
         } else if (StringUtils.isNotEmpty(atGroup.getRoomId())

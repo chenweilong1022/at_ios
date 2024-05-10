@@ -46,6 +46,7 @@ import javax.annotation.Resource;
 import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -239,6 +240,13 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                             ip = getflowip.poll();
                             caffeineCacheListString.put(cdLineIpProxyDTO.getTokenPhone(), getflowip);
                             len = getflowip.size();
+                        }
+
+                        //判断ip黑名单缓存中是否有
+                        Object ipCache = redisTemplate.opsForValue().get(RedisKeys.RedisKeys4.getValue(ip));
+                        if (ipCache != null) {
+                            caffeineCacheListString.put(cdLineIpProxyDTO.getTokenPhone(), new LinkedList<>());
+                            return null;
                         }
 
                         CurlVO proxyUse = getProxyUse(ip, regions, proxy);
@@ -539,15 +547,24 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
     }
 
     @Override
-    public Integer clearTokenPhone(String tokenPhone) {
+    public Boolean clearTokenPhone(String tokenPhone, Integer countryCode) {
         if (StringUtils.isEmpty(tokenPhone)) {
-            return 0;
+            return false;
         }
-        CdLineIpProxyEntity updateEntity = new CdLineIpProxyEntity();
-        updateEntity.setTokenPhone("");
 
-        return baseMapper.update(updateEntity, new QueryWrapper<CdLineIpProxyEntity>().lambda()
-                .eq(CdLineIpProxyEntity::getTokenPhone, tokenPhone));
+        Object o2 = redisTemplate.opsForHash().get(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), tokenPhone);
+
+        if (o2 == null) {
+            return true;
+        }
+
+        String outIpv4 = String.valueOf(o2);
+        if (StringUtils.isEmpty(outIpv4)) {
+            return true;
+        }
+
+        redisTemplate.opsForValue().set(RedisKeys.RedisKeys4.getValue(outIpv4), tokenPhone, 1, TimeUnit.DAYS);
+        return true;
     }
 
 }

@@ -74,6 +74,6 @@ public interface CdLineIpProxyService extends IService<CdLineIpProxyEntity> {
      * @param tokenPhone
      * @return
      */
-    Integer clearTokenPhone(String tokenPhone);
+    Boolean clearTokenPhone(String tokenPhone, Integer countryCode);
 }
 

@@ -2,20 +2,25 @@ package io.renren.modules.ltt.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import io.renren.common.utils.DateUtils;
+import io.renren.common.utils.StrTextUtil;
 import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.ltt.dto.CdLineIpProxyDTO;
 import io.renren.modules.ltt.dto.LineRegisterSummaryResultDto;
 import io.renren.modules.ltt.entity.CdGetPhoneEntity;
 import io.renren.modules.ltt.entity.CdLineIpProxyEntity;
+import io.renren.modules.ltt.enums.CountryCode;
 import io.renren.modules.ltt.enums.PhoneStatus;
+import io.renren.modules.ltt.enums.RedisKeys;
 import io.renren.modules.ltt.enums.RegisterStatus;
 import io.renren.modules.ltt.service.CdGetPhoneService;
 import io.renren.modules.ltt.service.CdLineIpProxyService;
 import io.renren.modules.ltt.vo.CdGetPhoneVO;
 import io.renren.modules.ltt.vo.GetCountBySubTaskIdVO;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -43,6 +48,10 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
 
     @Resource
     private CdGetPhoneService getPhoneService;
+
+
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
     @Override
     public PageUtils<CdLineRegisterVO> queryPage(CdLineRegisterDTO cdLineRegister) {
@@ -121,15 +130,18 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean registerRetry(Integer[] ids) {
-        List<CdGetPhoneEntity> cdGetPhoneList = getPhoneService.listByIds(Arrays.asList(ids));
+        List<CdGetPhoneVO> cdGetPhoneList = getPhoneService.getByIds(Arrays.asList(ids));
         Assert.isTrue(CollectionUtils.isEmpty(cdGetPhoneList), "数据为空");
 
         List<CdGetPhoneEntity> updateCdGetPhoneList = new ArrayList<>();
         List<Integer> lineRegisterIds = new ArrayList<>();
-        for (CdGetPhoneEntity cdGetPhoneEntity : cdGetPhoneList) {
+        for (CdGetPhoneVO cdGetPhone : cdGetPhoneList) {
+            //ip暂时拉黑
+            this.clearTokenPhone(cdGetPhone);
+
             //更新此条数据，发起重新注册
             CdGetPhoneEntity updateCdGetPhoneEntity = new CdGetPhoneEntity();
-            updateCdGetPhoneEntity.setId(cdGetPhoneEntity.getId());
+            updateCdGetPhoneEntity.setId(cdGetPhone.getId());
             updateCdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus1.getKey());
             updateCdGetPhoneEntity.setCode("");
             updateCdGetPhoneEntity.setCreateTime(new Date());
@@ -137,7 +149,7 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
 
 
             CdLineRegisterEntity cdLineRegisterEntity = baseMapper.selectList(new QueryWrapper<CdLineRegisterEntity>().lambda()
-                    .eq(CdLineRegisterEntity::getGetPhoneId, cdGetPhoneEntity.getId())).stream().findFirst().orElse(null);
+                    .eq(CdLineRegisterEntity::getGetPhoneId, cdGetPhone.getId())).stream().findFirst().orElse(null);
             if (cdLineRegisterEntity != null) {
                 Assert.isTrue(!RegisterStatus.RegisterStatus5.getKey().equals(cdLineRegisterEntity.getRegisterStatus()), "注册状态正常，无需重试");
                 //删除line注册此条记录
@@ -151,17 +163,6 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
         baseMapper.deleteBatchIds(lineRegisterIds);
 
         return true;
-        //获取代理
-//        CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
-//        cdLineIpProxyDTO.setTokenPhone(cdGetPhone.getPhone());
-//        cdLineIpProxyDTO.setLzPhone(cdGetPhone.getPhone());
-//        cdLineIpProxyDTO.setNewIp(true);
-//        cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO);
-
-//        CdLineIpProxyEntity cdLineIpProxyEntity = new CdLineIpProxyEntity();
-//        cdLineIpProxyEntity.setTokenPhone("");
-//        cdLineIpProxyService.update(cdLineIpProxyEntity,new QueryWrapper<CdLineIpProxyEntity>().lambda().eq(CdLineIpProxyEntity::getTokenPhone, cdGetPhone.getPhone()));
-
     }
 
     @Override
@@ -174,6 +175,9 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
         if (ObjectUtil.isNotNull(cdLineRegisterEntity)) {
             CdGetPhoneVO cdGetPhone = getPhoneService.getById(cdLineRegisterEntity.getGetPhoneId());
             if (ObjectUtil.isNotNull(cdGetPhone)) {
+                //ip暂时拉黑
+                this.clearTokenPhone(cdGetPhone);
+
                 //更新此条数据，发起重新注册
                 CdGetPhoneEntity updateCdGetPhoneEntity = new CdGetPhoneEntity();
                 updateCdGetPhoneEntity.setId(cdGetPhone.getId());
@@ -185,6 +189,14 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
             baseMapper.deleteById(cdLineRegisterEntity.getId());
         }
         return false;
+    }
+
+    private void clearTokenPhone(CdGetPhoneVO cdGetPhone) {
+        //ip暂时拉黑
+        if (StringUtils.isEmpty(cdGetPhone.getCode())
+                || Boolean.FALSE.equals(StrTextUtil.verificationCodeFlag(cdGetPhone.getCode()))) {
+            cdLineIpProxyService.clearTokenPhone(cdGetPhone.getPhone(), CountryCode.getKeyByValue(cdGetPhone.getCountry()));
+        }
     }
 
     @Override

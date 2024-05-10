@@ -12,6 +12,10 @@ public enum RedisKeys implements BaseEnum {
     RedisKeys1(1,"IP_POOLS"),
     RedisKeys2(2,"PHONE_POOLS"),
     RedisKeys3(3,"IP_BLOCK_POOLS"),
+    /**
+     * ip失效
+     */
+    RedisKeys4(4,"IP_INVALID_POOLS"),
     ;
 
     RedisKeys(int key, String value) {

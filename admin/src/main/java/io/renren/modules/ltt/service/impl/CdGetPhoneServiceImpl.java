@@ -30,7 +30,6 @@ import javax.annotation.Resource;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
 
@@ -51,6 +50,11 @@ public class CdGetPhoneServiceImpl extends ServiceImpl<CdGetPhoneDao, CdGetPhone
     @Override
     public CdGetPhoneVO getById(Integer id) {
         return CdGetPhoneConver.MAPPER.conver(baseMapper.selectById(id));
+    }
+
+    @Override
+    public List<CdGetPhoneVO> getByIds(List<Integer> ids) {
+        return CdGetPhoneConver.MAPPER.conver(baseMapper.selectBatchIds(ids));
     }
 
     @Override
