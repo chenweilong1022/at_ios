@@ -137,9 +137,9 @@ public class GroupTask {
 
 
         for (AtGroupEntity cdGroupTasksEntity : cdGroupTasksEntities) {
-
             threadPoolTaskExecutor.execute(() -> {
-                String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource13, cdGroupTasksEntity.getId());
+                String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource13,
+                        cdGroupTasksEntity.getChangeUserId() != null ? cdGroupTasksEntity.getChangeUserId() : cdGroupTasksEntity.getId());
                 Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
                 boolean triedLock = lock.tryLock();
                 log.info("keyByResource = {} 获取的锁为 = {}", keyByResource, triedLock);
