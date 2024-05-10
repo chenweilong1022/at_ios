@@ -249,7 +249,7 @@ public class AtDataTaskServiceImpl extends ServiceImpl<AtDataTaskDao, AtDataTask
     private SystemConstant systemConstant;
     @Override
     public List<GroupCountByDataTaskIdVO> groupCountByDataTaskId() {
-        return baseMapper.groupCountByDataTaskId(systemConstant.getIpConfigMaxUsedCount());
+        return baseMapper.groupCountByDataTaskId(systemConstant.getSERVERS_MOD());
     }
 
     @Override
