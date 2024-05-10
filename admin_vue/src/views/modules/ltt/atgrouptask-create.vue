@@ -81,11 +81,11 @@
 
           <el-row>
             <el-col :span="24">
-              <el-button @click="startGroupHandler">开始拉群</el-button>
-              <el-button @click="onGroupPreHandler">预览</el-button>
-              <el-button @click="hide">隐藏表格</el-button>
-              <el-button @click="show">显示表格</el-button>
-              <el-button @click="onGroupPreExportHandler">导出剩余粉</el-button>
+              <el-button @click="startGroupHandler" type="success">开始拉群</el-button>
+              <el-button @click="onGroupPreHandler" type="primary">预览</el-button>
+              <el-button @click="hide" type="info">隐藏表格</el-button>
+              <el-button @click="show" type="primary">显示表格</el-button>
+              <el-button @click="onGroupPreExportHandler" type="danger">导出剩余粉</el-button>
             </el-col>
           </el-row>
 
@@ -281,12 +281,12 @@
         <el-form-item>
           <el-button @click="getDataList()">查询</el-button>
           <el-button type="primary" @click="nextGroup()">继续拉群</el-button>
-          <el-button type="danger" @click="exportHandle()" :disabled="dataListSelections.length <= 0">导出报表</el-button>
-          <el-button type="danger" @click="startGroup14Handler()" :disabled="dataListSelections.length <= 0">开始拉群</el-button>
+          <el-button type="info" @click="exportHandle()" :disabled="dataListSelections.length <= 0">导出报表</el-button>
+          <el-button type="success" @click="startGroup14Handler()" :disabled="dataListSelections.length <= 0">开始拉群</el-button>
           <el-button type="danger" @click="reallocateTokenHandle()" :disabled="dataListSelections.length <= 0">重新分配账号拉群</el-button>
-          <el-button type="danger" @click="updateGroupHandle()" :disabled="dataListSelections.length <= 0">修改群名</el-button>
-          <el-button type="danger" @click="getRealGroupNameHandle()" :disabled="dataListSelections.length <= 0">获取真实群名称</el-button>
-          <el-button type="danger" @click="startTaskHandle()" :disabled="dataListSelections.length <= 0">启动任务</el-button>
+          <el-button type="primary" @click="updateGroupHandle()" :disabled="dataListSelections.length <= 0">修改群名</el-button>
+          <el-button type="info" @click="getRealGroupNameHandle()" :disabled="dataListSelections.length <= 0">获取真实群名称</el-button>
+          <el-button type="success" @click="startTaskHandle()" :disabled="dataListSelections.length <= 0">启动任务</el-button>
           <el-button type="primary" @click="copyToClipboard()"
                      :disabled="dataListSelections.length <= 0">复制手机号
           </el-button>
