@@ -287,6 +287,9 @@
           <el-button type="danger" @click="updateGroupHandle()" :disabled="dataListSelections.length <= 0">修改群名</el-button>
           <el-button type="danger" @click="getRealGroupNameHandle()" :disabled="dataListSelections.length <= 0">获取真实群名称</el-button>
           <el-button type="danger" @click="startTaskHandle()" :disabled="dataListSelections.length <= 0">启动任务</el-button>
+          <el-button type="primary" @click="copyToClipboard()"
+                     :disabled="dataListSelections.length <= 0">复制手机号
+          </el-button>
         </el-form-item>
         </el-form>
         <el-table
@@ -343,9 +346,9 @@
             align="center" width="180"
             label="拉群手机号">
             <template slot-scope="scope">
-              <el-button type="text" @click="atUserHandle(scope.row.userId)">{{scope.row.userTelephone}}</el-button>
+              <div><el-button type="text" @click="atUserHandle(scope.row.userId)">{{scope.row.userTelephone}}</el-button></div>
               <!-- 复制按钮 -->
-              <el-button type="text" @click="copyToClipboard(scope.row.userTelephone)">复制</el-button>
+              <div><el-button type="text" @click="copyToClipboard(scope.row.userTelephone)">复制</el-button></div>
             </template>
           </el-table-column>
           <el-table-column
@@ -410,6 +413,17 @@
             label="加粉进度">
             <template slot-scope="scope">
               <el-progress :stroke-width="7" type="circle"  :width="70" :percentage="scope.row.scheduleFloat"></el-progress>
+            </template>
+          </el-table-column>
+          <el-table-column
+            prop="changeUserPhone"
+            header-align="center"
+            align="center" width="180"
+            label="修改群水军手机号">
+            <template slot-scope="scope">
+              <div><el-button type="text" @click="atUserHandle(scope.row.changeUserId)">{{scope.row.changeUserPhone}}</el-button></div>
+              <!-- 复制按钮 -->
+              <div><el-button type="text" @click="copyToClipboard(scope.row.changeUserPhone)">复制</el-button></div>
             </template>
           </el-table-column>
           <el-table-column
@@ -515,7 +529,7 @@ import ErrLogs from "./atdatatask-err-logs.vue";
           intervalSecond: 7,
           searchIntervalSecond: null,
           ipCountryCode: null,
-          autoPullGroup: 1,
+          autoPullGroup: 2,
           randomGroupName: 1,
           navyUrlList: [],
           materialUrlList: []
@@ -595,14 +609,16 @@ import ErrLogs from "./atdatatask-err-logs.vue";
         })
       },
       copyToClipboard (telephone) {
+        var telephones = telephone ? [telephone] : this.dataListSelections.map(item => {
+          return item.userTelephone
+        })
         // 使用浏览器的 Clipboard API 将文本复制到剪贴板
         const el = document.createElement('textarea')
-        el.value = telephone
+        el.value = telephones
         el.setAttribute('readonly', '')
         el.style.position = 'absolute'
         el.style.left = '-9999px'
         document.body.appendChild(el)
-        const successful = el.select()
         const range = document.createRange()
         range.selectNode(el)
         const selection = window.getSelection()

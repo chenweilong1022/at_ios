@@ -98,10 +98,10 @@ public class CdLineRegisterController {
     /**
      * 注册重试
      */
-    @RequestMapping("/registerRetry/{id}")
+    @RequestMapping("/registerRetry")
     @RequiresPermissions("ltt:cdregistertask:info")
-    public R registerRetry(@PathVariable("id") Integer id){
-        boolean b = cdLineRegisterService.registerRetry(id);
+    public R registerRetry(@RequestBody Integer[] ids){
+        boolean b = cdLineRegisterService.registerRetry(ids);
 
         return R.ok();
     }

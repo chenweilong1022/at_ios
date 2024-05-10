@@ -14,6 +14,7 @@ import io.renren.modules.ltt.service.CdGetPhoneService;
 import io.renren.modules.ltt.service.CdLineIpProxyService;
 import io.renren.modules.ltt.vo.CdGetPhoneVO;
 import io.renren.modules.ltt.vo.GetCountBySubTaskIdVO;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -33,9 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 
 @Service("cdLineRegisterService")
@@ -121,26 +120,36 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean registerRetry(Integer id) {
-        CdGetPhoneVO cdGetPhone = getPhoneService.getById(id);
-        Assert.isTrue(ObjectUtil.isNull(cdGetPhone), "数据为空");
+    public boolean registerRetry(Integer[] ids) {
+        List<CdGetPhoneEntity> cdGetPhoneList = getPhoneService.listByIds(Arrays.asList(ids));
+        Assert.isTrue(CollectionUtils.isEmpty(cdGetPhoneList), "数据为空");
 
-        //更新此条数据，发起重新注册
-        CdGetPhoneEntity updateCdGetPhoneEntity = new CdGetPhoneEntity();
-        updateCdGetPhoneEntity.setId(cdGetPhone.getId());
-        updateCdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus1.getKey());
-        updateCdGetPhoneEntity.setCode("");
-        updateCdGetPhoneEntity.setCreateTime(new Date());
-        getPhoneService.updateById(updateCdGetPhoneEntity);
+        List<CdGetPhoneEntity> updateCdGetPhoneList = new ArrayList<>();
+        List<Integer> lineRegisterIds = new ArrayList<>();
+        for (CdGetPhoneEntity cdGetPhoneEntity : cdGetPhoneList) {
+            //更新此条数据，发起重新注册
+            CdGetPhoneEntity updateCdGetPhoneEntity = new CdGetPhoneEntity();
+            updateCdGetPhoneEntity.setId(cdGetPhoneEntity.getId());
+            updateCdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus1.getKey());
+            updateCdGetPhoneEntity.setCode("");
+            updateCdGetPhoneEntity.setCreateTime(new Date());
+            updateCdGetPhoneList.add(updateCdGetPhoneEntity);
 
 
-        CdLineRegisterEntity cdLineRegisterEntity = baseMapper.selectList(new QueryWrapper<CdLineRegisterEntity>().lambda()
-                .eq(CdLineRegisterEntity::getGetPhoneId, id)).stream().findFirst().orElse(null);
-        if (cdLineRegisterEntity != null) {
-            Assert.isTrue(!RegisterStatus.RegisterStatus5.getKey().equals(cdLineRegisterEntity.getRegisterStatus()), "注册状态正常，无需重试");
-            //删除line注册此条记录
-            baseMapper.deleteById(cdLineRegisterEntity.getId());
+            CdLineRegisterEntity cdLineRegisterEntity = baseMapper.selectList(new QueryWrapper<CdLineRegisterEntity>().lambda()
+                    .eq(CdLineRegisterEntity::getGetPhoneId, cdGetPhoneEntity.getId())).stream().findFirst().orElse(null);
+            if (cdLineRegisterEntity != null) {
+                Assert.isTrue(!RegisterStatus.RegisterStatus5.getKey().equals(cdLineRegisterEntity.getRegisterStatus()), "注册状态正常，无需重试");
+                //删除line注册此条记录
+                lineRegisterIds.add(cdLineRegisterEntity.getId());
+            }
         }
+
+        getPhoneService.updateBatchById(updateCdGetPhoneList);
+
+        //删除line注册此条记录
+        baseMapper.deleteBatchIds(lineRegisterIds);
+
         return true;
         //获取代理
 //        CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
