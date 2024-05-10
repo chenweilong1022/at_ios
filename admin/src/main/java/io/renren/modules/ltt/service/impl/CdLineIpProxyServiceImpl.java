@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.benmanes.caffeine.cache.Cache;
+import com.sun.tools.corba.se.idl.ExceptionEntry;
 import io.renren.common.utils.*;
 import io.renren.common.utils.EnumUtil;
 import io.renren.common.utils.vo.PhoneCountryVO;
@@ -44,6 +45,7 @@ import javax.annotation.Resource;
 import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -366,25 +368,35 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         log.error("selectProxyUse_error_proxy {}", proxy);
         return null;
     }
+
+    private static final Semaphore semaphore = new Semaphore(200);
     private CurlVO isProxyUse(String ip,String country) {
         CurlVO falseCurlVO = new CurlVO().setProxyUse(false);
-        try {//curl -x 43.152.113.218:13923 202.79.171.146:8080
-            String format1 = String.format("curl -x %s -U user-lu9904136:Ch1433471850 myip.lunaproxy.io",ip);
-            List<String> strings = RuntimeUtil.execForLines(format1);
-            String s = strings.get(strings.size() - 1);
-            String[] split = s.split("\\|");
-            System.out.println(split.length);
-            if (split.length == 5) {
-                String outIp = split[0];
-                String outCountry = split[2];
-                log.info("ip = {} country = {} format = {}",ip,country,s);
-                return falseCurlVO.setProxyUse(true).setIp(outIp).setCountry(outCountry);
+        // 尝试获取许可，不阻塞
+        boolean permitAcquired = semaphore.tryAcquire();
+        if (permitAcquired) {
+            try {
+                String format1 = String.format("curl -x %s -U user-lu9904136:Ch1433471850 myip.lunaproxy.io",ip);
+                List<String> strings = RuntimeUtil.execForLines(format1);
+                String s = strings.get(strings.size() - 1);
+                String[] split = s.split("\\|");
+                System.out.println(split.length);
+                if (split.length == 5) {
+                    String outIp = split[0];
+                    String outCountry = split[2];
+                    log.info("ip = {} country = {} format = {}",ip,country,s);
+                    return falseCurlVO.setProxyUse(true).setIp(outIp).setCountry(outCountry);
+                }
+                log.info("ip = {} country = {} format = {}",ip,country,"没有找到JSON数据");
+                return falseCurlVO;
+            }catch (Exception e){
+                log.info("ip = {} country = {} format = {} err = {}",ip,country,e.getMessage());
+            }finally {
+                // 释放许可
+                semaphore.release();
             }
-            log.info("ip = {} country = {} format = {}",ip,country,"没有找到JSON数据");
-            return falseCurlVO;
-        }catch (Exception e) {
-
         }
+        log.info("ip = {} country = {} format = {} 许可 = {}",ip,country,falseCurlVO.isProxyUse());
         return falseCurlVO;
     }
 
@@ -414,20 +426,28 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 
     private CurlVO isProxyUseMe(String ip,String country) {
         CurlVO falseCurlVO = new CurlVO().setProxyUse(false);
-        try {
-            String format1 = String.format("curl -x %s 202.79.171.146:8080",ip);
-            List<String> strings = RuntimeUtil.execForLines(format1);
-            String outIp = strings.get(strings.size() - 1);
-            boolean match = ReUtil.isMatch(IPV4, outIp);
-            if (match) {
-                log.info("ip = {} country = {} format = {}",ip,country,outIp);
-                return falseCurlVO.setProxyUse(true).setIp(outIp).setCountry(country);
+        // 尝试获取许可，不阻塞
+        boolean permitAcquired = semaphore.tryAcquire();
+        if (permitAcquired) {
+            try {
+                String format1 = String.format("curl -x %s 202.79.171.146:8080",ip);
+                List<String> strings = RuntimeUtil.execForLines(format1);
+                String outIp = strings.get(strings.size() - 1);
+                boolean match = ReUtil.isMatch(IPV4, outIp);
+                if (match) {
+                    log.info("ip = {} country = {} format = {}",ip,country,outIp);
+                    return falseCurlVO.setProxyUse(true).setIp(outIp).setCountry(country);
+                }
+                log.info("ip = {} country = {} format = {}",ip,country,"没有找到JSON数据");
+                return falseCurlVO;
+            }catch (Exception e){
+                log.info("ip = {} country = {} format = {} err = {}",ip,country,e.getMessage());
+            }finally {
+                // 释放许可
+                semaphore.release();
             }
-            log.info("ip = {} country = {} format = {}",ip,country,"没有找到JSON数据");
-            return falseCurlVO;
-        }catch (Exception e) {
-
         }
+        log.info("ip = {} country = {} format = {} 许可 = {}",ip,country,falseCurlVO.isProxyUse());
         return falseCurlVO;
     }
 
