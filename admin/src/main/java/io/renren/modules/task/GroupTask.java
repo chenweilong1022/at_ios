@@ -130,11 +130,17 @@ public class GroupTask {
         List<AtUserEntity> atUserEntities = atUserService.listByIds(userIds);
         Map<Integer, AtUserEntity> atUserMap = atUserEntities.stream().collect(Collectors.toMap(AtUserEntity::getId, i -> i));
 
+        Map<String, List<CdLineRegisterEntity>> lineRegister = null;
         List<String> telephoneList = atUserEntities.stream().map(AtUserEntity::getTelephone).collect(Collectors.toList());
-        Map<String, List<CdLineRegisterEntity>> lineRegisterMap = cdLineRegisterService.list(new QueryWrapper<CdLineRegisterEntity>().lambda()
-                .in(CdLineRegisterEntity::getPhone, telephoneList)).stream().collect(Collectors
-                .groupingBy(CdLineRegisterEntity::getPhone));
+        if (CollUtil.isNotEmpty(telephoneList)) {
+            lineRegister = cdLineRegisterService.list(new QueryWrapper<CdLineRegisterEntity>().lambda()
+                    .in(CdLineRegisterEntity::getPhone, telephoneList)).stream().collect(Collectors
+                    .groupingBy(CdLineRegisterEntity::getPhone));
+        } else {
+            lineRegister = new HashMap<>();
+        }
 
+        Map<String, List<CdLineRegisterEntity>> lineRegisterMap = lineRegister;
 
         for (AtGroupEntity cdGroupTasksEntity : cdGroupTasksEntities) {
             threadPoolTaskExecutor.execute(() -> {
