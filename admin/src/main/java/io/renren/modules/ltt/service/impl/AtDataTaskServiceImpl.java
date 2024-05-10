@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.google.common.collect.Lists;
+import io.renren.common.constant.SystemConstant;
 import io.renren.common.utils.EnumUtil;
 import io.renren.common.utils.PhoneUtil;
 import io.renren.common.utils.vo.PhoneCountryVO;
@@ -34,6 +35,7 @@ import io.renren.modules.ltt.service.AtDataTaskService;
 import io.renren.modules.ltt.conver.AtDataTaskConver;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -243,9 +245,11 @@ public class AtDataTaskServiceImpl extends ServiceImpl<AtDataTaskDao, AtDataTask
         }
     }
 
+    @Resource
+    private SystemConstant systemConstant;
     @Override
     public List<GroupCountByDataTaskIdVO> groupCountByDataTaskId() {
-        return baseMapper.groupCountByDataTaskId();
+        return baseMapper.groupCountByDataTaskId(systemConstant.getIpConfigMaxUsedCount());
     }
 
     @Override

@@ -34,6 +34,7 @@
         FROM
             at_data_subtask ds LEFT JOIN at_data_task t ON t.id = ds.data_task_id
         WHERE t.task_status = 2
+          AND user_id % 2 = #{mod}
         GROUP BY
             ds.data_task_id
     </select>

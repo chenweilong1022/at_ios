@@ -16,6 +16,9 @@ public class SystemConstant {
     @Value(value = "${customer.roleId}")
     private Long CUSTOMER_ROLE_ID;
 
+    @Value(value = "${servers.mod}")
+    private Integer SERVERS_MOD;
+
     @Value(value = "${magicServer.url}")
     private String MAGIC_SERVER_URL;
 
