@@ -200,12 +200,14 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                                 if (StrUtil.isNotEmpty(outIpv4)) {
                                     if (!outIpv4.equals(proxyUse.getIp())) {
                                         redisTemplate.opsForHash().delete(RedisKeys.RedisKeys1.getValue(), outIpv4);
+                                        redisTemplate.opsForValue().set(RedisKeys.RedisKeys4.getValue(outIpv4), cdLineIpProxyDTO.getTokenPhone(), 1, TimeUnit.DAYS);
                                     }
                                 }
                                 redisTemplate.opsForHash().put(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), cdLineIpProxyDTO.getTokenPhone(), proxyUse.getIp());
                                 return socks5Pre(ipS5);
                             }else {
                                 redisTemplate.opsForHash().delete(RedisKeys.RedisKeys1.getValue(), outIpv4);
+                                redisTemplate.opsForValue().set(RedisKeys.RedisKeys4.getValue(outIpv4), cdLineIpProxyDTO.getTokenPhone(), 1, TimeUnit.DAYS);
                             }
                         } else {
                             if (proxy == 3) {
@@ -272,6 +274,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                                     if (StrUtil.isNotEmpty(outIpv4)) {
                                         if (!outIpv4.equals(proxyUse.getIp())) {
                                             redisTemplate.opsForHash().delete(RedisKeys.RedisKeys1.getValue(), outIpv4);
+                                            redisTemplate.opsForValue().set(RedisKeys.RedisKeys4.getValue(outIpv4), cdLineIpProxyDTO.getTokenPhone(), 1, TimeUnit.DAYS);
                                         }
                                     }
                                     redisTemplate.opsForHash().put(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), cdLineIpProxyDTO.getTokenPhone(), proxyUse.getIp());
