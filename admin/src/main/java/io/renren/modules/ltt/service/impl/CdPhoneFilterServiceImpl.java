@@ -152,7 +152,7 @@ public class CdPhoneFilterServiceImpl extends ServiceImpl<CdPhoneFilterDao, CdPh
                     List<AtUserEntity> atUserEntities = atUserService.list(new QueryWrapper<AtUserEntity>().lambda()
                             .in(AtUserEntity::getStatus, UserStatus.UserStatus4.getKey())
                             .eq(AtUserEntity::getNation, regions)
-                            .orderByDesc(AtUserEntity::getId)
+                            .orderByAsc(AtUserEntity::getId)
                             .last("limit 1")
                     );
                     Assert.isTrue(CollUtil.isEmpty(atUserEntities),"账号不足，请增加账号");
