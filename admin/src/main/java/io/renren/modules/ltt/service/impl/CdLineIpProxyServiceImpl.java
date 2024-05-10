@@ -128,6 +128,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
     @Override
     @Transactional(rollbackFor = Exception.class)
     public String getProxyIp(CdLineIpProxyDTO cdLineIpProxyDTO) {
+        log.info("cdLineIpProxyDTO = {}",JSONUtil.toJsonStr(cdLineIpProxyDTO));
         //获取缓存
         ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
         if (ObjectUtil.isNull(projectWorkEntity)) {
@@ -175,8 +176,10 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                 String regions = EnumUtil.queryValueByKey(countryCode.intValue(), CountryCode.values());
                 //出口ip
                 String outIpv4 = (String) redisTemplate.opsForHash().get(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), cdLineIpProxyDTO.getTokenPhone());
-                String ipS5 = (String) redisTemplate.opsForHash().get(RedisKeys.RedisKeys1.getValue(), outIpv4);
-
+                String ipS5 = null;
+                if (StrUtil.isNotEmpty(outIpv4)) {
+                    ipS5 = (String) redisTemplate.opsForHash().get(RedisKeys.RedisKeys1.getValue(), outIpv4);
+                }
                 //如果有直接返回
                 if (StrUtil.isNotEmpty(outIpv4) && StrUtil.isNotEmpty(ipS5)) {
                     CurlVO proxyUse = getProxyUse(ipS5, regions, proxy);
@@ -203,6 +206,8 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                                 }
                                 redisTemplate.opsForHash().put(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), cdLineIpProxyDTO.getTokenPhone(), proxyUse.getIp());
                                 return socks5Pre(ipS5);
+                            }else {
+                                redisTemplate.opsForHash().delete(RedisKeys.RedisKeys1.getValue(), outIpv4);
                             }
                         } else {
                             if (proxy == 3) {
