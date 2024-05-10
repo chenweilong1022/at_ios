@@ -38,6 +38,7 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -88,7 +89,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
     }
 
     @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private StringRedisTemplate redisTemplate;
 
 
 
@@ -157,6 +158,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 //                ip = getIp(cdLineIpProxyDTO,1L);
 //            }
 //        }
+        log.info("phone = {} countryCode = {}获取到的ip {}",cdLineIpProxyDTO.getTokenPhone(),countryCode,ip);
         return ip;
     }
 
@@ -173,10 +175,8 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
             try{
                 String regions = EnumUtil.queryValueByKey(countryCode.intValue(), CountryCode.values());
                 //出口ip
-                Object o2 = redisTemplate.opsForHash().get(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), cdLineIpProxyDTO.getTokenPhone());
-                String outIpv4 = String.valueOf(o2);
-                Object o1 = redisTemplate.opsForHash().get(RedisKeys.RedisKeys1.getValue(), outIpv4);
-                String ipS5 = String.valueOf(o1);
+                String outIpv4 = (String) redisTemplate.opsForHash().get(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), cdLineIpProxyDTO.getTokenPhone());
+                String ipS5 = (String) redisTemplate.opsForHash().get(RedisKeys.RedisKeys1.getValue(), outIpv4);
 
                 //如果有直接返回
                 if (StrUtil.isNotEmpty(outIpv4) && StrUtil.isNotEmpty(ipS5)) {
@@ -189,8 +189,12 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                         } else if (regions.toLowerCase().equals(proxyUse.getCountry().toLowerCase())) {
                             Boolean b = redisTemplate.opsForHash().putIfAbsent(RedisKeys.RedisKeys1.getValue(), proxyUse.getIp(), ipS5);
                             if (b) {
-                                redisTemplate.opsForHash().delete(RedisKeys.RedisKeys1.getValue(), outIpv4);
-                                redisTemplate.opsForHash().putIfAbsent(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), cdLineIpProxyDTO.getTokenPhone(), proxyUse.getIp());
+                                if (StrUtil.isNotEmpty(outIpv4)) {
+                                    if (!outIpv4.equals(proxyUse.getIp())) {
+                                        redisTemplate.opsForHash().delete(RedisKeys.RedisKeys1.getValue(), outIpv4);
+                                    }
+                                }
+                                redisTemplate.opsForHash().put(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), cdLineIpProxyDTO.getTokenPhone(), proxyUse.getIp());
                                 return socks5Pre(ipS5);
                             }
                         } else {
@@ -211,7 +215,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                 } else {
                     boolean flag = true;
                     int i = 0;
-                    int len = 10;
+                    int len = 50;
                     while (i < len) {
                         i++;
                         String ip = null;
@@ -243,7 +247,12 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                             if (regions.toLowerCase().equals(proxyUse.getCountry().toLowerCase())) {
                                 Boolean b = redisTemplate.opsForHash().putIfAbsent(RedisKeys.RedisKeys1.getValue(), proxyUse.getIp(), ip);
                                 if (b) {
-                                    redisTemplate.opsForHash().putIfAbsent(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), cdLineIpProxyDTO.getTokenPhone(), proxyUse.getIp());
+                                    if (StrUtil.isNotEmpty(outIpv4)) {
+                                        if (!outIpv4.equals(proxyUse.getIp())) {
+                                            redisTemplate.opsForHash().delete(RedisKeys.RedisKeys1.getValue(), outIpv4);
+                                        }
+                                    }
+                                    redisTemplate.opsForHash().put(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), cdLineIpProxyDTO.getTokenPhone(), proxyUse.getIp());
                                     return socks5Pre(ip);
                                 }
                                 return socks5Pre(ip);
@@ -311,7 +320,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 
 
     private static String getLunaIpResp(String regions) {
-        String getPhoneHttp = String.format("https://tq.lunaproxy.com/getflowip?neek=1136881&num=500&type=1&sep=1&regions=%s&ip_si=1&level=1&sb=", regions);
+        String getPhoneHttp = String.format("https://tq.lunaproxy.com/getflowip?neek=1136881&num=50&type=1&sep=1&regions=%s&ip_si=1&level=1&sb=", regions);
         String resp = HttpUtil.get(getPhoneHttp);
         log.info("getLunaIpResp resp = {}",resp);
         if (JSONUtil.isJson(resp)) {
@@ -321,7 +330,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
     }
 
     private static String getIp2World(String regions) {
-        String getPhoneHttp = String.format("http://api.proxy.ip2world.com/getProxyIp?return_type=txt&protocol=http&num=500&regions=%s&lb=1", regions);
+        String getPhoneHttp = String.format("http://api.proxy.ip2world.com/getProxyIp?return_type=txt&protocol=http&num=50&regions=%s&lb=1", regions);
         String resp = HttpUtil.get(getPhoneHttp);
         log.info("getIp2World resp = {}",resp);
         if (JSONUtil.isJson(resp)) {
