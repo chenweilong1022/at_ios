@@ -15,6 +15,7 @@ import io.renren.modules.ltt.dto.CdPhoneFilterStatusDto;
 import io.renren.modules.ltt.entity.*;
 import io.renren.modules.ltt.enums.*;
 import io.renren.modules.ltt.service.*;
+import io.renren.modules.ltt.vo.AtUserVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
@@ -169,7 +170,11 @@ public class PhoneFilterTask {
 
             Queue<AtUserEntity> cdLineRegisterEntityQueue = new LinkedList<>(atUserEntities);
             AtUserEntity poll = cdLineRegisterEntityQueue.poll();
-
+            AtUserEntity atUserEntity = new AtUserEntity();
+            atUserEntity.setId(poll.getId());
+            atUserEntity.setStatus(UserStatus.UserStatus6.getKey());
+            atUserService.updateById(atUserEntity);
+            //如果拉群的用户和当前id一样
             List<CdPhoneFilterEntity> cdPhoneFilterEntitiesUpdate = new ArrayList<>();
 
             for (int i = 0; i < cdPhoneFilterEntities.size(); i++) {
@@ -231,6 +236,10 @@ public class PhoneFilterTask {
                             cdPhoneFilterEntitiesUpdate.add(cdPhoneFilterEntity);
                             atUserService.unlock(poll.getId(),UserStatus.UserStatus2);
                             poll = cdLineRegisterEntityQueue.poll();
+                            atUserEntity = new AtUserEntity();
+                            atUserEntity.setId(poll.getId());
+                            atUserEntity.setStatus(UserStatus.UserStatus6.getKey());
+                            atUserService.updateById(atUserEntity);
                             continue;
                         } else {
                             Map<String, The818051863582> data = andAddContactsByPhone.getData();
