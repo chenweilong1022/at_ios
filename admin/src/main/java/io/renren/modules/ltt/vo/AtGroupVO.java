@@ -245,6 +245,12 @@ public class AtGroupVO implements Serializable {
 	@ApiModelProperty(required=false,value="修改群名称账号对应的分组")
 	private Integer changeGroupId;
 
+	@ApiModelProperty(required=false,value="修改群名称账号对应的水军id")
+	private Integer changeUserId;
+
+	@ApiModelProperty(required=false,value="修改群名称账号对应的水军id")
+	private String changeUserPhone;
+
 	public String getScheduleFloat() {
 		double v = (double) (successfulQuantity + failuresQuantity) / addTotalQuantity * 100;
 		return String.format("%.2f", v);

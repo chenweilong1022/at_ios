@@ -343,9 +343,9 @@
             align="center" width="180"
             label="拉群手机号">
             <template slot-scope="scope">
-              <el-button type="text" @click="atUserHandle(scope.row.userId)">{{scope.row.userTelephone}}</el-button>
+              <div><el-button type="text" @click="atUserHandle(scope.row.userId)">{{scope.row.userTelephone}}</el-button></div>
               <!-- 复制按钮 -->
-              <el-button type="text" @click="copyToClipboard(scope.row.userTelephone)">复制</el-button>
+              <div><el-button type="text" @click="copyToClipboard(scope.row.userTelephone)">复制</el-button></div>
             </template>
           </el-table-column>
           <el-table-column
@@ -410,6 +410,17 @@
             label="加粉进度">
             <template slot-scope="scope">
               <el-progress :stroke-width="7" type="circle"  :width="70" :percentage="scope.row.scheduleFloat"></el-progress>
+            </template>
+          </el-table-column>
+          <el-table-column
+            prop="changeUserPhone"
+            header-align="center"
+            align="center" width="180"
+            label="修改群水军手机号">
+            <template slot-scope="scope">
+              <div><el-button type="text" @click="atUserHandle(scope.row.changeUserId)">{{scope.row.changeUserPhone}}</el-button></div>
+              <!-- 复制按钮 -->
+              <div><el-button type="text" @click="copyToClipboard(scope.row.changeUserPhone)">复制</el-button></div>
             </template>
           </el-table-column>
           <el-table-column
@@ -515,7 +526,7 @@ import ErrLogs from "./atdatatask-err-logs.vue";
           intervalSecond: 7,
           searchIntervalSecond: null,
           ipCountryCode: null,
-          autoPullGroup: 1,
+          autoPullGroup: 2,
           randomGroupName: 1,
           navyUrlList: [],
           materialUrlList: []
