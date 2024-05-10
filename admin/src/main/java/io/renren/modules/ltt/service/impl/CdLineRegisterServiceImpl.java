@@ -151,7 +151,7 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
             CdLineRegisterEntity cdLineRegisterEntity = baseMapper.selectList(new QueryWrapper<CdLineRegisterEntity>().lambda()
                     .eq(CdLineRegisterEntity::getGetPhoneId, cdGetPhone.getId())).stream().findFirst().orElse(null);
             if (cdLineRegisterEntity != null) {
-                Assert.isTrue(!RegisterStatus.RegisterStatus5.getKey().equals(cdLineRegisterEntity.getRegisterStatus()), "注册状态正常，无需重试");
+//                Assert.isTrue(!RegisterStatus.RegisterStatus5.getKey().equals(cdLineRegisterEntity.getRegisterStatus()), "注册状态正常，无需重试");
                 //删除line注册此条记录
                 lineRegisterIds.add(cdLineRegisterEntity.getId());
             }

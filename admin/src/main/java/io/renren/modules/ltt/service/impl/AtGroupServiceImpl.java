@@ -93,28 +93,22 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
         List<AtGroupVO> resultList = page.getRecords();
         if (CollUtil.isNotEmpty(resultList)) {
             //拉群手机号
-            List<Integer> userIdList = resultList.stream().filter(i -> ObjectUtil.isNotNull(i.getUserId()))
-                    .map(AtGroupVO::getUserId).collect(Collectors.toList());
-            Map<Integer, String> phoneMap = atUserService.queryTelephoneByIds(userIdList);
-
-            //修改群信息水军号
-            List<Integer> groupIdList = resultList.stream().filter(i -> ObjectUtil.isNotNull(i.getUserId()))
-                    .map(AtGroupVO::getId).collect(Collectors.toList());
-            Map<Integer, AtDataSubtaskEntity> changeUserIdMap = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
-                    .in(AtDataSubtaskEntity::getGroupId, groupIdList)
-                    .eq(AtDataSubtaskEntity::getDataType, DataType.DataType5.getKey())).stream()
-                    .collect(Collectors.toMap(AtDataSubtaskEntity::getGroupId, i->i, (a,b)->b));
+            Set<Integer> userIdList = new HashSet<>();
+            for (AtGroupVO atGroupVO : resultList) {
+                if (ObjectUtil.isNotNull(atGroupVO.getUserId())) {
+                    userIdList.add(atGroupVO.getUserId());
+                }
+                if (ObjectUtil.isNotNull(atGroupVO.getChangeUserId())) {
+                    userIdList.add(atGroupVO.getChangeUserId());
+                }
+            }
+            Map<Integer, String> phoneMap = atUserService.queryTelephoneByIds(userIdList.stream().collect(Collectors.toList()));
 
             for (AtGroupVO atGroupVO : resultList) {
                 atGroupVO.setUserTelephone(phoneMap.get(atGroupVO.getUserId()));
-
-                //下次加粉时间
-                atGroupVO.setNextTime(caffeineCacheDate.getIfPresent(atGroupVO.getId()));
-
                 //修改群信息水军号
-                if (changeUserIdMap.get(atGroupVO.getId()) != null) {
-                    atGroupVO.setChangeUserPhone(changeUserIdMap.get(atGroupVO.getId()).getContactKey());
-                    atGroupVO.setChangeUserId(changeUserIdMap.get(atGroupVO.getId()).getChangeUserId());
+                if (ObjectUtil.isNotNull(atGroupVO.getChangeUserId())) {
+                    atGroupVO.setChangeUserPhone(phoneMap.get(atGroupVO.getChangeUserId()));
                 }
             }
         }
