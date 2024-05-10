@@ -180,6 +180,14 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                 if (StrUtil.isNotEmpty(outIpv4) && StrUtil.isNotEmpty(ipS5)) {
                     CurlVO proxyUse = getProxyUse(ipS5, regions, proxy);
                     if (proxyUse.isProxyUse()) {
+
+                        //判断ip黑名单缓存中是否有
+                        Object ipCache = redisTemplate.opsForValue().get(RedisKeys.RedisKeys4.getValue(proxyUse.getIp()));
+                        if (ipCache != null) {
+                            redisTemplate.opsForHash().delete(RedisKeys.RedisKeys1.getValue(), outIpv4);
+                            return null;
+                        }
+
                         //如果ip相同并且国家一样
                         if (proxyUse.getIp().equals(outIpv4) && regions.toLowerCase().equals(proxyUse.getCountry().toLowerCase())) {
                             return socks5Pre(ipS5);
@@ -239,15 +247,14 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                             len = getflowip.size();
                         }
 
-                        //判断ip黑名单缓存中是否有
-                        Object ipCache = redisTemplate.opsForValue().get(RedisKeys.RedisKeys4.getValue(ip));
-                        if (ipCache != null) {
-                            caffeineCacheListString.put(cdLineIpProxyDTO.getTokenPhone(), new LinkedList<>());
-                            return null;
-                        }
-
                         CurlVO proxyUse = getProxyUse(ip, regions, proxy);
                         if (proxyUse.isProxyUse()) {
+                            //判断ip黑名单缓存中是否有
+                            Object ipCache = redisTemplate.opsForValue().get(RedisKeys.RedisKeys4.getValue(proxyUse.getIp()));
+                            if (ipCache != null) {
+                                continue;
+                            }
+
                             //如果国家一样
                             if (regions.toLowerCase().equals(proxyUse.getCountry().toLowerCase())) {
                                 Boolean b = redisTemplate.opsForHash().putIfAbsent(RedisKeys.RedisKeys1.getValue(), proxyUse.getIp(), ip);
