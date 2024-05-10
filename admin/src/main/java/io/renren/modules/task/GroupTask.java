@@ -6,17 +6,16 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import io.renren.modules.client.LineService;
 import io.renren.modules.client.dto.*;
 import io.renren.modules.client.vo.CreateGroupResultVO;
 import io.renren.modules.client.vo.GetChatsVO;
 import io.renren.modules.client.vo.LineRegisterVO;
+import io.renren.modules.ltt.dto.AtGroupDTO;
 import io.renren.modules.ltt.dto.CdLineIpProxyDTO;
-import io.renren.modules.ltt.entity.AtDataSubtaskEntity;
-import io.renren.modules.ltt.entity.AtGroupEntity;
-import io.renren.modules.ltt.entity.AtUserEntity;
-import io.renren.modules.ltt.entity.AtUserTokenEntity;
+import io.renren.modules.ltt.entity.*;
 import io.renren.modules.ltt.enums.*;
 import io.renren.modules.ltt.enums.OpenApp;
 import io.renren.modules.ltt.service.*;
@@ -33,10 +32,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import javax.annotation.Resource;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -84,11 +81,95 @@ public class GroupTask {
     private CdLineRegisterService cdLineRegisterService;
 
 
+
 //    @Scheduled(fixedDelay = 5000)
 //    @Transactional(rollbackFor = Exception.class)
 //    @Async
 //    public void task4() { }
 
+    @Scheduled(fixedDelay = 15 * 1000)
+    @Transactional(rollbackFor = Exception.class)
+    @Async
+    public void task5() {
+        //获取群名和真实名称不一样的列表，同步服务器真实群名
+        List<AtGroupEntity> cdGroupTasksEntities = atGroupService.list(new QueryWrapper<AtGroupEntity>().lambda()
+                .last("limit 50")
+                .eq(AtGroupEntity::getGroupStatus, GroupStatus.GroupStatus15.getKey())
+                .eq(AtGroupEntity::getRandomGroupName, OpenApp.OpenApp2.getKey())
+                .apply("group_name <> real_group_name")
+        );
+        if (CollUtil.isEmpty(cdGroupTasksEntities)) {
+            log.info("GroupTask task5 list isEmpty");
+            return;
+        }
+        List<Integer> groupIdList = cdGroupTasksEntities.stream().map(AtGroupEntity::getId).collect(Collectors.toList());
+
+        atGroupService.getRealGroupName(new AtGroupDTO().setIds(groupIdList));
+    }
+
+    @Scheduled(fixedDelay = 15 * 1000)
+    @Transactional(rollbackFor = Exception.class)
+    @Async
+    public void task4() {
+        //获取群人数同步,且需要更改群名的任务
+        List<AtGroupEntity> cdGroupTasksEntities = atGroupService.list(new QueryWrapper<AtGroupEntity>().lambda()
+                .last("limit 50")
+                .eq(AtGroupEntity::getGroupStatus, GroupStatus.GroupStatus9.getKey())
+                .eq(AtGroupEntity::getRandomGroupName, OpenApp.OpenApp2.getKey())
+        );
+        if (CollUtil.isEmpty(cdGroupTasksEntities)) {
+            log.info("GroupTask task4 list isEmpty");
+            return;
+        }
+
+
+        //获取用户MAP
+        List<Integer> userIds = cdGroupTasksEntities.stream().map(AtGroupEntity::getUserId).collect(Collectors.toList());
+        List<AtUserEntity> atUserEntities = atUserService.listByIds(userIds);
+        Map<Integer, AtUserEntity> atUserMap = atUserEntities.stream().collect(Collectors.toMap(AtUserEntity::getId, i -> i));
+
+        List<String> telephoneList = atUserEntities.stream().map(AtUserEntity::getTelephone).collect(Collectors.toList());
+        Map<String, List<CdLineRegisterEntity>> lineRegisterMap = cdLineRegisterService.list(new QueryWrapper<CdLineRegisterEntity>().lambda()
+                .in(CdLineRegisterEntity::getPhone, telephoneList)).stream().collect(Collectors
+                .groupingBy(CdLineRegisterEntity::getPhone));
+
+
+        for (AtGroupEntity cdGroupTasksEntity : cdGroupTasksEntities) {
+
+            threadPoolTaskExecutor.execute(() -> {
+                String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource13, cdGroupTasksEntity.getId());
+                Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
+                boolean triedLock = lock.tryLock();
+                log.info("keyByResource = {} 获取的锁为 = {}", keyByResource, triedLock);
+                if (triedLock) {
+                    try {
+                        AtUserEntity atUserEntity = atUserMap.get(cdGroupTasksEntity.getUserId());
+                        if (atUserEntity != null) {
+                            List<CdLineRegisterEntity> lineRegisterEntityList = lineRegisterMap.get(atUserEntity.getTelephone());
+                            if (CollUtil.isNotEmpty(lineRegisterEntityList)) {
+                                CdLineRegisterEntity registerEntity = lineRegisterEntityList.stream()
+                                        .filter(i -> i.getCreateTime() != null && i.getCreateTime().after(cdGroupTasksEntity.getCreateTime())
+                                                && (RegisterStatus.RegisterStatus4.getKey().equals(i.getRegisterStatus())
+                                                || RegisterStatus.RegisterStatus11.getKey().equals(i.getRegisterStatus())))
+                                        .findFirst().orElse(null);
+                                if (registerEntity != null) {
+                                    //代表已重新注册成功
+                                    //判断手机号是否已经重新注册成功
+                                    atGroupService.updateGroupName(new AtGroupDTO().setIds(Arrays.asList(cdGroupTasksEntity.getId())));
+                                }
+                            }
+                        }
+
+                    } finally {
+                        lock.unlock();
+                    }
+                } else {
+                    log.info("keyByResource = {} 在执行", keyByResource);
+                }
+            });
+
+        }
+    }
 
     /**
      *
