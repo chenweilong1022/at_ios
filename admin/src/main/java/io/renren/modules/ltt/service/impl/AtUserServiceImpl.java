@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.benmanes.caffeine.cache.Cache;
+import com.google.common.collect.Lists;
 import io.renren.common.utils.PageUtils;
 import io.renren.common.utils.Query;
 import io.renren.common.validator.Assert;
@@ -422,22 +423,25 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
                     .map(AtUserEntity::getUserTokenId).distinct().collect(Collectors.toList());
             //清理token
             if (CollectionUtils.isNotEmpty(userTokenIdList)) {
-                atUserTokenService.removeByIds(userTokenIdList);
+                List<List<Integer>> partition = Lists.partition(userTokenIdList, 50);
+                for (List<Integer> integers : partition) {
+                    atUserTokenService.removeByIds(integers);
+                }
             }
         }
 
-//        //清理token中过期的数据
-//        List<AtUserTokenEntity> tokenList = atUserTokenService.list(new QueryWrapper<AtUserTokenEntity>().lambda()
-//                .eq(ObjectUtil.isNotNull(sysUserId), AtUserTokenEntity::getSysUserId, sysUserId)
-//                .in(AtUserTokenEntity::getOpenStatus, Arrays.asList(OpenStatus3.getKey(), OpenStatus4.getKey())));
-//        if (CollectionUtils.isNotEmpty(tokenList)) {
-//            List<Integer> tokenIdList = tokenList.stream().map(AtUserTokenEntity::getId).distinct().collect(Collectors.toList());
-//            atUserTokenService.removeByIds(tokenIdList);
-//
-//            //清理账号数据
-//            baseMapper.delete(new QueryWrapper<AtUserEntity>().lambda().in(AtUserEntity::getUserTokenId, tokenIdList));
-//
-//        }
+        //清理token中过期的数据
+        List<AtUserTokenEntity> tokenList = atUserTokenService.list(new QueryWrapper<AtUserTokenEntity>().lambda()
+                .eq(ObjectUtil.isNotNull(sysUserId), AtUserTokenEntity::getSysUserId, sysUserId)
+                .in(AtUserTokenEntity::getOpenStatus, Arrays.asList(OpenStatus3.getKey())));
+        if (CollectionUtils.isNotEmpty(tokenList)) {
+            List<Integer> tokenIdList = tokenList.stream().map(AtUserTokenEntity::getId).distinct().collect(Collectors.toList());
+            atUserTokenService.removeByIds(tokenIdList);
+
+            //清理账号数据
+            baseMapper.delete(new QueryWrapper<AtUserEntity>().lambda().in(AtUserEntity::getUserTokenId, tokenIdList));
+
+        }
     }
 
 

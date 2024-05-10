@@ -443,6 +443,9 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
                 log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
                 if(triedLock) {
                     try{
+                        if (!GroupStatus.GroupStatus9.getKey().equals(atGroupEntity.getGroupStatus())){
+                            return;
+                        }
                         //查询对应的改群名账号
                         AtDataSubtaskEntity dataSubtaskEntity = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
                                 .eq(AtDataSubtaskEntity::getGroupId, atGroupEntity.getId())
