@@ -24,6 +24,7 @@ import io.renren.modules.ltt.vo.AtDataTaskVO;
 import io.renren.modules.ltt.vo.AtUserTokenVO;
 import io.renren.modules.ltt.vo.AtUserVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Async;
@@ -89,7 +90,7 @@ public class GroupTask {
 //    @Async
 //    public void task4() { }
 
-    @Scheduled(fixedDelay = 15 * 1000)
+    @Scheduled(fixedDelay = 10 * 1000)
     @Transactional(rollbackFor = Exception.class)
     @Async
     public void task5() {
@@ -109,7 +110,7 @@ public class GroupTask {
         atGroupService.getRealGroupName(new AtGroupDTO().setIds(groupIdList));
     }
 
-    @Scheduled(fixedDelay = 15 * 1000)
+    @Scheduled(fixedDelay = 10 * 1000)
     @Transactional(rollbackFor = Exception.class)
     @Async
     public void task4() {
@@ -156,9 +157,14 @@ public class GroupTask {
                             List<CdLineRegisterEntity> lineRegisterEntityList = lineRegisterMap.get(atUserEntity.getTelephone());
                             if (CollUtil.isNotEmpty(lineRegisterEntityList)) {
                                 CdLineRegisterEntity registerEntity = lineRegisterEntityList.stream()
-                                        .filter(i -> i.getCreateTime() != null && i.getCreateTime().after(cdGroupTasksEntity.getCreateTime())
+                                        .filter(i -> i.getCreateTime() != null
+                                                && i.getCreateTime().after(cdGroupTasksEntity.getCreateTime())
                                                 && (RegisterStatus.RegisterStatus4.getKey().equals(i.getRegisterStatus())
-                                                || RegisterStatus.RegisterStatus11.getKey().equals(i.getRegisterStatus())))
+                                                || RegisterStatus.RegisterStatus11.getKey().equals(i.getRegisterStatus())
+                                                || (RegisterStatus.RegisterStatus5.getKey().equals(i.getRegisterStatus())
+                                                    && StringUtils.isNotEmpty(i.getErrMsg())
+                                                    && i.getErrMsg().contains("Code:100"))
+                                        ))
                                         .findFirst().orElse(null);
                                 if (registerEntity != null) {
                                     //代表已重新注册成功
