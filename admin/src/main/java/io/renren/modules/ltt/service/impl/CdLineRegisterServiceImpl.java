@@ -160,7 +160,9 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
         getPhoneService.updateBatchById(updateCdGetPhoneList);
 
         //删除line注册此条记录
-        baseMapper.deleteBatchIds(lineRegisterIds);
+        if (CollectionUtils.isNotEmpty(lineRegisterIds)) {
+            baseMapper.deleteBatchIds(lineRegisterIds);
+        }
 
         return true;
     }
