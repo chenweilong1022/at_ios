@@ -403,18 +403,19 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
             log.error("selectProxyUse_error_proxy_null");
             return null;
         }
-        if (proxy == 1) {
-            //lunaproxy
-           return isProxyUse(ip, country);
-        } else if (proxy == 2) {
-            //ip2world
-            return isProxyUseMe(ip, country);
-        } else if (proxy == 3) {
-            //静态代理
-            return isProxyUseMe(ip, country);
-        }
+
+//        if (proxy == 1) {
+//            //lunaproxy
+//           return isProxyUse(ip, country);
+//        } else if (proxy == 2) {
+//            //ip2world
+//            return
+//        } else if (proxy == 3) {
+//            //静态代理
+//            return isProxyUseMe(ip, country);
+//        }
         log.error("selectProxyUse_error_proxy {}", proxy);
-        return null;
+        return isProxyUseMe(ip, country);
     }
 
     private static final Semaphore semaphore = new Semaphore(200);
