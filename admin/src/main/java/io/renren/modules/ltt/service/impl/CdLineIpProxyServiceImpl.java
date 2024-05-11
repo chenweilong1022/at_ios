@@ -297,6 +297,13 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         }
         String ipResp = null;
 
+        //whiteip
+        //137.184.112.207
+        //137.184.112.206
+        //202.79.171.146
+        //143.92.40.151
+        //216.83.53.90
+        //113.21.242.163
         String number = phoneNumberInfo.getNumber();
         int lastDigit = Character.getNumericValue(number.charAt(number.length() - 1));
         int mod = lastDigit % 4;
