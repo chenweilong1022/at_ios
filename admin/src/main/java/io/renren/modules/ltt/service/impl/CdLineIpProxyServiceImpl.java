@@ -416,7 +416,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 //            return isProxyUseMe(ip, country);
 //        }
         log.error("selectProxyUse_error_proxy {}", proxy);
-        return isProxyUseIp2World(ip, country);
+        return isProxyUseMe(ip, country);
     }
 
     private static final Semaphore semaphore = new Semaphore(200);
