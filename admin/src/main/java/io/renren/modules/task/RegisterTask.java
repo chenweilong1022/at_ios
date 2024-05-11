@@ -386,7 +386,6 @@ public class RegisterTask {
                         if (ProxyStatus.ProxyStatus3.getKey().equals(projectWorkEntity.getProxy())) {
                             cdLineIpProxyDTO.setSelectProxyStatus(ProxyStatus.ProxyStatus2.getKey());
                         }
-                        cdLineIpProxyDTO.setCountryCode(CountryCode.CountryCode7.getKey().longValue());
                         String proxyIp = cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO);
                         if (StrUtil.isEmpty(proxyIp)) {
                             return;

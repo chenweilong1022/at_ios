@@ -450,7 +450,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         //45.195.152.211	2000/2333	song062	1612132sd
         String ip ="song062:1612132sd@45.195.152.211:2333";
         String country = "th";
-        String format1 = String.format("curl -x %s 202.79.171.146:8080",ip);
+        String format1 = String.format("curl -x socks5://43.159.29.119:20120 202.79.171.146:8080",ip);
 
         System.out.println(format1);
         System.out.println("************");
