@@ -34,6 +34,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -63,6 +64,9 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
     private ConcurrentHashMap<String, Lock> lockMap;
     @Resource
     private CdIpConfigService cdIpConfigService;
+
+    @Autowired
+    ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
     @Override
     public PageUtils<CdLineIpProxyVO> queryPage(CdLineIpProxyDTO cdLineIpProxy) {
@@ -600,16 +604,19 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         Set<Object> phoneSet = redisTemplate.opsForHash().keys(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)));
         log.info("清理ip开始，国家:{}，共:{}条", countryCode, phoneSet.size());
         for (Object phone : phoneSet) {
-            String outIpv4 = (String) redisTemplate.opsForHash().get(
-                    RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), phone);
+            threadPoolTaskExecutor.execute(() -> {
+                String outIpv4 = (String) redisTemplate.opsForHash().get(
+                        RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), phone);
 
-            //删除手机号对应的出口ip
-            redisTemplate.opsForHash().delete(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), phone);
+                //删除手机号对应的出口ip
+                redisTemplate.opsForHash().delete(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), phone);
 
-            //获取手机号出口ip对应的s5
-            if (StrUtil.isNotEmpty(outIpv4)) {
-                redisTemplate.opsForHash().delete(RedisKeys.RedisKeys1.getValue(), outIpv4);
-            }
+                //获取手机号出口ip对应的s5
+                if (StrUtil.isNotEmpty(outIpv4)) {
+                    redisTemplate.opsForHash().delete(RedisKeys.RedisKeys1.getValue(), outIpv4);
+                }
+
+            });
         }
         log.info("清理ip结束，国家:{}，共:{}条", countryCode, phoneSet.size());
     }
@@ -620,12 +627,14 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         Set<String> keys = redisTemplate.keys(RedisKeys.RedisKeys4.getValue("*"));
         log.info("清理ip黑名单开始，剩余过期时间:{}，共:{}条", expireHours, keys.size());
         for (String key : keys) {
-            Long expire = redisTemplate.getExpire(key, TimeUnit.HOURS);
-            //删除这个范围的数据
-            if (expireHours >= expire) {
-                System.out.println(key+"---"+expire);
-                redisTemplate.delete(key);
-            }
+            threadPoolTaskExecutor.execute(() -> {
+                Long expire = redisTemplate.getExpire(key, TimeUnit.HOURS);
+                //删除这个范围的数据
+                System.out.println(key + "---" + expire);
+                if (expireHours >= expire) {
+                    redisTemplate.delete(key);
+                }
+            });
         }
         log.info("清理ip黑名单结束，剩余过期时间:{}，共:{}条", expireHours, keys.size());
     }
