@@ -290,7 +290,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         //113.21.242.163
         String number = phoneNumberInfo.getNumber();
         int lastDigit = Character.getNumericValue(number.charAt(number.length() - 1));
-        int mod = RandomUtil.randomInt(0, 4);
+        int mod = lastDigit % 4;
         List<String> urls = CollUtil.newArrayList(
                 "https://tq.lunaproxy.com/getflowip?neek=1136881&num=100&type=1&sep=1&regions=%s&ip_si=1&level=1&sb=",//luna
                 "http://api.proxy.ip2world.com/getProxyIp?return_type=txt&protocol=http&num=100&regions=%s&lb=1",//ip2world
@@ -310,7 +310,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 //            ipResp = getStaticIpResp(regions);
 //        }
         if (StringUtils.isEmpty(ipResp)) {
-            log.error("getIpResp_error_proxy_null");
+            log.info("getIpResp_error_proxy_null = {}",url);
             return null;
         }
         String[] split = ipResp.split("\r\n");
@@ -351,8 +351,8 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         }
 //        String getPhoneHttp = String.format("https://tq.lunaproxy.com/getflowip?neek=1136881&num=500&type=1&sep=1&regions=%s&ip_si=1&level=1&sb=", regions);
         String resp = HttpUtil.get(getPhoneHttp);
-        log.info("{} resp = {}",getPhoneHttp,resp);
         if (JSONUtil.isJson(resp) || resp.contains("Please request again in 2 seconds")) {
+            log.info("{} resp = {}",getPhoneHttp,resp);
             cardJpSmsOver.put(getPhoneHttp,"Please request again in 2 secondss");
             return null;
         }
