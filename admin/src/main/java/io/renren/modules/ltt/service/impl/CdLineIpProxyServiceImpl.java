@@ -98,21 +98,6 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         return this.updateById(cdLineIpProxyEntity);
     }
 
-//        public static void main(String[] args) throws IOException {
-//
-//            String format1 = String.format("curl -x %s -U user-lu9904136:Ch1433471850 myip.lunaproxy.io","43.159.18.174:20584");
-//            List<String> strings = RuntimeUtil.execForLines(format1);
-//            String s = strings.get(strings.size() - 1);
-//            String[] split = s.split("\\|");
-//            System.out.println(split.length);
-//            if (split.length == 5) {
-//                String ip = split[0];
-//                String country = split[2];
-//                System.out.println(ip);
-//                System.out.println(country);
-//            }
-//
-//        }
 
     @Override
     public boolean removeById(Serializable id) {
@@ -369,25 +354,6 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         return resp;
     }
 
-//    private static String getIp2World(String regions) {
-//        String getPhoneHttp = String.format("http://api.proxy.ip2world.com/getProxyIp?return_type=txt&protocol=http&num=500&regions=%s&lb=1", regions);
-//        String resp = HttpUtil.get(getPhoneHttp);
-//        log.info("getIp2World resp = {}",resp);
-//        if (JSONUtil.isJson(resp)) {
-//            return null;
-//        }
-//        return resp;
-//    }
-
-
-//    public static void main(String[] args) {
-//
-//        boolean match = ReUtil.isMatch(IPV4, "1.46.11.249");
-//        System.out.println(match);
-//
-//
-//    }
-
 
 
     private static String socks5Pre(String ip) {
@@ -416,6 +382,10 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 //        }
         log.error("selectProxyUse_error_proxy {}", proxy);
         CurlVO proxyUseMe = isProxyUseMe(ip, country);
+        if (proxyUseMe.isProxyUse()) {
+            return proxyUseMe;
+        }
+        proxyUseMe = isProxyUseMeIpecho(ip, country);
         if (proxyUseMe.isProxyUse()) {
             return proxyUseMe;
         }
@@ -457,30 +427,6 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         return falseCurlVO;
     }
 
-    public static void main(String[] args) {
-        //45.195.152.211	2000/2333	song062	1612132sd
-        String ip ="song062:1612132sd@45.195.152.211:2333";
-        String country = "th";
-        String format1 = String.format("curl -x socks5://43.159.29.119:20120 202.79.171.146:8080",ip);
-
-        System.out.println(format1);
-        System.out.println("************");
-
-        List<String> strings = RuntimeUtil.execForLines(format1);
-        String outIp = strings.get(strings.size() - 1);
-
-        System.out.println(outIp);
-        System.out.println("************");
-
-        boolean match = ReUtil.isMatch(IPV4, outIp);
-        System.out.println(match);
-        if (match) {
-            log.info("ip = {} country = {} format = {}",ip,country,outIp);
-        } else {
-            log.info("----------");
-        }
-    }
-
     private CurlVO isProxyUseMe(String ip,String country) {
         CurlVO falseCurlVO = new CurlVO().setProxyUse(false);
         // 尝试获取许可，不阻塞
@@ -488,6 +434,41 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         if (permitAcquired) {
             try {
                 String format1 = String.format("curl -x %s 202.79.171.146:8080",ip);
+                log.info("curl = {}",format1);
+                List<String> strings = RuntimeUtil.execForLines(format1);
+                log.info("curl resp = {}",JSONUtil.toJsonStr(strings));
+                String outIp = strings.get(strings.size() - 1);
+                boolean match = ReUtil.isMatch(IPV4, outIp);
+                if (match) {
+                    log.info("ip = {} country = {} format = {}",ip,country,outIp);
+                    return falseCurlVO.setProxyUse(true).setIp(outIp).setCountry(country);
+                }
+                log.info("ip = {} country = {} format = {}",ip,country,"没有找到JSON数据");
+                return falseCurlVO;
+            }catch (Exception e){
+                log.info("ip = {} country = {} format = {} err = {}",ip,country,e.getMessage());
+            }finally {
+                // 释放许可
+                semaphore.release();
+            }
+        }
+        log.info("ip = {} country = {} format = {} 许可 = {}",ip,country,falseCurlVO.isProxyUse());
+        return falseCurlVO;
+    }
+
+    public static void main(String[] args) {
+        CurlVO proxyUseIp2World = new CdLineIpProxyServiceImpl().isProxyUseIp2World("43.152.113.218:10838", "81");
+        System.out.println(proxyUseIp2World);
+    }
+
+
+    private CurlVO isProxyUseMeIpecho(String ip,String country) {
+        CurlVO falseCurlVO = new CurlVO().setProxyUse(false);
+        // 尝试获取许可，不阻塞
+        boolean permitAcquired = semaphore.tryAcquire();
+        if (permitAcquired) {
+            try {
+                String format1 = String.format("curl -x %s https://ipecho.net/plain",ip);
                 log.info("curl = {}",format1);
                 List<String> strings = RuntimeUtil.execForLines(format1);
                 log.info("curl resp = {}",JSONUtil.toJsonStr(strings));
@@ -537,22 +518,6 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         return falseCurlVO;
     }
 
-//    public static void main(String[] args) {
-//        String text = "这是一段文本，其中包含JSON数据: {\"name\": \"张三\", \"age\": 30, \"city\": \"北京\"}。后面还有更多文本。";
-//
-//        // 定义一个正则表达式来查找JSON对象
-//        // 这个正则表达式假设JSON数据简单且不含嵌套结构
-//        String jsonPattern = "\\{[^\\{\\}]*\\}";
-//        Pattern pattern = Pattern.compile(jsonPattern);
-//        Matcher matcher = pattern.matcher(text);
-//
-//        if (matcher.find()) {
-//            String jsonStr = matcher.group(0);
-//            System.out.println("找到的JSON数据: " + jsonStr);
-//        } else {
-//            System.out.println("没有找到JSON数据");
-//        }
-//    }
 
     @EventListener
     @Order(value = 9999)//t35323ha-1027-61697		tha-1027-44108
