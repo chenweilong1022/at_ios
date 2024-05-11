@@ -326,11 +326,10 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 //            //静态代理
 //            ipResp = getStaticIpResp(regions);
 //        }
-//        if (StringUtils.isEmpty(ipResp)) {
-//            log.error("getIpResp_error_proxy_null");
-//            return null;
-//        }
-
+        if (StringUtils.isEmpty(ipResp)) {
+            log.error("getIpResp_error_proxy_null");
+            return null;
+        }
         String[] split = ipResp.split("\r\n");
         Queue<String> getflowipNew = new LinkedList<>();
         for (String s : split) {
@@ -364,7 +363,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 //        String getPhoneHttp = String.format("https://tq.lunaproxy.com/getflowip?neek=1136881&num=500&type=1&sep=1&regions=%s&ip_si=1&level=1&sb=", regions);
         String resp = HttpUtil.get(getPhoneHttp);
         log.info("{} resp = {}",getPhoneHttp,resp);
-        if (JSONUtil.isJson(resp)) {
+        if (JSONUtil.isJson(resp) || resp.contains("Please request again in 2 seconds")) {
             return null;
         }
         return resp;
