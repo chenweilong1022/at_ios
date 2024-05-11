@@ -149,7 +149,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 //        String keyByResource1 = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource3, countryCode.intValue());
 //        Lock lock1 = lockMap.computeIfAbsent(keyByResource1, k -> new ReentrantLock());
 //        countryCode = 1L;
-        String ip = getIp(cdLineIpProxyDTO, countryCode, proxy);
+        String ip = getIp(cdLineIpProxyDTO, countryCode, proxy,phoneNumberInfo);
 //        if (StrUtil.isEmpty(ip)) {
 //            ip = getIp(cdLineIpProxyDTO,82L);
 //            if (StrUtil.isEmpty(ip)) {
@@ -160,7 +160,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         return ip;
     }
 
-    private String getIp(CdLineIpProxyDTO cdLineIpProxyDTO, Long countryCode, Integer proxy) {
+    private String getIp(CdLineIpProxyDTO cdLineIpProxyDTO, Long countryCode, Integer proxy,PhoneCountryVO phoneNumberInfo) {
 
         String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource3, cdLineIpProxyDTO.getTokenPhone());
         Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
@@ -227,30 +227,14 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                     while (i < len) {
                         i++;
                         String ip = null;
-                        String ipKey = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource14, regions);
-                        Lock ipLock = lockMap.computeIfAbsent(ipKey, k -> new ReentrantLock());
-                        boolean ipLockFlag = ipLock.tryLock();
-                        log.info("keyByResource = {} 获取的锁为 = {}", keyByResource, ipLockFlag);
-                        if (ipLockFlag) {
-                            try {
-                                Queue<String> getflowip = caffeineCacheListString.getIfPresent(regions);
-                                if (CollUtil.isEmpty(getflowip)) {
-                                    //获取ip
-                                    getflowip = getIpResp(regions, proxy);
-                                }
-                                if (CollUtil.isNotEmpty(getflowip)) {
-                                    ip = getflowip.poll();
-                                    caffeineCacheListString.put(regions, getflowip);
-                                }
-                            } finally {
-                                try {
-                                    ipLock.unlock();
-                                } catch (Exception e) {
-                                    log.error("lock = {}", "没有上锁");
-                                }
-                            }
-                        } else {
-                            return null;
+                        Queue<String> getflowip = caffeineCacheListString.getIfPresent(cdLineIpProxyDTO.getTokenPhone());
+                        if (CollUtil.isEmpty(getflowip)) {
+                            //获取ip
+                            getflowip = getIpResp(regions, proxy,phoneNumberInfo);
+                        }
+                        if (CollUtil.isNotEmpty(getflowip)) {
+                            ip = getflowip.poll();
+                            caffeineCacheListString.put(regions, getflowip);
                         }
                         if (StringUtils.isEmpty(ip)) {
                             continue;
@@ -306,26 +290,38 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         return null;
     }
 
-    private Queue<String> getIpResp(String regions, Integer proxy) {
+    private Queue<String> getIpResp(String regions, Integer proxy,PhoneCountryVO phoneNumberInfo) {
         if (ObjectUtil.isNull(proxy)) {
             log.error("getIpResp_error_proxy_null");
             return null;
         }
         String ipResp = null;
-        if (proxy == 1) {
-            //lunaproxy
-            ipResp = getLunaIpResp(regions);
-        } else if (proxy == 2) {
-            //ip2world
-            ipResp = getIp2World(regions);
-        } else if (proxy == 3) {
-            //静态代理
-            ipResp = getStaticIpResp(regions);
-        }
-        if (StringUtils.isEmpty(ipResp)) {
-            log.error("getIpResp_error_proxy_null");
-            return null;
-        }
+
+        String number = phoneNumberInfo.getNumber();
+        int lastDigit = Character.getNumericValue(number.charAt(number.length() - 1));
+        int mod = lastDigit % 4;
+        List<String> urls = CollUtil.newArrayList(
+                "https://tq.lunaproxy.com/getflowip?neek=1136881&num=100&type=1&sep=1&regions=%s&ip_si=1&level=1&sb=",//luna
+                "http://api.proxy.ip2world.com/getProxyIp?return_type=txt&protocol=http&num=100&regions=%s&lb=1",//ip2world
+                "https://info.proxy.ipmars.com/extractProxyIp?regions=%s&num=100&protocol=http&return_type=txt&lh=1&st=",//ipmars
+                "https://info.proxy.abcproxy.com/extractProxyIp?regions=%s&num=1&protocol=http&return_type=txt&lh=1&mode=1"//abcproxy
+        );
+        String url = urls.get(mod);
+        ipResp = getRandomIp(url, regions);
+//        if (proxy == 1) {
+//            //lunaproxy
+//            ipResp = getLunaIpResp(regions);
+//        } else if (proxy == 2) {
+//            //ip2world
+//            ipResp = getIp2World(regions);
+//        } else if (proxy == 3) {
+//            //静态代理
+//            ipResp = getStaticIpResp(regions);
+//        }
+//        if (StringUtils.isEmpty(ipResp)) {
+//            log.error("getIpResp_error_proxy_null");
+//            return null;
+//        }
 
         String[] split = ipResp.split("\r\n");
         Queue<String> getflowipNew = new LinkedList<>();
@@ -355,8 +351,9 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
     }
 
 
-    private static String getLunaIpResp(String regions) {
-        String getPhoneHttp = String.format("https://tq.lunaproxy.com/getflowip?neek=1136881&num=500&type=1&sep=1&regions=%s&ip_si=1&level=1&sb=", regions);
+    private static String getRandomIp(String url,String regions) {
+        String getPhoneHttp = String.format(url, regions);
+//        String getPhoneHttp = String.format("https://tq.lunaproxy.com/getflowip?neek=1136881&num=500&type=1&sep=1&regions=%s&ip_si=1&level=1&sb=", regions);
         String resp = HttpUtil.get(getPhoneHttp);
         log.info("getLunaIpResp resp = {}",resp);
         if (JSONUtil.isJson(resp)) {
@@ -365,15 +362,15 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         return resp;
     }
 
-    private static String getIp2World(String regions) {
-        String getPhoneHttp = String.format("http://api.proxy.ip2world.com/getProxyIp?return_type=txt&protocol=http&num=500&regions=%s&lb=1", regions);
-        String resp = HttpUtil.get(getPhoneHttp);
-        log.info("getIp2World resp = {}",resp);
-        if (JSONUtil.isJson(resp)) {
-            return null;
-        }
-        return resp;
-    }
+//    private static String getIp2World(String regions) {
+//        String getPhoneHttp = String.format("http://api.proxy.ip2world.com/getProxyIp?return_type=txt&protocol=http&num=500&regions=%s&lb=1", regions);
+//        String resp = HttpUtil.get(getPhoneHttp);
+//        log.info("getIp2World resp = {}",resp);
+//        if (JSONUtil.isJson(resp)) {
+//            return null;
+//        }
+//        return resp;
+//    }
 
 
 //    public static void main(String[] args) {
