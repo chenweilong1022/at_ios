@@ -24,6 +24,7 @@ import java.net.UnknownHostException;
 import java.util.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -51,6 +52,8 @@ public class CdRegisterTaskServiceImpl extends ServiceImpl<CdRegisterTaskDao, Cd
 
     @Resource
     private CdRegisterSubtasksService cdRegisterSubtasksService;
+    @Autowired
+    private StringRedisTemplate redisTemplate;
 
     @Override
     public PageUtils<CdRegisterTaskVO> queryPage(CdRegisterTaskDTO cdRegisterTask) {
@@ -101,6 +104,9 @@ public class CdRegisterTaskServiceImpl extends ServiceImpl<CdRegisterTaskDao, Cd
         }
         CdRegisterTaskEntity cdRegisterTaskEntity = CdRegisterTaskConver.MAPPER.converDTO(cdRegisterTask);
         boolean save = this.save(cdRegisterTaskEntity);
+//        proxyIp
+
+//        redisTemplate.opsForValue().set("","");
 
         //获取国家 如果是四方
         Integer countryCode = cdRegisterTask.getCountryCode();

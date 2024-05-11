@@ -363,7 +363,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         String getPhoneHttp = String.format(url, regions);
 //        String getPhoneHttp = String.format("https://tq.lunaproxy.com/getflowip?neek=1136881&num=500&type=1&sep=1&regions=%s&ip_si=1&level=1&sb=", regions);
         String resp = HttpUtil.get(getPhoneHttp);
-        log.info("getLunaIpResp resp = {}",resp);
+        log.info("{} resp = {}",getPhoneHttp,resp);
         if (JSONUtil.isJson(resp)) {
             return null;
         }
@@ -481,7 +481,9 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         if (permitAcquired) {
             try {
                 String format1 = String.format("curl -x %s 202.79.171.146:8080",ip);
+                log.info("curl = {}",format1);
                 List<String> strings = RuntimeUtil.execForLines(format1);
+                log.info("curl resp = {}",JSONUtil.toJsonStr(strings));
                 String outIp = strings.get(strings.size() - 1);
                 boolean match = ReUtil.isMatch(IPV4, outIp);
                 if (match) {

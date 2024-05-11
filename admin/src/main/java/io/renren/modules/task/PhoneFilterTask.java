@@ -41,7 +41,7 @@ import static io.renren.modules.ltt.enums.PhoneFilterStatus.PhoneFilterStatus4;
 @Component
 @Slf4j
 @EnableAsync
-@Profile({"prod","register"})
+@Profile({"prod","dev"})
 public class PhoneFilterTask {
 
 
@@ -158,7 +158,7 @@ public class PhoneFilterTask {
             List<AtUserEntity> atUserEntities = atUserService.list(new QueryWrapper<AtUserEntity>().lambda()
                     .in(AtUserEntity::getStatus, UserStatus.UserStatus4.getKey())
                     .eq(AtUserEntity::getNation, CountryCode.CountryCode1.getValue())
-                    .orderByDesc(AtUserEntity::getId)
+                    .orderByAsc(AtUserEntity::getId)
                     .last("limit 50")
             );
 
@@ -235,6 +235,7 @@ public class PhoneFilterTask {
 //                        cdPhoneFilterEntity.setTaskStatus(PhoneFilterStatus.PhoneFilterStatus4.getKey());
                             cdPhoneFilterEntitiesUpdate.add(cdPhoneFilterEntity);
                             atUserService.unlock(poll.getId(),UserStatus.UserStatus2);
+
                             poll = cdLineRegisterEntityQueue.poll();
                             atUserEntity = new AtUserEntity();
                             atUserEntity.setId(poll.getId());

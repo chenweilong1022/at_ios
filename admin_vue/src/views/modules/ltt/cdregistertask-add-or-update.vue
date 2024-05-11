@@ -32,6 +32,16 @@
           </el-option>
         </el-select>
       </el-form-item>
+      <el-form-item label="注册代理ip">
+        <el-select v-model="dataForm.proxyIp" placeholder="注册代理ip" clearable>
+          <el-option
+            v-for="item in proxyOptions"
+            :key="item.key"
+            :label="item.value"
+            :value="item.key">
+          </el-option>
+        </el-select>
+      </el-form-item>
       <el-form-item v-if="8101 === dataForm.countryCode" label="卡数据" prop="sfData">
         <el-input   :autosize="{ minRows: 20, maxRows: 20}" type="textarea" v-model="dataForm.sfData" placeholder="卡数据"></el-input>
       </el-form-item>
@@ -92,6 +102,7 @@ export default {
         deleteFlag: '',
         sfData: '',
         countryCode: 66,
+        proxyIp: null,
         fillUp: 1,
         createTime: ''
       },
@@ -181,6 +192,7 @@ export default {
               'fillUp': this.dataForm.fillUp,
               'realMachine': this.dataForm.realMachine,
               'countryCode': this.dataForm.countryCode,
+              'proxyIp': this.dataForm.proxyIp,
               'sfData': this.dataForm.sfData,
               'deleteFlag': this.dataForm.deleteFlag,
               'createTime': this.dataForm.createTime

@@ -11,6 +11,7 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.common.collect.Lists;
 import io.renren.common.utils.EnumUtil;
 import io.renren.common.utils.PageUtils;
 import io.renren.common.utils.PhoneUtil;
@@ -147,40 +148,43 @@ public class CdPhoneFilterServiceImpl extends ServiceImpl<CdPhoneFilterDao, CdPh
                 List<CdPhoneFilterEntity> cdPhoneFilterEntitiesNew = longListMap.get(key);
                 //给用户分配一个user
                 if (CollectionUtil.isNotEmpty(cdPhoneFilterEntitiesNew) && cdPhoneFilterEntitiesNew.size() > 20) {
+                    List<List<CdPhoneFilterEntity>> partition = Lists.partition(cdPhoneFilterEntitiesNew, 90);
 
-                    String regions = EnumUtil.queryValueByKey(key.intValue(), CountryCode.values());
-                    List<AtUserEntity> atUserEntities = atUserService.list(new QueryWrapper<AtUserEntity>().lambda()
-                            .in(AtUserEntity::getStatus, UserStatus.UserStatus4.getKey())
-                            .eq(AtUserEntity::getNation, regions)
-                            .orderByAsc(AtUserEntity::getId)
-                            .last("limit 1")
-                    );
-                    Assert.isTrue(CollUtil.isEmpty(atUserEntities),"账号不足，请增加账号");
-                    //修改用户为已使用
-                    AtUserEntity poll = atUserEntities.get(0);
-                    AtUserEntity atUserEntity = new AtUserEntity();
-                    atUserEntity.setId(poll.getId());
-                    atUserEntity.setStatus(UserStatus.UserStatus6.getKey());
-                    atUserService.updateById(atUserEntity);
+                    for (List<CdPhoneFilterEntity> phoneFilterEntities : partition) {
+                        String regions = EnumUtil.queryValueByKey(key.intValue(), CountryCode.values());
+                        List<AtUserEntity> atUserEntities = atUserService.list(new QueryWrapper<AtUserEntity>().lambda()
+                                .in(AtUserEntity::getStatus, UserStatus.UserStatus4.getKey())
+                                .eq(AtUserEntity::getNation, regions)
+                                .orderByAsc(AtUserEntity::getId)
+                                .last("limit 1")
+                        );
+                        Assert.isTrue(CollUtil.isEmpty(atUserEntities),"账号不足，请增加账号");
+                        //修改用户为已使用
+                        AtUserEntity poll = atUserEntities.get(0);
+                        AtUserEntity atUserEntity = new AtUserEntity();
+                        atUserEntity.setId(poll.getId());
+                        atUserEntity.setStatus(UserStatus.UserStatus6.getKey());
+                        atUserService.updateById(atUserEntity);
 
-                    for (CdPhoneFilterEntity cdPhoneFilterEntity : cdPhoneFilterEntitiesNew) {
-                        //s设置为通讯录
-                        cdPhoneFilterEntity.setTaskStatus(PhoneFilterStatus.PhoneFilterStatus5.getKey());
-                        GroupType groupType4 = GroupType.GroupType5;
-                        AtDataSubtaskEntity save = new AtDataSubtaskEntity();
-                        save.setGroupType(groupType4.getKey());
-                        save.setRecordId(recordEntity.getRecordId());
-                        save.setUserId(atUserEntity.getId());
-                        save.setTaskStatus(TaskStatus.TaskStatus2.getKey());
-                        save.setDataType(DataType.DataType4.getKey());
-                        save.setContactKey(cdPhoneFilterEntity.getContactKey());
-                        //校验通讯录模式的国家
-                        if (GroupType.GroupType5.getKey().equals(groupType4.getKey())) {
-                            Assert.isTrue(StrUtil.isEmpty(save.getContactKey()),"手机号不能为空");
+                        for (CdPhoneFilterEntity cdPhoneFilterEntity : phoneFilterEntities) {
+                            //s设置为通讯录
+                            cdPhoneFilterEntity.setTaskStatus(PhoneFilterStatus.PhoneFilterStatus5.getKey());
+                            GroupType groupType4 = GroupType.GroupType5;
+                            AtDataSubtaskEntity save = new AtDataSubtaskEntity();
+                            save.setGroupType(groupType4.getKey());
+                            save.setRecordId(recordEntity.getRecordId());
+                            save.setUserId(atUserEntity.getId());
+                            save.setTaskStatus(TaskStatus.TaskStatus2.getKey());
+                            save.setDataType(DataType.DataType4.getKey());
+                            save.setContactKey(cdPhoneFilterEntity.getContactKey());
+                            //校验通讯录模式的国家
+                            if (GroupType.GroupType5.getKey().equals(groupType4.getKey())) {
+                                Assert.isTrue(StrUtil.isEmpty(save.getContactKey()),"手机号不能为空");
+                            }
+                            save.setDeleteFlag(DeleteFlag.NO.getKey());
+                            save.setCreateTime(DateUtil.date());
+                            atDataSubtaskEntities.add(save);
                         }
-                        save.setDeleteFlag(DeleteFlag.NO.getKey());
-                        save.setCreateTime(DateUtil.date());
-                        atDataSubtaskEntities.add(save);
                     }
 
                 }
