@@ -1,7 +1,7 @@
 <template>
   <div class="mod-config">
     <el-form :inline="true" :model="dataForm" @keyup.enter.native="getDataList()">
-      <el-form-item label="注册国家">
+      <el-form-item label="清理ip对应的国家">
         <el-select v-model="dataForm.countryCode" placeholder="注册国家" clearable>
           <el-option
             v-for="item in countryCodes"
@@ -27,6 +27,7 @@
       <el-form-item>
         <el-button @click="getDataList()">查询</el-button>
         <el-button v-if="isAuth('ltt:cdregistertask:save')" type="primary" @click="addOrUpdateHandle()">新增注册</el-button>
+        <el-button v-if="isAuth('ltt:cdregistertask:save')" type="danger" @click="cleanIpHandle()">清理ip</el-button>
       </el-form-item>
     </el-form>
     <el-table
@@ -129,12 +130,14 @@
     </el-pagination>
     <!-- 弹窗, 新增 / 修改 -->
     <add-or-update v-if="addOrUpdateVisible" ref="addOrUpdate" @refreshDataList="getDataList"></add-or-update>
+    <clean-ip v-if="cleanIpVisible" ref="CleanIp" @refreshDataList="getDataList"></clean-ip>
     <cdregistertask-account-list v-if="cdregistertaskAccountListVisible" ref="cdregistertaskAccountList" @refreshDataList="getDataList"></cdregistertask-account-list>
   </div>
 </template>
 
 <script>
 import AddOrUpdate from './cdregistertask-add-or-update'
+import CleanIp from './cdregister-ip'
 import CdregistertaskAccountList from './cdregistertask-account-list'
 export default {
   data () {
@@ -152,11 +155,13 @@ export default {
       dataListSelections: [],
       registrationStatusCodes: [{key: 1, value: '新注册'}, {key: 2, value: '注册中'}, {key: 3, value: '暂停注册'}, {key: 7, value: '注册完成'}, {key: 9, value: '真机注册任务'}],
       addOrUpdateVisible: false,
+      cleanIpVisible: false,
       cdregistertaskAccountListVisible: false
     }
   },
   components: {
     AddOrUpdate,
+    CleanIp,
     CdregistertaskAccountList
   },
   activated () {
@@ -219,6 +224,12 @@ export default {
       this.addOrUpdateVisible = true
       this.$nextTick(() => {
         this.$refs.addOrUpdate.init(id)
+      })
+    },
+    cleanIpHandle () {
+      this.cleanIpVisible = true
+      this.$nextTick(() => {
+        this.$refs.CleanIp.init()
       })
     },
     // 新增 / 修改
