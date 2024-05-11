@@ -277,7 +277,6 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                                     redisTemplate.opsForHash().put(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), cdLineIpProxyDTO.getTokenPhone(), proxyUse.getIp());
                                     return socks5Pre(ip);
                                 }
-                                return socks5Pre(ip);
                             } else {
                                 if (proxy == 3) {
                                     //静态代理时，无法获取出口ip，人工处理，不重复取新的ip
@@ -292,7 +291,6 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                                 return null;
                             }
                         }
-
                     }
                 }
             } finally {
