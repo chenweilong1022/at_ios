@@ -21,6 +21,7 @@ public enum LockMapKeyResource implements BaseEnum {
     LockMapKeyResource12(12,"AtGroupEntityUpdateName"),
     LockMapKeyResource13(13,"AtGroupChangeEntity"),
     LockMapKeyResource14(14,"CdLineIp"),
+    LockMapKeyResource15(15,"HTTP_LOCK"),
     ;
 
     LockMapKeyResource(int key, String value) {

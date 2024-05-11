@@ -345,18 +345,33 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 
     private String getRandomIp(String url,String regions) {
         String getPhoneHttp = String.format(url, regions);
-        //日本
-        if (cardJpSmsOver.getIfPresent(getPhoneHttp) != null) {
-            return null;
+        String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource15,getPhoneHttp);
+        Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
+        boolean triedLock = lock.tryLock();
+        log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
+        if(triedLock) {
+            try{
+                //日本
+                if (cardJpSmsOver.getIfPresent(getPhoneHttp) != null) {
+                    return null;
+                }
+            // String getPhoneHttp = String.format("https://tq.lunaproxy.com/getflowip?neek=1136881&num=500&type=1&sep=1&regions=%s&ip_si=1&level=1&sb=", regions);
+                String resp = HttpUtil.get(getPhoneHttp);
+                if (JSONUtil.isJson(resp) || resp.contains("Please request again in 2 seconds")) {
+                    log.info("{} resp = {}",getPhoneHttp,resp);
+                    cardJpSmsOver.put(getPhoneHttp,"Please request again in 2 secondss");
+                    return null;
+                }
+                return resp;
+            } finally {
+                try {
+                    lock.unlock();
+                } catch (Exception e) {
+                    log.error("lock = {}", "没有上锁");
+                }
+            }
         }
-//        String getPhoneHttp = String.format("https://tq.lunaproxy.com/getflowip?neek=1136881&num=500&type=1&sep=1&regions=%s&ip_si=1&level=1&sb=", regions);
-        String resp = HttpUtil.get(getPhoneHttp);
-        if (JSONUtil.isJson(resp) || resp.contains("Please request again in 2 seconds")) {
-            log.info("{} resp = {}",getPhoneHttp,resp);
-            cardJpSmsOver.put(getPhoneHttp,"Please request again in 2 secondss");
-            return null;
-        }
-        return resp;
+        return null;
     }
 
 
