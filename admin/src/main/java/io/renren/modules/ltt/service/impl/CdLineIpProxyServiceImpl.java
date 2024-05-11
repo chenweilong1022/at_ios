@@ -218,7 +218,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                         log.info("keyByResource = {} 获取的锁为 = {}", keyByResource, ipLockFlag);
                         if (ipLockFlag) {
                             try {
-                                Queue<String> getflowip = caffeineCacheListString.getIfPresent(cdLineIpProxyDTO.getTokenPhone());
+                                Queue<String> getflowip = caffeineCacheListString.getIfPresent(regions);
                                 if (CollUtil.isEmpty(getflowip)) {
                                     //获取ip
                                     getflowip = getIpResp(regions, proxy,phoneNumberInfo);
