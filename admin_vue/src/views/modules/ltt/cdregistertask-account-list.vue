@@ -28,6 +28,8 @@
           <el-button type="primary" @click="copyPhoneHandle()"
                      :disabled="dataListSelections.length <= 0">复制拉群手机号
           </el-button>
+          <el-button type="primary" @click="filterErrorCode()">过滤封号
+          </el-button>
         </el-form-item>
       </el-form>
       <el-table
@@ -280,6 +282,11 @@
         document.execCommand('copy')
         document.body.removeChild(el)
         this.$message.success('手机号复制成功！')
+      },
+      filterErrorCode () {
+        this.dataList = this.dataList.filter(item => {
+          return !(item.errMsg != null && item.errMsg !== '' && item.errMsg.includes('Code:100'))
+        })
       },
       getRegisterStatus () {
         this.$http({
