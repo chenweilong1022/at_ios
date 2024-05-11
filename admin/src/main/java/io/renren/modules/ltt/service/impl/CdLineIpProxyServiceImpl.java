@@ -1,10 +1,7 @@
 package io.renren.modules.ltt.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.ReUtil;
-import cn.hutool.core.util.RuntimeUtil;
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.util.*;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -12,6 +9,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.benmanes.caffeine.cache.Cache;
 import io.renren.common.utils.*;
+import io.renren.common.utils.EnumUtil;
 import io.renren.common.utils.vo.PhoneCountryVO;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.client.entity.ProjectWorkEntity;
@@ -292,7 +290,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         //113.21.242.163
         String number = phoneNumberInfo.getNumber();
         int lastDigit = Character.getNumericValue(number.charAt(number.length() - 1));
-        int mod = lastDigit % 4;
+        int mod = RandomUtil.randomInt(0, 4);
         List<String> urls = CollUtil.newArrayList(
                 "https://tq.lunaproxy.com/getflowip?neek=1136881&num=100&type=1&sep=1&regions=%s&ip_si=1&level=1&sb=",//luna
                 "http://api.proxy.ip2world.com/getProxyIp?return_type=txt&protocol=http&num=100&regions=%s&lb=1",//ip2world
