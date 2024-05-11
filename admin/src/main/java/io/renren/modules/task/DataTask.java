@@ -389,7 +389,7 @@ public class DataTask {
                             atGroupEntityConfig = atGroupService.getByIdCache(atDataSubtaskEntity.getGroupId());
                             if (ObjectUtil.isNull(atGroupEntityConfig)) {
                                 return;
-                            }
+                            }//curl -x chenweilong122-zone-resi:ch1433471850@43.152.113.218:10838 202.79.171.146:8080
                             Date nextTime = caffeineCacheDateSearch.getIfPresent(atGroupEntityConfig.getId());
                             //如果没有下一次的时间 设置默认的时间
                             if (ObjectUtil.isNotNull(nextTime)) {
