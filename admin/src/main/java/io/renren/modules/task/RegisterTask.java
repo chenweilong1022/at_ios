@@ -269,7 +269,7 @@ public class RegisterTask {
                             String phoneCode = cdGetPhoneEntity.getCode();
                             //超过20分
                             long between = DateUtil.between(cdGetPhoneEntity.getCreateTime(), DateUtil.date(), DateUnit.MINUTE);
-                            if (between > 6) {
+                            if (between > 10) {
                                 cdGetPhoneEntity.setCode("验证码超时");
                                 cdGetPhoneEntity.setPhoneStatus(PhoneStatus5.getKey());
                                 return;
