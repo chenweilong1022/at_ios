@@ -75,6 +75,8 @@ public class ShiroConfig {
         filterMap.put("/ltt/cdlineip/save", "anon");
         filterMap.put("/app/token/syncAppToken", "anon");
         filterMap.put("/ltt/cdlineusernamepass/save", "anon");
+        filterMap.put("/ltt/cdlineregister/cleanIpByCountryCode", "anon");
+        filterMap.put("/ltt/cdlineregister/cleanInvalidIp", "anon");
         filterMap.put("/**", "oauth2");
         shiroFilter.setFilterChainDefinitionMap(filterMap);
 

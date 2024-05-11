@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import io.renren.modules.ltt.dto.LineRegisterSummaryResultDto;
+import io.renren.modules.ltt.service.CdLineIpProxyService;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +15,7 @@ import io.renren.modules.ltt.service.CdLineRegisterService;
 import io.renren.common.utils.PageUtils;
 import io.renren.common.utils.R;
 
+import javax.annotation.Resource;
 
 
 /**
@@ -117,5 +119,32 @@ public class CdLineRegisterController {
         Integer count = cdLineRegisterService.queryLineRegisterCount(countryCode);
 
         return R.ok().put("lineRegisterCount", count);
+    }
+
+    @Resource
+    private CdLineIpProxyService cdLineIpProxyService;
+
+    /**
+     * 清理ip
+     * @param countryCode
+     * @return
+     */
+    @RequestMapping("/cleanIpByCountryCode")
+
+    public R cleanIpByCountryCode(@RequestParam("countryCode") Integer countryCode){
+        cdLineIpProxyService.cleanIpByCountryCode(countryCode);
+
+        return R.ok();
+    }
+    /**
+     * 清理黑名单
+     * @return
+     */
+    @RequestMapping("/cleanInvalidIp")
+
+    public R cleanInvalidIp(@RequestParam("expireHours") Long expireHours){
+        cdLineIpProxyService.cleanInvalidIp(expireHours);
+
+        return R.ok();
     }
 }
