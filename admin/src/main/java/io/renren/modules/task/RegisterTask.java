@@ -330,11 +330,11 @@ public class RegisterTask {
                             }
                         }
                     }finally {
+                        lock.unlock();
                         cdGetPhoneService.updateById(cdGetPhoneEntity);
                         if (ObjectUtil.isNotNull(update)) {
                             cdLineRegisterService.updateById(update);
                         }
-                        lock.unlock();
                     }
                 }else {
                     log.info("keyByResource = {} 在执行",keyByResource);
