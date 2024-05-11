@@ -184,7 +184,8 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                     if (proxyUse.isProxyUse()) {
 
                         //判断ip黑名单缓存中是否有
-                        Object ipCache = redisTemplate.opsForValue().get(RedisKeys.RedisKeys4.getValue(proxyUse.getIp()));
+                        String value = RedisKeys.RedisKeys4.getValue(proxyUse.getIp());
+                        String ipCache = redisTemplate.opsForValue().get(value);
                         if (ipCache != null) {
                             redisTemplate.opsForHash().delete(RedisKeys.RedisKeys1.getValue(), outIpv4);
                             return null;
