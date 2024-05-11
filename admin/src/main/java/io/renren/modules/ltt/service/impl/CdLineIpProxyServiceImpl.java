@@ -340,13 +340,20 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                 ipConfig.getAccount(), ipConfig.getPassword(), ipConfig.getIp(), ipConfig.getSock5Port());
     }
 
+    @Resource(name = "cardJpSmsOver")
+    private Cache<String, String> cardJpSmsOver;
 
-    private static String getRandomIp(String url,String regions) {
+    private String getRandomIp(String url,String regions) {
         String getPhoneHttp = String.format(url, regions);
+        //日本
+        if (cardJpSmsOver.getIfPresent(getPhoneHttp) != null) {
+            return null;
+        }
 //        String getPhoneHttp = String.format("https://tq.lunaproxy.com/getflowip?neek=1136881&num=500&type=1&sep=1&regions=%s&ip_si=1&level=1&sb=", regions);
         String resp = HttpUtil.get(getPhoneHttp);
         log.info("{} resp = {}",getPhoneHttp,resp);
         if (JSONUtil.isJson(resp) || resp.contains("Please request again in 2 seconds")) {
+            cardJpSmsOver.put(getPhoneHttp,"Please request again in 2 secondss");
             return null;
         }
         return resp;
