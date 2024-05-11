@@ -211,19 +211,33 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                     while (i < len) {
                         i++;
                         String ip = null;
-                        Queue<String> getflowip = caffeineCacheListString.getIfPresent(cdLineIpProxyDTO.getTokenPhone());
-                        if (CollUtil.isEmpty(getflowip)) {
-                            //获取ip
-                            getflowip = getIpResp(regions, proxy,phoneNumberInfo);
-                        }
-                        if (CollUtil.isNotEmpty(getflowip)) {
-                            ip = getflowip.poll();
-                            caffeineCacheListString.put(regions, getflowip);
+
+                        String ipKey = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource14, regions);
+                        Lock ipLock = lockMap.computeIfAbsent(ipKey, k -> new ReentrantLock());
+                        boolean ipLockFlag = ipLock.tryLock();
+                        log.info("keyByResource = {} 获取的锁为 = {}", keyByResource, ipLockFlag);
+                        if (ipLockFlag) {
+                            try {
+                                Queue<String> getflowip = caffeineCacheListString.getIfPresent(cdLineIpProxyDTO.getTokenPhone());
+                                if (CollUtil.isEmpty(getflowip)) {
+                                    //获取ip
+                                    getflowip = getIpResp(regions, proxy,phoneNumberInfo);
+                                }
+                                if (CollUtil.isNotEmpty(getflowip)) {
+                                    ip = getflowip.poll();
+                                    caffeineCacheListString.put(regions, getflowip);
+                                }
+                            } finally{
+                                try {
+                                    ipLock.unlock();
+                                } catch (Exception e) {
+                                    log.error("lock = {}", "没有上锁");
+                                }
+                            }
                         }
                         if (StringUtils.isEmpty(ip)) {
                             continue;
                         }
-
                         CurlVO proxyUse = getProxyUse(ip, regions, proxy);
                         if (proxyUse.isProxyUse()) {
                             //判断ip黑名单缓存中是否有
@@ -385,20 +399,33 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 //            //静态代理
 //            return isProxyUseMe(ip, country);
 //        }
-        log.error("selectProxyUse_error_proxy {}", proxy);
-        CurlVO proxyUseMe = isProxyUseMe(ip, country);
-        if (proxyUseMe.isProxyUse()) {
-            return proxyUseMe;
+
+        // 尝试获取许可，不阻塞
+        boolean permitAcquired = semaphore.tryAcquire();
+        if (permitAcquired) {
+            try {
+                log.error("selectProxyUse_error_proxy {}", proxy);
+                CurlVO proxyUseMe = isProxyUseMe(ip, country);
+                if (proxyUseMe.isProxyUse()) {
+                    return proxyUseMe;
+                }
+                proxyUseMe = isProxyUseMeIpecho(ip, country);
+                if (proxyUseMe.isProxyUse()) {
+                    return proxyUseMe;
+                }
+                proxyUseMe = isProxyUse(ip, country);
+                if (proxyUseMe.isProxyUse()) {
+                    return proxyUseMe;
+                }
+                return isProxyUseIp2World(ip, country);
+            }catch (Exception e){
+                log.info("ip = {} country = {} format = {} err = {}",ip,country,e.getMessage());
+            }finally {
+                // 释放许可
+                semaphore.release();
+            }
         }
-        proxyUseMe = isProxyUseMeIpecho(ip, country);
-        if (proxyUseMe.isProxyUse()) {
-            return proxyUseMe;
-        }
-        proxyUseMe = isProxyUse(ip, country);
-        if (proxyUseMe.isProxyUse()) {
-            return proxyUseMe;
-        }
-        return isProxyUseIp2World(ip, country);
+        return null;
     }
 
     private static final Semaphore semaphore = new Semaphore(200);
@@ -434,30 +461,17 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 
     private CurlVO isProxyUseMe(String ip,String country) {
         CurlVO falseCurlVO = new CurlVO().setProxyUse(false);
-        // 尝试获取许可，不阻塞
-        boolean permitAcquired = semaphore.tryAcquire();
-        if (permitAcquired) {
-            try {
-                String format1 = String.format("curl -x %s 202.79.171.146:8080",ip);
-                log.info("curl = {}",format1);
-                List<String> strings = RuntimeUtil.execForLines(format1);
-                log.info("curl resp = {}",JSONUtil.toJsonStr(strings));
-                String outIp = strings.get(strings.size() - 1);
-                boolean match = ReUtil.isMatch(IPV4, outIp);
-                if (match) {
-                    log.info("ip = {} country = {} format = {}",ip,country,outIp);
-                    return falseCurlVO.setProxyUse(true).setIp(outIp).setCountry(country);
-                }
-                log.info("ip = {} country = {} format = {}",ip,country,"没有找到JSON数据");
-                return falseCurlVO;
-            }catch (Exception e){
-                log.info("ip = {} country = {} format = {} err = {}",ip,country,e.getMessage());
-            }finally {
-                // 释放许可
-                semaphore.release();
-            }
+        String format1 = String.format("curl -x %s 202.79.171.146:8080",ip);
+        log.info("curl = {}",format1);
+        List<String> strings = RuntimeUtil.execForLines(format1);
+        log.info("curl resp = {}",JSONUtil.toJsonStr(strings));
+        String outIp = strings.get(strings.size() - 1);
+        boolean match = ReUtil.isMatch(IPV4, outIp);
+        if (match) {
+            log.info("ip = {} country = {} format = {}",ip,country,outIp);
+            return falseCurlVO.setProxyUse(true).setIp(outIp).setCountry(country);
         }
-        log.info("ip = {} country = {} format = {} 许可 = {}",ip,country,falseCurlVO.isProxyUse());
+        log.info("ip = {} country = {} format = {}",ip,country,"没有找到JSON数据");
         return falseCurlVO;
     }
 
