@@ -11,7 +11,7 @@ import java.util.Collection;
 
 
 /**
- * 
+ *
  *
  * @author chenweilong
  * @email chenweilong@qq.com
@@ -68,5 +68,11 @@ public interface CdIpConfigService extends IService<CdIpConfigEntity> {
     boolean removeByIds(Collection<? extends Serializable> ids);
 
     CdIpConfigEntity getIpConfig(Integer countryCode);
+
+    /**
+     * 清空ip
+     * @param cdIpConfig
+     */
+    boolean clear(CdIpConfigDTO cdIpConfig);
 }
 

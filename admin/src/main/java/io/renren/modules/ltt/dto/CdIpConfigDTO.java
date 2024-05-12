@@ -12,7 +12,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 
+ *
  *
  * @author chenweilong
  * @email chenweilong@qq.com
@@ -26,13 +26,13 @@ public class CdIpConfigDTO extends PageParam implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * 
+	 *
 	 */
 	@TableId(type = IdType.AUTO)
 	@ApiModelProperty(required=false,value="")
 	private Integer id;
 	/**
-	 * 
+	 *
 	 */
 	@ApiModelProperty(required=false,value="")
 	private String ip;
@@ -52,6 +52,11 @@ public class CdIpConfigDTO extends PageParam implements Serializable {
 	@ApiModelProperty(required=false,value="端口")
 	private String httpPort;
 	/**
+	 * staticIps
+	 */
+	@ApiModelProperty(required=false,value="staticIps")
+	private String staticIps;
+	/**
 	 * sock5的端口
 	 */
 	@ApiModelProperty(required=false,value="sock5的端口")
@@ -67,7 +72,7 @@ public class CdIpConfigDTO extends PageParam implements Serializable {
 	@ApiModelProperty(required=false,value="密码")
 	private String password;
 	/**
-	 * 
+	 *
 	 */
 	@ApiModelProperty(required=false,value="")
 	private Integer deleteFlag;

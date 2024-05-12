@@ -17,7 +17,7 @@ public class RenrenApplicationTests {
 	@Test
 	public void contextLoads() {
 		sysGeneratorService.generatorCode(new String[]{
-				"cd_phone_filter"
+				"cd_ip_config"
 		});
 	}
 
