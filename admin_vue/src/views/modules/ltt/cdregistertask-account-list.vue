@@ -262,8 +262,8 @@
           })
         })
       },
-      copyPhoneHandle () {
-        var phones = this.dataListSelections.map(item => {
+      copyPhoneHandle (phone) {
+        var phones = phone ? [phone] : this.dataListSelections.map(item => {
           return item.phone
         })
         navigator.clipboard.writeText(phones).then(() => {
