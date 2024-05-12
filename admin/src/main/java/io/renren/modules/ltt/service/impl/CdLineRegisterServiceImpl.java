@@ -179,9 +179,19 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
         List<CdGetPhoneEntity> updateCdGetPhoneList = new ArrayList<>();
         List<Integer> lineRegisterIds = new ArrayList<>();
         for (CdGetPhoneVO cdGetPhone : cdGetPhoneList) {
-            //ip暂时拉黑
-            this.clearTokenPhone(cdGetPhone);
+            CdLineRegisterEntity cdLineRegisterEntity = baseMapper.selectList(new QueryWrapper<CdLineRegisterEntity>().lambda()
+                    .eq(CdLineRegisterEntity::getGetPhoneId, cdGetPhone.getId())).stream().findFirst().orElse(null);
+            if (cdLineRegisterEntity != null) {
+//                Assert.isTrue(!RegisterStatus.RegisterStatus5.getKey().equals(cdLineRegisterEntity.getRegisterStatus()), "注册状态正常，无需重试");
+                //删除line注册此条记录
+                lineRegisterIds.add(cdLineRegisterEntity.getId());
+                if (cdLineRegisterEntity.getProxy().contains("@")) {
 
+                }else {
+                    //ip暂时拉黑
+                    this.clearTokenPhone(cdGetPhone);
+                }
+            }
             //更新此条数据，发起重新注册
             CdGetPhoneEntity updateCdGetPhoneEntity = new CdGetPhoneEntity();
             updateCdGetPhoneEntity.setId(cdGetPhone.getId());
@@ -189,15 +199,6 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
             updateCdGetPhoneEntity.setCode("");
             updateCdGetPhoneEntity.setCreateTime(new Date());
             updateCdGetPhoneList.add(updateCdGetPhoneEntity);
-
-
-            CdLineRegisterEntity cdLineRegisterEntity = baseMapper.selectList(new QueryWrapper<CdLineRegisterEntity>().lambda()
-                    .eq(CdLineRegisterEntity::getGetPhoneId, cdGetPhone.getId())).stream().findFirst().orElse(null);
-            if (cdLineRegisterEntity != null) {
-//                Assert.isTrue(!RegisterStatus.RegisterStatus5.getKey().equals(cdLineRegisterEntity.getRegisterStatus()), "注册状态正常，无需重试");
-                //删除line注册此条记录
-                lineRegisterIds.add(cdLineRegisterEntity.getId());
-            }
         }
 
         getPhoneService.updateBatchById(updateCdGetPhoneList);

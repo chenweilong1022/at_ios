@@ -198,7 +198,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                         log.error("rightPop = {}",e.getMessage());
                     }finally {
                         //释放对列
-                        redisTemplate.delete(regions);
+                        redisTemplate.delete(RedisKeys.RedisKeys6.getValue(regions));
                     }
                 }
                 if (CollUtil.isEmpty(getflowip)) {
@@ -524,6 +524,10 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 
         String outIpv4 = String.valueOf(o2);
         if (StringUtils.isEmpty(outIpv4)) {
+            return true;
+        }
+
+        if (outIpv4.contains("@")) {
             return true;
         }
 
