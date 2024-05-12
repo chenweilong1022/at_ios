@@ -68,5 +68,7 @@ public interface CdRegisterSubtasksService extends IService<CdRegisterSubtasksEn
      * @return
      */
     List<CdRegisterSubtasksVO> groupByTaskId();
+
+    List<CdRegisterSubtasksEntity> queryByTaskId(Integer taskId);
 }
 

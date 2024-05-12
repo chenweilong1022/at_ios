@@ -23,6 +23,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.*;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -42,8 +43,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.io.Serializable;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 
 @Service("cdRegisterTaskService")
@@ -63,6 +63,7 @@ public class CdRegisterTaskServiceImpl extends ServiceImpl<CdRegisterTaskDao, Cd
                         .lt(CdRegisterTaskEntity::getFillUpRegisterTaskId, 0)
                         .eq(ObjectUtil.isNotNull(cdRegisterTask.getCountryCode()),CdRegisterTaskEntity::getCountryCode, cdRegisterTask.getCountryCode() )
                         .eq(ObjectUtil.isNotNull(cdRegisterTask.getRegistrationStatus()),CdRegisterTaskEntity::getRegistrationStatus, cdRegisterTask.getRegistrationStatus() )
+                        .like(StringUtils.isNotEmpty(cdRegisterTask.getTaskName()),CdRegisterTaskEntity::getTaskName, cdRegisterTask.getTaskName() )
                         .orderByDesc(CdRegisterTaskEntity::getId)
         );
 
@@ -260,6 +261,28 @@ public class CdRegisterTaskServiceImpl extends ServiceImpl<CdRegisterTaskDao, Cd
 
         //更新子表
         return cdRegisterSubtasksService.updateStatusByTaskId(taskId, RegistrationStatus.RegistrationStatus3.getKey());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean deleteRegisterTask(Integer taskId) {
+        CdRegisterTaskVO cdRegisterTaskVO = this.getById(taskId);
+        Assert.isNull(cdRegisterTaskVO, "数据不存在");
+        baseMapper.deleteById(taskId);
+
+        //删除子表
+        List<Integer> subtaskIdList = cdRegisterSubtasksService.queryByTaskId(taskId).stream()
+                .map(CdRegisterSubtasksEntity::getId).collect(Collectors.toList());
+        if (CollUtil.isNotEmpty(subtaskIdList)) {
+            cdRegisterSubtasksService.removeByIds(subtaskIdList);
+        }
+
+        if (RegistrationStatus.RegistrationStatus9.getKey().equals(cdRegisterTaskVO.getRegistrationStatus())) {
+            //真机注册清除
+            Queue<IOSTaskVO> cacheIOSTaskVOIfPresent = new LinkedList<>();
+            stringQueueCacheIOSTaskVO.put("register", cacheIOSTaskVOIfPresent);
+        }
+        return true;
     }
 
     @Override

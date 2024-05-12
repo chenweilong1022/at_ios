@@ -48,6 +48,13 @@ public interface CdRegisterTaskService extends IService<CdRegisterTaskEntity> {
     boolean stopRegisterTask(Integer taskId);
 
     /**
+     * 删除注册任务
+     * @param taskId
+     * @return
+     */
+    boolean deleteRegisterTask(Integer taskId);
+
+    /**
      * 根据id修改
      * @param cdRegisterTask
      * @return

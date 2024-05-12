@@ -73,4 +73,10 @@ public class CdRegisterSubtasksServiceImpl extends ServiceImpl<CdRegisterSubtask
     public List<CdRegisterSubtasksVO> groupByTaskId() {
         return baseMapper.groupByTaskId();
     }
+
+    @Override
+    public List<CdRegisterSubtasksEntity> queryByTaskId(Integer taskId) {
+        return baseMapper.selectList(new QueryWrapper<CdRegisterSubtasksEntity>().lambda()
+                .eq(CdRegisterSubtasksEntity::getTaskId, taskId));
+    }
 }

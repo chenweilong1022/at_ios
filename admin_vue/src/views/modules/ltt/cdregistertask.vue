@@ -1,7 +1,10 @@
 <template>
   <div class="mod-config">
     <el-form :inline="true" :model="dataForm" @keyup.enter.native="getDataList()">
-      <el-form-item label="清理ip对应的国家">
+      <el-form-item label="任务名称">
+        <el-input v-model="dataForm.taskName" placeholder="任务名称" clearable></el-input>
+      </el-form-item>
+      <el-form-item label="注册国家">
         <el-select v-model="dataForm.countryCode" placeholder="注册国家" clearable>
           <el-option
             v-for="item in countryCodes"
@@ -49,6 +52,12 @@
         label="任务id">
       </el-table-column>
       <el-table-column
+        prop="taskName"
+        header-align="center"
+        align="center"
+        label="任务名称">
+      </el-table-column>
+      <el-table-column
         prop="countryCode"
         header-align="center"
         align="center"
@@ -63,26 +72,18 @@
         prop="totalAmount"
         header-align="center"
         align="center"
-        label="总数量">
+        label="注册数据">
+        <template slot-scope="scope">
+          <div>总数量：{{ scope.row.totalAmount }}</div>
+          <div>成功数量：{{ scope.row.numberSuccesses }}</div>
+        </template>
       </el-table-column>
-      <el-table-column
-        prop="numberThreads"
-        header-align="center"
-        align="center"
-        label="线程数">
-      </el-table-column>
-      <el-table-column
-        prop="numberRegistered"
-        header-align="center"
-        align="center"
-        label="注册数量">
-      </el-table-column>
-      <el-table-column
-        prop="numberSuccesses"
-        header-align="center"
-        align="center"
-        label="成功数量">
-      </el-table-column>
+<!--      <el-table-column-->
+<!--        prop="numberRegistered"-->
+<!--        header-align="center"-->
+<!--        align="center"-->
+<!--        label="注册数量">-->
+<!--      </el-table-column>-->
       <el-table-column
         prop="schedule"
         header-align="center"
@@ -107,6 +108,18 @@
         </template>
       </el-table-column>
       <el-table-column
+        prop="numberThreads"
+        header-align="center"
+        align="center"
+        label="线程数">
+      </el-table-column>
+      <el-table-column
+        prop="createTime"
+        header-align="center"
+        align="center"
+        label="创建时间">
+      </el-table-column>
+      <el-table-column
         fixed="right"
         header-align="center"
         align="center"
@@ -114,9 +127,10 @@
         label="操作">
         <template slot-scope="scope">
           <el-button type="text" size="small" @click="addOrUpdateHandle(scope.row.id)">代理设置</el-button>
-          <el-button type="text" size="small" @click="cdregistertaskAccountListHandle(scope.row.id)">注册详情</el-button>
+          <el-button type="text" size="small" @click="cdregistertaskAccountListHandle(scope.row.id, scope.row.taskName)">注册详情</el-button>
           <el-button v-if="scope.row.registrationStatus === 9" type="text" size="small" @click="deleteHandle(scope.row.id)">停止真机任务</el-button>
           <el-button v-if="scope.row.registrationStatus != 3 && scope.row.registrationStatus != 7&& scope.row.registrationStatus != 9" type="text" size="small" @click="stopRegisterTask(scope.row.id)">暂停任务</el-button>
+          <el-button type="text" size="small" @click="deleteRegisterTaskHandle(scope.row.id)">删除注册任务</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -147,7 +161,8 @@ export default {
     return {
       dataForm: {
         countryCode: null,
-        registrationStatus: null
+        registrationStatus: null,
+        taskName: null
       },
       countryCodes: [],
       dataList: [],
@@ -184,7 +199,8 @@ export default {
           'page': this.pageIndex,
           'limit': this.pageSize,
           'countryCode': this.dataForm.countryCode,
-          'registrationStatus': this.dataForm.registrationStatus
+          'registrationStatus': this.dataForm.registrationStatus,
+          'taskName': this.dataForm.taskName
         })
       }).then(({data}) => {
         if (data && data.code === 0) {
@@ -245,10 +261,10 @@ export default {
       })
     },
     // 新增 / 修改
-    cdregistertaskAccountListHandle (id) {
+    cdregistertaskAccountListHandle (id, taskName) {
       this.cdregistertaskAccountListVisible = true
       this.$nextTick(() => {
-        this.$refs.cdregistertaskAccountList.init(id)
+        this.$refs.cdregistertaskAccountList.init(id, taskName)
       })
     },
     // 删除
@@ -265,6 +281,35 @@ export default {
           url: this.$http.adornUrl('/ltt/cdregistertask/delete'),
           method: 'post',
           data: this.$http.adornData(ids, false)
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.$message({
+              message: '操作成功',
+              type: 'success',
+              duration: 1500,
+              onClose: () => {
+                this.getDataList()
+              }
+            })
+          } else {
+            this.$message.error(data.msg)
+          }
+        })
+      })
+    },
+    // 删除注册任务
+    deleteRegisterTaskHandle (taskId) {
+      this.$confirm(`确定删除操作?`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$http({
+          url: this.$http.adornUrl('/ltt/cdregistertask/deleteRegisterTask'),
+          method: 'get',
+          params: this.$http.adornParams({
+            'taskId': taskId
+          })
         }).then(({data}) => {
           if (data && data.code === 0) {
             this.$message({

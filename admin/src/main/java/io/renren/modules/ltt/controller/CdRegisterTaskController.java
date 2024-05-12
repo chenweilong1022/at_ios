@@ -80,6 +80,16 @@ public class CdRegisterTaskController {
     }
 
     /**
+     * 删除注册任务
+     */
+    @RequestMapping("/deleteRegisterTask")
+    @RequiresPermissions("ltt:cdregistertask:update")
+    public R deleteRegisterTask(@RequestParam Integer taskId){
+		cdRegisterTaskService.deleteRegisterTask(taskId);
+
+        return R.ok();
+    }
+    /**
      * 删除
      */
     @RequestMapping("/delete")

@@ -1,7 +1,7 @@
 <template>
   <el-dialog
     width="70%"
-    :title="!dataForm.id ? '注册详情' : '注册详情'"
+    :title="dataForm.taskName"
     :close-on-click-modal="false"
     :visible.sync="visible">
     <div class="mod-config">
@@ -63,7 +63,7 @@
           label="手机号">
           <template slot-scope="scope">
           <el-badge :value="scope.row.registerCount" class="item">
-            <el-button size="small" @click="copyPhoneHandle(scope.row.phone)">{{ scope.row.phone }}</el-button>
+            <el-button type="text" @click="copyPhoneHandle(scope.row.phone)">{{ scope.row.phone }}</el-button>
           </el-badge>
           </template>
         </el-table-column>
@@ -151,15 +151,7 @@
         visible: false,
         dataForm: {
           id: 0,
-          phone: null,
-          totalAmount: '',
-          numberThreads: '',
-          numberRegistered: '',
-          numberSuccesses: '',
-          numberFailures: '',
-          registrationStatus: '',
-          deleteFlag: '',
-          createTime: ''
+          taskName: null
         },
         dataRule: {
           totalAmount: [
@@ -218,8 +210,9 @@
           this.dataListLoading = false
         })
       },
-      init (id) {
+      init (id, taskName) {
         this.dataForm.id = id || 0
+        this.dataForm.taskName = taskName || '详情'
         this.visible = true
         this.getRegisterStatus();
         this.getDataList();
@@ -336,6 +329,6 @@
 <style>
 .item {
   margin-top: 10px;
-  margin-right: 40px;
+  margin-right: 20px;
 }
 </style>

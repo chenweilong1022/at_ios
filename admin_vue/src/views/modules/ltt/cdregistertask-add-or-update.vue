@@ -4,6 +4,9 @@
     :close-on-click-modal="false"
     :visible.sync="visible">
     <el-form :model="dataForm" :rules="dataRule" ref="dataForm" @keyup.enter.native="dataFormSubmit()" label-width="140px">
+      <el-form-item label="任务名称" prop="taskName">
+        <el-input v-model="dataForm.taskName" placeholder="任务名称"></el-input>
+      </el-form-item>
       <el-form-item label="注册数量（成功）" prop="totalAmount">
         <el-input v-model="dataForm.totalAmount" placeholder="注册数量（成功）"></el-input>
       </el-form-item>
@@ -177,6 +180,7 @@ export default {
             params: this.$http.adornParams()
           }).then(({data}) => {
             if (data && data.code === 0) {
+              this.dataForm.taskName = data.cdregistertask.taskName
               this.dataForm.totalAmount = data.cdregistertask.totalAmount
               this.dataForm.numberThreads = data.cdregistertask.numberThreads
               this.dataForm.numberRegistered = data.cdregistertask.numberRegistered
@@ -199,6 +203,7 @@ export default {
             method: 'post',
             data: this.$http.adornData({
               'id': this.dataForm.id || undefined,
+              'taskName': this.dataForm.taskName,
               'totalAmount': this.dataForm.totalAmount,
               'numberThreads': this.dataForm.numberThreads,
               'numberRegistered': this.dataForm.numberRegistered,

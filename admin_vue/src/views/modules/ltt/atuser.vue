@@ -162,7 +162,7 @@
         <!-- 自定义表格列模板 -->
         <template slot-scope="scope">
           <el-badge :value="scope.row.registerCount" class="item" :class="getBadgeType(scope.row.registerCount)">
-            <el-button size="small" @click="copyPhoneHandle(scope.row.telephone)">{{ scope.row.telephone }}</el-button>
+            <el-button type="text" @click="copyPhoneHandle(scope.row.telephone)">{{ scope.row.telephone }}</el-button>
           </el-badge>
         </template>
       </el-table-column>
@@ -768,6 +768,6 @@
 <style>
 .item {
   margin-top: 10px;
-  margin-right: 40px;
+  margin-right: 20px;
 }
 </style>

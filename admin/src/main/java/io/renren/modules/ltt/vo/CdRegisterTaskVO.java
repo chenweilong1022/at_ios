@@ -32,6 +32,10 @@ public class CdRegisterTaskVO implements Serializable {
 	@TableId(type = IdType.AUTO)
 	@ApiModelProperty(required=false,value="")
 	private Integer id;
+
+
+	@ApiModelProperty(required=false,value="任务名称")
+	private String taskName;
 	/**
 	 *
 	 */

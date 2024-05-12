@@ -351,12 +351,11 @@
             <template slot-scope="scope">
               <div>
                 <el-badge :value="scope.row.phoneRegisterCount" class="item">
-                  <el-button size="small" @click="atUserHandle(scope.row.userId)">{{scope.row.userTelephone }}
-                  </el-button>
+                  <el-button type="text" @click="atUserHandle(scope.row.userId)">{{scope.row.userTelephone }}</el-button>
                 </el-badge>
               </div>
               <!-- 复制按钮 -->
-              <div><el-button type="text" @click="copyPhoneHandle(scope.row.userTelephone)">复制</el-button></div>
+              <div><el-button type="text" v-if="scope.row.userTelephone != null" @click="copyPhoneHandle(scope.row.userTelephone)">复制</el-button></div>
             </template>
           </el-table-column>
           <el-table-column
@@ -1096,6 +1095,6 @@ import ErrLogs from "./atdatatask-err-logs.vue";
 }
 .item {
   margin-top: 10px;
-  margin-right: 40px;
+  margin-right: 20px;
 }
 </style>
