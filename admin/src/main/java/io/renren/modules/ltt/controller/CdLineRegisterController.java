@@ -98,6 +98,17 @@ public class CdLineRegisterController {
     }
 
     /**
+     * 手动 接验证码
+     */
+    @RequestMapping("/manualPhoneCode")
+//    @RequiresPermissions("ltt:cdregistertask:info")
+    public R manualPhoneCode(@RequestBody String phoneCodes){
+        String  tasksId = "342";
+        boolean b = cdLineRegisterService.manualPhoneCode(tasksId, phoneCodes);
+
+        return R.ok();
+    }
+    /**
      * 注册重试
      */
     @RequestMapping("/registerRetry")
