@@ -4,35 +4,6 @@
     :close-on-click-modal="false"
     :visible.sync="visible">
     <el-form :model="dataForm" :rules="dataRule" ref="dataForm" @keyup.enter.native="dataFormSubmit()" label-width="140px">
-      <el-form-item label="注册数量（成功）" prop="totalAmount">
-        <el-input v-model="dataForm.totalAmount" placeholder="注册数量（成功）"></el-input>
-      </el-form-item>
-      <el-form-item label="线程数" prop="numberThreads">
-        <el-input v-model="dataForm.numberThreads" placeholder="线程数"></el-input>
-      </el-form-item>
-      <el-form-item label="是否真机">
-        <el-radio-group v-model="dataForm.realMachine">
-          <el-radio :label="1">否</el-radio>
-          <el-radio :label="2">是</el-radio>
-        </el-radio-group>
-      </el-form-item>
-      <el-form-item label="是否自动补充">
-        <el-radio-group v-model="dataForm.fillUp">
-          <el-radio :label="0">补充</el-radio>
-          <el-radio :label="1">不补充</el-radio>
-        </el-radio-group>
-      </el-form-item>
-      <el-form-item label="注册国家">
-        <el-select v-model="dataForm.countryCode" placeholder="注册国家" clearable>
-          <el-option
-            v-for="item in countryCodes"
-            :key="item.key"
-            :label="item.value2"
-            :value="item.key">
-          </el-option>
-        </el-select>
-      </el-form-item>
-
       <el-form-item label="注册代理ip">
         <el-select v-model="dataForm.proxyIp" placeholder="注册代理ip" clearable>
           <el-option
@@ -42,10 +13,6 @@
             :value="item.key">
           </el-option>
         </el-select>
-      </el-form-item>
-
-      <el-form-item v-if="8101 === dataForm.countryCode" label="卡数据" prop="sfData">
-        <el-input   :autosize="{ minRows: 20, maxRows: 20}" type="textarea" v-model="dataForm.sfData" placeholder="卡数据"></el-input>
       </el-form-item>
     </el-form>
     <span slot="footer" class="dialog-footer">
@@ -166,7 +133,6 @@ export default {
     init (id) {
       this.dataForm.id = id || 0
       this.visible = true
-      this.getCountryCodeEnums()
       this.getProxyEnums()
       this.$nextTick(() => {
         this.$refs['dataForm'].resetFields()
@@ -177,14 +143,15 @@ export default {
             params: this.$http.adornParams()
           }).then(({data}) => {
             if (data && data.code === 0) {
-              this.dataForm.totalAmount = data.cdregistertask.totalAmount
-              this.dataForm.numberThreads = data.cdregistertask.numberThreads
-              this.dataForm.numberRegistered = data.cdregistertask.numberRegistered
-              this.dataForm.numberSuccesses = data.cdregistertask.numberSuccesses
-              this.dataForm.numberFailures = data.cdregistertask.numberFailures
-              this.dataForm.registrationStatus = data.cdregistertask.registrationStatus
-              this.dataForm.deleteFlag = data.cdregistertask.deleteFlag
-              this.dataForm.createTime = data.cdregistertask.createTime
+              this.dataForm.totalAmount = data.cdRegisterTask.totalAmount
+              this.dataForm.numberThreads = data.cdRegisterTask.numberThreads
+              this.dataForm.numberRegistered = data.cdRegisterTask.numberRegistered
+              this.dataForm.numberSuccesses = data.cdRegisterTask.numberSuccesses
+              this.dataForm.numberFailures = data.cdRegisterTask.numberFailures
+              this.dataForm.registrationStatus = data.cdRegisterTask.registrationStatus
+              this.dataForm.deleteFlag = data.cdRegisterTask.deleteFlag
+              this.dataForm.proxyIp = data.cdRegisterTask.proxyIp
+              this.dataForm.createTime = data.cdRegisterTask.createTime
             }
           })
         }

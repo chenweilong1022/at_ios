@@ -9,8 +9,8 @@ import lombok.Getter;
 @Getter
 public enum ProxyStatus implements BaseEnum {
 
-    ProxyStatus1(1,"lunaproxy"),
-    ProxyStatus2(2,"ip2world"),
+    ProxyStatus1(1,"动态住宅"),
+
     ProxyStatus3(3,"静态代理"),
     ;
 

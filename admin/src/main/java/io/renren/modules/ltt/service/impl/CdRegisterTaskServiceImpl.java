@@ -71,7 +71,12 @@ public class CdRegisterTaskServiceImpl extends ServiceImpl<CdRegisterTaskDao, Cd
 
     @Override
     public CdRegisterTaskVO getById(Integer id) {
-        return CdRegisterTaskConver.MAPPER.conver(baseMapper.selectById(id));
+        String proxyId = (String) redisTemplate.opsForHash().get(RedisKeys.RedisKeys5.getValue(), String.valueOf(id));
+        CdRegisterTaskVO conver = CdRegisterTaskConver.MAPPER.conver(baseMapper.selectById(id));
+        if (ObjectUtil.isNotNull(proxyId)) {
+            conver.setProxyIp(Integer.valueOf(proxyId));
+        }
+        return conver;
     }
 
     @Resource(name = "stringQueueCacheIOSTaskVO")
@@ -104,10 +109,8 @@ public class CdRegisterTaskServiceImpl extends ServiceImpl<CdRegisterTaskDao, Cd
         }
         CdRegisterTaskEntity cdRegisterTaskEntity = CdRegisterTaskConver.MAPPER.converDTO(cdRegisterTask);
         boolean save = this.save(cdRegisterTaskEntity);
-//        proxyIp
-
-//        redisTemplate.opsForValue().set("","");
-
+        //设置注册代理类型
+        redisTemplate.opsForHash().put(RedisKeys.RedisKeys5.getValue(),String.valueOf(cdRegisterTaskEntity.getId()),String.valueOf(cdRegisterTask.getProxyIp()));
         //获取国家 如果是四方
         Integer countryCode = cdRegisterTask.getCountryCode();
         List<String> phones = new ArrayList<>();
@@ -262,6 +265,8 @@ public class CdRegisterTaskServiceImpl extends ServiceImpl<CdRegisterTaskDao, Cd
     @Override
     public boolean updateById(CdRegisterTaskDTO cdRegisterTask) {
         CdRegisterTaskEntity cdRegisterTaskEntity = CdRegisterTaskConver.MAPPER.converDTO(cdRegisterTask);
+        //设置注册代理类型
+        redisTemplate.opsForHash().put(RedisKeys.RedisKeys5.getValue(),String.valueOf(cdRegisterTaskEntity.getId()),String.valueOf(cdRegisterTask.getProxyIp()));
         return this.updateById(cdRegisterTaskEntity);
     }
 

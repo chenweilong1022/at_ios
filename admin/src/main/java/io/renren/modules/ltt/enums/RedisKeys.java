@@ -17,9 +17,29 @@ public enum RedisKeys implements BaseEnum {
      */
     RedisKeys4(4,"IP_INVALID_POOLS"),
     /**
+     * 注册代理类型
+     */
+    RedisKeys5(5,"REGISTER_PROXY_TYPE"),
+    /**
+     * 取ip的NX
+     */
+    RedisKeys6(6,"POPIP_NX"),
+    /**
+     * 存ip的NX
+     */
+    RedisKeys7(7,"PUSHIP_NX"),
+    /**
+     * 动态ip池
+     */
+    RedisKeys8(8,"DYNAMIC_IP_LIST"),
+    /**
+     * 静态ip池
+     */
+    RedisKeys9(9,"STATIC_IP_LIST"),
+    /**
      * 卡次数
      */
-    RedisKeys5(5,"PHONE_REGISTER"),
+    RedisKeys10(10,"PHONE_REGISTER"),
     ;
 
     RedisKeys(int key, String value) {

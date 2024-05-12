@@ -38,6 +38,11 @@ public class CdRegisterTaskVO implements Serializable {
 	@ApiModelProperty(required=false,value="")
 	private Integer totalAmount;
 	/**
+	 * 代理模式
+	 */
+	@ApiModelProperty(required=false,value="")
+	private Integer proxyIp;
+	/**
 	 *
 	 */
 	@ApiModelProperty(required=false,value="")
