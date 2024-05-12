@@ -497,33 +497,6 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         return falseCurlVO;
     }
 
-
-    @EventListener
-    @Order(value = 9999)//t35323ha-1027-61697		tha-1027-44108
-    public void handlerApplicationReadyEvent(ApplicationReadyEvent event) {
-        Set<String> keys = redisTemplate.keys(RedisKeys.RedisKeys2.getValue("*"));
-        if (CollUtil.isNotEmpty(keys)) {
-            return;
-        }
-        List<CdLineIpProxyEntity> list = this.list(new QueryWrapper<CdLineIpProxyEntity>().lambda().orderByDesc(CdLineIpProxyEntity::getId));
-        //ip关联sockets
-        Map<String, List<CdLineIpProxyEntity>> stringListMap = list.stream().collect(Collectors.groupingBy(CdLineIpProxyEntity::getLzCountry));
-        Map<String, String> getOutIpv4IpMap = new HashMap<>();
-        for (String s : stringListMap.keySet()) {
-            //根据国家分配缓存
-            List<CdLineIpProxyEntity> cdLineIpProxyEntities = stringListMap.get(s);
-            Map<String, CdLineIpProxyEntity> tokenPhoneCdLineIpProxyEntityMap = cdLineIpProxyEntities.stream().filter(item -> StrUtil.isNotEmpty(item.getTokenPhone())).collect(Collectors.toMap(CdLineIpProxyEntity::getTokenPhone, item -> item, (a, b) -> a));
-            Map<String, String> tokenPhoneIpV4Map = new HashMap<>();
-            for (String string : tokenPhoneCdLineIpProxyEntityMap.keySet()) {
-                CdLineIpProxyEntity cdLineIpProxyEntity = tokenPhoneCdLineIpProxyEntityMap.get(string);
-                tokenPhoneIpV4Map.put(string,cdLineIpProxyEntity.getOutIpv4());
-                getOutIpv4IpMap.put(cdLineIpProxyEntity.getOutIpv4(),cdLineIpProxyEntity.getIp());
-            }
-            redisTemplate.opsForHash().putAll(RedisKeys.RedisKeys2.getValue(s),tokenPhoneIpV4Map);
-        }
-        redisTemplate.opsForHash().putAll(RedisKeys.RedisKeys1.getValue(),getOutIpv4IpMap);
-    }
-
     @Override
     public Integer deleteByTokenPhone(List<String> tokenPhoneList) {
         if (CollUtil.isEmpty(tokenPhoneList)) {
