@@ -504,14 +504,10 @@ public class UserTask {
      */
     private Integer getPhoneRegister(AtUserEntity atUserEntity) {
         try {
-            Integer registerCount = (Integer) redisTemplate.opsForHash()
+            Object object = redisTemplate.opsForHash()
                     .get(RedisKeys.RedisKeys10.getValue(), atUserEntity.getTelephone());
-            if (registerCount != null) {
-                registerCount += 1;
-                redisTemplate.opsForHash().put(RedisKeys.RedisKeys10.getValue(), atUserEntity.getTelephone(), registerCount);
-            } else {
-                registerCount = 1;
-            }
+            Integer registerCount = object == null ? 1 : Integer.valueOf(String.valueOf(object));
+            redisTemplate.opsForHash().put(RedisKeys.RedisKeys10.getValue(), atUserEntity.getTelephone(), registerCount);
             return registerCount;
         } catch (Exception e) {
             log.error("更新卡注册次数异常 {}, {}", atUserEntity, e);
