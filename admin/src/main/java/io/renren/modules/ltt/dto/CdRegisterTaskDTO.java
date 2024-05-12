@@ -42,6 +42,11 @@ public class CdRegisterTaskDTO extends PageParam implements Serializable {
 	@ApiModelProperty(required=false,value="")
 	private Integer numberThreads;
 	/**
+	 * 代理模式
+	 */
+	@ApiModelProperty(required=false,value="")
+	private Integer proxyIp;
+	/**
 	 *
 	 */
 	@ApiModelProperty(required=false,value="")
@@ -86,11 +91,6 @@ public class CdRegisterTaskDTO extends PageParam implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="")
 	private Integer fillUpRegisterTaskId;
-	/**
-	 *
-	 */
-	@ApiModelProperty(required=false,value="")
-	private Integer proxyIp;
 	/**
 	 *
 	 */

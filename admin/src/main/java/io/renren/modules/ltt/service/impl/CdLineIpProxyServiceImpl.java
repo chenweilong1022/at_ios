@@ -22,6 +22,7 @@ import io.renren.modules.ltt.entity.CdIpConfigEntity;
 import io.renren.modules.ltt.entity.CdLineIpProxyEntity;
 import io.renren.modules.ltt.enums.CountryCode;
 import io.renren.modules.ltt.enums.LockMapKeyResource;
+import io.renren.modules.ltt.enums.ProxyStatus;
 import io.renren.modules.ltt.enums.RedisKeys;
 import io.renren.modules.ltt.service.CdIpConfigService;
 import io.renren.modules.ltt.service.CdLineIpProxyService;
@@ -115,11 +116,6 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
     @Transactional(rollbackFor = Exception.class)
     public String getProxyIp(CdLineIpProxyDTO cdLineIpProxyDTO) {
         log.info("cdLineIpProxyDTO = {}",JSONUtil.toJsonStr(cdLineIpProxyDTO));
-        //获取缓存
-        ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
-        if (ObjectUtil.isNull(projectWorkEntity)) {
-            return null;
-        }
         //获取ip代理的国家
         PhoneCountryVO phoneNumberInfo = null;
         try {
@@ -127,61 +123,111 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         } catch (Exception e) {
             return null;
         }
+        //设置代理的国家，如果不传入默认是当前是当前手机号的国家
         Long countryCode = phoneNumberInfo.getCountryCode();
         if (ObjectUtil.isNotNull(cdLineIpProxyDTO.getCountryCode())) {
             countryCode = cdLineIpProxyDTO.getCountryCode();
         }
-
-        Integer proxy = ObjectUtil.isNotNull(cdLineIpProxyDTO.getSelectProxyStatus()) ?
-                cdLineIpProxyDTO.getSelectProxyStatus() : projectWorkEntity.getProxy();
-//        String keyByResource1 = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource3, countryCode.intValue());
-//        Lock lock1 = lockMap.computeIfAbsent(keyByResource1, k -> new ReentrantLock());
-//        countryCode = 1L;
+        //设置默认代理 如果不传入默认是动态
+        Integer proxy = cdLineIpProxyDTO.getSelectProxyStatus();
+        if (ObjectUtil.isNull(proxy)) {
+            cdLineIpProxyDTO.setSelectProxyStatus(ProxyStatus.ProxyStatus1.getKey());
+        }
         String ip = getIp(cdLineIpProxyDTO, countryCode, proxy,phoneNumberInfo);
-//        if (StrUtil.isEmpty(ip)) {
-//            ip = getIp(cdLineIpProxyDTO,82L);
-//            if (StrUtil.isEmpty(ip)) {
-//                ip = getIp(cdLineIpProxyDTO,1L);
-//            }
-//        }
         log.info("phone = {} countryCode = {}获取到的ip {}",cdLineIpProxyDTO.getTokenPhone(),countryCode,ip);
         return ip;
     }
 
     private String getIp(CdLineIpProxyDTO cdLineIpProxyDTO, Long countryCode, Integer proxy,PhoneCountryVO phoneNumberInfo) {
-
-        String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource3, cdLineIpProxyDTO.getTokenPhone());
-        Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
-        boolean triedLock = lock.tryLock();
-        log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
-        if(triedLock) {
-            try{
-                String regions = EnumUtil.queryValueByKey(countryCode.intValue(), CountryCode.values());
-                //出口ip
-                String outIpv4 = (String) redisTemplate.opsForHash().get(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), cdLineIpProxyDTO.getTokenPhone());
-                String ipS5 = null;
-                if (StrUtil.isNotEmpty(outIpv4)) {
-                    ipS5 = (String) redisTemplate.opsForHash().get(RedisKeys.RedisKeys1.getValue(), outIpv4);
-                }
-                //如果有直接返回
-                if (StrUtil.isNotEmpty(outIpv4) && StrUtil.isNotEmpty(ipS5)) {
-                    CurlVO proxyUse = getProxyUse(ipS5, regions, proxy);
-                    if (proxyUse.isProxyUse()) {
-
-                        //判断ip黑名单缓存中是否有
-                        String value = RedisKeys.RedisKeys4.getValue(proxyUse.getIp());
-                        String ipCache = redisTemplate.opsForValue().get(value);
-                        if (ipCache != null) {
-                            redisTemplate.opsForHash().delete(RedisKeys.RedisKeys1.getValue(), outIpv4);
+        try{
+            //国家英文
+            String regions = EnumUtil.queryValueByKey(countryCode.intValue(), CountryCode.values());
+            //出口ip
+            String outIpv4 = (String) redisTemplate.opsForHash().get(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), cdLineIpProxyDTO.getTokenPhone());
+            String ipS5 = null;
+            if (StrUtil.isNotEmpty(outIpv4)) {
+                ipS5 = (String) redisTemplate.opsForHash().get(RedisKeys.RedisKeys1.getValue(), outIpv4);
+            }
+            //如果有ip直接返回
+            if (StrUtil.isNotEmpty(outIpv4) && StrUtil.isNotEmpty(ipS5)) {
+                CurlVO proxyUse = getProxyUse(ipS5, regions, proxy);
+                if (proxyUse.isProxyUse()) {
+                    //判断ip黑名单缓存中是否有
+                    String value = RedisKeys.RedisKeys4.getValue(proxyUse.getIp());
+                    String ipCache = redisTemplate.opsForValue().get(value);
+                    if (ipCache != null) {
+                        redisTemplate.opsForHash().delete(RedisKeys.RedisKeys1.getValue(), outIpv4);
+                        return null;
+                    }
+                    //如果ip相同并且国家一样
+                    if (proxyUse.getIp().equals(outIpv4) && regions.toLowerCase().equals(proxyUse.getCountry().toLowerCase())) {
+                        return socks5Pre(ipS5);
+                        //如果ip不相同相同并且国家一样
+                    } else if (regions.toLowerCase().equals(proxyUse.getCountry().toLowerCase())) {
+                        Boolean b = redisTemplate.opsForHash().putIfAbsent(RedisKeys.RedisKeys1.getValue(), proxyUse.getIp(), ipS5);
+                        if (b) {
+                            if (StrUtil.isNotEmpty(outIpv4)) {
+                                if (!outIpv4.equals(proxyUse.getIp())) {
+                                    redisTemplate.opsForValue().set(RedisKeys.RedisKeys4.getValue(outIpv4), cdLineIpProxyDTO.getTokenPhone(), 1, TimeUnit.DAYS);
+                                    redisTemplate.opsForHash().delete(RedisKeys.RedisKeys1.getValue(), outIpv4);
+                                }
+                            }
+                            redisTemplate.opsForHash().put(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), cdLineIpProxyDTO.getTokenPhone(), proxyUse.getIp());
+                            return socks5Pre(ipS5);
+                        }else {
+                            redisTemplate.opsForHash().delete(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), cdLineIpProxyDTO.getTokenPhone());
+                        }
+                    } else {
+                        if (proxy == 3) {
+                            //静态代理时，无法获取出口ip，人工处理，不重复取新的ip
+                            log.error("getProxyIp_error 静态ip异常 {},", proxyUse);
                             return null;
                         }
+                    }
+                } else {
+                    if (proxy == 3) {
+                        //静态代理时，无法获取出口ip，人工处理，不重复取新的ip
+                        log.error("getProxyIp_error 静态ip异常 {}", proxyUse);
+                        return null;
+                    }
+                }
 
-                        //如果ip相同并且国家一样
-                        if (proxyUse.getIp().equals(outIpv4) && regions.toLowerCase().equals(proxyUse.getCountry().toLowerCase())) {
-                            return socks5Pre(ipS5);
-                            //如果ip不相同相同并且国家一样
-                        } else if (regions.toLowerCase().equals(proxyUse.getCountry().toLowerCase())) {
-                            Boolean b = redisTemplate.opsForHash().putIfAbsent(RedisKeys.RedisKeys1.getValue(), proxyUse.getIp(), ipS5);
+            } else {
+                int len = 50;
+                //从redis取出50条ip 根据国家获取
+                Boolean b1 = redisTemplate.opsForValue().setIfAbsent(RedisKeys.RedisKeys6.getValue(regions), cdLineIpProxyDTO.getTokenPhone());
+                Queue<String> getflowip = new LinkedList<>();
+                if (b1) {
+                    try {
+                        for (int i1 = 0; i1 < 50; i1++) {
+                            String s = redisTemplate.opsForList().rightPop(RedisKeys.RedisKeys8.getValue(regions));
+                            if (s == null) {
+                                break;
+                            }
+                            getflowip.add(s);
+                        }
+                    }catch (Exception e) {
+                        log.error("rightPop = {}",e.getMessage());
+                    }
+                }
+                //释放对列
+                redisTemplate.delete(regions);
+                if (CollUtil.isEmpty(getflowip)) {
+                    return null;
+                }
+                //循环获取ip
+                for (String ip : getflowip) {
+                    CurlVO proxyUse = getProxyUse(ip, regions, proxy);
+                    if (proxyUse.isProxyUse()) {
+                        //判断ip黑名单缓存中是否有
+                        String ipCache = redisTemplate.opsForValue().get(RedisKeys.RedisKeys4.getValue(proxyUse.getIp()));
+                        if (ipCache != null) {
+                            continue;
+                        }
+
+                        //如果国家一样
+                        if (regions.toLowerCase().equals(proxyUse.getCountry().toLowerCase())) {
+                            Boolean b = redisTemplate.opsForHash().putIfAbsent(RedisKeys.RedisKeys1.getValue(), proxyUse.getIp(), ip);
                             if (b) {
                                 if (StrUtil.isNotEmpty(outIpv4)) {
                                     if (!outIpv4.equals(proxyUse.getIp())) {
@@ -190,104 +236,14 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                                     }
                                 }
                                 redisTemplate.opsForHash().put(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), cdLineIpProxyDTO.getTokenPhone(), proxyUse.getIp());
-                                return socks5Pre(ipS5);
-                            }else {
-                                redisTemplate.opsForHash().delete(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), cdLineIpProxyDTO.getTokenPhone());
-                            }
-                        } else {
-                            if (proxy == 3) {
-                                //静态代理时，无法获取出口ip，人工处理，不重复取新的ip
-                                log.error("getProxyIp_error 静态ip异常 {},", proxyUse);
-                                return null;
-                            }
-                        }
-                    } else {
-                        if (proxy == 3) {
-                            //静态代理时，无法获取出口ip，人工处理，不重复取新的ip
-                            log.error("getProxyIp_error 静态ip异常 {}", proxyUse);
-                            return null;
-                        }
-                    }
-
-                } else {
-                    int i = 0;
-                    int len = 50;
-                    while (i < len) {
-                        i++;
-                        String ip = null;
-
-                        String ipKey = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource14, regions);
-                        Lock ipLock = lockMap.computeIfAbsent(ipKey, k -> new ReentrantLock());
-                        boolean ipLockFlag = ipLock.tryLock();
-                        log.info("keyByResource = {} 获取的锁为 = {}", keyByResource, ipLockFlag);
-                        if (ipLockFlag) {
-                            try {
-                                Queue<String> getflowip = caffeineCacheListString.getIfPresent(regions);
-                                if (CollUtil.isEmpty(getflowip)) {
-                                    //获取ip
-                                    getflowip = getIpResp(regions, proxy,phoneNumberInfo);
-                                }
-                                if (CollUtil.isNotEmpty(getflowip)) {
-                                    ip = getflowip.poll();
-                                    caffeineCacheListString.put(regions, getflowip);
-                                }
-                            } finally{
-                                try {
-                                    ipLock.unlock();
-                                } catch (Exception e) {
-                                    log.error("lock = {}", "没有上锁");
-                                }
-                            }
-                        }
-                        if (StringUtils.isEmpty(ip)) {
-                            continue;
-                        }
-                        CurlVO proxyUse = getProxyUse(ip, regions, proxy);
-                        if (proxyUse.isProxyUse()) {
-                            //判断ip黑名单缓存中是否有
-                            String ipCache = redisTemplate.opsForValue().get(RedisKeys.RedisKeys4.getValue(proxyUse.getIp()));
-                            if (ipCache != null) {
-                                continue;
-                            }
-
-                            //如果国家一样
-                            if (regions.toLowerCase().equals(proxyUse.getCountry().toLowerCase())) {
-                                Boolean b = redisTemplate.opsForHash().putIfAbsent(RedisKeys.RedisKeys1.getValue(), proxyUse.getIp(), ip);
-                                if (b) {
-                                    if (StrUtil.isNotEmpty(outIpv4)) {
-                                        if (!outIpv4.equals(proxyUse.getIp())) {
-                                            redisTemplate.opsForValue().set(RedisKeys.RedisKeys4.getValue(outIpv4), cdLineIpProxyDTO.getTokenPhone(), 1, TimeUnit.DAYS);
-                                            redisTemplate.opsForHash().delete(RedisKeys.RedisKeys1.getValue(), outIpv4);
-                                        }
-                                    }
-                                    redisTemplate.opsForHash().put(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), cdLineIpProxyDTO.getTokenPhone(), proxyUse.getIp());
-                                    return socks5Pre(ip);
-                                }
-                            } else {
-                                if (proxy == 3) {
-                                    //静态代理时，无法获取出口ip，人工处理，不重复取新的ip
-                                    log.error("getProxyIp_error 静态ip异常 {}, {}", ip, proxyUse);
-                                    return null;
-                                }
-                            }
-                        } else {
-                            if (proxy == 3) {
-                                //静态代理时，无法获取出口ip，人工处理，不重复取新的ip
-                                log.error("getProxyIp_error 静态ip异常 {}, {}", ip, proxyUse);
-                                return null;
+                                return socks5Pre(ip);
                             }
                         }
                     }
-                }
-            } finally {
-                try {
-                    lock.unlock();
-                } catch (Exception e) {
-                    log.error("lock = {}", "没有上锁");
                 }
             }
-        } else {
-            log.info("keyByResource = {} 在执行",keyByResource);
+        }catch (Exception e) {
+            log.error("cdLineIpProxyService = {}",e.getMessage());
         }
         return null;
     }

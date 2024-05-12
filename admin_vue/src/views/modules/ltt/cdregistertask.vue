@@ -113,6 +113,7 @@
         width="150"
         label="操作">
         <template slot-scope="scope">
+          <el-button type="text" size="small" @click="addOrUpdateHandle(scope.row.id)">代理设置</el-button>
           <el-button type="text" size="small" @click="cdregistertaskAccountListHandle(scope.row.id)">注册详情</el-button>
           <el-button v-if="scope.row.registrationStatus === 9" type="text" size="small" @click="deleteHandle(scope.row.id)">停止真机任务</el-button>
           <el-button v-if="scope.row.registrationStatus != 3 && scope.row.registrationStatus != 7&& scope.row.registrationStatus != 9" type="text" size="small" @click="stopRegisterTask(scope.row.id)">暂停任务</el-button>
@@ -131,12 +132,14 @@
     <!-- 弹窗, 新增 / 修改 -->
     <add-or-update v-if="addOrUpdateVisible" ref="addOrUpdate" @refreshDataList="getDataList"></add-or-update>
     <clean-ip v-if="cleanIpVisible" ref="CleanIp" @refreshDataList="getDataList"></clean-ip>
+    <set-proxy v-if="setProxyVisible" ref="setProxy" @refreshDataList="getDataList"></set-proxy>
     <cdregistertask-account-list v-if="cdregistertaskAccountListVisible" ref="cdregistertaskAccountList" @refreshDataList="getDataList"></cdregistertask-account-list>
   </div>
 </template>
 
 <script>
 import AddOrUpdate from './cdregistertask-add-or-update'
+import SetProxy from './cdregistertask-set-proxy'
 import CleanIp from './cdregister-ip'
 import CdregistertaskAccountList from './cdregistertask-account-list'
 export default {
@@ -156,12 +159,14 @@ export default {
       registrationStatusCodes: [{key: 1, value: '新注册'}, {key: 2, value: '注册中'}, {key: 3, value: '暂停注册'}, {key: 7, value: '注册完成'}, {key: 9, value: '真机注册任务'}],
       addOrUpdateVisible: false,
       cleanIpVisible: false,
+      setProxyVisible: false,
       cdregistertaskAccountListVisible: false
     }
   },
   components: {
     AddOrUpdate,
     CleanIp,
+    SetProxy,
     CdregistertaskAccountList
   },
   activated () {
@@ -221,10 +226,17 @@ export default {
     },
     // 新增 / 修改
     addOrUpdateHandle (id) {
-      this.addOrUpdateVisible = true
-      this.$nextTick(() => {
-        this.$refs.addOrUpdate.init(id)
-      })
+      if (id) {
+        this.setProxyVisible = true
+        this.$nextTick(() => {
+          this.$refs.setProxy.init(id)
+        })
+      } else {
+        this.addOrUpdateVisible = true
+        this.$nextTick(() => {
+          this.$refs.addOrUpdate.init(id)
+        })
+      }
     },
     cleanIpHandle () {
       this.cleanIpVisible = true
