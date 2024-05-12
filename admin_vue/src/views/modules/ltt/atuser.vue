@@ -768,6 +768,6 @@
 <style>
 .item {
   margin-top: 10px;
-  margin-right: 20px;
+  //margin-right: 20px;
 }
 </style>
