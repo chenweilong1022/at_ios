@@ -166,6 +166,9 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                             //如果ip相同并且国家一样
                             if (extracted(cdLineIpProxyDTO, countryCode, proxyUse, outIpv4, regions, ipS5))
                                 return socks5Pre(ipS5);
+                        }else {
+                            redisTemplate.opsForValue().set(RedisKeys.RedisKeys4.getValue(outIpv4), cdLineIpProxyDTO.getTokenPhone(), 1, TimeUnit.DAYS);
+                            redisTemplate.opsForHash().delete(RedisKeys.RedisKeys1.getValue(), outIpv4);
                         }
                     }else {
                         if (extracted(cdLineIpProxyDTO, countryCode, proxyUse, outIpv4, regions, ipS5))
