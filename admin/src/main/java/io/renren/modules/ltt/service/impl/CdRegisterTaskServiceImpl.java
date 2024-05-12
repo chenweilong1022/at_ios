@@ -290,7 +290,7 @@ public class CdRegisterTaskServiceImpl extends ServiceImpl<CdRegisterTaskDao, Cd
         CdRegisterTaskEntity cdRegisterTaskEntity = CdRegisterTaskConver.MAPPER.converDTO(cdRegisterTask);
         //设置注册代理类型
         redisTemplate.opsForHash().put(RedisKeys.RedisKeys5.getValue(),String.valueOf(cdRegisterTaskEntity.getId()),String.valueOf(cdRegisterTask.getProxyIp()));
-        return this.updateById(cdRegisterTaskEntity);
+        return true;
     }
 
     @Override
