@@ -166,19 +166,7 @@ export default {
             method: 'post',
             data: this.$http.adornData({
               'id': this.dataForm.id || undefined,
-              'totalAmount': this.dataForm.totalAmount,
-              'numberThreads': this.dataForm.numberThreads,
-              'numberRegistered': this.dataForm.numberRegistered,
-              'numberSuccesses': this.dataForm.numberSuccesses,
-              'numberFailures': this.dataForm.numberFailures,
-              'registrationStatus': this.dataForm.registrationStatus,
-              'fillUp': this.dataForm.fillUp,
-              'realMachine': this.dataForm.realMachine,
-              'countryCode': this.dataForm.countryCode,
-              'proxyIp': this.dataForm.proxyIp,
-              'sfData': this.dataForm.sfData,
-              'deleteFlag': this.dataForm.deleteFlag,
-              'createTime': this.dataForm.createTime
+              'proxyIp': this.dataForm.proxyIp
             })
           }).then(({data}) => {
             if (data && data.code === 0) {
