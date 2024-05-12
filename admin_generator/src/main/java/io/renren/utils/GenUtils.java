@@ -40,17 +40,17 @@ public class GenUtils {
 
     public static List<String> getTemplates(){
         List<String> templates = new ArrayList<String>();
-        templates.add("template/Entity.java.vm");
-        templates.add("template/Dao.java.vm");
-        templates.add("template/Dao.xml.vm");
-        templates.add("template/Service.java.vm");
-        templates.add("template/ServiceImpl.java.vm");
+//        templates.add("template/Entity.java.vm");
+//        templates.add("template/Dao.java.vm");
+//        templates.add("template/Dao.xml.vm");
+//        templates.add("template/Service.java.vm");
+//        templates.add("template/ServiceImpl.java.vm");
         templates.add("template/Controller.java.vm");
         templates.add("template/menu.sql.vm");
 
-        templates.add("template/Conver.java.vm");
-        templates.add("template/DTO.java.vm");
-        templates.add("template/VO.java.vm");
+//        templates.add("template/Conver.java.vm");
+//        templates.add("template/DTO.java.vm");
+//        templates.add("template/VO.java.vm");
 
         templates.add("template/index.vue.vm");
         templates.add("template/add-or-update.vue.vm");
