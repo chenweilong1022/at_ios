@@ -132,6 +132,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         Integer proxy = cdLineIpProxyDTO.getSelectProxyStatus();
         if (ObjectUtil.isNull(proxy)) {
             cdLineIpProxyDTO.setSelectProxyStatus(ProxyStatus.ProxyStatus1.getKey());
+            proxy = ProxyStatus.ProxyStatus1.getKey();
         }
         String ip = getIp(cdLineIpProxyDTO, countryCode, proxy,phoneNumberInfo);
         log.info("phone = {} countryCode = {}获取到的ip {}",cdLineIpProxyDTO.getTokenPhone(),countryCode,ip);
@@ -203,10 +204,11 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                         }
                     }catch (Exception e) {
                         log.error("rightPop = {}",e.getMessage());
+                    }finally {
+                        //释放对列
+                        redisTemplate.delete(regions);
                     }
                 }
-                //释放对列
-                redisTemplate.delete(regions);
                 if (CollUtil.isEmpty(getflowip)) {
                     return null;
                 }
@@ -359,33 +361,20 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 //            //静态代理
 //            return isProxyUseMe(ip, country);
 //        }
-
-        // 尝试获取许可，不阻塞
-        boolean permitAcquired = semaphore.tryAcquire();
-        if (permitAcquired) {
-            try {
-                log.error("selectProxyUse_error_proxy {}", proxy);
-                CurlVO proxyUseMe = isProxyUseMe(ip, country);
-                if (proxyUseMe.isProxyUse()) {
-                    return proxyUseMe;
-                }
-                proxyUseMe = isProxyUseMeIpecho(ip, country);
-                if (proxyUseMe.isProxyUse()) {
-                    return proxyUseMe;
-                }
-                proxyUseMe = isProxyUse(ip, country);
-                if (proxyUseMe.isProxyUse()) {
-                    return proxyUseMe;
-                }
-                return isProxyUseIp2World(ip, country);
-            }catch (Exception e){
-                log.info("ip = {} country = {} format = {} err = {}",ip,country,e.getMessage());
-            }finally {
-                // 释放许可
-                semaphore.release();
-            }
+        log.error("selectProxyUse_error_proxy {}", proxy);
+        CurlVO proxyUseMe = isProxyUseMe(ip, country);
+        if (proxyUseMe.isProxyUse()) {
+            return proxyUseMe;
         }
-        return null;
+        proxyUseMe = isProxyUseMeIpecho(ip, country);
+        if (proxyUseMe.isProxyUse()) {
+            return proxyUseMe;
+        }
+        proxyUseMe = isProxyUse(ip, country);
+        if (proxyUseMe.isProxyUse()) {
+            return proxyUseMe;
+        }
+        return isProxyUseIp2World(ip, country);
     }
 
     private static final Semaphore semaphore = new Semaphore(200);
