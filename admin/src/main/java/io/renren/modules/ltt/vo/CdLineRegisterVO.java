@@ -158,6 +158,8 @@ public class CdLineRegisterVO implements Serializable {
 	@ApiModelProperty(required=false,value="")
 	private Integer exportStatus;
 
+	@ApiModelProperty(required=false,value="卡次数")
+	private Integer registerCount;
 	public String getCountryCode() {
 		if (StringUtils.isNotEmpty(this.countryCode)) {
 			return this.countryCode;

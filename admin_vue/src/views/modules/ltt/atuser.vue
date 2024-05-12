@@ -18,13 +18,15 @@
         <el-input v-model="dataForm.telephone" placeholder="手机号" clearable></el-input>
       </el-form-item>
       <el-form-item>
+        <el-input v-model="dataForm.registerCount" placeholder="卡注册次数" clearable></el-input>
+      </el-form-item>
+      <el-form-item>
         <el-select
           v-model="dataForm.userGroupId"
           filterable clearable
           remote
           placeholder="选择分组"
-          :remote-method="queryUserGroupBySearchWord"
-          :loading="loading">
+          :remote-method="queryUserGroupBySearchWord">
           <el-option
             v-for="item in userGroupOptions"
             :key="item.id"
@@ -53,8 +55,7 @@
           filterable clearable
           remote
           placeholder="选择客服"
-          :remote-method="queryCustomerByFuzzyName"
-          :loading="loading">
+          :remote-method="queryCustomerByFuzzyName">
           <el-option
             v-for="item in customerUserOptions"
             :key="item.userId"
@@ -129,6 +130,9 @@
         <el-button style="margin-top: 15px;" v-if="isAuth('ltt:atuser:save')" type="danger"
                    @click="cleanBlockData()">清理封号
         </el-button>
+        <el-button type="primary" @click="copyPhoneHandle()"
+                   :disabled="dataListSelections.length <= 0">复制手机号
+        </el-button>
       </el-form-item>
     </el-form>
     <el-table
@@ -153,8 +157,14 @@
       <el-table-column
         prop="telephone"
         header-align="center"
-        align="center"
+        align="center" width="150px"
         label="电话">
+        <!-- 自定义表格列模板 -->
+        <template slot-scope="scope">
+          <el-badge :value="scope.row.registerCount" class="item" :class="getBadgeType(scope.row.registerCount)">
+            <el-button size="small" @click="copyPhoneHandle(scope.row.telephone)">{{ scope.row.telephone }}</el-button>
+          </el-badge>
+        </template>
       </el-table-column>
       <el-table-column
         prop="nickName"
@@ -331,6 +341,7 @@
           selectLimit: null,
           tokenOpenStatus: null,
           tokenOpenTimeSort: null,
+          registerCount: null,
           tokenOpenTime: null,
           tokenErrMsg: null
         },
@@ -424,7 +435,8 @@
             'id': this.dataForm.userId,
             'selectLimit': this.dataForm.selectLimit,
             'tokenOpenStatus': this.dataForm.tokenOpenStatus,
-            'tokenOpenTimeSort': this.dataForm.tokenOpenTimeSort
+            'tokenOpenTimeSort': this.dataForm.tokenOpenTimeSort,
+            'registerCount': this.dataForm.registerCount
           })
         }).then(({data}) => {
           if (data && data.code === 0) {
@@ -436,6 +448,27 @@
           }
           this.dataListLoading = false
         })
+      },
+      copyPhoneHandle (telephone) {
+        var telephones = telephone ? [telephone.trim()] : this.dataListSelections.map(item => {
+          return item.telephone.trim()
+        })
+        navigator.clipboard.writeText(telephones).then(() => {
+          this.$message.success('手机号复制成功！')
+        })
+      },
+      getBadgeType (registerCount) {
+        if (registerCount === null) {
+          return ''
+        }
+        if (registerCount === 1) {
+          return 'success'
+        } else if (registerCount === 2) {
+          return 'warning'
+        } else if (registerCount >= 3) {
+          return 'danger'
+        }
+        return ''
       },
       // 每页数
       sizeChangeHandle (val) {
@@ -733,4 +766,8 @@
   }
 </script>
 <style>
+.item {
+  margin-top: 10px;
+  margin-right: 40px;
+}
 </style>

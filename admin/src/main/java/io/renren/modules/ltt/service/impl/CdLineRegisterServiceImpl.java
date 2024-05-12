@@ -8,6 +8,7 @@ import io.renren.modules.ltt.dto.LineRegisterSummaryResultDto;
 import io.renren.modules.ltt.entity.CdGetPhoneEntity;
 import io.renren.modules.ltt.enums.CountryCode;
 import io.renren.modules.ltt.enums.PhoneStatus;
+import io.renren.modules.ltt.enums.RedisKeys;
 import io.renren.modules.ltt.enums.RegisterStatus;
 import io.renren.modules.ltt.service.CdGetPhoneService;
 import io.renren.modules.ltt.service.CdLineIpProxyService;
@@ -18,6 +19,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -48,7 +50,7 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
 
 
     @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private StringRedisTemplate redisTemplate;
 
     @Override
     public PageUtils<CdLineRegisterVO> queryPage(CdLineRegisterDTO cdLineRegister) {
@@ -66,6 +68,11 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
                 new Query<CdLineRegisterEntity>(cdLineRegister).getPage(),
                 cdLineRegister
         );
+        for (CdLineRegisterVO record : page.getRecords()) {
+            Object object = redisTemplate.opsForHash()
+                    .get(RedisKeys.RedisKeys5.getValue(), record.getPhone());
+            record.setRegisterCount(object == null ? 1 : Integer.valueOf(String.valueOf(object)));
+        }
         return PageUtils.<CdLineRegisterVO>page(page);
     }
 

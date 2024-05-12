@@ -131,4 +131,9 @@ public class AtUserDTO extends PageParam implements Serializable {
 
 	@ApiModelProperty(required=false,value="排序 0正序 1倒序")
 	private Integer tokenOpenTimeSort;
+
+
+
+	@ApiModelProperty(required=false,value="卡次数")
+	private Integer registerCount;
 }

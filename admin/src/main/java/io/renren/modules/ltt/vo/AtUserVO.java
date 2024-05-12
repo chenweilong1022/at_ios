@@ -133,4 +133,7 @@ public class AtUserVO implements Serializable {
 	@ApiModelProperty(required=false,value="at_user_token表")
 	private String tokenErrMsg;
 
+
+	@ApiModelProperty(required=false,value="卡次数")
+	private Integer registerCount;
 }

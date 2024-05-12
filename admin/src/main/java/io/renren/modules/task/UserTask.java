@@ -20,6 +20,7 @@ import io.renren.modules.ltt.vo.IssueLiffViewVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -74,6 +75,9 @@ public class UserTask {
     ThreadPoolTaskExecutor threadPoolTaskExecutor;
     @Autowired
     private AtDataSubtaskService atDataSubtaskService;
+
+    @Autowired
+    private StringRedisTemplate redisTemplate;
 
 //    /**
 //     * 更新头像结果返回
@@ -468,10 +472,15 @@ public class UserTask {
                                 && AtUserTokenType2.getKey().equals(atUserTokenEntity.getTokenType())) {
                             atUserEntity.setUserSource(AtUserSourceEnum.AtUserSource2.getKey());
                         }
+
+                        //更新并返回卡注册次数
+                        atUserEntity.setRegisterCount(this.getPhoneRegister(atUserEntity));
+
 //                        if (ObjectUtil.isNotNull(one)) {
 //                            atUserEntity.setId(one.getId());
 //                            atUserService.updateById(atUserEntity);
 //                        }else {
+                            //存账户信息
                             atUserService.save(atUserEntity);
 //                        }
                         //修改数据使用状态
@@ -488,6 +497,26 @@ public class UserTask {
             });
         }
 
+    }
+
+    /**
+     * 更新并返回卡注册次数
+     */
+    private Integer getPhoneRegister(AtUserEntity atUserEntity) {
+        try {
+            Integer registerCount = (Integer) redisTemplate.opsForHash()
+                    .get(RedisKeys.RedisKeys5.getValue(), atUserEntity.getTelephone());
+            if (registerCount != null) {
+                registerCount += 1;
+                redisTemplate.opsForHash().put(RedisKeys.RedisKeys5.getValue(), atUserEntity.getTelephone(), registerCount);
+            } else {
+                registerCount = 1;
+            }
+            return registerCount;
+        } catch (Exception e) {
+            log.error("更新卡注册次数异常 {}, {}", atUserEntity, e);
+        }
+        return 0;
     }
 
     /**

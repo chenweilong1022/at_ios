@@ -167,4 +167,16 @@ public class AtUserController extends AbstractController {
         return R.ok();
     }
 
+    /**
+     * 内部使用接口，同步redis和数据库，注册次数
+     *
+     * @param phone 传入则同步此phone
+     */
+    @RequestMapping("/syncRegisterCountTest")
+    public R syncRegisterCountTest(@RequestParam(value = "phone", required = false) String phone) {
+        atUserService.syncRegisterCountTest(phone);
+
+        return R.ok();
+    }
+
 }
