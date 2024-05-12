@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  *
@@ -51,6 +52,8 @@ public class CdLineRegisterDTO extends PageParam implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="")
 	private String phone;
+	@ApiModelProperty(required=false,value="")
+	private List<String> phones;
 	/**
 	 *
 	 */

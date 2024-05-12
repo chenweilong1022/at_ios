@@ -1,14 +1,11 @@
 package io.renren.modules.ltt.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
-import io.renren.common.utils.DateUtils;
-import io.renren.common.utils.StrTextUtil;
+import io.renren.common.utils.*;
 import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
-import io.renren.modules.ltt.dto.CdLineIpProxyDTO;
 import io.renren.modules.ltt.dto.LineRegisterSummaryResultDto;
 import io.renren.modules.ltt.entity.CdGetPhoneEntity;
-import io.renren.modules.ltt.entity.CdLineIpProxyEntity;
 import io.renren.modules.ltt.enums.CountryCode;
 import io.renren.modules.ltt.enums.PhoneStatus;
 import io.renren.modules.ltt.enums.RedisKeys;
@@ -17,16 +14,16 @@ import io.renren.modules.ltt.service.CdGetPhoneService;
 import io.renren.modules.ltt.service.CdLineIpProxyService;
 import io.renren.modules.ltt.vo.CdGetPhoneVO;
 import io.renren.modules.ltt.vo.GetCountBySubTaskIdVO;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import io.renren.common.utils.PageUtils;
-import io.renren.common.utils.Query;
 
 import io.renren.modules.ltt.dao.CdLineRegisterDao;
 import io.renren.modules.ltt.entity.CdLineRegisterEntity;
@@ -40,10 +37,12 @@ import javax.annotation.Resource;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service("cdLineRegisterService")
 @Game
+@Slf4j
 public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, CdLineRegisterEntity> implements CdLineRegisterService {
 
     @Resource
@@ -51,7 +50,7 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
 
 
     @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private StringRedisTemplate redisTemplate;
 
     @Override
     public PageUtils<CdLineRegisterVO> queryPage(CdLineRegisterDTO cdLineRegister) {
@@ -69,6 +68,11 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
                 new Query<CdLineRegisterEntity>(cdLineRegister).getPage(),
                 cdLineRegister
         );
+        for (CdLineRegisterVO record : page.getRecords()) {
+            Object object = redisTemplate.opsForHash()
+                    .get(RedisKeys.RedisKeys10.getValue(), record.getPhone());
+            record.setRegisterCount(object == null ? 1 : Integer.valueOf(String.valueOf(object)));
+        }
         return PageUtils.<CdLineRegisterVO>page(page);
     }
 
@@ -126,6 +130,45 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
 
     @Autowired
     private CdLineIpProxyService cdLineIpProxyService;
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean manualPhoneCode(String tasksId, String phoneCodes) {
+        String[] split = phoneCodes.trim().split("\n");
+        Map<String, String> phoneMap = new HashMap<>();
+        for (String s : split) {
+            try {
+                String[] registerText = s.split("-");
+                if (registerText.length != 2) {
+                    continue;
+                }
+                String phone = CountryCode.CountryCode3.getKey() + registerText[0];
+                String phoneCode = registerText[1];//验证码
+                phoneMap.put(phone, phoneCode);
+            } catch (Exception e) {
+                log.error("手动接码异常 {}, {}", phoneCodes, e);
+            }
+        }
+
+
+        CdLineRegisterDTO cdLineRegister = new CdLineRegisterDTO();
+        cdLineRegister.setTaskId(tasksId);
+        cdLineRegister.setPhones(phoneMap.keySet().stream().collect(Collectors.toList()));
+        IPage<CdLineRegisterVO> page = baseMapper.listPage(
+                new Query<CdLineRegisterEntity>(cdLineRegister).getPage(),
+                cdLineRegister
+        );
+
+        List<CdGetPhoneEntity> cdGetPhoneEntityList = new ArrayList<>();
+        for (CdLineRegisterVO record : page.getRecords()) {
+            CdGetPhoneEntity updateCdGetPhoneEntity = new CdGetPhoneEntity();
+            updateCdGetPhoneEntity.setId(record.getId());
+            updateCdGetPhoneEntity.setCode(phoneMap.get(record.getPhone()));
+            cdGetPhoneEntityList.add(updateCdGetPhoneEntity);
+        }
+        getPhoneService.updateBatchById(cdGetPhoneEntityList);
+        return true;
+    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)

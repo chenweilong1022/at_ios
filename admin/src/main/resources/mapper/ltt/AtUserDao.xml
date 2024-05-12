@@ -67,6 +67,7 @@
         u.create_time as createTime,
         u.user_token_id as userTokenId,
         u.user_source as userSource,
+        u.register_count as registerCount,
         t.open_status as tokenOpenStatus,
         t.open_time as tokenOpenTime,
         t.err_msg as tokenErrMsg
@@ -127,6 +128,9 @@
         </if>
         <if test="id != null">
             and u.id = #{id}
+        </if>
+        <if test="registerCount != null">
+            and u.register_count = #{registerCount}
         </if>
         <if test="tokenOpenStatus != null">
             and t.open_status = #{tokenOpenStatus}

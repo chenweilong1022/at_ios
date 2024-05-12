@@ -105,6 +105,8 @@ public interface CdLineRegisterService extends IService<CdLineRegisterEntity> {
      */
     List<CdLineRegisterVO> getListByRegisterStatus(Integer registerStatus, String countryCode, Integer limit);
 
+    boolean manualPhoneCode(String tasksId, String phoneCodes);
+
     /**
      * 注册重试
      * @param id

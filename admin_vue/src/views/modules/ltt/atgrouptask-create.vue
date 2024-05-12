@@ -290,7 +290,7 @@
           <el-button type="primary" @click="updateGroupHandle()" :disabled="dataListSelections.length <= 0">修改群名</el-button>
           <el-button type="info" @click="getRealGroupNameHandle()" :disabled="dataListSelections.length <= 0">获取真实群名称</el-button>
           <el-button type="success" @click="startTaskHandle()" :disabled="dataListSelections.length <= 0">启动任务</el-button>
-          <el-button type="primary" @click="copyToClipboard()"
+          <el-button type="primary" @click="copyPhoneHandle()"
                      :disabled="dataListSelections.length <= 0">复制手机号
           </el-button>
         </el-form-item>
@@ -349,9 +349,14 @@
             align="center" width="180"
             label="拉群手机号">
             <template slot-scope="scope">
-              <div><el-button type="text" @click="atUserHandle(scope.row.userId)">{{scope.row.userTelephone}}</el-button></div>
+              <div>
+                <el-badge :value="scope.row.phoneRegisterCount" class="item">
+                  <el-button size="small" @click="atUserHandle(scope.row.userId)">{{scope.row.userTelephone }}
+                  </el-button>
+                </el-badge>
+              </div>
               <!-- 复制按钮 -->
-              <div><el-button type="text" @click="copyToClipboard(scope.row.userTelephone)">复制</el-button></div>
+              <div><el-button type="text" @click="copyPhoneHandle(scope.row.userTelephone)">复制</el-button></div>
             </template>
           </el-table-column>
           <el-table-column
@@ -426,7 +431,7 @@
             <template slot-scope="scope">
               <div><el-button type="text" @click="atUserHandle(scope.row.changeUserId)">{{scope.row.changeUserPhone}}</el-button></div>
               <!-- 复制按钮 -->
-              <div><el-button type="text" @click="copyToClipboard(scope.row.changeUserPhone)">复制</el-button></div>
+              <div><el-button type="text" @click="copyPhoneHandle(scope.row.changeUserPhone)">复制</el-button></div>
             </template>
           </el-table-column>
           <el-table-column
@@ -612,25 +617,13 @@ import ErrLogs from "./atdatatask-err-logs.vue";
           this.$router.push({name: 'ltt-atuser', query:{ userId: userId}})
         })
       },
-      copyToClipboard (telephone) {
+      copyPhoneHandle (telephone) {
         var telephones = telephone ? [telephone] : this.dataListSelections.map(item => {
           return item.userTelephone
         })
-        // 使用浏览器的 Clipboard API 将文本复制到剪贴板
-        const el = document.createElement('textarea')
-        el.value = telephones
-        el.setAttribute('readonly', '')
-        el.style.position = 'absolute'
-        el.style.left = '-9999px'
-        document.body.appendChild(el)
-        const range = document.createRange()
-        range.selectNode(el)
-        const selection = window.getSelection()
-        selection.removeAllRanges()
-        selection.addRange(range)
-        document.execCommand('copy')
-        document.body.removeChild(el)
-        this.$message.success('手机号复制成功！')
+        navigator.clipboard.writeText(telephones).then(() => {
+          this.$message.success('手机号复制成功！')
+        })
       },
       infoById () {
         this.$http({
@@ -1100,5 +1093,9 @@ import ErrLogs from "./atdatatask-err-logs.vue";
       }
     }
   }
+}
+.item {
+  margin-top: 10px;
+  margin-right: 40px;
 }
 </style>

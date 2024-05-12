@@ -84,6 +84,12 @@
             <if test="dto.phone != null and dto.phone != ''">
                 AND p.phone = #{dto.phone}
             </if>
+            <if test="dto.phones != null and dto.phones.size() > 0">
+                AND p.phone in
+                <foreach item="item" index="index" collection="dto.phones" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
         </where>
         order by p.create_time desc
     </select>

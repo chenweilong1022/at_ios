@@ -26,6 +26,7 @@ import io.renren.modules.ltt.entity.AtUserEntity;
 import io.renren.modules.ltt.entity.AtUserTokenEntity;
 import io.renren.modules.ltt.enums.CountryCode;
 import io.renren.modules.ltt.enums.DeleteFlag;
+import io.renren.modules.ltt.enums.RedisKeys;
 import io.renren.modules.ltt.enums.UserStatus;
 import io.renren.modules.ltt.service.AtUserService;
 import io.renren.modules.ltt.service.AtUserTokenService;
@@ -38,6 +39,10 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -54,7 +59,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import static io.renren.modules.ltt.enums.OpenStatus.OpenStatus3;
-import static io.renren.modules.ltt.enums.OpenStatus.OpenStatus4;
 import static io.renren.modules.ltt.enums.UserStatus.*;
 
 
@@ -74,6 +78,13 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
 
     @Resource(name = "caffeineCacheListString")
     private Cache<String, Queue<String>> caffeineCacheListString;
+
+    @Autowired
+    ThreadPoolTaskExecutor threadPoolTaskExecutor;
+
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+
     @Override
     public PageUtils<AtUserVO> queryPage1(AtUserDTO atUser) {
         atUser.setPageStart((atUser.getPage() - 1) * atUser.getLimit());
@@ -459,5 +470,49 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
         Map<String, Integer> onlineUserMap = baseMapper.queryOnlineUserSummary().stream()
                 .collect(Collectors.toMap(UserSummaryResultDto::getCountryCode, UserSummaryResultDto::getOnlineUserNum));
         return onlineUserMap;
+    }
+
+    @Override
+    @Async
+    public void syncRegisterCountTest(String phone) {
+        if (StringUtils.isNotEmpty(phone)) {
+            redisTemplate.opsForHash().delete(RedisKeys.RedisKeys10.getValue(), phone);
+
+        } else {
+            redisTemplate.delete(RedisKeys.RedisKeys10.getValue());
+        }
+        AtUserDTO atUser = new AtUserDTO();
+        atUser.setPage(2);
+        atUser.setLimit(500);
+        boolean hasNextPage = true;
+        while (hasNextPage) {
+            IPage<AtUserEntity> page = baseMapper.selectPage(new Query<AtUserEntity>(atUser).getPage(),
+                    new QueryWrapper<AtUserEntity>().lambda()
+                            .eq(StringUtils.isNotEmpty(phone), AtUserEntity::getTelephone, phone)
+                            .orderByAsc(AtUserEntity::getCreateTime)
+            );
+            List<AtUserEntity> currentPageData = page.getRecords();
+            hasNextPage = currentPageData.size() >= atUser.getLimit();
+            log.info("同步注册次数，第{}页，数量{}", atUser.getPage(), currentPageData.size());
+            if (hasNextPage) {
+                atUser.setPage(atUser.getPage() + 1);
+            }
+
+            List<AtUserEntity> updateAtUserList = new ArrayList<>();
+            for (AtUserEntity atUserEntity : currentPageData) {
+                //更新次数
+                Object object = redisTemplate.opsForHash()
+                        .get(RedisKeys.RedisKeys10.getValue(), atUserEntity.getTelephone());
+                Integer registerCount = object == null ? 1 : Integer.valueOf(String.valueOf(object)) + 1;
+                AtUserEntity updateAtUserEntity = new AtUserEntity();
+                updateAtUserEntity.setId(atUserEntity.getId());
+                updateAtUserEntity.setRegisterCount(registerCount);
+                updateAtUserList.add(updateAtUserEntity);
+                redisTemplate.opsForHash().put(RedisKeys.RedisKeys10.getValue(), atUserEntity.getTelephone(), registerCount.toString());
+            }
+            this.updateBatchById(updateAtUserList);
+        }
+        log.info("同步注册次数结束，总页码:{}", atUser.getPage());
+
     }
 }

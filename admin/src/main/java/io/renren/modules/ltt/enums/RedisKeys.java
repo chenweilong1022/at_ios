@@ -36,6 +36,10 @@ public enum RedisKeys implements BaseEnum {
      * 静态ip池
      */
     RedisKeys9(9,"STATIC_IP_LIST"),
+    /**
+     * 卡次数
+     */
+    RedisKeys10(10,"PHONE_REGISTER"),
     ;
 
     RedisKeys(int key, String value) {

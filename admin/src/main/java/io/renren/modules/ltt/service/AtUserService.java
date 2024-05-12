@@ -142,5 +142,11 @@ public interface AtUserService extends IService<AtUserEntity> {
     Map<String, Integer> queryUsedUserSummary(LocalDate searchTime);
 
     Map<String, Integer> queryOnlineUserSummary();
+
+    /**
+     * 内部使用接口，同步redis和数据库，注册次数
+     * @param phone 传入则同步此phone
+     */
+    void syncRegisterCountTest(String phone);
 }
 

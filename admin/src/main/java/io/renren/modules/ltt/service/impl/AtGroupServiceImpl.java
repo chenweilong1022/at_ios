@@ -35,6 +35,7 @@ import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -83,6 +84,9 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
     @Autowired
     private ConcurrentHashMap<String, Lock> lockMap;
 
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+
     @Override
     public PageUtils<AtGroupVO> queryPage(AtGroupDTO atGroup) {
         IPage<AtGroupVO> page = baseMapper.listPage(
@@ -105,7 +109,14 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
             Map<Integer, String> phoneMap = atUserService.queryTelephoneByIds(userIdList.stream().collect(Collectors.toList()));
 
             for (AtGroupVO atGroupVO : resultList) {
-                atGroupVO.setUserTelephone(phoneMap.get(atGroupVO.getUserId()));
+
+                if (phoneMap.get(atGroupVO.getUserId()) != null) {
+                    atGroupVO.setUserTelephone(phoneMap.get(atGroupVO.getUserId()));
+                    Object object = redisTemplate.opsForHash()
+                            .get(RedisKeys.RedisKeys10.getValue(), atGroupVO.getUserTelephone());
+                    atGroupVO.setPhoneRegisterCount(object == null ? 1 : Integer.valueOf(String.valueOf(object)));
+                }
+
                 //修改群信息水军号
                 if (ObjectUtil.isNotNull(atGroupVO.getChangeUserId())) {
                     atGroupVO.setChangeUserPhone(phoneMap.get(atGroupVO.getChangeUserId()));

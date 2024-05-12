@@ -59,8 +59,13 @@
         <el-table-column
           prop="phone"
           header-align="center"
-          align="center"
+          align="center" width="150px"
           label="手机号">
+          <template slot-scope="scope">
+          <el-badge :value="scope.row.registerCount" class="item">
+            <el-button size="small" @click="copyPhoneHandle(scope.row.phone)">{{ scope.row.phone }}</el-button>
+          </el-badge>
+          </template>
         </el-table-column>
         <el-table-column
           prop="proxy"
@@ -268,20 +273,9 @@
         var phones = this.dataListSelections.map(item => {
           return item.phone
         })
-        const el = document.createElement('textarea')
-        el.value = phones
-        el.setAttribute('readonly', '')
-        el.style.position = 'absolute'
-        el.style.left = '-9999px'
-        document.body.appendChild(el)
-        const range = document.createRange()
-        range.selectNode(el)
-        const selection = window.getSelection()
-        selection.removeAllRanges()
-        selection.addRange(range)
-        document.execCommand('copy')
-        document.body.removeChild(el)
-        this.$message.success('手机号复制成功！')
+        navigator.clipboard.writeText(phones).then(() => {
+          this.$message.success('手机号复制成功！')
+        })
       },
       filterErrorCode () {
         this.dataList = this.dataList.filter(item => {
@@ -339,3 +333,9 @@
     }
   }
 </script>
+<style>
+.item {
+  margin-top: 10px;
+  margin-right: 40px;
+}
+</style>
