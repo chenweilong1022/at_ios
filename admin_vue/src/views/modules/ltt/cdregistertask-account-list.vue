@@ -139,7 +139,7 @@
   export default {
     data () {
       return {
-        registerStatus: 4,
+        registerStatus: null,
         registerStatusCodes: [],
         dataList: [],
         pageIndex: 1,
