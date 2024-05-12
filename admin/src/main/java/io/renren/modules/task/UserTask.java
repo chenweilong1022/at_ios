@@ -344,8 +344,8 @@ public class UserTask {
         try {
             Object object = redisTemplate.opsForHash()
                     .get(RedisKeys.RedisKeys10.getValue(), atUserEntity.getTelephone());
-            Integer registerCount = object == null ? 1 : Integer.valueOf(String.valueOf(object));
-            redisTemplate.opsForHash().put(RedisKeys.RedisKeys10.getValue(), atUserEntity.getTelephone(), registerCount);
+            Integer registerCount = object == null ? 1 : Integer.valueOf(String.valueOf(object)) + 1;
+            redisTemplate.opsForHash().put(RedisKeys.RedisKeys10.getValue(), atUserEntity.getTelephone(), String.valueOf(registerCount));
             return registerCount;
         } catch (Exception e) {
             log.error("更新卡注册次数异常 {}, {}", atUserEntity, e);
