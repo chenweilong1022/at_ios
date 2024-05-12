@@ -234,6 +234,11 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                                 return socks5Pre(ip);
                             }
                         }
+                    }else {
+                        //如果失败并且是静态代理把ip放回去
+                        if (ProxyStatus.ProxyStatus3.getKey().equals(proxy)) {
+                            redisTemplate.opsForList().leftPush(RedisKeys.RedisKeys9.getValue(regions),ip);
+                        }
                     }
                 }
             }
