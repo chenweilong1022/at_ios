@@ -160,24 +160,16 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                         redisTemplate.opsForHash().delete(RedisKeys.RedisKeys1.getValue(), outIpv4);
                         return null;
                     }
-                    //如果ip相同并且国家一样
-                    if (proxyUse.getIp().equals(outIpv4) && regions.toLowerCase().equals(proxyUse.getCountry().toLowerCase())) {
-                        return socks5Pre(ipS5);
-                        //如果ip不相同相同并且国家一样
-                    } else if (regions.toLowerCase().equals(proxyUse.getCountry().toLowerCase())) {
-                        Boolean b = redisTemplate.opsForHash().putIfAbsent(RedisKeys.RedisKeys1.getValue(), proxyUse.getIp(), ipS5);
-                        if (b) {
-                            if (StrUtil.isNotEmpty(outIpv4)) {
-                                if (!outIpv4.equals(proxyUse.getIp())) {
-                                    redisTemplate.opsForValue().set(RedisKeys.RedisKeys4.getValue(outIpv4), cdLineIpProxyDTO.getTokenPhone(), 1, TimeUnit.DAYS);
-                                    redisTemplate.opsForHash().delete(RedisKeys.RedisKeys1.getValue(), outIpv4);
-                                }
-                            }
-                            redisTemplate.opsForHash().put(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), cdLineIpProxyDTO.getTokenPhone(), proxyUse.getIp());
-                            return socks5Pre(ipS5);
-                        }else {
-                            redisTemplate.opsForHash().delete(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), cdLineIpProxyDTO.getTokenPhone());
+                    if (ProxyStatus.ProxyStatus3.getKey().equals(proxy)) {
+                        //如果是静态ip
+                        if (ipS5.contains("@")) {
+                            //如果ip相同并且国家一样
+                            if (extracted(cdLineIpProxyDTO, countryCode, proxyUse, outIpv4, regions, ipS5))
+                                return socks5Pre(ipS5);
                         }
+                    }else {
+                        if (extracted(cdLineIpProxyDTO, countryCode, proxyUse, outIpv4, regions, ipS5))
+                            return socks5Pre(ipS5);
                     }
                 }
             } else {
@@ -248,6 +240,29 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
             log.error("cdLineIpProxyService = {}",e.getMessage());
         }
         return null;
+    }
+
+    private boolean extracted(CdLineIpProxyDTO cdLineIpProxyDTO, Long countryCode, CurlVO proxyUse, String outIpv4, String regions, String ipS5) {
+        //如果ip相同并且国家一样
+        if (proxyUse.getIp().equals(outIpv4) && regions.toLowerCase().equals(proxyUse.getCountry().toLowerCase())) {
+            return true;
+            //如果ip不相同相同并且国家一样
+        } else if (regions.toLowerCase().equals(proxyUse.getCountry().toLowerCase())) {
+            Boolean b = redisTemplate.opsForHash().putIfAbsent(RedisKeys.RedisKeys1.getValue(), proxyUse.getIp(), ipS5);
+            if (b) {
+                if (StrUtil.isNotEmpty(outIpv4)) {
+                    if (!outIpv4.equals(proxyUse.getIp())) {
+                        redisTemplate.opsForValue().set(RedisKeys.RedisKeys4.getValue(outIpv4), cdLineIpProxyDTO.getTokenPhone(), 1, TimeUnit.DAYS);
+                        redisTemplate.opsForHash().delete(RedisKeys.RedisKeys1.getValue(), outIpv4);
+                    }
+                }
+                redisTemplate.opsForHash().put(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), cdLineIpProxyDTO.getTokenPhone(), proxyUse.getIp());
+                return true;
+            }else {
+                redisTemplate.opsForHash().delete(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), cdLineIpProxyDTO.getTokenPhone());
+            }
+        }
+        return false;
     }
 
     private Queue<String> getIpResp(String regions, Integer proxy,PhoneCountryVO phoneNumberInfo) {
