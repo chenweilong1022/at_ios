@@ -241,6 +241,7 @@ public class CdRegisterTaskServiceImpl extends ServiceImpl<CdRegisterTaskDao, Cd
     @Override
     public void createRegisterTask(Integer registerCount, Integer countryCode) {
         CdRegisterTaskDTO registerTaskDTO = new CdRegisterTaskDTO();
+        registerTaskDTO.setTaskName("");
         registerTaskDTO.setTotalAmount(registerCount);
         registerTaskDTO.setNumberThreads(50);
         registerTaskDTO.setFillUp(1);

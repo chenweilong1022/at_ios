@@ -523,6 +523,7 @@ public class RegisterTask {
                                 CdRegisterTaskEntity newCdRegisterTaskEntity = new CdRegisterTaskEntity();
                                 Integer newTotalAmount = cdRegisterTaskEntity.getTotalAmount() - successTotal;
                                 if (newTotalAmount > 0) {
+                                    newCdRegisterTaskEntity.setTaskName("");
                                     newCdRegisterTaskEntity.setTotalAmount(newTotalAmount);
                                     newCdRegisterTaskEntity.setNumberThreads(cdRegisterTaskEntity.getNumberThreads());
                                     newCdRegisterTaskEntity.setNumberRegistered(0);
