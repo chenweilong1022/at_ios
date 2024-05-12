@@ -177,34 +177,29 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                         }else {
                             redisTemplate.opsForHash().delete(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), cdLineIpProxyDTO.getTokenPhone());
                         }
-                    } else {
-                        if (proxy == 3) {
-                            //静态代理时，无法获取出口ip，人工处理，不重复取新的ip
-                            log.error("getProxyIp_error 静态ip异常 {},", proxyUse);
-                            return null;
-                        }
-                    }
-                } else {
-                    if (proxy == 3) {
-                        //静态代理时，无法获取出口ip，人工处理，不重复取新的ip
-                        log.error("getProxyIp_error 静态ip异常 {}", proxyUse);
-                        return null;
                     }
                 }
-
             } else {
-                int len = 50;
                 //从redis取出50条ip 根据国家获取
                 Boolean b1 = redisTemplate.opsForValue().setIfAbsent(RedisKeys.RedisKeys6.getValue(regions), cdLineIpProxyDTO.getTokenPhone());
                 Queue<String> getflowip = new LinkedList<>();
                 if (b1) {
                     try {
-                        for (int i1 = 0; i1 < 50; i1++) {
-                            String s = redisTemplate.opsForList().rightPop(RedisKeys.RedisKeys8.getValue(regions));
+                        //如果是静态ip
+                        if (ProxyStatus.ProxyStatus3.getKey().equals(proxy)) {
+                            String s = redisTemplate.opsForList().rightPop(RedisKeys.RedisKeys9.getValue(regions));
                             if (s == null) {
-                                break;
+                                return null;
                             }
                             getflowip.add(s);
+                        }else {
+                            for (int i1 = 0; i1 < 50; i1++) {
+                                String s = redisTemplate.opsForList().rightPop(RedisKeys.RedisKeys8.getValue(regions));
+                                if (s == null) {
+                                    break;
+                                }
+                                getflowip.add(s);
+                            }
                         }
                     }catch (Exception e) {
                         log.error("rightPop = {}",e.getMessage());
