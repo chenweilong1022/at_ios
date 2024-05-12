@@ -113,7 +113,7 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
                 if (phoneMap.get(atGroupVO.getUserId()) != null) {
                     atGroupVO.setUserTelephone(phoneMap.get(atGroupVO.getUserId()));
                     Object object = redisTemplate.opsForHash()
-                            .get(RedisKeys.RedisKeys5.getValue(), atGroupVO.getUserTelephone());
+                            .get(RedisKeys.RedisKeys10.getValue(), atGroupVO.getUserTelephone());
                     atGroupVO.setPhoneRegisterCount(object == null ? 1 : Integer.valueOf(String.valueOf(object)));
                 }
 

@@ -505,10 +505,10 @@ public class UserTask {
     private Integer getPhoneRegister(AtUserEntity atUserEntity) {
         try {
             Integer registerCount = (Integer) redisTemplate.opsForHash()
-                    .get(RedisKeys.RedisKeys5.getValue(), atUserEntity.getTelephone());
+                    .get(RedisKeys.RedisKeys10.getValue(), atUserEntity.getTelephone());
             if (registerCount != null) {
                 registerCount += 1;
-                redisTemplate.opsForHash().put(RedisKeys.RedisKeys5.getValue(), atUserEntity.getTelephone(), registerCount);
+                redisTemplate.opsForHash().put(RedisKeys.RedisKeys10.getValue(), atUserEntity.getTelephone(), registerCount);
             } else {
                 registerCount = 1;
             }

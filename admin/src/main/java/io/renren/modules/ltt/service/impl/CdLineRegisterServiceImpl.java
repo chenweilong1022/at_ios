@@ -70,7 +70,7 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
         );
         for (CdLineRegisterVO record : page.getRecords()) {
             Object object = redisTemplate.opsForHash()
-                    .get(RedisKeys.RedisKeys5.getValue(), record.getPhone());
+                    .get(RedisKeys.RedisKeys10.getValue(), record.getPhone());
             record.setRegisterCount(object == null ? 1 : Integer.valueOf(String.valueOf(object)));
         }
         return PageUtils.<CdLineRegisterVO>page(page);

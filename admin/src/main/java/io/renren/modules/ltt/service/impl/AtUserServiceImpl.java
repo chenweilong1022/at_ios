@@ -476,10 +476,10 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
     @Async
     public void syncRegisterCountTest(String phone) {
         if (StringUtils.isNotEmpty(phone)) {
-            redisTemplate.opsForHash().delete(RedisKeys.RedisKeys5.getValue(), phone);
+            redisTemplate.opsForHash().delete(RedisKeys.RedisKeys10.getValue(), phone);
 
         } else {
-            redisTemplate.delete(RedisKeys.RedisKeys5.getValue());
+            redisTemplate.delete(RedisKeys.RedisKeys10.getValue());
         }
         AtUserDTO atUser = new AtUserDTO();
         atUser.setPage(2);
@@ -502,13 +502,13 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
             for (AtUserEntity atUserEntity : currentPageData) {
                 //更新次数
                 Object object = redisTemplate.opsForHash()
-                        .get(RedisKeys.RedisKeys5.getValue(), atUserEntity.getTelephone());
+                        .get(RedisKeys.RedisKeys10.getValue(), atUserEntity.getTelephone());
                 Integer registerCount = object == null ? 1 : Integer.valueOf(String.valueOf(object)) + 1;
                 AtUserEntity updateAtUserEntity = new AtUserEntity();
                 updateAtUserEntity.setId(atUserEntity.getId());
                 updateAtUserEntity.setRegisterCount(registerCount);
                 updateAtUserList.add(updateAtUserEntity);
-                redisTemplate.opsForHash().put(RedisKeys.RedisKeys5.getValue(), atUserEntity.getTelephone(), registerCount.toString());
+                redisTemplate.opsForHash().put(RedisKeys.RedisKeys10.getValue(), atUserEntity.getTelephone(), registerCount.toString());
             }
             this.updateBatchById(updateAtUserList);
         }
