@@ -59,6 +59,12 @@ public class AppTestController {
         return R.data(enumVos);
     }
 
+    @GetMapping("enums/proxyStatus")
+    public R proxyStatus() {
+        List<EnumVo> enumVos = EnumUtil.enumToVo(ProxyStatus.values());
+        return R.data(enumVos);
+    }
+
     @GetMapping("enums/accountTransactionStatusCodes")
     public R accountTransactionStatusCodes() {
         List<EnumVo> enumVos = EnumUtil.enumToVo(AccountTransactionStatusEnum.values());

@@ -32,6 +32,7 @@
           </el-option>
         </el-select>
       </el-form-item>
+
       <el-form-item label="注册代理ip">
         <el-select v-model="dataForm.proxyIp" placeholder="注册代理ip" clearable>
           <el-option
@@ -42,6 +43,7 @@
           </el-option>
         </el-select>
       </el-form-item>
+
       <el-form-item v-if="8101 === dataForm.countryCode" label="卡数据" prop="sfData">
         <el-input   :autosize="{ minRows: 20, maxRows: 20}" type="textarea" v-model="dataForm.sfData" placeholder="卡数据"></el-input>
       </el-form-item>
@@ -135,6 +137,19 @@ export default {
     }
   },
   methods: {
+    // 表单提交
+    getProxyEnums () {
+      this.$http({
+        url: this.$http.adornUrl(`/app/enums/countryCodes`),
+        method: 'get'
+      }).then(({data}) => {
+        if (data && data.code === 0) {
+          this.countryCodes = data.data
+        } else {
+          this.$message.error(data.msg)
+        }
+      })
+    },
     // 表单提交
     getCountryCodeEnums () {
       this.$http({
