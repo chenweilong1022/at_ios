@@ -230,7 +230,7 @@ public class RegisterTask {
         //获取验证码
         List<CdGetPhoneEntity> list = cdGetPhoneService.list(new QueryWrapper<CdGetPhoneEntity>().lambda()
                 .in(CdGetPhoneEntity::getPhoneStatus, PhoneStatus.PhoneStatus2.getKey(), PhoneStatus5.getKey())
-//                .last("limit 100")
+                .last("limit 10")
                 .orderByDesc(CdGetPhoneEntity::getId)
         );
         if (CollUtil.isEmpty(list)) {
@@ -359,7 +359,7 @@ public class RegisterTask {
         }
         List<CdGetPhoneEntity> list = cdGetPhoneService.list(new QueryWrapper<CdGetPhoneEntity>().lambda()
                 .eq(CdGetPhoneEntity::getPhoneStatus, PhoneStatus.PhoneStatus1.getKey())
-                .last("limit 20")
+                .last("limit 10")
                 .orderByDesc(CdGetPhoneEntity::getId)
         );
         if (CollUtil.isEmpty(list)) {

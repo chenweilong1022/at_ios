@@ -3,6 +3,8 @@ package io.renren.modules.ltt.dto;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+
+import java.util.ArrayList;
 import java.util.List;
 import io.renren.common.base.dto.PageParam;
 import io.swagger.annotations.ApiModel;
@@ -194,4 +196,9 @@ public class AtGroupTaskDTO extends PageParam implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="代理ip")
 	private Integer ipCountryCode;
+	/**
+	 * 整理好的水军
+	 */
+	@ApiModelProperty(required=false,value="整理好的水军")
+	private ArrayList<List<String>> resultNavyTextListsList;
 }

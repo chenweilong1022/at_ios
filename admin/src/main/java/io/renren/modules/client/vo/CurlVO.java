@@ -21,4 +21,5 @@ public class CurlVO {
     private String postal;
     private String readme;
     private String region;
+    private String s5Ip;
 }

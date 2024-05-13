@@ -2,6 +2,8 @@ package io.renren.modules.ltt.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.*;
+import cn.hutool.http.HttpRequest;
+import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -41,10 +43,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.io.Serializable;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -140,6 +142,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
     }
 
     private String getIp(CdLineIpProxyDTO cdLineIpProxyDTO, Long countryCode, Integer proxy,PhoneCountryVO phoneNumberInfo) {
+        ExecutorService executor = Executors.newFixedThreadPool(50);
         try{
             //国家英文
             String regions = EnumUtil.queryValueByKey(countryCode.intValue(), CountryCode.values());
@@ -207,9 +210,37 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                 if (CollUtil.isEmpty(getflowip)) {
                     return null;
                 }
+                List<CurlVO> curlVOS = new ArrayList<>();
                 //循环获取ip
                 for (String ip : getflowip) {
-                    CurlVO proxyUse = getProxyUse(ip, regions, proxy);
+                    executor.submit(() -> {
+                        try {
+                            CurlVO proxyUse = getProxyUse(ip, regions, proxy);
+                            proxyUse.setS5Ip(ip);
+                            curlVOS.add(proxyUse);
+                        }catch (Exception e) {
+                            log.error(e.getMessage());
+                        }
+                    });
+                }
+                executor.shutdown();
+                try {
+                    // 等待直到所有任务完成执行，或超时，或当前线程被中断
+                    if (!executor.awaitTermination(2, TimeUnit.MINUTES)) {
+                        log.info("Some tasks were not finished before the timeout");
+                        executor.shutdownNow();
+                    } else {
+                        // 所有任务都已完成
+                        System.out.println("All tasks finished.");
+                        log.info("All tasks finished.");
+                    }
+                } catch (InterruptedException e) {
+                    // 当前线程在等待时被中断
+                    executor.shutdownNow();
+                    Thread.currentThread().interrupt();
+                }
+                for (CurlVO proxyUse : curlVOS) {
+                    String ip = proxyUse.getS5Ip();
                     if (proxyUse.isProxyUse()) {
                         //判断ip黑名单缓存中是否有
                         String ipCache = redisTemplate.opsForValue().get(RedisKeys.RedisKeys4.getValue(proxyUse.getIp()));
@@ -226,7 +257,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                                         redisTemplate.opsForValue().set(RedisKeys.RedisKeys4.getValue(outIpv4), cdLineIpProxyDTO.getTokenPhone(), 1, TimeUnit.DAYS);
                                         redisTemplate.opsForHash().delete(RedisKeys.RedisKeys1.getValue(), outIpv4);
                                     }
-                                }
+                                }//8107010757560
                                 redisTemplate.opsForHash().put(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), cdLineIpProxyDTO.getTokenPhone(), proxyUse.getIp());
                                 return socks5Pre(ip);
                             }
@@ -379,20 +410,21 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 //            //静态代理
 //            return isProxyUseMe(ip, country);
 //        }
-        log.error("selectProxyUse_error_proxy {}", proxy);
+        log.info("selectProxyUse_error_proxy {}", proxy);
         CurlVO proxyUseMe = isProxyUseMe(ip, country);
-        if (proxyUseMe.isProxyUse()) {
-            return proxyUseMe;
-        }
-        proxyUseMe = isProxyUseMeIpecho(ip, country);
-        if (proxyUseMe.isProxyUse()) {
-            return proxyUseMe;
-        }
-        proxyUseMe = isProxyUse(ip, country);
-        if (proxyUseMe.isProxyUse()) {
-            return proxyUseMe;
-        }
-        return isProxyUseIp2World(ip, country);
+//        if (proxyUseMe.isProxyUse()) {
+//            return proxyUseMe;
+//        }
+//        proxyUseMe = isProxyUseMeIpecho(ip, country);
+//        if (proxyUseMe.isProxyUse()) {
+//            return proxyUseMe;
+//        }
+//        proxyUseMe = isProxyUse(ip, country);
+//        if (proxyUseMe.isProxyUse()) {
+//            return proxyUseMe;
+//        }
+//        return isProxyUseIp2World(ip, country);
+        return proxyUseMe;
     }
 
     private static final Semaphore semaphore = new Semaphore(200);
@@ -426,13 +458,30 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         return falseCurlVO;
     }
 
-    private CurlVO isProxyUseMe(String ip,String country) {
+    private CurlVO isProxyUseMe(String address,String country) {
         CurlVO falseCurlVO = new CurlVO().setProxyUse(false);
-        String format1 = String.format("curl -x %s 202.79.171.146:8080",ip);
-        log.info("curl = {}",format1);
-        List<String> strings = RuntimeUtil.execForLines(format1);
-        log.info("curl resp = {}",JSONUtil.toJsonStr(strings));
-        String outIp = strings.get(strings.size() - 1);
+//        String format1 = String.format("curl -x %s 202.79.171.146:8080",ip);
+//        log.info("curl = {}",format1);
+//        List<String> strings = RuntimeUtil.execForLines(format1);
+//        log.info("curl resp = {}",JSONUtil.toJsonStr(strings));
+//        String outIp = strings.get(strings.size() - 1);
+//        boolean match = ReUtil.isMatch(IPV4, outIp);
+//        if (match) {
+//            log.info("ip = {} country = {} format = {}",ip,country,outIp);
+//            return falseCurlVO.setProxyUse(true).setIp(outIp).setCountry(country);
+//        }
+//        log.info("ip = {} country = {} format = {}",ip,country,"没有找到JSON数据");
+        // 分割字符串以提取 IP 地址和端口号
+        String[] parts = address.split(":");
+        if (parts.length != 2) {
+            System.err.println("Invalid address format");
+            return null;
+        }
+        String ip = parts[0];
+        int port = Integer.parseInt(parts[1]);  // 将端口号的字符串转换为整数
+        HttpResponse execute = HttpRequest.post("http://202.79.171.146:8080")
+                .setProxy(new Proxy(Proxy.Type.SOCKS, new InetSocketAddress(ip, port))).timeout(20000).execute();
+        String outIp = execute.body();
         boolean match = ReUtil.isMatch(IPV4, outIp);
         if (match) {
             log.info("ip = {} country = {} format = {}",ip,country,outIp);
