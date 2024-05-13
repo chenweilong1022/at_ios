@@ -781,18 +781,19 @@
     }
   }
 </script>
-<style>
+<style scoped>
 .item {
   margin-top: 10px;
 }
+
 /* 定义绿色背景样式 */
-.green-badge .el-badge__content {
+/deep/ .green-badge .el-badge__content {
   background-color: green;
   color: white;
 }
 
 /* 定义红色背景样式 */
-.red-badge .el-badge__content {
+/deep/ .red-badge .el-badge__content {
   background-color: red;
   color: white;
 }
