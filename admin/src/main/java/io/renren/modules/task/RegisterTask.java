@@ -11,7 +11,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.benmanes.caffeine.cache.Cache;
 import io.renren.common.utils.ConfigConstant;
 import io.renren.common.utils.DateUtils;
-import io.renren.common.utils.RedisUtils;
 import io.renren.modules.client.FirefoxService;
 import io.renren.modules.client.LineService;
 import io.renren.modules.client.dto.*;
@@ -125,9 +124,6 @@ public class RegisterTask {
 
     @Autowired
     private StringRedisTemplate redisTemplate;
-
-    @Resource
-    private RedisUtils redisUtils;
 
     /**
      *
@@ -460,7 +456,7 @@ public class RegisterTask {
      */
     private Integer savePhoneRegisterCount(String phone) {
         try {
-            Integer registerCount = redisUtils.getPhoneRegisterCount(phone) + 1;
+            Integer registerCount = cdGetPhoneService.getPhoneRegisterCount(phone) + 1;
 
             log.error("更新手机号注册次数 {}, 次数：{}", phone, registerCount);
             redisTemplate.opsForHash().put(RedisKeys.RedisKeys10.getValue(), phone, String.valueOf(registerCount));

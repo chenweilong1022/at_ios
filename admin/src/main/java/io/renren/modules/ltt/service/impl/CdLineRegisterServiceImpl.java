@@ -53,7 +53,7 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
     private StringRedisTemplate redisTemplate;
 
     @Resource
-    private RedisUtils redisUtils;
+    private CdGetPhoneService cdGetPhoneService;
 
     @Override
     public PageUtils<CdLineRegisterVO> queryPage(CdLineRegisterDTO cdLineRegister) {
@@ -72,7 +72,7 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
                 cdLineRegister
         );
         for (CdLineRegisterVO record : page.getRecords()) {
-            record.setRegisterCount(redisUtils.getPhoneRegisterCount(record.getPhone()));
+            record.setRegisterCount(cdGetPhoneService.getPhoneRegisterCount(record.getPhone()));
         }
         return PageUtils.<CdLineRegisterVO>page(page);
     }

@@ -151,6 +151,12 @@
         width="50">
       </el-table-column>
       <el-table-column
+        prop="id"
+        header-align="center"
+        align="center"
+        label="id">
+      </el-table-column>
+      <el-table-column
         prop="nation"
         header-align="center"
         align="center"
@@ -515,17 +521,20 @@
         var ids = id ? [id] : this.dataListSelections.map(item => {
           return item.id
         })
-        var redPhoneCount = this.phoneRed()
-        var greenPhoneCount = ids.length - redPhoneCount
+        this.phoneRed()
+        var greenPhoneCount = ids.length - this.redPhoneCount
         this.$nextTick(() => {
-          this.$refs.userTransferGroup.init(ids, redPhoneCount, greenPhoneCount)
+          this.$refs.userTransferGroup.init(ids, this.redPhoneCount, greenPhoneCount)
         })
       },
       // 红灯数量
       phoneRed () {
-        var redPhoneCount = this.dataListSelections.map(item => {
-          return item.phoneState
-        })
+        var redPhoneCount = this.dataListSelections
+          .filter(item => {
+            return item.phoneState === false
+          }).map(item => {
+            return item.phoneState
+          })
         this.redPhoneCount = redPhoneCount.length
       },
       // 分配客服

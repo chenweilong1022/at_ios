@@ -89,7 +89,7 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
     private StringRedisTemplate redisTemplate;
 
     @Resource
-    private RedisUtils redisUtils;
+    private CdGetPhoneService cdGetPhoneService;
 
     @Override
     public PageUtils<AtGroupVO> queryPage(AtGroupDTO atGroup) {
@@ -116,7 +116,7 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
 
                 if (phoneMap.get(atGroupVO.getUserId()) != null) {
                     atGroupVO.setUserTelephone(phoneMap.get(atGroupVO.getUserId()));
-                    atGroupVO.setPhoneRegisterCount(redisUtils.getPhoneRegisterCount(atGroupVO.getUserTelephone()));
+                    atGroupVO.setPhoneRegisterCount(cdGetPhoneService.getPhoneRegisterCount(atGroupVO.getUserTelephone()));
                 }
 
                 //修改群信息水军号

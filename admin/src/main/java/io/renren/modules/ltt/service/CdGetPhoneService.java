@@ -64,5 +64,9 @@ public interface CdGetPhoneService extends IService<CdGetPhoneEntity> {
     boolean removeByIds(Collection<? extends Serializable> ids);
 
     List<CdGetPhoneEntity> addCount(CdGetPhoneDTO cdGetPhone);
+
+    Integer getPhoneRegisterCount(String phone);
+
+    Boolean getPhoneRegisterState(String phone);
 }
 

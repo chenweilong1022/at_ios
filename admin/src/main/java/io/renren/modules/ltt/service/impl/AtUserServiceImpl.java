@@ -11,7 +11,6 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.google.common.collect.Lists;
 import io.renren.common.utils.PageUtils;
 import io.renren.common.utils.Query;
-import io.renren.common.utils.RedisUtils;
 import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.app.service.FileService;
@@ -31,6 +30,7 @@ import io.renren.modules.ltt.enums.RedisKeys;
 import io.renren.modules.ltt.enums.UserStatus;
 import io.renren.modules.ltt.service.AtUserService;
 import io.renren.modules.ltt.service.AtUserTokenService;
+import io.renren.modules.ltt.service.CdGetPhoneService;
 import io.renren.modules.ltt.service.CdLineIpProxyService;
 import io.renren.modules.ltt.vo.AtUserVO;
 import lombok.extern.slf4j.Slf4j;
@@ -88,7 +88,7 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
     private StringRedisTemplate redisTemplate;
 
     @Resource
-    private RedisUtils redisUtils;
+    private CdGetPhoneService cdGetPhoneService;
 
     @Override
     public PageUtils<AtUserVO> queryPage1(AtUserDTO atUser) {
@@ -100,7 +100,7 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
         }
         for (AtUserVO atUserVO : resultList) {
             //查询手机号可用状态
-            Boolean phoneRegisterState = redisUtils.getPhoneRegisterState(atUserVO.getTelephone());
+            Boolean phoneRegisterState = cdGetPhoneService.getPhoneRegisterState(atUserVO.getTelephone());
             atUserVO.setPhoneState(phoneRegisterState);
         }
         return new PageUtils(resultList, count, atUser.getLimit(), atUser.getPage());
@@ -172,7 +172,7 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
         if (Boolean.TRUE.equals(paramDto.getFilterRed())) {
             //过滤掉红灯的手机号
             ids = userEntityList.stream()
-                    .filter(i-> Boolean.FALSE.equals(redisUtils.getPhoneRegisterState(i.getTelephone())))
+                    .filter(i-> Boolean.TRUE.equals(cdGetPhoneService.getPhoneRegisterState(i.getTelephone())))
                     .map(AtUserEntity::getId).collect(Collectors.toList());
         }
 
@@ -522,7 +522,7 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
             List<AtUserEntity> updateAtUserList = new ArrayList<>();
             for (AtUserEntity atUserEntity : currentPageData) {
                 //更新次数
-                Integer registerCount = redisUtils.getPhoneRegisterCount(atUserEntity.getTelephone()) + 1;
+                Integer registerCount = cdGetPhoneService.getPhoneRegisterCount(atUserEntity.getTelephone()) + 1;
 
 
                 AtUserEntity updateAtUserEntity = new AtUserEntity();

@@ -39,6 +39,10 @@ public class RedisUtils {
     public final static long NOT_EXPIRE = -1;
     private final static Gson gson = new Gson();
 
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
+
     public void set(String key, Object value, long expire){
         valueOperations.set(key, toJson(value));
         if(expire != NOT_EXPIRE){
@@ -94,44 +98,6 @@ public class RedisUtils {
      */
     private <T> T fromJson(String json, Class<T> clazz){
         return gson.fromJson(json, clazz);
-    }
-
-    /**
-     * 查询手机号注册次数
-     */
-    public Integer getPhoneRegisterCount(String phone) {
-        if (StringUtils.isEmpty(phone)) {
-            return 0;
-        }
-        try {
-            Object object = redisTemplate.opsForHash()
-                    .get(RedisKeys.RedisKeys10.getValue(), phone);
-            if (object != null) {
-                return Integer.valueOf(String.valueOf(object));
-            }
-        } catch (Exception e) {
-            log.error("查询手机号注册次数异常 {}, {}", phone, e);
-        }
-        return 0;
-    }
-
-    /**
-     * 查询手机号是否可用
-     * @return true:代表手机号可用可购买
-     */
-    public Boolean getPhoneRegisterState(String phone) {
-        try {
-            if (StringUtils.isNotEmpty(phone)) {
-                Object object = redisTemplate.opsForValue()
-                        .get(RedisKeys.RedisKeys12.getValue(phone));
-                if (object != null) {
-                    return false;
-                }
-            }
-        } catch (Exception e) {
-            log.error("查询手机号注册次数异常 {}, {}", phone, e);
-        }
-        return true;
     }
 
 }

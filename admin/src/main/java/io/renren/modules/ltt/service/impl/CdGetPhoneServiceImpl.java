@@ -10,7 +10,11 @@ import io.renren.modules.client.vo.GetPhoneVO;
 import io.renren.modules.ltt.enums.CountryCode;
 import io.renren.modules.ltt.enums.DeleteFlag;
 import io.renren.modules.ltt.enums.PhoneStatus;
+import io.renren.modules.ltt.enums.RedisKeys;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -37,6 +41,9 @@ import java.util.List;
 @Game
 @Slf4j
 public class CdGetPhoneServiceImpl extends ServiceImpl<CdGetPhoneDao, CdGetPhoneEntity> implements CdGetPhoneService {
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     @Override
     public PageUtils<CdGetPhoneVO> queryPage(CdGetPhoneDTO cdGetPhone) {
@@ -174,5 +181,45 @@ public class CdGetPhoneServiceImpl extends ServiceImpl<CdGetPhoneDao, CdGetPhone
             this.saveBatch(cdGetPhoneEntities);
         }
         return cdGetPhoneEntities;
+    }
+
+    /**
+     * 查询手机号注册次数
+     */
+    @Override
+    public Integer getPhoneRegisterCount(String phone) {
+        if (StringUtils.isEmpty(phone)) {
+            return 0;
+        }
+        try {
+            Object object = stringRedisTemplate.opsForHash()
+                    .get(RedisKeys.RedisKeys10.getValue(), phone);
+            if (object != null) {
+                return Integer.valueOf(String.valueOf(object));
+            }
+        } catch (Exception e) {
+            log.error("查询手机号注册次数异常 {}, {}", phone, e);
+        }
+        return 0;
+    }
+
+    /**
+     * 查询手机号是否可用
+     * @return true:代表手机号可用可购买
+     */
+    @Override
+    public Boolean getPhoneRegisterState(String phone) {
+        try {
+            if (StringUtils.isNotEmpty(phone)) {
+                Object object = stringRedisTemplate.opsForValue()
+                        .get(RedisKeys.RedisKeys12.getValue(phone));
+                if (object != null) {
+                    return false;
+                }
+            }
+        } catch (Exception e) {
+            log.error("查询手机号注册次数异常 {}, {}", phone, e);
+        }
+        return true;
     }
 }

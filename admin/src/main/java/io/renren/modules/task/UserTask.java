@@ -70,7 +70,7 @@ public class UserTask {
     static ReentrantLock task5Lock = new ReentrantLock();
 
     @Resource
-    private RedisUtils redisUtils;
+    private CdGetPhoneService cdGetPhoneService;
 
 
     public static final Object atUserlockObj = new Object();
@@ -316,7 +316,7 @@ public class UserTask {
                         }
 
                         //查询手机号注册次数
-                        atUserEntity.setRegisterCount(redisUtils.getPhoneRegisterCount(atUserEntity.getTelephone()));
+                        atUserEntity.setRegisterCount(cdGetPhoneService.getPhoneRegisterCount(atUserEntity.getTelephone()));
 
 //                        if (ObjectUtil.isNotNull(one)) {
 //                            atUserEntity.setId(one.getId());
