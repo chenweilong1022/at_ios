@@ -394,13 +394,12 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 
         String number = phoneNumberInfo.getNumber();
         int lastDigit = Character.getNumericValue(number.charAt(number.length() - 1));
-        int mod = lastDigit % 4;
         List<String> urls = CollUtil.newArrayList(
-                "216.83.53.90:8080",//luna
                 "202.79.171.146:8080",
                 "143.92.40.151:8080",
                 "134.122.130.163:8080"
         );
+        int mod = lastDigit % urls.size();
         String url = urls.get(mod);
         log.info("selectProxyUse_error_proxy {}", proxy);
         CurlVO proxyUseMe = isProxyUseMe(ip, country,url);
