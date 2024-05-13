@@ -412,18 +412,18 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 //        }
         log.info("selectProxyUse_error_proxy {}", proxy);
         CurlVO proxyUseMe = isProxyUseMe(ip, country);
-//        if (proxyUseMe.isProxyUse()) {
-//            return proxyUseMe;
-//        }
-//        proxyUseMe = isProxyUseMeIpecho(ip, country);
-//        if (proxyUseMe.isProxyUse()) {
-//            return proxyUseMe;
-//        }
-//        proxyUseMe = isProxyUse(ip, country);
-//        if (proxyUseMe.isProxyUse()) {
-//            return proxyUseMe;
-//        }
-//        return isProxyUseIp2World(ip, country);
+        if (proxyUseMe.isProxyUse()) {
+            return proxyUseMe;
+        }
+        proxyUseMe = isProxyUseMeIpecho(ip, country);
+        if (proxyUseMe.isProxyUse()) {
+            return proxyUseMe;
+        }
+        proxyUseMe = isProxyUse(ip, country);
+        if (proxyUseMe.isProxyUse()) {
+            return proxyUseMe;
+        }
+        return isProxyUseIp2World(ip, country);
         return proxyUseMe;
     }
 
@@ -458,30 +458,13 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         return falseCurlVO;
     }
 
-    private CurlVO isProxyUseMe(String address,String country) {
+    private CurlVO isProxyUseMe(String ip,String country) {
         CurlVO falseCurlVO = new CurlVO().setProxyUse(false);
-//        String format1 = String.format("curl -x %s 202.79.171.146:8080",ip);
-//        log.info("curl = {}",format1);
-//        List<String> strings = RuntimeUtil.execForLines(format1);
-//        log.info("curl resp = {}",JSONUtil.toJsonStr(strings));
-//        String outIp = strings.get(strings.size() - 1);
-//        boolean match = ReUtil.isMatch(IPV4, outIp);
-//        if (match) {
-//            log.info("ip = {} country = {} format = {}",ip,country,outIp);
-//            return falseCurlVO.setProxyUse(true).setIp(outIp).setCountry(country);
-//        }
-//        log.info("ip = {} country = {} format = {}",ip,country,"没有找到JSON数据");
-        // 分割字符串以提取 IP 地址和端口号
-        String[] parts = address.split(":");
-        if (parts.length != 2) {
-            System.err.println("Invalid address format");
-            return null;
-        }
-        String ip = parts[0];
-        int port = Integer.parseInt(parts[1]);  // 将端口号的字符串转换为整数
-        HttpResponse execute = HttpRequest.post("http://202.79.171.146:8080")
-                .setProxy(new Proxy(Proxy.Type.SOCKS, new InetSocketAddress(ip, port))).timeout(20000).execute();
-        String outIp = execute.body();
+        String format1 = String.format("curl -x %s 202.79.171.146:8080",ip);
+        log.info("curl = {}",format1);
+        List<String> strings = RuntimeUtil.execForLines(format1);
+        log.info("curl resp = {}",JSONUtil.toJsonStr(strings));
+        String outIp = strings.get(strings.size() - 1);
         boolean match = ReUtil.isMatch(IPV4, outIp);
         if (match) {
             log.info("ip = {} country = {} format = {}",ip,country,outIp);
@@ -489,6 +472,24 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         }
         log.info("ip = {} country = {} format = {}",ip,country,"没有找到JSON数据");
         return falseCurlVO;
+        // 分割字符串以提取 IP 地址和端口号
+//        String[] parts = address.split(":");
+//        if (parts.length != 2) {
+//            System.err.println("Invalid address format");
+//            return null;
+//        }
+//        String ip = parts[0];
+//        int port = Integer.parseInt(parts[1]);  // 将端口号的字符串转换为整数
+//        HttpResponse execute = HttpRequest.post("http://202.79.171.146:8080")
+//                .setProxy(new Proxy(Proxy.Type.SOCKS, new InetSocketAddress(ip, port))).timeout(20000).execute();
+//        String outIp = execute.body();
+//        boolean match = ReUtil.isMatch(IPV4, outIp);
+//        if (match) {
+//            log.info("ip = {} country = {} format = {}",ip,country,outIp);
+//            return falseCurlVO.setProxyUse(true).setIp(outIp).setCountry(country);
+//        }
+//        log.info("ip = {} country = {} format = {}",ip,country,"没有找到JSON数据");
+//        return falseCurlVO;
     }
 
     public static void main(String[] args) {
