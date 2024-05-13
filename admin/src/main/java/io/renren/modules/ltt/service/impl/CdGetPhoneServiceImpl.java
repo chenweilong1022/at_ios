@@ -35,6 +35,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service("cdGetPhoneService")
@@ -178,7 +179,21 @@ public class CdGetPhoneServiceImpl extends ServiceImpl<CdGetPhoneDao, CdGetPhone
 
         //如果获取了足够的数量 保存记录
         if (CollUtil.isNotEmpty(cdGetPhoneEntities)) {
-            this.saveBatch(cdGetPhoneEntities);
+            //查询是否重复
+            List<String> phone = cdGetPhoneEntities.stream()
+                    .map(CdGetPhoneEntity::getPhone).collect(Collectors.toList());
+
+            //数据库已存在的手机号
+            List<String> repeatPhoneList = baseMapper.selectList(new QueryWrapper<CdGetPhoneEntity>()
+                            .lambda().in(CdGetPhoneEntity::getPhone, phone)).stream()
+                    .map(CdGetPhoneEntity::getPhone).collect(Collectors.toList());
+
+            log.info("拿三方手机号，与数据库重复 {}, 重复手机号：{}", cdGetPhone, repeatPhoneList);
+            cdGetPhoneEntities = cdGetPhoneEntities.stream()
+                    .filter(i -> !repeatPhoneList.contains(i.getPhone())).collect(Collectors.toList());
+            if (CollUtil.isNotEmpty(cdGetPhoneEntities)) {
+                this.saveBatch(cdGetPhoneEntities);
+            }
         }
         return cdGetPhoneEntities;
     }
