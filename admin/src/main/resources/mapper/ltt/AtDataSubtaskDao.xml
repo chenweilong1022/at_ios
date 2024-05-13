@@ -105,7 +105,7 @@
           AND user_id % 2 = #{dto.mod}
         GROUP BY
             user_id
-        limit 200
+        limit 150
     </select>
 
     <sql id="page_where_if">
