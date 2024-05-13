@@ -92,39 +92,39 @@ public class CdPhoneFilterServiceImpl extends ServiceImpl<CdPhoneFilterDao, CdPh
 
         List<CdPhoneFilterEntity> cdPhoneFilterEntities = new ArrayList<>();
         for (String textUrl : textUrlList) {
-        //料子数据
-        String materialText = HttpUtil.downloadString(textUrl, "UTF-8");
-        String[] materialTextSplit = materialText.split("\n");
-        if (ObjectUtil.isNull(materialTextSplit) || materialTextSplit.length == 0) {
-            log.error("料子数据为空 {}, {}", textUrl, cdPhoneFilter);
-            continue;
-        }
-
-        for (String s : materialTextSplit) {
-            if (StrUtil.isEmpty(s)) {
+            //料子数据
+            String materialText = HttpUtil.downloadString(textUrl, "UTF-8");
+            String[] materialTextSplit = materialText.split("\n");
+            if (ObjectUtil.isNull(materialTextSplit) || materialTextSplit.length == 0) {
+                log.error("料子数据为空 {}, {}", textUrl, cdPhoneFilter);
                 continue;
             }
-            PhoneCountryVO phoneNumberInfo = null;
-            try {
-                s = StrUtil.cleanBlank(s);
-                s = s.replace("-","");
-                phoneNumberInfo = PhoneUtil.getPhoneNumberInfo(s);
-            } catch (Exception e) {
-                if (s.contains("@") || s.contains("#")) {
+
+            for (String s : materialTextSplit) {
+                if (StrUtil.isEmpty(s)) {
+                    continue;
+                }
+                PhoneCountryVO phoneNumberInfo = null;
+                try {
+                    s = StrUtil.cleanBlank(s);
+                    s = s.replace("-","");
+                    phoneNumberInfo = PhoneUtil.getPhoneNumberInfo(s);
+                } catch (Exception e) {
+                    if (s.contains("@") || s.contains("#")) {
+                        CdPhoneFilterEntity cdPhoneFilterEntity = new CdPhoneFilterEntity();
+                        cdPhoneFilterEntity.setContactKey(s);
+                        cdPhoneFilterEntity.setTaskStatus(PhoneFilterStatus.PhoneFilterStatus2.getKey());
+                        cdPhoneFilterEntities.add(cdPhoneFilterEntity);
+                    }
+                }
+                if (ObjectUtil.isNotNull(phoneNumberInfo)) {
                     CdPhoneFilterEntity cdPhoneFilterEntity = new CdPhoneFilterEntity();
+                    cdPhoneFilterEntity.setCountryCode(phoneNumberInfo.getCountryCode());
                     cdPhoneFilterEntity.setContactKey(s);
                     cdPhoneFilterEntity.setTaskStatus(PhoneFilterStatus.PhoneFilterStatus2.getKey());
                     cdPhoneFilterEntities.add(cdPhoneFilterEntity);
                 }
             }
-            if (ObjectUtil.isNotNull(phoneNumberInfo)) {
-                CdPhoneFilterEntity cdPhoneFilterEntity = new CdPhoneFilterEntity();
-                cdPhoneFilterEntity.setCountryCode(phoneNumberInfo.getCountryCode());
-                cdPhoneFilterEntity.setContactKey(s);
-                cdPhoneFilterEntity.setTaskStatus(PhoneFilterStatus.PhoneFilterStatus2.getKey());
-                cdPhoneFilterEntities.add(cdPhoneFilterEntity);
-            }
-        }
         }
 
         Assert.isTrue(CollectionUtil.isEmpty(cdPhoneFilterEntities), "上传数据不能为空");
@@ -158,32 +158,33 @@ public class CdPhoneFilterServiceImpl extends ServiceImpl<CdPhoneFilterDao, CdPh
                                 .orderByAsc(AtUserEntity::getId)
                                 .last("limit 1")
                         );
-                        Assert.isTrue(CollUtil.isEmpty(atUserEntities),"账号不足，请增加账号");
-                        //修改用户为已使用
-                        AtUserEntity poll = atUserEntities.get(0);
-                        AtUserEntity atUserEntity = new AtUserEntity();
-                        atUserEntity.setId(poll.getId());
-                        atUserEntity.setStatus(UserStatus.UserStatus6.getKey());
-                        atUserService.updateById(atUserEntity);
+                        if (CollUtil.isNotEmpty(atUserEntities)) {
+                            //修改用户为已使用
+                            AtUserEntity poll = atUserEntities.get(0);
+                            AtUserEntity atUserEntity = new AtUserEntity();
+                            atUserEntity.setId(poll.getId());
+                            atUserEntity.setStatus(UserStatus.UserStatus6.getKey());
+                            atUserService.updateById(atUserEntity);
 
-                        for (CdPhoneFilterEntity cdPhoneFilterEntity : phoneFilterEntities) {
-                            //s设置为通讯录
-                            cdPhoneFilterEntity.setTaskStatus(PhoneFilterStatus.PhoneFilterStatus5.getKey());
-                            GroupType groupType4 = GroupType.GroupType5;
-                            AtDataSubtaskEntity save = new AtDataSubtaskEntity();
-                            save.setGroupType(groupType4.getKey());
-                            save.setRecordId(recordEntity.getRecordId());
-                            save.setUserId(atUserEntity.getId());
-                            save.setTaskStatus(TaskStatus.TaskStatus2.getKey());
-                            save.setDataType(DataType.DataType4.getKey());
-                            save.setContactKey(cdPhoneFilterEntity.getContactKey());
-                            //校验通讯录模式的国家
-                            if (GroupType.GroupType5.getKey().equals(groupType4.getKey())) {
-                                Assert.isTrue(StrUtil.isEmpty(save.getContactKey()),"手机号不能为空");
+                            for (CdPhoneFilterEntity cdPhoneFilterEntity : phoneFilterEntities) {
+                                //s设置为通讯录
+                                cdPhoneFilterEntity.setTaskStatus(PhoneFilterStatus.PhoneFilterStatus5.getKey());
+                                GroupType groupType4 = GroupType.GroupType5;
+                                AtDataSubtaskEntity save = new AtDataSubtaskEntity();
+                                save.setGroupType(groupType4.getKey());
+                                save.setRecordId(recordEntity.getRecordId());
+                                save.setUserId(atUserEntity.getId());
+                                save.setTaskStatus(TaskStatus.TaskStatus2.getKey());
+                                save.setDataType(DataType.DataType4.getKey());
+                                save.setContactKey(cdPhoneFilterEntity.getContactKey());
+                                //校验通讯录模式的国家
+                                if (GroupType.GroupType5.getKey().equals(groupType4.getKey())) {
+                                    Assert.isTrue(StrUtil.isEmpty(save.getContactKey()),"手机号不能为空");
+                                }
+                                save.setDeleteFlag(DeleteFlag.NO.getKey());
+                                save.setCreateTime(DateUtil.date());
+                                atDataSubtaskEntities.add(save);
                             }
-                            save.setDeleteFlag(DeleteFlag.NO.getKey());
-                            save.setCreateTime(DateUtil.date());
-                            atDataSubtaskEntities.add(save);
                         }
                     }
 
