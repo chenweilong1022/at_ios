@@ -23,6 +23,7 @@ import io.renren.modules.client.vo.CardJpGetPhoneVO;
 import io.renren.modules.client.vo.CardJpSFGetPhoneSmsVO;
 import io.renren.modules.client.vo.GetPhoneVO;
 import io.renren.modules.ltt.SfTimeZone;
+import io.renren.modules.ltt.dao.AtUserDao;
 import io.renren.modules.ltt.dto.CdLineIpProxyDTO;
 import io.renren.modules.ltt.entity.AtUserEntity;
 import io.renren.modules.ltt.entity.AtUserPortEntity;
@@ -101,7 +102,7 @@ public class CardJpSFServiceImpl implements FirefoxService {
     @Resource(name = "cardJpSms")
     private Cache<String, Date> cardJpSms;
     @Autowired
-    private AtUserService atUserService;
+    private AtUserDao atUserService;
     @Autowired
     private CdLineIpProxyService cdLineIpProxyService;
 
@@ -132,7 +133,7 @@ public class CardJpSFServiceImpl implements FirefoxService {
                 }
             }
 
-            AtUserEntity one = atUserService.getOne(new QueryWrapper<AtUserEntity>().lambda()
+            AtUserEntity one = atUserService.selectOne(new QueryWrapper<AtUserEntity>().lambda()
                     .eq(AtUserEntity::getNation,"TH")
                     .last("ORDER BY RAND() LIMIT 1")
             );
