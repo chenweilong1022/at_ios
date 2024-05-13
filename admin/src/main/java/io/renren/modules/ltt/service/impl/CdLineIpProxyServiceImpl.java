@@ -192,7 +192,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                             }
                             getflowip.add(s);
                         }else {
-                            for (int i1 = 0; i1 < 50; i1++) {
+                            for (int i1 = 0; i1 < 10; i1++) {
                                 String s = redisTemplate.opsForList().rightPop(RedisKeys.RedisKeys8.getValue(regions));
                                 if (s == null) {
                                     break;
