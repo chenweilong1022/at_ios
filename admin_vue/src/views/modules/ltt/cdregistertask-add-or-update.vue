@@ -97,6 +97,7 @@ export default {
       countryCodes: [],
       dataForm: {
         id: 0,
+        taskName: null,
         totalAmount: '',
         numberThreads: '50',
         numberRegistered: '',
