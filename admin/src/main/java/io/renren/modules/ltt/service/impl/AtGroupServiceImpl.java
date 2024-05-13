@@ -546,7 +546,9 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
             return atGroupEntity;
         }
         atGroupEntity = this.getById((Serializable) groupId);
-        caffeineCacheAtGroupEntity.put(groupId,atGroupEntity);
+        if(ObjectUtil.isNotNull(atGroupEntity)) {
+            caffeineCacheAtGroupEntity.put(groupId,atGroupEntity);
+        }
         return atGroupEntity;
     }
 
