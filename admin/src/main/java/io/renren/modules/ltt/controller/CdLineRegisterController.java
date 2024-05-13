@@ -3,6 +3,7 @@ package io.renren.modules.ltt.controller;
 import java.util.Arrays;
 import java.util.List;
 
+import io.renren.modules.ltt.dto.CdLineRegisterSummaryDto;
 import io.renren.modules.ltt.dto.LineRegisterSummaryResultDto;
 import io.renren.modules.ltt.service.CdLineIpProxyService;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
@@ -50,6 +51,16 @@ public class CdLineRegisterController {
     public R listByTaskId(CdLineRegisterDTO cdLineRegister){
         PageUtils page = cdLineRegisterService.listByTaskId(cdLineRegister);
         return R.ok().put("page", page);
+    }
+
+    /**
+     * 注册详情数据汇总
+     */
+    @RequestMapping("/listSummary")
+    @RequiresPermissions("ltt:cdregistertask:list")
+    public R listSummary(CdLineRegisterDTO cdLineRegister){
+        CdLineRegisterSummaryDto summary = cdLineRegisterService.listSummary(cdLineRegister);
+        return R.ok().put("summary", summary);
     }
 
 

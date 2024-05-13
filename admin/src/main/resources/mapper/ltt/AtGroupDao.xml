@@ -112,8 +112,8 @@
         SELECT
         group_task_id as id,
         COUNT(DISTINCT user_id) AS usdUserCount,
-        SUM(CASE WHEN group_status = 9 THEN 1 ELSE 0 END) AS successGroupCount,
-        COUNT(DISTINCT CASE WHEN group_status = 9 THEN user_id END) AS successUserCount
+        SUM(CASE WHEN group_status in(9,15) THEN 1 ELSE 0 END) AS successGroupCount,
+        COUNT(DISTINCT CASE WHEN group_status in(9,15) THEN user_id END) AS successUserCount
         FROM
         at_group where group_task_id in(
         <foreach collection="groupTaskIdList" item="item" index="index" separator=",">

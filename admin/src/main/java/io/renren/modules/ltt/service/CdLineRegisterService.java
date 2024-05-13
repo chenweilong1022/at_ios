@@ -3,6 +3,7 @@ package io.renren.modules.ltt.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import io.renren.common.utils.PageUtils;
 import io.renren.modules.ltt.dto.CdLineRegisterDTO;
+import io.renren.modules.ltt.dto.CdLineRegisterSummaryDto;
 import io.renren.modules.ltt.dto.LineRegisterSummaryResultDto;
 import io.renren.modules.ltt.vo.CdLineRegisterVO;
 import io.renren.modules.ltt.entity.CdLineRegisterEntity;
@@ -37,6 +38,13 @@ public interface CdLineRegisterService extends IService<CdLineRegisterEntity> {
      * @return
      */
     PageUtils listByTaskId(CdLineRegisterDTO cdLineRegister);
+
+    /**
+     * 注册详情数据汇总
+     * @param cdLineRegister
+     * @return
+     */
+    CdLineRegisterSummaryDto listSummary(CdLineRegisterDTO cdLineRegister);
 
     /**
      * 根据id查询

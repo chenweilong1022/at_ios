@@ -50,6 +50,20 @@
             lr.subtasks_id
     </select>
 
+    <select id="listSummary" resultType="io.renren.modules.ltt.dto.CdLineRegisterSummaryDto">
+        SELECT
+        SUM( CASE WHEN COALESCE ( r.register_status, 0 ) IN ( 0, 1, 2, 3 ) THEN 1 ELSE 0 END ) AS waitRegisterCount,
+        SUM( CASE WHEN COALESCE ( r.register_status, 0 ) = 4 THEN 1 ELSE 0 END ) AS successRegisterCount
+        FROM
+        cd_get_phone p
+        LEFT JOIN cd_line_register r ON r.get_phone_id = p.id
+        LEFT JOIN cd_register_subtasks s ON p.subtasks_id = s.id
+        <where>
+            <include refid="where_if"/>
+        </where>
+        order by p.create_time desc
+    </select>
+
     <select id="listPage" resultType="io.renren.modules.ltt.vo.CdLineRegisterVO">
         SELECT
         p.country,
@@ -72,28 +86,38 @@
         LEFT JOIN cd_line_register r on r.get_phone_id = p.id
         LEFT JOIN cd_register_subtasks s ON p.subtasks_id = s.id
         <where>
-            <if test="dto.tasksId != null">
-                AND s.task_id = #{dto.tasksId}
-            </if>
-            <if test="dto.registerStatus != null and dto.registerStatus != 0">
-                AND r.register_status = #{dto.registerStatus}
-            </if>
-            <if test="dto.registerStatus != null and dto.registerStatus == 0">
-                AND r.register_status is null
-            </if>
-            <if test="dto.phone != null and dto.phone != ''">
-                AND p.phone = #{dto.phone}
-            </if>
-            <if test="dto.phones != null and dto.phones.size() > 0">
-                AND p.phone in
-                <foreach item="item" index="index" collection="dto.phones" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
+            <include refid="where_if"/>
         </where>
         order by p.create_time desc
     </select>
 
+    <sql id="where_if">
+        <if test="dto.tasksId != null">
+            AND s.task_id = #{dto.tasksId}
+        </if>
+        <if test="dto.countryCode != null">
+            AND s.country_code = #{countryCode}
+        </if>
+        <if test="dto.registerStatus != null and dto.registerStatus != 0">
+            AND r.register_status = #{dto.registerStatus}
+        </if>
+        <if test="dto.registerStatus != null and dto.registerStatus == 0">
+            AND r.register_status is null
+        </if>
+        <if test="dto.phone != null and dto.phone != ''">
+            AND p.phone = #{dto.phone}
+        </if>
+        <if test="dto.phones != null and dto.phones.size() > 0">
+            AND p.phone in
+            <foreach item="item" index="index" collection="dto.phones" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="dto.createStartTime !=null and dto.createEndTime !=null ">
+            and p.create_time between CONCAT(#{dto.createStartTime}, ' 00:00:00')
+            and CONCAT(#{dto.createEndTime}, ' 23:59:59')
+        </if>
+    </sql>
     <select id="queryLineRegisterSummary" resultType="io.renren.modules.ltt.dto.LineRegisterSummaryResultDto">
         SELECT
             country_code as countryCode,

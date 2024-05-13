@@ -21,6 +21,16 @@
         </el-form-item>
 
         <el-form-item>
+          <el-date-picker
+            v-model="dataForm.timeKey"
+            type="daterange" format="yyyy-MM-dd"
+            value-format="yyyy-MM-dd"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期">
+          </el-date-picker>
+        </el-form-item>
+
           <el-button @click="getDataList()">查询</el-button>
           <el-button v-if="isAuth('ltt:atuser:delete')" type="primary" @click="registerRetryHandle()"
                      :disabled="dataListSelections.length <= 0">错误重试
@@ -30,8 +40,11 @@
           </el-button>
           <el-button type="primary" @click="filterErrorCode()">过滤封号
           </el-button>
-        </el-form-item>
       </el-form>
+      <div style="font-size: 25px; font-weight: bold; margin-bottom: 10px">
+        注册中:<div style="color: #17B3A3;display: inline;margin-right: 10px;">{{summary.waitRegisterCount}}</div>
+        注册成功:<div style="color: #17B3A3;display: inline">{{summary.successRegisterCount}}</div>
+      </div>
       <el-table
         :data="dataList"
         border
@@ -142,6 +155,7 @@
         registerStatus: null,
         registerStatusCodes: [],
         dataList: [],
+        summary: null,
         pageIndex: 1,
         pageSize: 10,
         totalPage: 0,
@@ -151,7 +165,9 @@
         visible: false,
         dataForm: {
           id: 0,
-          taskName: null
+          taskName: null,
+          countryCode: null,
+          timeKey: null
         },
         dataRule: {
           totalAmount: [
@@ -189,16 +205,29 @@
       // 获取数据列表
       getDataList () {
         this.dataListLoading = true
+        var createStartTime = null
+        var createEndTime = null
+        if (this.dataForm.timeKey != null && this.dataForm.timeKey.length >= 2) {
+          createStartTime = this.dataForm.timeKey[0]
+          createEndTime = this.dataForm.timeKey[1]
+        }
+
+        var param = this.$http.adornParams({
+          'page': this.pageIndex,
+          'limit': this.pageSize,
+          'registerStatus': this.registerStatus,
+          'tasksId': this.dataForm.id,
+          'phone': this.dataForm.phone,
+          'countryCode': this.countryCode,
+          'createStartTime': createStartTime,
+          'createEndTime': createEndTime
+        })
+
+        // 查询列表
         this.$http({
           url: this.$http.adornUrl('/ltt/cdlineregister/listByTaskId'),
           method: 'get',
-          params: this.$http.adornParams({
-            'page': this.pageIndex,
-            'limit': this.pageSize,
-            'registerStatus': this.registerStatus,
-            'tasksId': this.dataForm.id,
-            'phone': this.dataForm.phone
-          })
+          params: param
         }).then(({data}) => {
           if (data && data.code === 0) {
             this.dataList = data.page.list
@@ -209,13 +238,48 @@
           }
           this.dataListLoading = false
         })
+
+        // 查询列表数据汇总
+        this.$http({
+          url: this.$http.adornUrl('/ltt/cdlineregister/listSummary'),
+          method: 'get',
+          params: param
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.summary = data.summary
+          } else {
+            this.summary = null
+          }
+        })
       },
-      init (id, taskName) {
-        this.dataForm.id = id || 0
-        this.dataForm.taskName = taskName || '详情'
+      init (id, taskName, countryCode) {
+        this.dataForm.id = id || null
+        taskName = taskName || '详情'
+        if (id != null) {
+          taskName = id + '-' + taskName
+        }
+        this.dataForm.taskName = taskName
+        this.dataForm.countryCode = countryCode
         this.visible = true
-        this.getRegisterStatus();
-        this.getDataList();
+        this.getDefaultData()
+        this.getRegisterStatus()
+        this.getDataList()
+      },
+      getDefaultData () {
+        // 获取当前日期
+        const currentDate = new Date()
+        // 获取三天前的日期
+        const threeDaysAgo = new Date(currentDate)
+        threeDaysAgo.setDate(currentDate.getDate() - 3)
+
+        // 格式化日期为 yyyy-MM-dd
+        this.dataForm.timeKey = [this.formatDateKey(threeDaysAgo), this.formatDateKey(currentDate)] // 设置默认时间为最近三天
+      },
+      formatDateKey (date) {
+        const year = date.getFullYear()
+        const month = ('0' + (date.getMonth() + 1)).slice(-2) // 月份从0开始，需要+1
+        const day = ('0' + date.getDate()).slice(-2)
+        return `${year}-${month}-${day}`
       },
       // 每页数
       sizeChangeHandle (val) {
@@ -284,42 +348,6 @@
             this.registerStatusCodes = [{key: 0, value: '待处理'},...data.data]
           } else {
             this.$message.error(data.msg)
-          }
-        })
-      },
-      // 表单提交
-      dataFormSubmit () {
-        this.$refs['dataForm'].validate((valid) => {
-          if (valid) {
-            this.$http({
-              url: this.$http.adornUrl(`/ltt/cdregistertask/${!this.dataForm.id ? 'save' : 'update'}`),
-              method: 'post',
-              data: this.$http.adornData({
-                'id': this.dataForm.id || undefined,
-                'totalAmount': this.dataForm.totalAmount,
-                'numberThreads': this.dataForm.numberThreads,
-                'numberRegistered': this.dataForm.numberRegistered,
-                'numberSuccesses': this.dataForm.numberSuccesses,
-                'numberFailures': this.dataForm.numberFailures,
-                'registrationStatus': this.dataForm.registrationStatus,
-                'deleteFlag': this.dataForm.deleteFlag,
-                'createTime': this.dataForm.createTime
-              })
-            }).then(({data}) => {
-              if (data && data.code === 0) {
-                this.$message({
-                  message: '操作成功',
-                  type: 'success',
-                  duration: 1500,
-                  onClose: () => {
-                    this.visible = false
-                    this.$emit('refreshDataList')
-                  }
-                })
-              } else {
-                this.$message.error(data.msg)
-              }
-            })
           }
         })
       }

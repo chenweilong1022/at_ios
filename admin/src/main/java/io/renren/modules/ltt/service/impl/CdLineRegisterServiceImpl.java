@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import io.renren.common.utils.*;
 import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
+import io.renren.modules.ltt.dto.CdLineRegisterSummaryDto;
 import io.renren.modules.ltt.dto.LineRegisterSummaryResultDto;
 import io.renren.modules.ltt.entity.CdGetPhoneEntity;
 import io.renren.modules.ltt.enums.CountryCode;
@@ -18,7 +19,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -74,6 +74,11 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
             record.setRegisterCount(object == null ? 1 : Integer.valueOf(String.valueOf(object)));
         }
         return PageUtils.<CdLineRegisterVO>page(page);
+    }
+
+    @Override
+    public CdLineRegisterSummaryDto listSummary(CdLineRegisterDTO cdLineRegister) {
+        return baseMapper.listSummary(cdLineRegister);
     }
 
     @Override

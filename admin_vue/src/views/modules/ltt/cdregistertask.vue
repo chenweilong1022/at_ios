@@ -31,6 +31,8 @@
         <el-button @click="getDataList()">查询</el-button>
         <el-button v-if="isAuth('ltt:cdregistertask:save')" type="primary" @click="addOrUpdateHandle()">新增注册</el-button>
         <el-button v-if="isAuth('ltt:cdregistertask:save')" type="danger" @click="cleanIpHandle()">清理ip</el-button>
+        <el-button v-if="isAuth('ltt:cdregistertask:save')" type="success" @click="cdregistertaskAccountListHandle(null, '山谷', 81)">山谷</el-button>
+        <el-button v-if="isAuth('ltt:cdregistertask:save')" type="success" @click="cdregistertaskAccountListHandle(null, '子弹', 8101)">子弹</el-button>
       </el-form-item>
     </el-form>
     <el-table
@@ -127,7 +129,7 @@
         label="操作">
         <template slot-scope="scope">
           <el-button type="text" size="small" @click="addOrUpdateHandle(scope.row.id)">代理设置</el-button>
-          <el-button type="text" size="small" @click="cdregistertaskAccountListHandle(scope.row.id, scope.row.taskName)">注册详情</el-button>
+          <el-button type="text" size="small" @click="cdregistertaskAccountListHandle(scope.row.id, scope.row.taskName, scope.row.countryCode)">注册详情</el-button>
           <el-button v-if="scope.row.registrationStatus === 9" type="text" size="small" @click="deleteHandle(scope.row.id)">停止真机任务</el-button>
           <el-button v-if="scope.row.registrationStatus != 3 && scope.row.registrationStatus != 7&& scope.row.registrationStatus != 9" type="text" size="small" @click="stopRegisterTask(scope.row.id)">暂停任务</el-button>
           <el-button type="text" size="small" @click="deleteRegisterTaskHandle(scope.row.id)">删除注册任务</el-button>
@@ -261,10 +263,10 @@ export default {
       })
     },
     // 新增 / 修改
-    cdregistertaskAccountListHandle (id, taskName) {
+    cdregistertaskAccountListHandle (id, taskName, countryCode) {
       this.cdregistertaskAccountListVisible = true
       this.$nextTick(() => {
-        this.$refs.cdregistertaskAccountList.init(id, taskName)
+        this.$refs.cdregistertaskAccountList.init(id, taskName, countryCode)
       })
     },
     // 删除
