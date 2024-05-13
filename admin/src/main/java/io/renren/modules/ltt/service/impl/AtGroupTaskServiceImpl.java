@@ -124,17 +124,47 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
     @Override
     public List<String> getGroupNameList(AtGroupTaskDTO atGroupTask) {
         Assert.isNull(atGroupTask.getGroupCount(),"请输入拉群数量");
-        Assert.isBlank(atGroupTask.getGroupName(),"请输入群名称");
+//        Assert.isBlank(atGroupTask.getGroupName(),"请输入群名称");
         Integer groupCount = atGroupTask.getGroupCount();
         if (ObjectUtil.isNull(atGroupTask.getGroupCountStart())) {
             atGroupTask.setGroupCountStart(0);
         }
+        ArrayList<List<String>> resultNavyTextListsList = atGroupTask.getResultNavyTextListsList();
         List<String> groupNames = new ArrayList<>();
-        for (Integer i = atGroupTask.getGroupCountStart(); i < atGroupTask.getGroupCountStart() + groupCount; i++) {
-            String groupName = String.format("%s-%s", atGroupTask.getGroupName(), (i + 1));
-            groupNames.add(groupName);
+//        for (Integer i = atGroupTask.getGroupCountStart(); i < atGroupTask.getGroupCountStart() + groupCount; i++) {
+//            String groupName = String.format("%s-%s", atGroupTask.getGroupName(), (i + 1));
+//            groupNames.add(groupName);
+//        }
+        for (List<String> strings : resultNavyTextListsList) {
+            String s = strings.get(0);
+            groupNames.add(s);
+            //删除名字
+            strings.remove(0);
         }
+        Assert.isTrue(!groupCount.equals(groupNames.size()),"群数量不正确，请检查");
         return groupNames;
+    }
+
+    public static void main(String[] args) {
+        String input = "김교수님교류그룹1-60";
+        List<Integer> numbers = new AtGroupTaskServiceImpl().extractTwoNumbers(input);
+        System.out.println("Extracted Numbers: " + numbers);
+    }
+
+    private List<Integer> extractTwoNumbers(String input) {
+        Pattern pattern = Pattern.compile("\\d+");
+        Matcher matcher = pattern.matcher(input);
+        List<Integer> numbers = new ArrayList<>();
+
+        while (matcher.find() && numbers.size() < 2) {
+            numbers.add(Integer.parseInt(matcher.group()));
+        }
+
+        return numbers;
+    }
+
+    public static String removeNumbers(String input) {
+        return input.replaceAll("\\d+", "");
     }
 
     @Override
@@ -162,19 +192,27 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
         int materialUrlsQueueSize = materialUrlsQueue.size();
 
         //2个群的水军
-        ArrayList<List<String>> resultNavyTextListsList = new ArrayList<>(navyTextListsList);
+        ArrayList<List<String>> resultNavyTextListsList = new ArrayList<>();
         while (resultNavyTextListsList.size() < groupCount) {
             for (List<String> element : navyTextListsList) {
-                if (resultNavyTextListsList.size() < groupCount) {
-                    resultNavyTextListsList.add(element);
-                } else {
-                    break;
+                //名字
+                String s = element.get(0);
+                List<Integer> integers = extractTwoNumbers(s);
+                Assert.isTrue(integers.size() != 2,"水军数据导入错误，请检查群名");
+                Integer start = integers.get(0);
+                Integer number = integers.get(1);
+                for (int i = start; i < start + number; i++) {
+                    if (resultNavyTextListsList.size() < groupCount) {
+                        String trim = removeNumbers(s).trim();
+                        element.set(0, trim + i);
+                        resultNavyTextListsList.add(CollUtil.newArrayList(element));
+                    } else {
+                        break;
+                    }
                 }
             }
         }
-
-
-
+        atGroupTask.setResultNavyTextListsList(resultNavyTextListsList);
         List<String> groupNameList = getGroupNameList(atGroupTask);
         List<OnGroupPreVO> onGroupPreVOS = new ArrayList<>();
         int useCount = 0;
@@ -663,21 +701,20 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
             String navyText = HttpUtil.downloadString(navyUrl, "UTF-8");
             String[] navyTextLines = navyText.split("\n");
 
-            List<String> navyTextLists = new ArrayList<>();
+            List<String> navyTextLists = null;
             for (String navyTextLine : navyTextLines) {
                 String phone = containsInternationalPhoneNumber(navyTextLine);
                 try {
                     PhoneCountryVO phoneNumberInfo = PhoneUtil.getPhoneNumberInfo(phone);
                     navyTextLists.add(navyTextLine);
                 } catch (Exception e) {
-                    if (CollUtil.isNotEmpty(navyTextLists)) {
+                    String trim = navyTextLine.trim();
+                    if (StrUtil.isNotEmpty(trim)) {
+                        navyTextLists = new ArrayList<>();
+                        navyTextLists.add(navyTextLine);
                         navyTextListsList.add(navyTextLists);
                     }
-                    navyTextLists = new ArrayList<>();
                 }
-            }
-            if (CollUtil.isNotEmpty(navyTextLists)) {
-                navyTextListsList.add(navyTextLists);
             }
         }
     }
