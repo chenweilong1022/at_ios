@@ -29,9 +29,9 @@ public class TaskConfig {
     @Bean
     public ThreadPoolTaskScheduler taskScheduler() {
         ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
-        scheduler.setPoolSize(30); // 设置线程池大小
+        scheduler.setPoolSize(200); // 设置线程池大小
         scheduler.setThreadNamePrefix("scheduled-task-");
-        scheduler.setAwaitTerminationSeconds(60);
+        scheduler.setAwaitTerminationSeconds(200);
         scheduler.setWaitForTasksToCompleteOnShutdown(true);
         return scheduler;
     }
@@ -40,13 +40,13 @@ public class TaskConfig {
     public ThreadPoolTaskExecutor poolExecutor() {
         ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
         //设置线程池参数信息
-        taskExecutor.setCorePoolSize(30);
-        taskExecutor.setMaxPoolSize(100);
+        taskExecutor.setCorePoolSize(200);
+        taskExecutor.setMaxPoolSize(200);
         taskExecutor.setQueueCapacity(200);
         taskExecutor.setKeepAliveSeconds(60);
         taskExecutor.setThreadNamePrefix("myExecutor2--");
         taskExecutor.setWaitForTasksToCompleteOnShutdown(true);
-        taskExecutor.setAwaitTerminationSeconds(60);
+        taskExecutor.setAwaitTerminationSeconds(200);
         //修改拒绝策略为使用当前线程执行
         taskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
         //初始化线程池
