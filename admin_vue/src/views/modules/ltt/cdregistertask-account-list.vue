@@ -259,7 +259,7 @@
           taskName = id + '-' + taskName
         }
         this.dataForm.taskName = taskName
-        this.dataForm.countryCode = countryCode
+        this.countryCode = countryCode
         this.visible = true
         this.getDefaultData()
         this.getRegisterStatus()

@@ -96,7 +96,7 @@
             AND s.task_id = #{dto.tasksId}
         </if>
         <if test="dto.countryCode != null">
-            AND s.country_code = #{countryCode}
+            AND s.country_code = #{dto.countryCode}
         </if>
         <if test="dto.registerStatus != null and dto.registerStatus != 0">
             AND r.register_status = #{dto.registerStatus}
