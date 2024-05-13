@@ -177,6 +177,9 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                         if (extracted(cdLineIpProxyDTO, countryCode, proxyUse, outIpv4, regions, ipS5))
                             return socks5Pre(ipS5);
                     }
+                }else {
+                    redisTemplate.opsForValue().set(RedisKeys.RedisKeys4.getValue(outIpv4), cdLineIpProxyDTO.getTokenPhone(), 1, TimeUnit.DAYS);
+                    redisTemplate.opsForHash().delete(RedisKeys.RedisKeys1.getValue(), outIpv4);
                 }
             } else {
                 //从redis取出50条ip 根据国家获取
@@ -418,35 +421,20 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         }
         return proxyUseMe;
     }
-
-    private static final Semaphore semaphore = new Semaphore(200);
     private CurlVO isProxyUse(String ip,String country) {
         CurlVO falseCurlVO = new CurlVO().setProxyUse(false);
-        // 尝试获取许可，不阻塞
-        boolean permitAcquired = semaphore.tryAcquire();
-        if (permitAcquired) {
-            try {
-                String format1 = String.format("curl -x %s -U user-lu9904136:Ch1433471850 myip.lunaproxy.io",ip);
-                List<String> strings = RuntimeUtil.execForLines(format1);
-                String s = strings.get(strings.size() - 1);
-                String[] split = s.split("\\|");
-                System.out.println(split.length);
-                if (split.length == 5) {
-                    String outIp = split[0];
-                    String outCountry = split[2];
-                    log.info("ip = {} country = {} format = {}",ip,country,s);
-                    return falseCurlVO.setProxyUse(true).setIp(outIp).setCountry(outCountry);
-                }
-                log.info("ip = {} country = {} format = {}",ip,country,"没有找到JSON数据");
-                return falseCurlVO;
-            }catch (Exception e){
-                log.info("ip = {} country = {} format = {} err = {}",ip,country,e.getMessage());
-            }finally {
-                // 释放许可
-                semaphore.release();
-            }
+        String format1 = String.format("curl -x %s -U user-lu9904136:Ch1433471850 myip.lunaproxy.io",ip);
+        List<String> strings = RuntimeUtil.execForLines(format1);
+        String s = strings.get(strings.size() - 1);
+        String[] split = s.split("\\|");
+        System.out.println(split.length);
+        if (split.length == 5) {
+            String outIp = split[0];
+            String outCountry = split[2];
+            log.info("ip = {} country = {} format = {}",ip,country,s);
+            return falseCurlVO.setProxyUse(true).setIp(outIp).setCountry(outCountry);
         }
-        log.info("ip = {} country = {} format = {} 许可 = {}",ip,country,falseCurlVO.isProxyUse());
+        log.info("ip = {} country = {} format = {}",ip,country,"没有找到JSON数据");
         return falseCurlVO;
     }
 //http://134.122.130.163:8080/
@@ -492,30 +480,17 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 
     private CurlVO isProxyUseMeIpecho(String ip,String country) {
         CurlVO falseCurlVO = new CurlVO().setProxyUse(false);
-        // 尝试获取许可，不阻塞
-        boolean permitAcquired = semaphore.tryAcquire();
-        if (permitAcquired) {
-            try {
-                String format1 = String.format("curl -x %s https://ipecho.net/plain",ip);
-                log.info("curl = {}",format1);
-                List<String> strings = RuntimeUtil.execForLines(format1);
-                log.info("curl resp = {}",JSONUtil.toJsonStr(strings));
-                String outIp = strings.get(strings.size() - 1);
-                boolean match = ReUtil.isMatch(IPV4, outIp);
-                if (match) {
-                    log.info("ip = {} country = {} format = {}",ip,country,outIp);
-                    return falseCurlVO.setProxyUse(true).setIp(outIp).setCountry(country);
-                }
-                log.info("ip = {} country = {} format = {}",ip,country,"没有找到JSON数据");
-                return falseCurlVO;
-            }catch (Exception e){
-                log.info("ip = {} country = {} format = {} err = {}",ip,country,e.getMessage());
-            }finally {
-                // 释放许可
-                semaphore.release();
-            }
+        String format1 = String.format("curl -x %s https://ipecho.net/plain",ip);
+        log.info("curl = {}",format1);
+        List<String> strings = RuntimeUtil.execForLines(format1);
+        log.info("curl resp = {}",JSONUtil.toJsonStr(strings));
+        String outIp = strings.get(strings.size() - 1);
+        boolean match = ReUtil.isMatch(IPV4, outIp);
+        if (match) {
+            log.info("ip = {} country = {} format = {}",ip,country,outIp);
+            return falseCurlVO.setProxyUse(true).setIp(outIp).setCountry(country);
         }
-        log.info("ip = {} country = {} format = {} 许可 = {}",ip,country,falseCurlVO.isProxyUse());
+        log.info("ip = {} country = {} format = {}",ip,country,"没有找到JSON数据");
         return falseCurlVO;
     }
 
