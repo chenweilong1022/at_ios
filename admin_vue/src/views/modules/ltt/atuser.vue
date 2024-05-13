@@ -2,7 +2,7 @@
   <div class="mod-config">
     <el-form :inline="true" :model="dataForm" @keyup.enter.native="getDataList(1)">
       <el-form-item>
-        <el-input v-model="dataForm.nickName" placeholder="昵称" clearable></el-input>
+        <el-input v-model="dataForm.id" placeholder="id" clearable></el-input>
       </el-form-item>
       <el-form-item>
         <el-select v-model="dataForm.nation" placeholder="拉群号国家" clearable>
@@ -101,6 +101,7 @@
           <el-input v-model="dataForm.selectLimit" placeholder="查询条数" clearable></el-input>
         </el-form-item>
         <el-button @click="getDataList(1)">查询</el-button>
+        <el-button type="info" @click="clearSearch()">清除搜索条件</el-button>
         <div>
         <el-button v-if="isAuth('ltt:atuser:save')" type="primary"
                    @click="userImportHandle()">账户导入
@@ -326,7 +327,7 @@
           }
         ],
         dataForm: {
-          userId: null,
+          id: null,
           nickName: '',
           nation: '',
           telephone: '',
@@ -378,7 +379,7 @@
     },
     methods: {
       init() {
-        this.dataForm.userId = this.$route.query.userId
+        this.dataForm.id = this.$route.query.userId
       },
       onSortChange ({ column, prop, order }) {
         // column 是当前列的引用
@@ -431,7 +432,7 @@
             'customerService': this.dataForm.customerService,
             'validateFlag': this.dataForm.validateFlag,
             'userSource': this.dataForm.userSource,
-            'id': this.dataForm.userId,
+            'id': this.dataForm.id,
             'selectLimit': this.dataForm.selectLimit,
             'tokenOpenStatus': this.dataForm.tokenOpenStatus,
             'tokenOpenTimeSort': this.dataForm.tokenOpenTimeSort,
@@ -777,6 +778,25 @@
             this.$message.error(data.msg)
           }
         })
+      },
+      clearSearch () {
+        // 清除搜索条件
+        this.dataForm.id = null
+        this.dataForm.nickName = null
+        this.dataForm.nation = null
+        this.dataForm.telephone = null
+        this.dataForm.userGroupId = null
+        this.dataForm.status = null
+        this.dataForm.customerServiceId = null
+        this.dataForm.customerService = null
+        this.dataForm.validateFlag = null
+        this.dataForm.userSource = null
+        this.dataForm.selectLimit = null
+        this.dataForm.tokenOpenStatus = null
+        this.dataForm.tokenOpenTimeSort = null
+        this.dataForm.registerCount = null
+        this.pageSize = 10
+        this.getDataList(1)
       }
     }
   }
