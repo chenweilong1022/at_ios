@@ -154,7 +154,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
             }
             //如果有ip直接返回
             if (StrUtil.isNotEmpty(outIpv4) && StrUtil.isNotEmpty(ipS5)) {
-                CurlVO proxyUse = getProxyUse(ipS5, regions, proxy);
+                CurlVO proxyUse = getProxyUse(ipS5, regions, proxy,phoneNumberInfo);
                 if (proxyUse.isProxyUse()) {
                     //判断ip黑名单缓存中是否有
                     String value = RedisKeys.RedisKeys4.getValue(proxyUse.getIp());
@@ -218,7 +218,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                 }
                 //循环获取ip
                 for (String ip : getflowip) {
-                    CurlVO proxyUse = getProxyUse(ip, regions, proxy);
+                    CurlVO proxyUse = getProxyUse(ip, regions, proxy,phoneNumberInfo);
                     if (proxyUse.isProxyUse()) {
                         //判断ip黑名单缓存中是否有
                         String ipCache = redisTemplate.opsForValue().get(RedisKeys.RedisKeys4.getValue(proxyUse.getIp()));
@@ -372,7 +372,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
     }
 
     //43.159.18.174:24496 curl --socks5 43.159.18.174:24496 ipinfo.io
-    private CurlVO getProxyUse(String ip,String country, Integer proxy) {
+    private CurlVO getProxyUse(String ip,String country, Integer proxy,PhoneCountryVO phoneNumberInfo) {
         if (ObjectUtil.isNull(proxy)) {
             log.error("selectProxyUse_error_proxy_null");
             return null;
@@ -388,8 +388,23 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 //            //静态代理
 //            return isProxyUseMe(ip, country);
 //        }
+
+        String number = phoneNumberInfo.getNumber();
+        int lastDigit = Character.getNumericValue(number.charAt(number.length() - 1));
+        int mod = lastDigit % 4;
+        List<String> urls = CollUtil.newArrayList(
+                "216.83.53.90:8080",//luna
+                "202.79.171.146:8080",
+                "143.92.40.151:8080",
+                "134.122.130.163:8080"
+        );
+        String url = urls.get(mod);
         log.info("selectProxyUse_error_proxy {}", proxy);
-        CurlVO proxyUseMe = isProxyUseMe(ip, country);
+        CurlVO proxyUseMe = isProxyUseMe(ip, country,url);
+        if (proxyUseMe.isProxyUse()) {
+            return proxyUseMe;
+        }
+        proxyUseMe = isProxyUseIp2World(ip, country);
         if (proxyUseMe.isProxyUse()) {
             return proxyUseMe;
         }
@@ -401,8 +416,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         if (proxyUseMe.isProxyUse()) {
             return proxyUseMe;
         }
-        return isProxyUseIp2World(ip, country);
-//        return proxyUseMe;
+        return proxyUseMe;
     }
 
     private static final Semaphore semaphore = new Semaphore(200);
@@ -435,10 +449,10 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         log.info("ip = {} country = {} format = {} 许可 = {}",ip,country,falseCurlVO.isProxyUse());
         return falseCurlVO;
     }
-
-    private CurlVO isProxyUseMe(String ip,String country) {
+//http://134.122.130.163:8080/
+    private CurlVO isProxyUseMe(String ip,String country,String url) {
         CurlVO falseCurlVO = new CurlVO().setProxyUse(false);
-        String format1 = String.format("curl -x %s 202.79.171.146:8080",ip);
+        String format1 = String.format("curl -x %s %s",ip,url);
         log.info("curl = {}",format1);
         List<String> strings = RuntimeUtil.execForLines(format1);
         log.info("curl resp = {}",JSONUtil.toJsonStr(strings));
