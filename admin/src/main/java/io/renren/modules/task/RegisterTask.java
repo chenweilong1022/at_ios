@@ -166,6 +166,9 @@ public class RegisterTask {
                                         return;
                                     }
                                     if (200 == syncLineTokenVO.getCode() && CollUtil.isNotEmpty(syncLineTokenVO.getData())) {
+                                        //更新手机号注册次数
+                                        this.savePhoneRegisterCount(cdLineRegisterEntity.getPhone());
+
                                         SyncLineTokenVOData syncLineTokenVOData = syncLineTokenVO.getData().get(0);
                                         cdLineRegisterEntity.setRegisterStatus(RegisterStatus.RegisterStatus4.getKey());
                                         String token = syncLineTokenVOData.getToken();
@@ -428,8 +431,6 @@ public class RegisterTask {
                             update.setId(cdGetPhoneEntity.getId());
                             update.setPhoneStatus(PhoneStatus.PhoneStatus2.getKey());
                             update.setCreateTime(DateUtil.date());
-                            //更新手机号注册次数
-                            this.savePhoneRegisterCount(lineRegisterDTO.getPhone());
 
                             try{
                                 cdLineRegisterService.save(cdLineRegisterDTO);
