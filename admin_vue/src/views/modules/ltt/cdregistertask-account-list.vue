@@ -31,8 +31,8 @@
           </el-date-picker>
         </el-form-item>
 
-          <el-button @click="getDataList()">查询</el-button>
         <div>
+          <el-button @click="getDataList()">查询</el-button>
           <el-button v-if="isAuth('ltt:atuser:delete')" type="primary" @click="registerRetryHandle()"
                      :disabled="dataListSelections.length <= 0">错误重试
           </el-button>
@@ -44,8 +44,8 @@
         </div>
       </el-form>
       <div style="font-size: 25px; font-weight: bold; margin-bottom: 20px; margin-top: 20px">
-        注册中:<div style="color: #17B3A3;display: inline;margin-right: 10px;">{{summary.waitRegisterCount}}</div>
-        注册成功:<div style="color: #17B3A3;display: inline">{{summary.successRegisterCount}}</div>
+        注册中:<div style="color: #17B3A3;display: inline;margin-right: 10px;">{{waitRegisterCount}}</div>
+        注册成功:<div style="color: #17B3A3;display: inline">{{successRegisterCount}}</div>
       </div>
       <el-table
         :data="dataList"
@@ -157,7 +157,8 @@
         registerStatus: null,
         registerStatusCodes: [],
         dataList: [],
-        summary: null,
+        waitRegisterCount: null,
+        successRegisterCount: null,
         pageIndex: 1,
         pageSize: 10,
         totalPage: 0,
@@ -247,10 +248,12 @@
           method: 'get',
           params: param
         }).then(({data}) => {
-          if (data && data.code === 0) {
-            this.summary = data.summary
+          if (data && data.code === 0 && data.summary != null) {
+            this.waitRegisterCount = data.summary.waitRegisterCount
+            this.successRegisterCount = data.summary.successRegisterCount
           } else {
-            this.summary = null
+            this.waitRegisterCount = 0
+            this.successRegisterCount = 0
           }
         })
       },
