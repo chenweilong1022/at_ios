@@ -32,6 +32,7 @@
         </el-form-item>
 
           <el-button @click="getDataList()">查询</el-button>
+        <div>
           <el-button v-if="isAuth('ltt:atuser:delete')" type="primary" @click="registerRetryHandle()"
                      :disabled="dataListSelections.length <= 0">错误重试
           </el-button>
@@ -40,8 +41,9 @@
           </el-button>
           <el-button type="primary" @click="filterErrorCode()">过滤封号
           </el-button>
+        </div>
       </el-form>
-      <div style="font-size: 25px; font-weight: bold; margin-bottom: 10px">
+      <div style="font-size: 25px; font-weight: bold; margin-bottom: 20px; margin-top: 20px">
         注册中:<div style="color: #17B3A3;display: inline;margin-right: 10px;">{{summary.waitRegisterCount}}</div>
         注册成功:<div style="color: #17B3A3;display: inline">{{summary.successRegisterCount}}</div>
       </div>
