@@ -123,7 +123,7 @@
                    @click="userValidateHandle()">验活账号
         </el-button>
         <el-button style="margin-top: 15px;" v-if="isAuth('ltt:atuser:save')" type="primary"
-                   @click="maintainUserHandle()":disabled="dataListSelections.length <= 0">养号
+                   @click="maintainUserHandle()" :disabled="dataListSelections.length <= 0">养号
         </el-button>
         <el-button style="margin-top: 15px;" v-if="isAuth('ltt:atuser:delete')" type="danger" @click="deleteHandle()"
                    :disabled="dataListSelections.length <= 0">批量删除
@@ -369,6 +369,7 @@
     activated () {
       this.init()
       this.getDataList()
+      this.badgeClass()
       this.getAtUserSource()
       this.getOpenStatus()
       this.getCountryCodeEnums()
@@ -447,7 +448,10 @@
           this.dataListLoading = false
         })
       },
-      badgeClass(state) {
+      badgeClass (state) {
+        if (state === null) {
+          return 'green-badge'
+        }
         if (state === true) {
           return 'green-badge'
         }

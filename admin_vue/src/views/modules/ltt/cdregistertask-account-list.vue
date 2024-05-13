@@ -327,6 +327,9 @@
         })
       },
       badgeClass(state) {
+        if (state === null) {
+          return 'green-badge'
+        }
         if (state === true) {
           return 'green-badge'
         }

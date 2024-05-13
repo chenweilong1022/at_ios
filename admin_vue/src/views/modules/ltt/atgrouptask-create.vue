@@ -610,7 +610,7 @@ import ErrLogs from "./atdatatask-err-logs.vue";
           this.$refs.errLogs.init(id)
         })
       },
-      badgeClass(state) {
+      badgeClass (state) {
         if (state === true) {
           return 'green-badge'
         }
