@@ -4,9 +4,12 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.http.HttpRequest;
+import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.benmanes.caffeine.cache.Cache;
 import io.renren.common.constant.SystemConstant;
 import io.renren.common.utils.ConfigConstant;
@@ -20,8 +23,14 @@ import io.renren.modules.client.vo.CardJpGetPhoneVO;
 import io.renren.modules.client.vo.CardJpSFGetPhoneSmsVO;
 import io.renren.modules.client.vo.GetPhoneVO;
 import io.renren.modules.ltt.SfTimeZone;
+import io.renren.modules.ltt.dto.CdLineIpProxyDTO;
+import io.renren.modules.ltt.entity.AtUserEntity;
 import io.renren.modules.ltt.entity.AtUserPortEntity;
 import io.renren.modules.ltt.enums.CountryCode;
+import io.renren.modules.ltt.enums.RedisKeys;
+import io.renren.modules.ltt.service.AtUserService;
+import io.renren.modules.ltt.service.CdLineIpProxyService;
+import io.renren.modules.ltt.vo.CdRegisterSubtasksVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.client.config.RequestConfig;
@@ -29,12 +38,15 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -88,6 +100,10 @@ public class CardJpSFServiceImpl implements FirefoxService {
 
     @Resource(name = "cardJpSms")
     private Cache<String, Date> cardJpSms;
+    @Autowired
+    private AtUserService atUserService;
+    @Autowired
+    private CdLineIpProxyService cdLineIpProxyService;
 
     @Override
     public String getPhoneCode(String pKeys) {
@@ -101,14 +117,6 @@ public class CardJpSFServiceImpl implements FirefoxService {
         String timeZone = split[2];
         //发起操作时间
         Date date = cardJpSms.getIfPresent(pKey);
-
-        RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectTimeout(20000)
-                .setSocketTimeout(20000)
-                .build();
-        CloseableHttpClient httpClient = HttpClients.custom()
-                .setDefaultRequestConfig(requestConfig)
-                .build();
         try {
             //获取缓存里面的短信
             CardJpSFGetPhoneSmsVO cardJpSFGetPhoneSmsVO = cardJpSFGetPhoneSmsVOCache.getIfPresent(pKey);
@@ -123,10 +131,37 @@ public class CardJpSFServiceImpl implements FirefoxService {
                     return s;
                 }
             }
+
+            AtUserEntity one = atUserService.getOne(new QueryWrapper<AtUserEntity>().lambda()
+                    .eq(AtUserEntity::getNation,"TH")
+                    .last("ORDER BY RAND() LIMIT 1")
+            );
+
+            if (ObjectUtil.isNull(one)) {
+                return null;
+            }
+
+            //获取代理
+            CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
+            cdLineIpProxyDTO.setTokenPhone(one.getTelephone());
+            cdLineIpProxyDTO.setLzPhone(one.getTelephone());
+            String proxyIp = cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO);
+            if (StrUtil.isEmpty(proxyIp)) {
+                return null;
+            }
             HttpGet request = new HttpGet(sfApi);
             request.addHeader("User-Agent", "Mozilla/5.0");
-            String resp = httpClient.execute(request, httpResponse ->
-                    EntityUtils.toString(httpResponse.getEntity()));
+            String[] parts = proxyIp.split(":");
+            if (parts.length != 2) {
+                System.err.println("Invalid address format");
+                return null;
+            }
+            String ip = parts[0];
+            int port = Integer.parseInt(parts[1]);  // 将端口号的字符串转换为整数
+            HttpResponse execute = HttpRequest.post(sfApi)
+                    .setProxy(new Proxy(Proxy.Type.SOCKS, new InetSocketAddress(ip, port))).timeout(20000).execute();
+
+            String resp = execute.body();
 
             log.info("CardJpSFServiceImpl_getPhoneCode_result {}", resp);
 
