@@ -277,8 +277,11 @@
         const threeDaysAgo = new Date(currentDate)
         threeDaysAgo.setDate(currentDate.getDate() - 3)
 
+        const tomorrowData = new Date(currentDate)
+        tomorrowData.setDate(currentDate.getDate() + 1)
+
         // 格式化日期为 yyyy-MM-dd
-        this.dataForm.timeKey = [this.formatDateKey(threeDaysAgo), this.formatDateKey(currentDate)] // 设置默认时间为最近三天
+        this.dataForm.timeKey = [this.formatDateKey(threeDaysAgo), this.formatDateKey(tomorrowData)] // 设置默认时间为最近三天
       },
       formatDateKey (date) {
         const year = date.getFullYear()
