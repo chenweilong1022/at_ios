@@ -230,7 +230,7 @@ public class RegisterTask {
         //获取验证码
         List<CdGetPhoneEntity> list = cdGetPhoneService.list(new QueryWrapper<CdGetPhoneEntity>().lambda()
                 .in(CdGetPhoneEntity::getPhoneStatus, PhoneStatus.PhoneStatus2.getKey(), PhoneStatus5.getKey())
-                .last("limit 50")
+//                .last("limit 50")
                 .orderByDesc(CdGetPhoneEntity::getId)
         );
         if (CollUtil.isEmpty(list)) {
