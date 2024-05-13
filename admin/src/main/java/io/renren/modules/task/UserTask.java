@@ -142,6 +142,9 @@ public class UserTask {
                             if (StrUtil.isEmpty(s)) {
                                 continue;
                             }
+                            if (s.contains("未使用的IP")) {
+                                continue;
+                            }
                             ips.add(s);
                         }
                         redisTemplate.opsForList().leftPushAll(RedisKeys.RedisKeys8.getValue(regions),ips);
