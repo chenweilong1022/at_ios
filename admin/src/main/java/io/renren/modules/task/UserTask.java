@@ -126,7 +126,7 @@ public class UserTask {
             for (EnumVo enumVo : enumVos) {
                 String regions = EnumUtil.queryValueByKey(enumVo.getKey(), CountryCode.values());
                 Long size = redisTemplate.opsForList().size(RedisKeys.RedisKeys8.getValue(regions));
-                if (size > 5000) {
+                if (size > 2000) {
                     continue;
                 }
                 for (String url : urls) {
