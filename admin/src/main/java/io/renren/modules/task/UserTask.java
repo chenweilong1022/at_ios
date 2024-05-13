@@ -96,7 +96,7 @@ public class UserTask {
     @Scheduled(fixedDelay = 1000)
     @Transactional(rollbackFor = Exception.class)
     @Async
-    public void task3() {
+    public void task9() {
         boolean b = task1Lock.tryLock();
         if (!b) {
             log.error("task1Lock ip推送队列 = {}",b);
@@ -105,8 +105,67 @@ public class UserTask {
         try{
             ArrayList<EnumVo> enumVos = CollUtil.newArrayList(
                     new EnumVo().setKey(CountryCode.CountryCode1.getKey()),
-                    new EnumVo().setKey(CountryCode.CountryCode3.getKey()),
+//                    new EnumVo().setKey(CountryCode.CountryCode3.getKey()),
                     new EnumVo().setKey(CountryCode.CountryCode7.getKey())
+
+            );
+            List<String> urls = CollUtil.newArrayList(
+                    "https://tq.lunaproxy.com/getflowip?neek=1136881&num=500&type=1&sep=1&regions=%s&ip_si=1&level=1&sb=",//luna
+                    "http://api.proxy.ip2world.com/getProxyIp?return_type=txt&protocol=http&num=500&regions=%s&lb=1",//ip2world
+                    "https://info.proxy.ipmars.com/extractProxyIp?regions=%s&num=500&protocol=http&return_type=txt&lh=1&st=",//ipmars
+                    "https://info.proxy.abcproxy.com/extractProxyIp?regions=%s&num=500&protocol=http&return_type=txt&lh=1&mode=1"//abcproxy
+            );
+            //给每个国家补充ip
+            for (EnumVo enumVo : enumVos) {
+                String regions = EnumUtil.queryValueByKey(enumVo.getKey(), CountryCode.values());
+                Long size = redisTemplate.opsForList().size(RedisKeys.RedisKeys8.getValue(regions));
+                if (size > 50000) {
+                    continue;
+                }
+                for (String url : urls) {
+                    threadPoolTaskExecutor.execute(() -> {
+                        String ipResp = getRandomIp(url, regions);
+                        if (StringUtils.isEmpty(ipResp)) {
+                            log.info("getIpResp_error_proxy_null = {}",url);
+                            return;
+                        }
+                        String[] split = ipResp.split("\r\n");
+                        List<String> ips = new ArrayList<>();
+                        for (String s : split) {
+                            s = s.trim();
+                            if (StrUtil.isEmpty(s)) {
+                                continue;
+                            }
+                            ips.add(s);
+                        }
+                        redisTemplate.opsForList().leftPushAll(RedisKeys.RedisKeys8.getValue(regions),ips);
+                    });
+                }
+            }
+        }catch (Exception e) {
+            log.error("err = {}",e.getMessage());
+        }finally {
+            task1Lock.unlock();
+        }
+    }
+
+    /**
+     * ip推送队列
+     */
+    @Scheduled(fixedDelay = 1000)
+    @Transactional(rollbackFor = Exception.class)
+    @Async
+    public void task3() {
+        boolean b = task1Lock.tryLock();
+        if (!b) {
+            log.error("task1Lock ip推送队列 = {}",b);
+            return;
+        }
+        try{
+            ArrayList<EnumVo> enumVos = CollUtil.newArrayList(
+//                    new EnumVo().setKey(CountryCode.CountryCode1.getKey()),
+                    new EnumVo().setKey(CountryCode.CountryCode3.getKey())
+//                    new EnumVo().setKey(CountryCode.CountryCode7.getKey())
 
             );
 

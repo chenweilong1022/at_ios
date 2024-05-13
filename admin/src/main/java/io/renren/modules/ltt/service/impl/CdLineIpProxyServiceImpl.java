@@ -192,7 +192,13 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                             }
                             getflowip.add(s);
                         }else {
-                            for (int i1 = 0; i1 < 1; i1++) {
+                            int len = 1;
+                            if (CountryCode.CountryCode7.getValue().equals(regions)) {
+                                len = 50;
+                            }else {
+                                len = 5;
+                            }
+                            for (int i1 = 0; i1 < len; i1++) {
                                 String s = redisTemplate.opsForList().rightPop(RedisKeys.RedisKeys8.getValue(regions));
                                 if (s == null) {
                                     break;
@@ -210,37 +216,9 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                 if (CollUtil.isEmpty(getflowip)) {
                     return null;
                 }
-                List<CurlVO> curlVOS = new ArrayList<>();
                 //循环获取ip
                 for (String ip : getflowip) {
-                    executor.submit(() -> {
-                        try {
-                            CurlVO proxyUse = getProxyUse(ip, regions, proxy);
-                            proxyUse.setS5Ip(ip);
-                            curlVOS.add(proxyUse);
-                        }catch (Exception e) {
-                            log.error(e.getMessage());
-                        }
-                    });
-                }
-                executor.shutdown();
-                try {
-                    // 等待直到所有任务完成执行，或超时，或当前线程被中断
-                    if (!executor.awaitTermination(2, TimeUnit.MINUTES)) {
-                        log.info("Some tasks were not finished before the timeout");
-                        executor.shutdownNow();
-                    } else {
-                        // 所有任务都已完成
-                        System.out.println("All tasks finished.");
-                        log.info("All tasks finished.");
-                    }
-                } catch (InterruptedException e) {
-                    // 当前线程在等待时被中断
-                    executor.shutdownNow();
-                    Thread.currentThread().interrupt();
-                }
-                for (CurlVO proxyUse : curlVOS) {
-                    String ip = proxyUse.getS5Ip();
+                    CurlVO proxyUse = getProxyUse(ip, regions, proxy);
                     if (proxyUse.isProxyUse()) {
                         //判断ip黑名单缓存中是否有
                         String ipCache = redisTemplate.opsForValue().get(RedisKeys.RedisKeys4.getValue(proxyUse.getIp()));
