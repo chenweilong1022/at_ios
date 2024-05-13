@@ -204,6 +204,9 @@ public class AtGroupVO implements Serializable {
 	@ApiModelProperty(required=false,value="卡次数")
 	private Integer phoneRegisterCount;
 
+	@ApiModelProperty(required=false,value="手机号使用状态")
+	private Boolean phoneState;
+
 
 	@ApiModelProperty(required=false,value="间隔秒数")
 	private Integer intervalSecond;

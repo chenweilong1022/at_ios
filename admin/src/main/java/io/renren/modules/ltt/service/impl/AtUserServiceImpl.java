@@ -100,7 +100,7 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
         }
         for (AtUserVO atUserVO : resultList) {
             //查询手机号可用状态
-            Boolean phoneRegisterState = cdGetPhoneService.getPhoneRegisterState(atUserVO.getTelephone());
+            Boolean phoneRegisterState = cdGetPhoneService.getPhoneUseState(atUserVO.getTelephone());
             atUserVO.setPhoneState(phoneRegisterState);
         }
         return new PageUtils(resultList, count, atUser.getLimit(), atUser.getPage());
@@ -172,7 +172,7 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
         if (Boolean.TRUE.equals(paramDto.getFilterRed())) {
             //过滤掉红灯的手机号
             ids = userEntityList.stream()
-                    .filter(i-> Boolean.TRUE.equals(cdGetPhoneService.getPhoneRegisterState(i.getTelephone())))
+                    .filter(i-> Boolean.TRUE.equals(cdGetPhoneService.getPhoneUseState(i.getTelephone())))
                     .map(AtUserEntity::getId).collect(Collectors.toList());
         }
 

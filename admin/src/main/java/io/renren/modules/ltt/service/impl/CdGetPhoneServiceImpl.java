@@ -208,7 +208,7 @@ public class CdGetPhoneServiceImpl extends ServiceImpl<CdGetPhoneDao, CdGetPhone
      * @return true:代表手机号可用可购买
      */
     @Override
-    public Boolean getPhoneRegisterState(String phone) {
+    public Boolean getPhoneUseState(String phone) {
         try {
             if (StringUtils.isNotEmpty(phone)) {
                 Object object = stringRedisTemplate.opsForValue()

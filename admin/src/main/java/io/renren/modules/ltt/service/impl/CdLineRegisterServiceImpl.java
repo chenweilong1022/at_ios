@@ -73,6 +73,7 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
         );
         for (CdLineRegisterVO record : page.getRecords()) {
             record.setRegisterCount(cdGetPhoneService.getPhoneRegisterCount(record.getPhone()));
+            record.setPhoneState(cdGetPhoneService.getPhoneUseState(record.getPhone()));
         }
         return PageUtils.<CdLineRegisterVO>page(page);
     }

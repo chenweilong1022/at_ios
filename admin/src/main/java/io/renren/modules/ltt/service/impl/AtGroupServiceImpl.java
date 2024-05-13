@@ -117,6 +117,7 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
                 if (phoneMap.get(atGroupVO.getUserId()) != null) {
                     atGroupVO.setUserTelephone(phoneMap.get(atGroupVO.getUserId()));
                     atGroupVO.setPhoneRegisterCount(cdGetPhoneService.getPhoneRegisterCount(atGroupVO.getUserTelephone()));
+                    atGroupVO.setPhoneState(cdGetPhoneService.getPhoneUseState(atGroupVO.getUserTelephone()));
                 }
 
                 //修改群信息水军号

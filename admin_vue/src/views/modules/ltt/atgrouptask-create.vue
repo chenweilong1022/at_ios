@@ -350,7 +350,7 @@
             label="拉群手机号">
             <template slot-scope="scope">
               <div>
-                <el-badge :value="scope.row.phoneRegisterCount" class="item">
+                <el-badge :value="scope.row.phoneRegisterCount" :class="badgeClass(scope.row.phoneState)" class="item">
                   <el-button type="text" @click="atUserHandle(scope.row.userId)">{{scope.row.userTelephone }}</el-button>
                 </el-badge>
               </div>
@@ -609,6 +609,14 @@ import ErrLogs from "./atdatatask-err-logs.vue";
         this.$nextTick(() => {
           this.$refs.errLogs.init(id)
         })
+      },
+      badgeClass(state) {
+        if (state === true) {
+          return 'green-badge'
+        }
+        if (state === false) {
+          return 'red-badge'
+        }
       },
       // 拉群账号
       atUserHandle (userId) {
@@ -1045,7 +1053,7 @@ import ErrLogs from "./atdatatask-err-logs.vue";
     }
   }
 </script>
-<style scoped lang="scss">
+<style lang="scss">
 .tooltip-content {
   max-height: 100px;
   overflow-y: auto;
@@ -1095,6 +1103,16 @@ import ErrLogs from "./atdatatask-err-logs.vue";
 }
 .item {
   margin-top: 10px;
-  //margin-right: 20px;
+}
+/* 定义绿色背景样式 */
+.green-badge .el-badge__content {
+  background-color: green;
+  color: white;
+}
+
+/* 定义红色背景样式 */
+.red-badge .el-badge__content {
+  background-color: red;
+  color: white;
 }
 </style>

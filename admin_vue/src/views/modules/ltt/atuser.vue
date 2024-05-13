@@ -167,10 +167,9 @@
         header-align="center"
         align="center" width="150px"
         label="电话">
-        <!-- 自定义表格列模板 -->
         <template slot-scope="scope">
-          <el-badge :value="scope.row.registerCount" class="item" :class="getBadgeType(scope.row.registerCount)">
-            <el-button type="text" @click="copyPhoneHandle(scope.row.telephone)">{{ scope.row.telephone }}</el-button>
+          <el-badge :value="scope.row.registerCount" :class="badgeClass(scope.row.phoneState)" class="item">
+            <el-button size="text" @click="copyPhoneHandle(scope.row.telephone)">{{ scope.row.telephone }}</el-button>
           </el-badge>
         </template>
       </el-table-column>
@@ -211,16 +210,6 @@
           <el-tag v-else size="small">数据错误</el-tag>
         </template>
       </el-table-column>
-<!--      <el-table-column-->
-<!--        prop="customerService"-->
-<!--        header-align="center"-->
-<!--        align="center"-->
-<!--        label="所属客服">-->
-<!--        <template slot-scope="scope">-->
-<!--          <el-tag v-if="scope.row.customerServiceId == null" size="small" type="danger">未分配</el-tag>-->
-<!--          <el-tag v-else size="small">{{scope.row.customerService}}</el-tag>-->
-<!--        </template>-->
-<!--      </el-table-column>-->
       <el-table-column
         prop="createTime"
         header-align="center"
@@ -457,6 +446,14 @@
           }
           this.dataListLoading = false
         })
+      },
+      badgeClass(state) {
+        if (state === true) {
+          return 'green-badge'
+        }
+        if (state === false) {
+          return 'red-badge'
+        }
       },
       copyPhoneHandle (telephone) {
         var telephones = telephone ? [telephone.trim()] : this.dataListSelections.map(item => {
@@ -783,6 +780,17 @@
 <style>
 .item {
   margin-top: 10px;
-  //margin-right: 20px;
 }
+/* 定义绿色背景样式 */
+.green-badge .el-badge__content {
+  background-color: green;
+  color: white;
+}
+
+/* 定义红色背景样式 */
+.red-badge .el-badge__content {
+  background-color: red;
+  color: white;
+}
+
 </style>

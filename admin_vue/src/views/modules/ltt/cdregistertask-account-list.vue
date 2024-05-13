@@ -75,7 +75,7 @@
           align="center" width="150px"
           label="手机号">
           <template slot-scope="scope">
-          <el-badge :value="scope.row.registerCount" class="item">
+          <el-badge :value="scope.row.registerCount" :class="badgeClass(scope.row.phoneState)" class="item">
             <el-button type="text" @click="copyPhoneHandle(scope.row.phone)">{{ scope.row.phone }}</el-button>
           </el-badge>
           </template>
@@ -326,6 +326,14 @@
           })
         })
       },
+      badgeClass(state) {
+        if (state === true) {
+          return 'green-badge'
+        }
+        if (state === false) {
+          return 'red-badge'
+        }
+      },
       copyPhoneHandle (phone) {
         var phones = phone ? [phone] : this.dataListSelections.map(item => {
           return item.phone
@@ -357,6 +365,17 @@
 <style>
 .item {
   margin-top: 10px;
-  //margin-right: 20px;
+}
+
+/* 定义绿色背景样式 */
+.green-badge .el-badge__content {
+  background-color: green;
+  color: white;
+}
+
+/* 定义红色背景样式 */
+.red-badge .el-badge__content {
+  background-color: red;
+  color: white;
 }
 </style>
