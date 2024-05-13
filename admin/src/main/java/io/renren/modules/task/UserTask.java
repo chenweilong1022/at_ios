@@ -120,13 +120,13 @@ public class UserTask {
 //                    "https://info.proxy.abcproxy.com/extractProxyIp?regions=%s&num=500&protocol=http&return_type=txt&lh=1&mode=1",//abcproxy
 //                    "http://list.rola.vip:8088/user_get_ip_list?token=blgRn3dqzQ6FL95f1715615375953&qty=500&country=%s&state=&city=&time=10&format=txt&protocol=socks5&filter=1"
             List<String> urls = CollUtil.newArrayList(
-                    "http://list.rola.vip:8088/user_get_ip_list?token=blgRn3dqzQ6FL95f1715615375953&qty=500&country=%s&state=&city=&time=10&format=txt&protocol=socks5&filter=1"
+                    "http://list.rola.vip:8088/user_get_ip_list?token=blgRn3dqzQ6FL95f1715615375953&qty=100&country=%s&state=&city=&time=10&format=txt&protocol=socks5&filter=1"
             );
             //给每个国家补充ip
             for (EnumVo enumVo : enumVos) {
                 String regions = EnumUtil.queryValueByKey(enumVo.getKey(), CountryCode.values());
                 Long size = redisTemplate.opsForList().size(RedisKeys.RedisKeys8.getValue(regions));
-                if (size > 2000) {
+                if (size >= 500) {
                     continue;
                 }
                 for (String url : urls) {
