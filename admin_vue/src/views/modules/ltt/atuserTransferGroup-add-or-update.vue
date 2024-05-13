@@ -4,7 +4,19 @@
     :close-on-click-modal="false"
     :visible.sync="visible">
     <el-form :model="dataForm" :rules="dataRule" ref="dataForm" @keyup.enter.native="dataFormSubmit()"
-             label-width="80px">
+             label-width="120px">
+      <el-form-item label="红灯数量" prop="redPhoneCount">
+        <el-tag type="danger" style="font-size: 18px;">{{redPhoneCount}}个</el-tag>
+      </el-form-item>
+      <el-form-item label="绿灯数量" prop="greenPhoneCount">
+        <el-tag type="danger" style="font-size: 18px;">{{greenPhoneCount}}个</el-tag>
+      </el-form-item>
+      <el-form-item label="是否过滤红灯" prop="filterRed">
+        <el-radio-group v-model="filterRed">
+          <el-radio-button :label="true">是</el-radio-button>
+          <el-radio-button :label="false">否</el-radio-button>
+        </el-radio-group>
+      </el-form-item>
       <el-form-item label="账号分组" prop="userGroupId">
         <el-select
           @change="userGroupChangeHandler"
@@ -41,6 +53,9 @@ export default {
         ids: [],
         userGroupId: ''
       },
+      redPhoneCount: 0,
+      greenPhoneCount: 0,
+      filterRed: true,
       dataRule: {
         userGroupId: [
           {required: true, message: '分组id不能为空', trigger: 'blur'}
@@ -56,10 +71,11 @@ export default {
        }
       })
     },
-    init (ids) {
+    init (ids, redPhoneCount, greenPhoneCount) {
       this.visible = true
       this.ids = ids
-      console.log(ids)
+      this.redPhoneCount = redPhoneCount
+      this.greenPhoneCount = greenPhoneCount
       this.queryUserGroupBySearchWord()
     },
     // 表单提交
@@ -72,7 +88,8 @@ export default {
             data: this.$http.adornData({
               'ids': this.ids,
               'userGroupId': this.dataForm.userGroupId,
-              'userGroupName': this.userGroupName
+              'userGroupName': this.userGroupName,
+              'filterRed': this.filterRed
             })
           }).then(({data}) => {
             if (data && data.code === 0) {

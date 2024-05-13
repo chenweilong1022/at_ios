@@ -11,6 +11,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.benmanes.caffeine.cache.Cache;
 import io.renren.common.utils.ConfigConstant;
 import io.renren.common.utils.DateUtils;
+import io.renren.common.utils.RedisUtils;
 import io.renren.modules.client.FirefoxService;
 import io.renren.modules.client.LineService;
 import io.renren.modules.client.dto.*;
@@ -18,10 +19,7 @@ import io.renren.modules.client.entity.ProjectWorkEntity;
 import io.renren.modules.client.vo.*;
 import io.renren.modules.ltt.dto.CdGetPhoneDTO;
 import io.renren.modules.ltt.dto.CdLineIpProxyDTO;
-import io.renren.modules.ltt.entity.CdGetPhoneEntity;
-import io.renren.modules.ltt.entity.CdLineRegisterEntity;
-import io.renren.modules.ltt.entity.CdRegisterSubtasksEntity;
-import io.renren.modules.ltt.entity.CdRegisterTaskEntity;
+import io.renren.modules.ltt.entity.*;
 import io.renren.modules.ltt.enums.*;
 import io.renren.modules.ltt.service.*;
 import io.renren.modules.ltt.service.impl.AsyncService;
@@ -127,6 +125,9 @@ public class RegisterTask {
 
     @Autowired
     private StringRedisTemplate redisTemplate;
+
+    @Resource
+    private RedisUtils redisUtils;
 
     /**
      *
@@ -431,6 +432,9 @@ public class RegisterTask {
                             update.setId(cdGetPhoneEntity.getId());
                             update.setPhoneStatus(PhoneStatus.PhoneStatus2.getKey());
                             update.setCreateTime(DateUtil.date());
+                            //更新手机号注册次数
+                            this.savePhoneRegisterCount(lineRegisterDTO.getPhone());
+
                             try{
                                 cdLineRegisterService.save(cdLineRegisterDTO);
                             }catch (Exception e) {
@@ -448,6 +452,28 @@ public class RegisterTask {
             });
         }
 
+    }
+
+
+    /**
+     * 更新手机号注册次数
+     */
+    private Integer savePhoneRegisterCount(String phone) {
+        try {
+            Integer registerCount = redisUtils.getPhoneRegisterCount(phone) + 1;
+
+            log.error("更新手机号注册次数 {}, 次数：{}", phone, registerCount);
+            redisTemplate.opsForHash().put(RedisKeys.RedisKeys10.getValue(), phone, String.valueOf(registerCount));
+
+            //大于等于3次的卡，与前两次的做对比，超过24小时，才为可用状态
+            if (registerCount >= 3) {
+                redisTemplate.opsForValue().set(RedisKeys.RedisKeys12.getValue(phone), String.valueOf(registerCount), (24 * 60) + 30, TimeUnit.MINUTES);
+            }
+            return registerCount;
+        } catch (Exception e) {
+            log.error("更新手机号注册次数异常 {}, {}", phone, e);
+        }
+        return 0;
     }
 
 

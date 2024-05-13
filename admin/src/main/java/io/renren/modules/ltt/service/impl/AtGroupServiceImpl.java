@@ -11,6 +11,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import io.renren.common.utils.EnumUtil;
 import io.renren.common.utils.PageUtils;
 import io.renren.common.utils.Query;
+import io.renren.common.utils.RedisUtils;
 import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.client.LineService;
@@ -87,6 +88,9 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
     @Autowired
     private StringRedisTemplate redisTemplate;
 
+    @Resource
+    private RedisUtils redisUtils;
+
     @Override
     public PageUtils<AtGroupVO> queryPage(AtGroupDTO atGroup) {
         IPage<AtGroupVO> page = baseMapper.listPage(
@@ -112,9 +116,7 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
 
                 if (phoneMap.get(atGroupVO.getUserId()) != null) {
                     atGroupVO.setUserTelephone(phoneMap.get(atGroupVO.getUserId()));
-                    Object object = redisTemplate.opsForHash()
-                            .get(RedisKeys.RedisKeys10.getValue(), atGroupVO.getUserTelephone());
-                    atGroupVO.setPhoneRegisterCount(object == null ? 1 : Integer.valueOf(String.valueOf(object)));
+                    atGroupVO.setPhoneRegisterCount(redisUtils.getPhoneRegisterCount(atGroupVO.getUserTelephone()));
                 }
 
                 //修改群信息水军号

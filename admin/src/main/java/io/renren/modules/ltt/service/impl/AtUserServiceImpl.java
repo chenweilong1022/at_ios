@@ -11,6 +11,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.google.common.collect.Lists;
 import io.renren.common.utils.PageUtils;
 import io.renren.common.utils.Query;
+import io.renren.common.utils.RedisUtils;
 import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.app.service.FileService;
@@ -54,6 +55,7 @@ import java.io.Serializable;
 import java.io.StringWriter;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -85,6 +87,9 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
     @Autowired
     private StringRedisTemplate redisTemplate;
 
+    @Resource
+    private RedisUtils redisUtils;
+
     @Override
     public PageUtils<AtUserVO> queryPage1(AtUserDTO atUser) {
         atUser.setPageStart((atUser.getPage() - 1) * atUser.getLimit());
@@ -92,6 +97,11 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
         List<AtUserVO> resultList = Collections.emptyList();
         if (count > 0) {
             resultList = baseMapper.queryPage(atUser);
+        }
+        for (AtUserVO atUserVO : resultList) {
+            //查询手机号可用状态
+            Boolean phoneRegisterState = redisUtils.getPhoneRegisterState(atUserVO.getTelephone());
+            atUserVO.setPhoneState(phoneRegisterState);
         }
         return new PageUtils(resultList, count, atUser.getLimit(), atUser.getPage());
     }
@@ -154,6 +164,17 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
         Integer userGroupId = paramDto.getUserGroupId();
         Assert.isTrue(CollectionUtils.isEmpty(ids), "选择的数据不能为空");
         Assert.isTrue(userGroupId == null, "选择的分组不能为空");
+        Assert.isTrue(paramDto.getFilterRed() == null, "是否过滤不能为空");
+
+        List<AtUserEntity> userEntityList = baseMapper.selectList(new QueryWrapper<AtUserEntity>().lambda()
+                .in(AtUserEntity::getId, ids));
+
+        if (Boolean.TRUE.equals(paramDto.getFilterRed())) {
+            //过滤掉红灯的手机号
+            ids = userEntityList.stream()
+                    .filter(i-> Boolean.FALSE.equals(redisUtils.getPhoneRegisterState(i.getTelephone())))
+                    .map(AtUserEntity::getId).collect(Collectors.toList());
+        }
 
         List<AtUserEntity> updateList = new ArrayList<>(ids.size());
         AtUserEntity atUserEntity = null;
@@ -482,7 +503,7 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
             redisTemplate.delete(RedisKeys.RedisKeys10.getValue());
         }
         AtUserDTO atUser = new AtUserDTO();
-        atUser.setPage(2);
+        atUser.setPage(1);
         atUser.setLimit(500);
         boolean hasNextPage = true;
         while (hasNextPage) {
@@ -501,14 +522,17 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
             List<AtUserEntity> updateAtUserList = new ArrayList<>();
             for (AtUserEntity atUserEntity : currentPageData) {
                 //更新次数
-                Object object = redisTemplate.opsForHash()
-                        .get(RedisKeys.RedisKeys10.getValue(), atUserEntity.getTelephone());
-                Integer registerCount = object == null ? 1 : Integer.valueOf(String.valueOf(object)) + 1;
+                Integer registerCount = redisUtils.getPhoneRegisterCount(atUserEntity.getTelephone()) + 1;
+
+
                 AtUserEntity updateAtUserEntity = new AtUserEntity();
                 updateAtUserEntity.setId(atUserEntity.getId());
                 updateAtUserEntity.setRegisterCount(registerCount);
                 updateAtUserList.add(updateAtUserEntity);
                 redisTemplate.opsForHash().put(RedisKeys.RedisKeys10.getValue(), atUserEntity.getTelephone(), registerCount.toString());
+//                if (registerCount >= 3) {
+//                    redisTemplate.opsForValue().set(RedisKeys.RedisKeys12.getValue(phone), String.valueOf(registerCount), (24 * 60) + 30, TimeUnit.MINUTES);
+//                }
             }
             this.updateBatchById(updateAtUserList);
         }

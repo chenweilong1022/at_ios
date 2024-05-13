@@ -101,6 +101,7 @@
           <el-input v-model="dataForm.selectLimit" placeholder="查询条数" clearable></el-input>
         </el-form-item>
         <el-button @click="getDataList(1)">查询</el-button>
+        <div>
         <el-button v-if="isAuth('ltt:atuser:save')" type="primary"
                    @click="userImportHandle()">账户导入
         </el-button>
@@ -133,6 +134,7 @@
         <el-button type="primary" @click="copyPhoneHandle()"
                    :disabled="dataListSelections.length <= 0">复制手机号
         </el-button>
+        </div>
       </el-form-item>
     </el-form>
     <el-table
@@ -358,7 +360,8 @@
         userImportVisible: false,
         userTokenOrderVisible: false,
         userTransferGroupVisible: false,
-        userCustomerVisible: false
+        userCustomerVisible: false,
+        redPhoneCount: 0
       }
     },
     components: {
@@ -507,20 +510,23 @@
         })
       },
       // 转移分组
-      userTransferGroupHandle (id) {
+      userTransferGroupHandle(id) {
         this.userTransferGroupVisible = true
         var ids = id ? [id] : this.dataListSelections.map(item => {
           return item.id
         })
-        this.$confirm(`确定对所选项进行分组转移操作?`, '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          this.$nextTick(() => {
-            this.$refs.userTransferGroup.init(ids)
-          })
+        var redPhoneCount = this.phoneRed()
+        var greenPhoneCount = ids.length - redPhoneCount
+        this.$nextTick(() => {
+          this.$refs.userTransferGroup.init(ids, redPhoneCount, greenPhoneCount)
         })
+      },
+      // 红灯数量
+      phoneRed () {
+        var redPhoneCount = this.dataListSelections.map(item => {
+          return item.phoneState
+        })
+        this.redPhoneCount = redPhoneCount.length
       },
       // 分配客服
       userCustomerHandle (id) {

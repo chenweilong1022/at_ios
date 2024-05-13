@@ -40,6 +40,11 @@ public enum RedisKeys implements BaseEnum {
      * 卡次数
      */
     RedisKeys10(10,"PHONE_REGISTER"),
+
+    /**
+     * 暂时不可用手机号池
+     */
+    RedisKeys12(12,"PHONE_INVALID"),
     ;
 
     RedisKeys(int key, String value) {

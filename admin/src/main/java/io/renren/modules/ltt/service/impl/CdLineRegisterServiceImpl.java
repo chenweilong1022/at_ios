@@ -52,6 +52,9 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
     @Autowired
     private StringRedisTemplate redisTemplate;
 
+    @Resource
+    private RedisUtils redisUtils;
+
     @Override
     public PageUtils<CdLineRegisterVO> queryPage(CdLineRegisterDTO cdLineRegister) {
         IPage<CdLineRegisterEntity> page = baseMapper.selectPage(
@@ -69,9 +72,7 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
                 cdLineRegister
         );
         for (CdLineRegisterVO record : page.getRecords()) {
-            Object object = redisTemplate.opsForHash()
-                    .get(RedisKeys.RedisKeys10.getValue(), record.getPhone());
-            record.setRegisterCount(object == null ? 1 : Integer.valueOf(String.valueOf(object)));
+            record.setRegisterCount(redisUtils.getPhoneRegisterCount(record.getPhone()));
         }
         return PageUtils.<CdLineRegisterVO>page(page);
     }

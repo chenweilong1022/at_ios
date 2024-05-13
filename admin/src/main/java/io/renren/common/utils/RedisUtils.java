@@ -1,6 +1,10 @@
 package io.renren.common.utils;
 
 import com.google.gson.Gson;
+import io.renren.modules.ltt.entity.AtUserEntity;
+import io.renren.modules.ltt.enums.RedisKeys;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.*;
 import org.springframework.stereotype.Component;
@@ -15,6 +19,7 @@ import java.util.concurrent.TimeUnit;
  * @date 2017-07-17 21:12
  */
 @Component
+@Slf4j
 public class RedisUtils {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
@@ -90,4 +95,43 @@ public class RedisUtils {
     private <T> T fromJson(String json, Class<T> clazz){
         return gson.fromJson(json, clazz);
     }
+
+    /**
+     * 查询手机号注册次数
+     */
+    public Integer getPhoneRegisterCount(String phone) {
+        if (StringUtils.isEmpty(phone)) {
+            return 0;
+        }
+        try {
+            Object object = redisTemplate.opsForHash()
+                    .get(RedisKeys.RedisKeys10.getValue(), phone);
+            if (object != null) {
+                return Integer.valueOf(String.valueOf(object));
+            }
+        } catch (Exception e) {
+            log.error("查询手机号注册次数异常 {}, {}", phone, e);
+        }
+        return 0;
+    }
+
+    /**
+     * 查询手机号是否可用
+     * @return true:代表手机号可用可购买
+     */
+    public Boolean getPhoneRegisterState(String phone) {
+        try {
+            if (StringUtils.isNotEmpty(phone)) {
+                Object object = redisTemplate.opsForValue()
+                        .get(RedisKeys.RedisKeys12.getValue(phone));
+                if (object != null) {
+                    return false;
+                }
+            }
+        } catch (Exception e) {
+            log.error("查询手机号注册次数异常 {}, {}", phone, e);
+        }
+        return true;
+    }
+
 }

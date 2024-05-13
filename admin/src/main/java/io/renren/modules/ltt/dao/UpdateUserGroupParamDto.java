@@ -21,4 +21,7 @@ public class UpdateUserGroupParamDto implements Serializable {
 
     @ApiModelProperty(required=false,value="分组名称")
     private String userGroupName;
+
+    @ApiModelProperty(required=false,value="是否过滤红灯")
+    private Boolean filterRed;
 }

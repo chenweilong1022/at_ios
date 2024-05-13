@@ -11,6 +11,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.benmanes.caffeine.cache.Cache;
 import io.renren.common.base.vo.EnumVo;
 import io.renren.common.utils.EnumUtil;
+import io.renren.common.utils.RedisUtils;
 import io.renren.modules.client.LineService;
 import io.renren.modules.client.dto.IssueLiffViewDTO;
 import io.renren.modules.client.dto.LineTokenJson;
@@ -67,6 +68,9 @@ public class UserTask {
     @Autowired
     private ConcurrentHashMap<String, Lock> lockMap;
     static ReentrantLock task5Lock = new ReentrantLock();
+
+    @Resource
+    private RedisUtils redisUtils;
 
 
     public static final Object atUserlockObj = new Object();
@@ -311,8 +315,8 @@ public class UserTask {
                             atUserEntity.setUserSource(AtUserSourceEnum.AtUserSource2.getKey());
                         }
 
-                        //更新并返回卡注册次数
-                        atUserEntity.setRegisterCount(this.getPhoneRegister(atUserEntity));
+                        //查询手机号注册次数
+                        atUserEntity.setRegisterCount(redisUtils.getPhoneRegisterCount(atUserEntity.getTelephone()));
 
 //                        if (ObjectUtil.isNotNull(one)) {
 //                            atUserEntity.setId(one.getId());
@@ -335,22 +339,6 @@ public class UserTask {
             });
         }
 
-    }
-
-    /**
-     * 更新并返回卡注册次数
-     */
-    private Integer getPhoneRegister(AtUserEntity atUserEntity) {
-        try {
-            Object object = redisTemplate.opsForHash()
-                    .get(RedisKeys.RedisKeys10.getValue(), atUserEntity.getTelephone());
-            Integer registerCount = object == null ? 1 : Integer.valueOf(String.valueOf(object)) + 1;
-            redisTemplate.opsForHash().put(RedisKeys.RedisKeys10.getValue(), atUserEntity.getTelephone(), String.valueOf(registerCount));
-            return registerCount;
-        } catch (Exception e) {
-            log.error("更新卡注册次数异常 {}, {}", atUserEntity, e);
-        }
-        return 0;
     }
 
     /**
