@@ -412,9 +412,9 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 //        }
         log.info("selectProxyUse_error_proxy {}", proxy);
         CurlVO proxyUseMe = isProxyUseMe(ip, country);
-//        if (proxyUseMe.isProxyUse()) {
-//            return proxyUseMe;
-//        }
+        if (proxyUseMe.isProxyUse()) {
+            return proxyUseMe;
+        }
 //        proxyUseMe = isProxyUseMeIpecho(ip, country);
 //        if (proxyUseMe.isProxyUse()) {
 //            return proxyUseMe;
