@@ -49,6 +49,14 @@ public enum RedisKeys implements BaseEnum {
      * 暂时不可用手机号池
      */
     RedisKeys12(12,"PHONE_INVALID"),
+    /**
+     * 用户任务池
+     */
+    RedisKeys13(13,"USER_TASKS_WORK"),
+    /**
+     * 加粉任务词
+     */
+    RedisKeys14(14,"USER_TASKS_WORK_FINISH"),
     ;
 
     RedisKeys(int key, String value) {
