@@ -37,6 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -126,10 +127,12 @@ public class Data2Task {
         }
         for (String userId : members) {
             threadPoolTaskExecutor.execute(() -> {
-                Boolean b = stringRedisTemplate.opsForValue().setIfAbsent(RedisKeys.USER_TASKS_WORKING_NX.getValue(userId), userId);
+                String USER_TASKS_WORKING_NX_KEY = RedisKeys.USER_TASKS_WORKING_NX.getValue(userId);
+                Boolean b = stringRedisTemplate.opsForValue().setIfAbsent(USER_TASKS_WORKING_NX_KEY, userId);
                 if (!b) {
                     return;
                 }
+                redisTemplate.expire(USER_TASKS_WORKING_NX_KEY, 2, TimeUnit.MINUTES);
                 AtDataSubtaskEntity atDataSubtaskEntity = null;
                 try {
                     atDataSubtaskEntity = (AtDataSubtaskEntity) redisTemplate.opsForList().rightPop(RedisKeys.USER_TASKS_WORKING.getValue(userId));
@@ -301,7 +304,7 @@ public class Data2Task {
                 }catch (Exception e){
                     log.error("data2Task error = {}",e.getMessage());
                 }finally {
-                    stringRedisTemplate.delete(RedisKeys.USER_TASKS_WORKING_NX.getValue(userId));
+                    stringRedisTemplate.delete(USER_TASKS_WORKING_NX_KEY);
                     Long l = 0L;
                     if (ObjectUtil.isNull(atDataSubtaskEntity)) {
                         return;

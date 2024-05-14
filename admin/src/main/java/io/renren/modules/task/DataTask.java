@@ -36,6 +36,7 @@ import javax.annotation.Resource;
 import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -109,11 +110,12 @@ public class DataTask {
         //服务器更新锁
         Integer mod = systemConstant.getSERVERS_MOD();
         String key = String.valueOf(mod);
-        Boolean b = stringRedisTemplate.opsForValue().setIfAbsent(RedisKeys.MOD_NX.getValue(key), key);
+        String MOD_NX_KEY = RedisKeys.MOD_NX.getValue(key);
+        Boolean b = stringRedisTemplate.opsForValue().setIfAbsent(MOD_NX_KEY, key);
         if (!b) {
             return;
         }
-
+        redisTemplate.expire(MOD_NX_KEY, 2, TimeUnit.MINUTES);
         try {
             //加粉任务保存
             List<AtDataTaskEntity> elements = new ArrayList<>();
@@ -187,7 +189,7 @@ public class DataTask {
             log.error("data atDataTaskService.updateBatchById atGroupService.updateBatchById atUserService.updateBatchById task7 err = {}",e.getMessage());
         }finally {
             if (b) {
-                stringRedisTemplate.delete(RedisKeys.MOD_NX.getValue(key));
+                stringRedisTemplate.delete(MOD_NX_KEY);
             }
         }
 
@@ -209,10 +211,12 @@ public class DataTask {
         }
         for (String userId : members) {
             threadPoolTaskExecutor.execute(() -> {
-                Boolean b = stringRedisTemplate.opsForValue().setIfAbsent(RedisKeys.USER_TASKS_WORK_FINISH_NX.getValue(userId), userId);
+                String USER_TASKWORK_FINISH_KEY = RedisKeys.USER_TASKS_WORK_FINISH_NX.getValue(userId);
+                Boolean b = stringRedisTemplate.opsForValue().setIfAbsent(USER_TASKWORK_FINISH_KEY, userId);
                 if (!b) {
                     return;
                 }
+                redisTemplate.expire(USER_TASKWORK_FINISH_KEY, 2, TimeUnit.MINUTES);
                 try {
                     List<AtDataSubtaskEntity> elements = new ArrayList<>();
                     AtDataSubtaskEntity element = null;
@@ -240,7 +244,7 @@ public class DataTask {
                 }finally {
                     if (b) {
                         //任务完成移除锁
-                        stringRedisTemplate.delete(RedisKeys.USER_TASKS_WORK_FINISH_NX.getValue(userId));
+                        stringRedisTemplate.delete(USER_TASKWORK_FINISH_KEY);
                     }
                 }
             });
@@ -254,10 +258,12 @@ public class DataTask {
         //服务器更新锁
         Integer mod = systemConstant.getSERVERS_MOD();
         String key = String.valueOf(mod);
-        Boolean b = stringRedisTemplate.opsForValue().setIfAbsent(RedisKeys.MOD_NX.getValue(key), key);
+        String MOD_KEY = RedisKeys.MOD_NX.getValue(key);
+        Boolean b = stringRedisTemplate.opsForValue().setIfAbsent(MOD_KEY, key);
         if (!b) {
             return;
         }
+        redisTemplate.expire(MOD_KEY, 2, TimeUnit.MINUTES);
         try {
             List<GroupCountByDataTaskIdVO> groupCountByDataTaskIdVOS = atDataTaskService.groupCountByDataTaskId();
             if (CollUtil.isEmpty(groupCountByDataTaskIdVOS)) {
@@ -351,7 +357,7 @@ public class DataTask {
             log.error("err = {}",e.getMessage());
         }finally {
             if (b) {
-                stringRedisTemplate.delete(RedisKeys.MOD_NX.getValue(key));
+                stringRedisTemplate.delete(MOD_KEY);
             }
         }
 
@@ -780,10 +786,12 @@ public class DataTask {
                     //用户任务池子 暂时过滤只要mid加粉的
                     Map<Integer, List<AtDataSubtaskEntity>> userIdTaskSubEntitys = atDataSubtaskEntities.stream().filter(item -> GroupType.GroupType2.getKey().equals(item.getGroupType())).collect(Collectors.groupingBy(AtDataSubtaskEntity::getUserId));
                     for (Integer userId : userIdTaskSubEntitys.keySet()) {
-                        Boolean flag = stringRedisTemplate.opsForValue().setIfAbsent(RedisKeys.USER_TASKS_WORKING_NX.getValue(String.valueOf(userId)), String.valueOf(userId));
+                        String USER_TASKS_WORKING_NX_KEY = RedisKeys.USER_TASKS_WORKING_NX.getValue(String.valueOf(userId));
+                        Boolean flag = stringRedisTemplate.opsForValue().setIfAbsent(USER_TASKS_WORKING_NX_KEY, String.valueOf(userId));
                         if (!flag) {
                             return;
                         }
+                        redisTemplate.expire(USER_TASKS_WORKING_NX_KEY, 2, TimeUnit.MINUTES);
                         try {
                             //设置到当前机器任务池
                             Long add = stringRedisTemplate.opsForSet().add(RedisKeys.USER_TASKS_POOL.getValue(String.valueOf(systemConstant.getSERVERS_MOD())), String.valueOf(userId));
@@ -798,7 +806,7 @@ public class DataTask {
                             }
                         }finally {
                             if (flag) {
-                                stringRedisTemplate.delete(RedisKeys.USER_TASKS_WORKING_NX.getValue(String.valueOf(userId)));
+                                stringRedisTemplate.delete(USER_TASKS_WORKING_NX_KEY);
                             }
                         }
                     }
@@ -809,6 +817,78 @@ public class DataTask {
         }finally {
             task1Lock.unlock();
         }
+    }
+
+    @Scheduled(fixedDelay = 5000)
+    @Transactional(rollbackFor = Exception.class)
+    @Async
+    public void task10() {
+        //获取当前用户的池子
+        Set<String> members = stringRedisTemplate.opsForSet().members(RedisKeys.USER_TASKS_POOL.getValue(String.valueOf(systemConstant.getSERVERS_MOD())));
+        //任务为空
+        if (CollUtil.isEmpty(members)) {
+            log.info("Data2Task task2 atDataSubtaskEntities isEmpty");
+            return;
+        }
+        for (String userIdCache : members) {
+            threadPoolTaskExecutor.execute(() -> {
+                String value = RedisKeys.USER_TASKS_WORKING_CLEAN_NX.getValue(userIdCache);
+                //锁住当前用户清理
+                Boolean b = stringRedisTemplate.opsForValue().setIfAbsent(value, userIdCache);
+                if (!b) {
+                    return;
+                }
+                redisTemplate.expire(value, 2, TimeUnit.MINUTES);
+
+                String USER_TASKS_WORKING_NX_KEY = RedisKeys.USER_TASKS_WORKING_NX.getValue(String.valueOf(userIdCache));
+                try {
+                    //查询是否有数据
+                    Long size = redisTemplate.opsForList().size(RedisKeys.USER_TASKS_WORKING.getValue(userIdCache));
+                    if (size > 0) {
+                        return;
+                    }
+                    Boolean flag = stringRedisTemplate.opsForValue().setIfAbsent(USER_TASKS_WORKING_NX_KEY, String.valueOf(userIdCache));
+                    if (!flag) {
+                        return;
+                    }
+                    redisTemplate.expire(USER_TASKS_WORKING_NX_KEY, 2, TimeUnit.MINUTES);
+
+                    List<AtDataSubtaskEntity> atDataSubtaskEntities = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
+                            .eq(AtDataSubtaskEntity::getTaskStatus,TaskStatus.TaskStatus2.getKey())
+                            .in(AtDataSubtaskEntity::getUserId,Integer.valueOf(userIdCache))
+                    );
+                    if (CollUtil.isNotEmpty(atDataSubtaskEntities)) {
+                        //用户任务池子 暂时过滤只要mid加粉的
+                        Map<Integer, List<AtDataSubtaskEntity>> userIdTaskSubEntitys = atDataSubtaskEntities.stream().filter(item -> GroupType.GroupType2.getKey().equals(item.getGroupType())).collect(Collectors.groupingBy(AtDataSubtaskEntity::getUserId));
+                        for (Integer userId : userIdTaskSubEntitys.keySet()) {
+                            try {
+                                //设置到当前机器任务池
+                                Long add = stringRedisTemplate.opsForSet().add(RedisKeys.USER_TASKS_POOL.getValue(String.valueOf(systemConstant.getSERVERS_MOD())), String.valueOf(userId));
+                                log.info("任务池保存成功条数 ====》 {}",add);
+                                List<AtDataSubtaskEntity> atDataSubtaskEntityList = userIdTaskSubEntitys.get(userId);
+                                for (AtDataSubtaskEntity atDataSubtaskEntity : atDataSubtaskEntityList) {
+                                    //设置用户id任务队列
+                                    Long l = redisTemplate.opsForList().leftPush(RedisKeys.USER_TASKS_WORKING.getValue(String.valueOf(userId)), atDataSubtaskEntity);
+                                    log.info("用户任务池保存成功条数 ====》 {}",l);
+                                }
+                            }finally {
+
+                            }
+                        }
+                    }else {
+                        //清理set
+                        stringRedisTemplate.opsForSet().remove(RedisKeys.USER_TASKS_POOL.getValue(String.valueOf(systemConstant.getSERVERS_MOD())),userIdCache);
+                    }
+                }catch (Exception e){
+                    log.error("dataTask10 error = {}",e.getMessage());
+                }finally {
+                    stringRedisTemplate.delete(USER_TASKS_WORKING_NX_KEY);
+                    stringRedisTemplate.delete(value);
+                }
+            });
+        }
+
 
     }
+
 }

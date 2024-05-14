@@ -85,6 +85,10 @@ public enum RedisKeys implements BaseEnum {
      * 任务服务器锁
      */
     MOD_NX(21,"MOD_NX"),
+    /**
+     * 清理任务锁
+     */
+    USER_TASKS_WORKING_CLEAN_NX(22,"USER_TASKS_WORKING_CLEAN_NX"),
     ;
 
     RedisKeys(int key, String value) {
