@@ -102,7 +102,7 @@
         WHERE
             task_status = #{dto.taskStatus}
           AND group_type = #{dto.groupType}
-          AND user_id % 2 = #{dto.mod}
+          AND user_id % #{dto.totalMod} = #{dto.mod}
         GROUP BY
             user_id
         limit 200

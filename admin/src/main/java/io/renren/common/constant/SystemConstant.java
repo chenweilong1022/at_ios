@@ -16,8 +16,16 @@ public class SystemConstant {
     @Value(value = "${customer.roleId}")
     private Long CUSTOMER_ROLE_ID;
 
+    /**
+     * 当前服务器
+     */
     @Value(value = "${servers.mod}")
     private Integer SERVERS_MOD;
+    /**
+     * 总服务器数量
+     */
+    @Value(value = "${servers.total-mod}")
+    private Integer SERVERS_TOTAL_MOD;
 
     @Value(value = "${magicServer.url}")
     private String MAGIC_SERVER_URL;

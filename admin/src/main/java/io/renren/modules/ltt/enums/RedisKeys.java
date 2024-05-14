@@ -52,11 +52,39 @@ public enum RedisKeys implements BaseEnum {
     /**
      * 用户任务池
      */
-    RedisKeys13(13,"USER_TASKS_WORK"),
+    USER_TASKS_POOL(13,"USER_TASKS_POOL"),
     /**
-     * 加粉任务词
+     * 加粉结束
      */
-    RedisKeys14(14,"USER_TASKS_WORK_FINISH"),
+    USER_TASKS_WORK_FINISH(14,"USER_TASKS_WORK_FINISH"),
+    /**
+     * 加粉任务池子进行中
+     */
+    USER_TASKS_WORKING(15,"USER_TASKS_WORKING"),
+    /**
+     * 加粉任务锁
+     */
+    USER_TASKS_WORKING_NX(16,"USER_TASKS_WORKING_NX"),
+    /**
+     * 加粉任务状态队列
+     */
+    ATDATATASKENTITY_LIST(17,"ATDATATASKENTITY_LIST"),
+    /**
+     * 群任务队列
+     */
+    ATGROUPENTITY_LIST(18,"ATGROUPENTITY_LIST"),
+    /**
+     * 用户任务队列
+     */
+    ATUSERENTITY_LIST(19,"ATUSERENTITY_LIST"),
+    /**
+     * 加粉任务结束锁
+     */
+    USER_TASKS_WORK_FINISH_NX(20,"USER_TASKS_WORK_FINISH_NX"),
+    /**
+     * 任务服务器锁
+     */
+    MOD_NX(21,"MOD_NX"),
     ;
 
     RedisKeys(int key, String value) {

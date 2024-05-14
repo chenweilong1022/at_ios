@@ -250,4 +250,10 @@ public class AtDataSubtaskEntity implements Serializable {
 	@ApiModelProperty(required=false,value="mod")
 	@TableField(exist = false)
 	private Integer mod;
+	/**
+	 * totalMod
+	 */
+	@ApiModelProperty(required=false,value="totalMod")
+	@TableField(exist = false)
+	private Integer totalMod;
 }

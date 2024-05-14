@@ -23,6 +23,8 @@ import io.renren.modules.ltt.vo.AtDataSubtaskVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -91,12 +93,152 @@ public class DataTask {
     @Resource
     private SystemConstant systemConstant;
 
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
+
+    /**
+     * 更新
+     */
+    @Scheduled(fixedDelay = 5000)
+    @Transactional(rollbackFor = Exception.class)
+    @Async
+    public void task7() {
+        //服务器更新锁
+        Integer mod = systemConstant.getSERVERS_MOD();
+        String key = String.valueOf(mod);
+        Boolean b = stringRedisTemplate.opsForValue().setIfAbsent(RedisKeys.MOD_NX.getValue(key), key);
+        if (!b) {
+            return;
+        }
+
+        try {
+            //加粉任务保存
+            List<AtDataTaskEntity> elements = new ArrayList<>();
+            AtDataTaskEntity element = null;
+            while ((element = (AtDataTaskEntity) redisTemplate.opsForList().rightPop(RedisKeys.ATDATATASKENTITY_LIST.getValue(key))) != null) {
+                elements.add(element);
+            }
+            if (CollUtil.isNotEmpty(elements)) {
+                try{
+                    boolean b1 = atDataTaskService.updateBatchById(elements);
+                    //如果保存失败，把数据重新保存
+                    if (!b1) {
+                        Long l = redisTemplate.opsForList().leftPushAll(RedisKeys.ATDATATASKENTITY_LIST.getValue(key), elements);
+                    }
+                    //如果保存失败，把数据重新保存
+                }catch (Exception e) {
+                    Long l = redisTemplate.opsForList().leftPushAll(RedisKeys.ATDATATASKENTITY_LIST.getValue(key), elements);
+                }
+            }
+
+            //群任务保存
+            List<AtGroupEntity> elementsGroups = new ArrayList<>();
+            AtGroupEntity group = null;
+            while ((group = (AtGroupEntity) redisTemplate.opsForList().rightPop(RedisKeys.ATGROUPENTITY_LIST.getValue(key))) != null) {
+                elementsGroups.add(group);
+            }
+            if (CollUtil.isNotEmpty(elementsGroups)) {
+                try{
+                    boolean b1 = atGroupService.updateBatchById(elementsGroups);
+                    //如果保存失败，把数据重新保存
+                    if (!b1) {
+                        Long l = redisTemplate.opsForList().leftPushAll(RedisKeys.ATGROUPENTITY_LIST.getValue(key), elementsGroups);
+                    }
+                    //如果保存失败，把数据重新保存
+                }catch (Exception e) {
+                    Long l = redisTemplate.opsForList().leftPushAll(RedisKeys.ATGROUPENTITY_LIST.getValue(key), elementsGroups);
+                }
+            }
+
+            //用户任务队列保存
+            List<AtUserEntity> elementsUsers = new ArrayList<>();
+            AtUserEntity user = null;
+            while ((user = (AtUserEntity) redisTemplate.opsForList().rightPop(RedisKeys.ATUSERENTITY_LIST.getValue(key))) != null) {
+                elementsUsers.add(user);
+            }
+            if (CollUtil.isNotEmpty(elementsUsers)) {
+                try{
+                    boolean b1 = atUserService.updateBatchById(elementsUsers);
+                    //如果保存失败，把数据重新保存
+                    if (!b1) {
+                        Long l = redisTemplate.opsForList().leftPushAll(RedisKeys.ATUSERENTITY_LIST.getValue(key), elementsUsers);
+                    }
+                    //如果保存失败，把数据重新保存
+                }catch (Exception e) {
+                    Long l = redisTemplate.opsForList().leftPushAll(RedisKeys.ATUSERENTITY_LIST.getValue(key), elementsUsers);
+                }
+            }
+        }catch (Exception e){
+            log.error("data atDataTaskService.updateBatchById atGroupService.updateBatchById atUserService.updateBatchById task7 err = {}",e.getMessage());
+        }finally {
+            stringRedisTemplate.delete(RedisKeys.MOD_NX.getValue(key));
+        }
+
+
+
+
+
+    }
+
+    /**
+     * 更新加粉子任务任务状态
+     */
+    @Scheduled(fixedDelay = 5000)
+    @Transactional(rollbackFor = Exception.class)
+    @Async
+    public void task6() {
+        //获取在工作的所有任务
+        Set<String> members = stringRedisTemplate.opsForSet().members(RedisKeys.USER_TASKS_POOL.getValue(String.valueOf(systemConstant.getSERVERS_MOD())));
+        //任务为空
+        if (CollUtil.isEmpty(members)) {
+            log.info("Data2Task task2 atDataSubtaskEntities isEmpty");
+            return;
+        }
+        for (String userId : members) {
+            threadPoolTaskExecutor.execute(() -> {
+                try {
+                    Boolean b = stringRedisTemplate.opsForValue().setIfAbsent(RedisKeys.USER_TASKS_WORK_FINISH_NX.getValue(userId), userId);
+                    if (!b) {
+                        return;
+                    }
+                    List<AtDataSubtaskEntity> elements = new ArrayList<>();
+                    AtDataSubtaskEntity element = null;
+                    while ((element = (AtDataSubtaskEntity) redisTemplate.opsForList().rightPop(RedisKeys.USER_TASKS_WORK_FINISH.getValue(userId))) != null) {
+                        elements.add(element);
+                    }
+                    if (CollUtil.isNotEmpty(elements)) {
+                        try{
+                            boolean b1 = atDataSubtaskService.updateBatchById(elements);
+                            //如果保存失败，把数据重新保存
+                            if (!b1) {
+                                Long l = redisTemplate.opsForList().leftPushAll(RedisKeys.USER_TASKS_WORK_FINISH.getValue(userId), elements);
+                            }
+                            //如果保存失败，把数据重新保存
+                        }catch (Exception e) {
+                            Long l = redisTemplate.opsForList().leftPushAll(RedisKeys.USER_TASKS_WORK_FINISH.getValue(userId), elements);
+                        }
+                    }
+                }catch (Exception e) {
+                    log.error("data atDataSubtaskService.updateBatchById err = {}",e.getMessage());
+                }finally {
+                    //任务完成移除锁
+                    stringRedisTemplate.delete(RedisKeys.USER_TASKS_WORK_FINISH_NX.getValue(userId));
+                }
+            });
+        }
+    }
 
     @Scheduled(fixedDelay = 8000)
     @Transactional(rollbackFor = Exception.class)
     @Async
     public void task5() {
-        boolean b = task4Lock.tryLock();
+        //服务器更新锁
+        Integer mod = systemConstant.getSERVERS_MOD();
+        String key = String.valueOf(mod);
+        Boolean b = stringRedisTemplate.opsForValue().setIfAbsent(RedisKeys.MOD_NX.getValue(key), key);
         if (!b) {
             return;
         }
@@ -177,21 +319,21 @@ public class DataTask {
                             }else {
                                 atGroupEntity.setGroupStatus(GroupStatus.GroupStatus14.getKey());
                             }
-                            atGroupService.updateById(atGroupEntity);
+                            // 任务失败 设置群任务队列
+                            redisTemplate.opsForList().leftPushAll(RedisKeys.ATGROUPENTITY_LIST.getValue(String.valueOf(systemConstant.getSERVERS_MOD())), atGroupEntity);
                         }
                     }
                 }
             }
             if (CollUtil.isNotEmpty(atDataTaskEntityList)) {
-                synchronized (atAtDataTaskEntityObj) {
-                    atDataTaskService.updateBatchById(atDataTaskEntityList);
-                }
+                //加粉任务完成
+                redisTemplate.opsForList().leftPushAll(RedisKeys.ATDATATASKENTITY_LIST.getValue(String.valueOf(systemConstant.getSERVERS_MOD())), atDataTaskEntityList);
             }
         }
         catch (Exception e) {
             log.error("err = {}",e.getMessage());
         }finally {
-            task4Lock.unlock();
+            stringRedisTemplate.delete(RedisKeys.MOD_NX.getValue(key));
         }
 
     }
@@ -553,7 +695,6 @@ public class DataTask {
                 }
             });
         }
-
     }
 
     /**
@@ -568,10 +709,12 @@ public class DataTask {
             return;
         }
         try{
+            //配置总机器
+            String format = String.format("and MOD(id, %s) = %s limit 15", systemConstant.getSERVERS_TOTAL_MOD(), systemConstant.getSERVERS_MOD());
             //需要添加好友的任务
             List<AtDataTaskEntity> atDataTaskEntities = atDataTaskService.list(new QueryWrapper<AtDataTaskEntity>().lambda()
                     .eq(AtDataTaskEntity::getTaskStatus, TaskStatus.TaskStatus1.getKey())
-                    .last("and MOD(id, 2) = "+systemConstant.getSERVERS_MOD()+" limit 15")
+                    .last(format)
             );
             if (CollUtil.isEmpty(atDataTaskEntities)) {
                 log.info("DataTask task1 atDataTaskEntities isEmpty");
@@ -608,9 +751,23 @@ public class DataTask {
                 updates.add(update);
             }
             synchronized (atAtDataSubtaskObj) {
-                atDataSubtaskService.updateBatchById(updates);
+                boolean b1 = atDataSubtaskService.updateBatchById(updates);
+                if(b1) {
+                    //用户任务池子 暂时过滤只要mid加粉的
+                    Map<Integer, List<AtDataSubtaskEntity>> userIdTaskSubEntitys = atDataSubtaskEntities.stream().filter(item -> GroupType.GroupType2.getKey().equals(item.getContactType())).collect(Collectors.groupingBy(AtDataSubtaskEntity::getUserId));
+                    for (Integer i : userIdTaskSubEntitys.keySet()) {
+                        //设置到当前机器任务池
+                        Long add = stringRedisTemplate.opsForSet().add(RedisKeys.USER_TASKS_POOL.getValue(String.valueOf(systemConstant.getSERVERS_MOD())), String.valueOf(i));
+                        log.info("任务池保存成功条数 ====》 {}",add);
+                        if (add > 0) {
+                            List<AtDataSubtaskEntity> atDataSubtaskEntityList = userIdTaskSubEntitys.get(i);
+                            //设置用户id任务队列
+                            Long l = redisTemplate.opsForList().leftPushAll(RedisKeys.USER_TASKS_WORKING.getValue(String.valueOf(i)), atDataSubtaskEntityList);
+                            log.info("用户任务池保存成功条数 ====》 {}",l);
+                        }
+                    }
+                }
             }
-
         }catch (Exception e) {
             log.error("err = {}",e.getMessage());
         }finally {

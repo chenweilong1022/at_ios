@@ -1,57 +1,29 @@
 package io.renren.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.core.*;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
-/**
- * Redis配置
- *
- * @author chenshun
- * @email sunlightcs@gmail.com
- * @date 2017-07-70 19:22
- */
 @Configuration
 public class RedisConfig {
-    @Autowired
-    private RedisConnectionFactory factory;
 
     @Bean
-    public RedisTemplate<String, Object> redisTemplate() {
+    public RedisTemplate<String, Object> redisTemplate(LettuceConnectionFactory lettuceConnectionFactory) {
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setConnectionFactory(lettuceConnectionFactory);
+
+        // 使用StringRedisSerializer来序列化和反序列化redis的key值
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setHashKeySerializer(new StringRedisSerializer());
-        redisTemplate.setHashValueSerializer(new StringRedisSerializer());
-        redisTemplate.setValueSerializer(new StringRedisSerializer());
-        redisTemplate.setConnectionFactory(factory);
+
+        // 使用GenericJackson2JsonRedisSerializer来序列化和反序列化redis的value值
+        redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        redisTemplate.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
+
+        redisTemplate.afterPropertiesSet();
         return redisTemplate;
-    }
-
-    @Bean
-    public HashOperations<String, String, Object> hashOperations(RedisTemplate<String, Object> redisTemplate) {
-        return redisTemplate.opsForHash();
-    }
-
-    @Bean
-    public ValueOperations<String, String> valueOperations(RedisTemplate<String, String> redisTemplate) {
-        return redisTemplate.opsForValue();
-    }
-
-    @Bean
-    public ListOperations<String, Object> listOperations(RedisTemplate<String, Object> redisTemplate) {
-        return redisTemplate.opsForList();
-    }
-
-    @Bean
-    public SetOperations<String, Object> setOperations(RedisTemplate<String, Object> redisTemplate) {
-        return redisTemplate.opsForSet();
-    }
-
-    @Bean
-    public ZSetOperations<String, Object> zSetOperations(RedisTemplate<String, Object> redisTemplate) {
-        return redisTemplate.opsForZSet();
     }
 }
