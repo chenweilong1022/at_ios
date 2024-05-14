@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.modules.ltt.dao.CdPhoneFilterDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.renren.modules.ltt.entity.CdPhoneFilterEntity" id="cdPhoneFilterMap">
+        <result property="id" column="id"/>
+        <result property="recordId" column="record_id"/>
+        <result property="taskStatus" column="task_status"/>
+        <result property="contactKey" column="contact_key"/>
+        <result property="mid" column="mid"/>
+        <result property="displayName" column="display_name"/>
+        <result property="deleteFlag" column="delete_flag"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="msg" column="msg"/>
+    </resultMap>
+
+<select id="queryByTaskStatus" resultType="io.renren.modules.ltt.dto.CdPhoneFilterStatusDto">
+    SELECT
+        SUM(
+                IF
+                ( task_status = 3, 1, 0 )) AS successCount,
+        SUM(
+                IF
+                ( task_status = 4, 1, 0 )) AS failCount
+    FROM
+        cd_phone_filter
+    WHERE
+        record_id = #{recordId}
+</select>
+</mapper>

@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.modules.ltt.dao.AtDataSubtaskDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.renren.modules.ltt.entity.AtDataSubtaskEntity" id="atDataSubtaskMap">
+        <result property="id" column="id"/>
+        <result property="dataTaskId" column="data_task_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="taskStatus" column="task_status"/>
+        <result property="luid" column="luid"/>
+        <result property="contactType" column="contact_type"/>
+        <result property="contactKey" column="contact_key"/>
+        <result property="mid" column="mid"/>
+        <result property="createdTime" column="created_time"/>
+        <result property="type" column="type"/>
+        <result property="status" column="status"/>
+        <result property="relation" column="relation"/>
+        <result property="displayName" column="display_name"/>
+        <result property="phoneticName" column="phonetic_name"/>
+        <result property="pictureStatus" column="picture_status"/>
+        <result property="thumbnailUrl" column="thumbnail_url"/>
+        <result property="statusMessage" column="status_message"/>
+        <result property="displayNameOverridden" column="display_name_overridden"/>
+        <result property="favoriteTime" column="favorite_time"/>
+        <result property="capableVoiceCall" column="capable_voice_call"/>
+        <result property="capableVideoCall" column="capable_video_call"/>
+        <result property="capableMyhome" column="capable_myhome"/>
+        <result property="capableBuddy" column="capable_buddy"/>
+        <result property="attributes" column="attributes"/>
+        <result property="settings" column="settings"/>
+        <result property="picturePath" column="picture_path"/>
+        <result property="recommendpArams" column="recommendp_arams"/>
+        <result property="friendRequestStatus" column="friend_request_status"/>
+        <result property="musicProfile" column="music_profile"/>
+        <result property="videoProfile" column="video_profile"/>
+        <result property="deleteFlag" column="delete_flag"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="lineTaskId" column="line_task_id"/>
+        <result property="msg" column="msg"/>
+        <result property="sysUserId" column="sys_user_id"/>
+    </resultMap>
+
+
+    <insert id="saveBatchOnMe" parameterType="java.util.List" useGeneratedKeys="false">
+        INSERT INTO at_data_subtask
+        (data_task_id, user_id, task_status, group_type, contact_key, mid, display_name, delete_flag, create_time, sys_user_id, data_type, group_id,record_id,open_app,change_user_id)
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.dataTaskId}, #{item.userId}, #{item.taskStatus}, #{item.groupType}, #{item.contactKey}, #{item.mid}, #{item.displayName}, #{item.deleteFlag}, #{item.createTime}, #{item.sysUserId}, #{item.dataType}, #{item.groupId},#{item.recordId},#{item.openApp},#{item.changeUserId})
+        </foreach>
+    </insert>
+
+    <select id="queryPageCount" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM at_data_subtask s
+        left JOIN at_user u ON s.user_id = u.id and u.delete_flag = 1
+        <where>
+            <include refid="page_where_if"/>
+        </where>
+    </select>
+
+    <select id="queryPage" resultType="io.renren.modules.ltt.dto.AtDataSubtaskResultDto">
+        SELECT
+        s.id,
+        s.data_task_id as dataTaskId,
+        s.user_id as userId,
+        s.task_status as taskStatus,
+        s.group_type as groupType,
+        s.picture_path as picturePath,
+        s.display_name as displayName,
+        s.mid,
+        s.contact_key as contactKey,
+        s.update_time as updateTime,
+        s.create_time as createTime,
+        s.msg,
+        u.id,
+        u.telephone,
+        u.user_group_id as userGroupId,
+        u.customer_service_id as customerServiceId,
+        u.status
+        FROM at_data_subtask s
+        left JOIN at_user u ON s.user_id = u.id and u.delete_flag = 1
+        <where>
+            <include refid="page_where_if"/>
+        </where>
+        order by s.id desc
+        limit #{pageStart},#{limit}
+    </select>
+
+    <select id="groupByUserId" resultType="io.renren.modules.ltt.vo.AtDataSubtaskVO">
+        SELECT
+            MIN( id ) id,
+            MIN( data_task_id ) dataTaskId,
+            MIN( group_id ) groupId,
+            MIN( user_id ) userId
+        FROM
+            at_data_subtask
+        WHERE
+            task_status = #{dto.taskStatus}
+          AND group_type = #{dto.groupType}
+          AND user_id % 2 = #{dto.mod}
+        GROUP BY
+            user_id
+        limit 200
+    </select>
+
+    <sql id="page_where_if">
+        and s.delete_flag = 1 and s.mid is not null
+        <if test="sysUserId != null  and sysUserId != 0">
+            and s.sys_user_id = #{sysUserId}
+        </if>
+        <if test="contactKey != null and contactKey != ''">
+            AND s.contact_key = #{contactKey}
+        </if>
+        <if test="groupId != null and groupId != ''">
+            AND s.group_id = #{groupId}
+        </if>
+        <if test="telephone != null and telephone != ''">
+            AND u.telephone = #{telephone}
+        </if>
+        <if test="userGroupId != null and userGroupId != ''">
+            AND u.user_group_id = #{userGroupId}
+        </if>
+        <if test="dataTaskId != null and dataTaskId != ''">
+            AND s.data_task_id = #{dataTaskId}
+        </if>
+        <if test="taskStatus != null and taskStatus != ''">
+            AND s.task_status = #{taskStatus}
+        </if>
+        <if test="taskStatusList != null and taskStatusList.size>0">
+            and  s.task_status in(
+            <foreach collection="taskStatusList" item="item" index="index" separator=",">
+                #{item}
+            </foreach>)
+        </if>
+        <if test="userStatus != null and userStatus != ''">
+            AND u.status = #{userStatus}
+        </if>
+        <if test="customerServiceId != null and customerServiceId != ''">
+            AND u.customer_service_id = #{customerServiceId}
+        </if>
+        <if test="updateStartTime !=null and updateEndTime !=null ">
+            and s.update_time between CONCAT(#{updateStartTime}, ' 00:00:00')
+            and CONCAT(#{updateEndTime}, ' 23:59:59')
+        </if>
+    </sql>
+
+
+</mapper>

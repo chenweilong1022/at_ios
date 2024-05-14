@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.modules.ltt.dao.AtDataDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.renren.modules.ltt.entity.AtDataEntity" id="atDataMap">
+        <result property="id" column="id"/>
+        <result property="dataGroupId" column="data_group_id"/>
+        <result property="data" column="data"/>
+        <result property="useFlag" column="use_flag"/>
+        <result property="deleteFlag" column="delete_flag"/>
+        <result property="createTime" column="create_time"/>
+        <result property="sysUserId" column="sys_user_id"/>
+    </resultMap>
+
+    <select id="dataCountGroupId" resultType="io.renren.modules.ltt.vo.AtDataGroupVODataCountGroupIdVO">
+        SELECT
+        COUNT( data_group_id ) dataGroupIdCount,
+        data_group_id dataGroupId
+        FROM
+        at_data
+        WHERE
+        use_flag = 1
+        and data_group_id in(
+        <foreach collection="dataGroupIdList" item="item" index="index" separator=",">
+            #{item}
+        </foreach>
+        )
+        GROUP BY
+        data_group_id
+    </select>
+
+
+</mapper>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.modules.ltt.dao.AtDataTaskDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.renren.modules.ltt.entity.AtDataTaskEntity" id="atDataTaskMap">
+        <result property="id" column="id"/>
+        <result property="taskName" column="task_name"/>
+        <result property="userGroupId" column="user_group_id"/>
+        <result property="dataGroupId" column="data_group_id"/>
+        <result property="groupType" column="group_type"/>
+        <result property="addTotalQuantity" column="add_total_quantity"/>
+        <result property="successfulQuantity" column="successful_quantity"/>
+        <result property="failuresQuantity" column="failures_quantity"/>
+        <result property="taskStatus" column="task_status"/>
+        <result property="schedule" column="schedule"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="addQuantityLimit" column="add_quantity_limit"/>
+        <result property="deleteFlag" column="delete_flag"/>
+        <result property="createTime" column="create_time"/>
+        <result property="sysUserId" column="sys_user_id"/>
+    </resultMap>
+
+    <select id="groupCountByDataTaskId" resultType="io.renren.modules.client.vo.GroupCountByDataTaskIdVO">
+        SELECT
+            SUM(IF(ds.task_status = 8,1,0)) success8,
+            SUM(IF(ds.task_status = 5,1,0)) fail5,
+            SUM(IF(ds.task_status = 10,1,0)) success10,
+            ds.data_task_id dataTaskId,
+            MIN(t.group_type) groupType,
+            MIN(t.add_total_quantity) addTotalQuantity,
+            MIN(ds.group_id) groupId
+        FROM
+            at_data_subtask ds LEFT JOIN at_data_task t ON t.id = ds.data_task_id
+        WHERE t.task_status = 2
+          AND user_id % 2 = #{mod}
+        GROUP BY
+            ds.data_task_id
+    </select>
+
+
+</mapper>

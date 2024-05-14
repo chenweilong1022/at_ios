@@ -1,0 +1,39 @@
+version: '3'
+services:
+  mysql:
+    container_name: s_mysql
+    image: mysql:8.0.12
+    environment:
+      MYSQL_ROOT_PASSWORD: SEW2018!
+      MYSQL_ROOT_HOST: "%"
+    volumes:
+      - /Users/chenweilong/mysql/home/mysql:/var/lib/mysql
+      - /Users/chenweilong/mysql/var/lib/mysql-files:/var/lib/mysql-files
+      - /Users/chenweilong/mysql/etc/mysql:/etc/mysql
+      - /Users/chenweilong/mysql/etc/localtime:/etc/localtime
+    ports:
+      - "3308:3306"
+    restart: always
+    command: --lower_case_table_names=1
+  redis:
+    image: redis
+    container_name: s_redis
+    privileged: true
+    command: redis-server --requirepass Jz123456
+    volumes:
+      - /Users/chenweilong/redis/home/redis:/data
+    ports:
+      - "6379:6379"
+  minio:
+    image: minio/minio
+    container_name: s_minio
+    restart: always
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: password
+    volumes:
+      - /Users/chenweilong/minio/home/webfile/wk/file/:/data

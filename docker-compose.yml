@@ -1,0 +1,16 @@
+version: '3'
+services:
+  atios:
+    container_name: atios
+    build:
+      context: ./admin/
+      dockerfile: Dockerfile
+    image: atios:1.0.0
+    env_file:
+      - ./app.env
+    volumes:
+      - /Users/chenweilong/Desktop/uploa/webfile:/home/webfile
+    ports:
+      - "8880:8880"
+      - "8888:8888"
+    restart: always

@@ -1,0 +1,38 @@
+{
+  "code": 200,
+  "msg": "",
+  "data": {
+    "contacts": {
+      "u96e567c0a0546bad3d85b52a386e6c44": {
+        "userStatus": 0,
+        "snapshotTimeMillis": 1710926747019,
+        "contact": {
+          "mid": "u96e567c0a0546bad3d85b52a386e6c44",
+          "createdTime": 1710777040818,
+          "type": "PHONE",
+          "status": "FRIEND",
+          "relation": "ONEWAY",
+          "displayName": "金員外",
+          "phoneticName": "",
+          "pictureStatus": "0hrJ6gnS_DLWULHj8nBbRSMjdbIwh8MCstc3BlVyoZdQcnfms3Mn8xU3scJlwifW4wZ3prBHoZIVAj",
+          "thumbnailUrl": "",
+          "statusMessage": "",
+          "displayNameOverridden": "",
+          "favoriteTime": 0,
+          "capableVoiceCall": false,
+          "capableVideoCall": false,
+          "capableMyhome": false,
+          "capableBuddy": false,
+          "attributes": 0,
+          "settings": 0,
+          "picturePath": "/0hrJ6gnS_DLWULHj8nBbRSMjdbIwh8MCstc3BlVyoZdQcnfms3Mn8xU3scJlwifW4wZ3prBHoZIVAj",
+          "recommendParams": "",
+          "friendRequestStatus": "NONE",
+          "musicProfile": "",
+          "videoProfile": ""
+        },
+        "calendarEvents": null
+      }
+    }
+  }
+}

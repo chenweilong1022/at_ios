@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.modules.ltt.dao.AtUserDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.renren.modules.ltt.entity.AtUserEntity" id="atUserMap">
+        <result property="id" column="id"/>
+        <result property="avatar" column="avatar"/>
+        <result property="nation" column="nation"/>
+        <result property="telephone" column="telephone"/>
+        <result property="nickName" column="nick_name"/>
+        <result property="numberFriends" column="number_friends"/>
+        <result property="password" column="password"/>
+        <result property="userGroupId" column="user_group_id"/>
+        <result property="userGroupName" column="user_group_name"/>
+        <result property="customerServiceId" column="customer_service_id"/>
+        <result property="customerService" column="customer_service"/>
+        <result property="deleteFlag" column="delete_flag"/>
+        <result property="createTime" column="create_time"/>
+        <result property="userTokenId" column="user_token_id"/>
+        <result property="sysUserId" column="sys_user_id"/>
+    </resultMap>
+
+    <update id="updateCustomerByIds">
+        update
+        at_user
+        set customer_service_id = #{customerServiceId},
+            customer_service = #{customerService}
+        WHERE id IN (
+        <foreach collection="ids" item="item" separator=",">
+            #{item}
+        </foreach>
+        )
+    </update>
+
+    <select id="queryCountBySysUserId" resultType="java.lang.Integer">
+        select count(1)
+        from at_user
+        where sys_user_id = #{sysUserId}
+          and delete_flag = 1
+    </select>
+
+    <select id="queryPageCount" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        at_user u
+        INNER JOIN at_user_token t ON u.user_token_id = t.id
+        <where>
+            <include refid="page_where_if"/>
+        </where>
+    </select>
+
+    <select id="queryPage" resultType="io.renren.modules.ltt.vo.AtUserVO">
+        SELECT
+        u.id,
+        u.nation,
+        u.telephone,
+        u.nick_name as nickName,
+        u.user_group_id as userGroupId,
+        u.user_group_name as userGroupName,
+        u.customer_service_id as customerServiceId,
+        u.customer_service as customerService,
+        u.status as status,
+        u.msg as msg,
+        u.create_time as createTime,
+        u.user_token_id as userTokenId,
+        u.user_source as userSource,
+        u.register_count as registerCount,
+        t.open_status as tokenOpenStatus,
+        t.open_time as tokenOpenTime,
+        t.err_msg as tokenErrMsg
+        FROM
+        at_user u
+        INNER JOIN at_user_token t ON u.user_token_id = t.id
+        <where>
+            <include refid="page_where_if"/>
+        </where>
+        <if test="tokenOpenTimeSort == null">
+            order by u.id desc
+        </if>
+        <if test="tokenOpenTimeSort != null and tokenOpenTimeSort == 0">
+            order by t.open_time asc
+        </if>
+        <if test="tokenOpenTimeSort != null and tokenOpenTimeSort == 1">
+            order by t.open_time desc
+        </if>
+        limit #{pageStart},#{limit}
+    </select>
+
+    <sql id="page_where_if">
+        <if test="sysUserId != null">
+            and u.sys_user_id = #{sysUserId}
+        </if>
+        <if test="nickName != null and nickName!=''">
+            and u.nick_name = #{nickName}
+        </if>
+        <if test="nation != null and nation!=''">
+            and u.nation = #{nation}
+        </if>
+        <if test="telephone != null and telephone!=''">
+            and u.telephone = #{telephone}
+        </if>
+        <if test="userGroupId != null and userGroupId != 0">
+            and u.user_group_id = #{userGroupId}
+        </if>
+        <if test="userGroupId != null and userGroupId == 0">
+            and u.user_group_id is null
+        </if>
+        <if test="customerServiceId != null and customerServiceId != 0">
+            and u.customer_service_id = #{customerServiceId}
+        </if>
+        <if test="customerServiceId != null and customerServiceId == 0">
+            and u.customer_service_id is null
+        </if>
+        <if test="status != null">
+            and u.status = #{status}
+        </if>
+        <if test="validateFlag != null and validateFlag == 1">
+            and u.status != 1
+        </if>
+        <if test="validateFlag != null and validateFlag == 0">
+            and u.status = 1
+        </if>
+        <if test="userSource != null">
+            and u.user_source = #{userSource}
+        </if>
+        <if test="id != null">
+            and u.id = #{id}
+        </if>
+        <if test="registerCount != null">
+            and u.register_count = #{registerCount}
+        </if>
+        <if test="tokenOpenStatus != null">
+            and t.open_status = #{tokenOpenStatus}
+        </if>
+    </sql>
+
+    <select id="queryUsedUserSummary" resultType="io.renren.modules.ltt.dto.UserSummaryResultDto">
+        SELECT
+            u.nation AS countryCode,
+            count( u.id ) AS usedUserStock
+        FROM
+            at_user u
+                INNER JOIN at_group g ON u.id = g.user_id
+        WHERE
+            DATE ( g.create_time )= #{searchTime}
+        GROUP BY
+            u.nation;
+    </select>
+
+    <select id="queryOnlineUserSummary" resultType="io.renren.modules.ltt.dto.UserSummaryResultDto">
+        SELECT
+            nation AS countryCode,
+            count( id ) AS onlineUserNum
+        FROM
+            at_user
+        WHERE
+            STATUS = 4
+        GROUP BY
+            nation;
+    </select>
+</mapper>

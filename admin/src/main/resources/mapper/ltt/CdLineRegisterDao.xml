@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.modules.ltt.dao.CdLineRegisterDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.renren.modules.ltt.entity.CdLineRegisterEntity" id="cdLineRegisterMap">
+        <result property="id" column="id"/>
+        <result property="ab" column="ab"/>
+        <result property="appVersion" column="app_version"/>
+        <result property="countryCode" column="country_code"/>
+        <result property="phone" column="phone"/>
+        <result property="proxy" column="proxy"/>
+        <result property="proxyStatus" column="proxy_status"/>
+        <result property="txtToken" column="txt_token"/>
+        <result property="taskId" column="task_id"/>
+        <result property="smsCode" column="sms_code"/>
+        <result property="registerStatus" column="register_status"/>
+        <result property="deleteFlag" column="delete_flag"/>
+        <result property="createTime" column="create_time"/>
+        <result property="token" column="token"/>
+        <result property="getPhoneId" column="get_phone_id"/>
+        <result property="pkey" column="pkey"/>
+        <result property="subtasksId" column="subtasks_id"/>
+        <result property="groupTaskId" column="group_task_id"/>
+        <result property="openStatus" column="open_status"/>
+        <result property="accountStatus" column="account_status"/>
+        <result property="groupCount" column="group_count"/>
+        <result property="accountExistStatus" column="account_exist_status"/>
+        <result property="errMsg" column="err_msg"/>
+        <result property="exportStatus" column="export_status"/>
+    </resultMap>
+
+    <select id="getCountBySubTaskId" resultType="io.renren.modules.ltt.vo.GetCountBySubTaskIdVO">
+        SELECT
+            lr.subtasks_id AS subtasksId,
+            COUNT(lr.subtasks_id) totalCount,
+            SUM(IF( lr.register_status IN(3,4,11), 1, 0 )) AS successCount,
+            SUM(IF( lr.register_status in (4,11), 1, 0 )) AS registerSuccessCount,
+            SUM(IF( lr.register_status = 5, 1, 0 )) AS errorCount
+        FROM
+            cd_line_register lr
+        WHERE
+            lr.subtasks_id > 0 AND
+        subtasks_id IN
+        <foreach item="item" index="index" collection="registerSubtasksIds" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        GROUP BY
+            lr.subtasks_id
+    </select>
+
+    <select id="listSummary" resultType="io.renren.modules.ltt.dto.CdLineRegisterSummaryDto">
+        SELECT
+        SUM( CASE WHEN COALESCE ( r.register_status, 0 ) IN ( 0, 1, 2, 3 ) THEN 1 ELSE 0 END ) AS waitRegisterCount,
+        SUM( CASE WHEN COALESCE ( r.register_status, 0 ) = 4 THEN 1 ELSE 0 END ) AS successRegisterCount
+        FROM
+        cd_get_phone p
+        LEFT JOIN cd_line_register r ON r.get_phone_id = p.id
+        LEFT JOIN cd_register_subtasks s ON p.subtasks_id = s.id
+        <where>
+            <include refid="where_if"/>
+        </where>
+        order by p.create_time desc
+    </select>
+
+    <select id="listPage" resultType="io.renren.modules.ltt.vo.CdLineRegisterVO">
+        SELECT
+        p.country,
+        p.id as id,
+        r.ab as ab,
+        r.app_version as appVersion,
+        r.country_code as countryCode,
+        p.phone as phone,
+        r.token as token,
+        r.proxy as proxy,
+        r.txt_token as txtToken,
+        r.task_id as taskId,
+        COALESCE(r.sms_code, p.code) as smsCode,
+        r.err_msg as errMsg,
+        COALESCE(r.register_status, 0) as registerStatus,
+        r.delete_flag as deleteFlag,
+        p.create_time as createTime,
+        r.get_phone_id as getPhoneId
+        FROM cd_get_phone p
+        LEFT JOIN cd_line_register r on r.get_phone_id = p.id
+        LEFT JOIN cd_register_subtasks s ON p.subtasks_id = s.id
+        <where>
+            <include refid="where_if"/>
+        </where>
+        order by p.create_time desc
+    </select>
+
+    <sql id="where_if">
+        <if test="dto.tasksId != null">
+            AND s.task_id = #{dto.tasksId}
+        </if>
+        <if test="dto.countryCode != null">
+            AND s.country_code = #{dto.countryCode}
+        </if>
+        <if test="dto.registerStatus != null and dto.registerStatus != 0">
+            AND r.register_status = #{dto.registerStatus}
+        </if>
+        <if test="dto.registerStatus != null and dto.registerStatus == 0">
+            AND r.register_status is null
+        </if>
+        <if test="dto.phone != null and dto.phone != ''">
+            AND p.phone = #{dto.phone}
+        </if>
+        <if test="dto.phones != null and dto.phones.size() > 0">
+            AND p.phone in
+            <foreach item="item" index="index" collection="dto.phones" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="dto.createStartTime !=null and dto.createEndTime !=null ">
+            and p.create_time between CONCAT(#{dto.createStartTime}, ' 00:00:00')
+            and CONCAT(#{dto.createEndTime}, ' 23:59:59')
+        </if>
+    </sql>
+    <select id="queryLineRegisterSummary" resultType="io.renren.modules.ltt.dto.LineRegisterSummaryResultDto">
+        SELECT
+            country_code as countryCode,
+            SUM( CASE WHEN register_status = 4 THEN 1 ELSE 0 END ) AS registerStock,
+            SUM( CASE WHEN register_status in(4,11) AND DATE ( create_time ) = #{searchTime} THEN 1 ELSE 0 END ) AS registerNum
+        FROM
+            cd_line_register
+        WHERE
+            register_status IN ( 4, 11 )
+        GROUP BY
+            country_code;
+    </select>
+
+
+</mapper>

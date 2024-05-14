@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.modules.ltt.dao.AccountDetailsDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.renren.modules.ltt.entity.AccountDetailsEntity" id="accountDetailsMap">
+        <result property="transactionId" column="transaction_id"/>
+        <result property="accountId" column="account_id"/>
+        <result property="sysUserId" column="sys_user_id"/>
+        <result property="transactionType" column="transaction_type"/>
+        <result property="amount" column="amount"/>
+        <result property="status" column="status"/>
+        <result property="description" column="description"/>
+        <result property="transactionDate" column="transaction_date"/>
+        <result property="operationUserId" column="operation_user_id"/>
+        <result property="beforeAmount" column="before_amount"/>
+        <result property="afterAmount" column="after_amount"/>
+    </resultMap>
+
+
+</mapper>

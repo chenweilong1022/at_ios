@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.modules.ltt.dao.CdRegisterSubtasksDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.renren.modules.ltt.entity.CdRegisterSubtasksEntity" id="cdRegisterSubtasksMap">
+        <result property="id" column="id"/>
+        <result property="taskId" column="task_id"/>
+        <result property="numberRegistrations" column="number_registrations"/>
+        <result property="numberSuccesses" column="number_successes"/>
+        <result property="numberFailures" column="number_failures"/>
+        <result property="registrationStatus" column="registration_status"/>
+        <result property="deleteFlag" column="delete_flag"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <select id="groupByTaskId" resultType="io.renren.modules.ltt.vo.CdRegisterSubtasksVO">
+        SELECT
+            s.task_id AS taskId,
+            s.id AS id,
+            s.number_registrations AS numberRegistrations,
+            s.registration_status AS registrationStatus,
+            t.fill_up AS fillUp,
+            t.country_code AS countryCode
+        FROM
+            cd_register_subtasks s
+                LEFT JOIN cd_register_task t ON t.id = s.task_id
+        WHERE
+            s.registration_status IN(1,2)
+        ORDER BY
+            s.registration_status desc,s.number_successes desc,s.number_failures desc
+            LIMIT 4
+    </select>
+
+</mapper>
