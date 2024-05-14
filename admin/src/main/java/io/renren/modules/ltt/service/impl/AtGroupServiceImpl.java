@@ -522,13 +522,22 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
                                 UpdateGroup updateGroup = new UpdateGroup();
                                 updateGroup.setChatName(atGroupEntity.getGroupName());
                                 updateGroup.setChatRoomId(atGroupEntity.getRoomId());
-                                updateGroup.setGroupMidCount(groupExtra.getMemberMids().keySet().size());
-                                updateGroup.setProxy(proxyIp);
-                                updateGroup.setToken(atUserTokenVO.getToken());
-                                SearchPhoneVO searchPhoneVO = lineService.updateChat(updateGroup);
-                                if (ObjectUtil.isNotNull(searchPhoneVO) && 200 == searchPhoneVO.getCode()) {
+                                int size = groupExtra.getMemberMids().keySet().size();
+                                if (size > 0) {
+                                    updateGroup.setGroupMidCount(size);
+                                    updateGroup.setProxy(proxyIp);
+                                    updateGroup.setToken(atUserTokenVO.getToken());
+                                    SearchPhoneVO searchPhoneVO = lineService.updateChat(updateGroup);
+                                    if (ObjectUtil.isNotNull(searchPhoneVO) && 200 == searchPhoneVO.getCode()) {
+                                        AtGroupEntity update = new AtGroupEntity();
+                                        update.setId(atGroupEntity.getId());
+                                        update.setGroupStatus(GroupStatus15.getKey());
+                                        this.updateById(update);
+                                    }
+                                }else {
                                     AtGroupEntity update = new AtGroupEntity();
                                     update.setId(atGroupEntity.getId());
+                                    update.setRealGroupName(atGroupEntity.getGroupName());
                                     update.setGroupStatus(GroupStatus15.getKey());
                                     this.updateById(update);
                                 }
