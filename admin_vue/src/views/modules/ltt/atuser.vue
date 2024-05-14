@@ -172,6 +172,7 @@
           <el-badge :value="scope.row.registerCount" :class="badgeClass(scope.row.phoneState)" class="item">
             <el-button size="text" @click="copyPhoneHandle(scope.row.telephone)">{{ scope.row.telephone }}</el-button>
           </el-badge>
+          <el-tag v-if="scope.row.phoneExpire !== null" type="danger">倒计时(分)：{{scope.row.phoneExpire}}</el-tag>
         </template>
       </el-table-column>
       <el-table-column

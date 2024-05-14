@@ -139,4 +139,7 @@ public class AtUserVO implements Serializable {
 
 	@ApiModelProperty(required=false,value="手机号是否红灯（第2次之后，手机号24小时可用） true：绿灯")
 	private Boolean phoneState;
+
+	@ApiModelProperty(required=false,value="手机号还剩多久变绿（分钟）")
+	private Long phoneExpire;
 }
