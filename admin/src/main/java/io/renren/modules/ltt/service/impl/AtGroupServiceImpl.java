@@ -483,7 +483,7 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
                             CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
                             cdLineIpProxyDTO.setTokenPhone(dataSubtaskEntity.getContactKey());
                             cdLineIpProxyDTO.setLzPhone(dataSubtaskEntity.getContactKey());
-                            cdLineIpProxyDTO.setCountryCode(atGroupEntity.getChangeGroupCountryCode().longValue());
+                            cdLineIpProxyDTO.setCountryCode(atGroupEntity.getIpCountryCode().longValue());
                             String proxyIp = cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO);
                             if (StrUtil.isEmpty(proxyIp)) {
                                 log.error("updateGroupName_error ipIsNull {}", cdLineIpProxyDTO);
