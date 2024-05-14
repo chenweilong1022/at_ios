@@ -181,6 +181,10 @@ public class UserTask {
 //                    "https://info.proxy.abcproxy.com/extractProxyIp?regions=%s&num=500&protocol=http&return_type=txt&lh=1&mode=1",//abcproxy
 //                    "http://list.rola.vip:8088/user_get_ip_list?token=blgRn3dqzQ6FL95f1715615375953&qty=500&country=%s&state=&city=&time=10&format=txt&protocol=socks5&filter=1"
             List<String> urls = CollUtil.newArrayList(
+                    "https://tq.lunaproxy.com/getflowip?neek=1136881&num=100&type=1&sep=1&regions=%s&ip_si=1&level=1&sb=",//luna
+                    "http://api.proxy.ip2world.com/getProxyIp?return_type=txt&protocol=http&num=100&regions=%s&lb=1",//ip2world
+                    "https://info.proxy.ipmars.com/extractProxyIp?regions=%s&num=100&protocol=http&return_type=txt&lh=1&st=",//ipmars
+                    "https://info.proxy.abcproxy.com/extractProxyIp?regions=%s&num=100&protocol=http&return_type=txt&lh=1&mode=1",//abcproxy
                     "http://list.rola.vip:8088/user_get_ip_list?token=blgRn3dqzQ6FL95f1715615375953&qty=100&country=%s&state=&city=&time=10&format=txt&protocol=socks5&filter=1"
             );
             //给每个国家补充ip
