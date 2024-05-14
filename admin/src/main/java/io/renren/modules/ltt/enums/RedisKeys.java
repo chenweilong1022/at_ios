@@ -62,7 +62,7 @@ public enum RedisKeys implements BaseEnum {
      */
     USER_TASKS_WORKING(15,"USER_TASKS_WORKING"),
     /**
-     * 加粉任务锁
+     * 加粉任务锁{"@class":"io.renren.modules.ltt.entity.AtDataSubtaskEntity","id":1029455,"dataTaskId":11596,"userId":26790,"changeUserId":null,"taskStatus":5,"groupType":2,"luid":null,"contactType":null,"contactKey":"66648959184","mid":"ub2a3ced178a6aee28878b749d1f10714","createdTime":null,"type":null,"status":null,"relation":null,"displayName":"Emily-Binance","phoneticName":null,"pictureStatus":null,"thumbnailUrl":null,"statusMessage":null,"displayNameOverridden":null,"favoriteTime":null,"capableVoiceCall":null,"capableVideoCall":null,"capableMyhome":null,"capableBuddy":null,"attributes":null,"settings":null,"picturePath":null,"recommendpArams":null,"friendRequestStatus":null,"musicProfile":null,"videoProfile":null,"deleteFlag":1,"createTime":["cn.hutool.core.date.DateTime",1715701804353],"updateTime":null,"lineTaskId":null,"msg":"添加好友异常: TalkException({Code:AUTHENTICATION_FAILED Reason: ParameterMap:map[]})","refreshContactStatus":null,"sysUserId":null,"dataType":2,"groupId":15387,"recordId":null,"openApp":1,"mod":null,"totalMod":null}
      */
     USER_TASKS_WORKING_NX(16,"USER_TASKS_WORKING_NX"),
     /**

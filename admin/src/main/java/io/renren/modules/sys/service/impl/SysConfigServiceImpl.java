@@ -29,7 +29,7 @@ import io.renren.common.utils.Query;
 import io.renren.modules.client.entity.ProjectWorkEntity;
 import io.renren.modules.sys.dao.SysConfigDao;
 import io.renren.modules.sys.entity.SysConfigEntity;
-import io.renren.modules.sys.redis.SysConfigRedis;
+//import io.renren.modules.sys.redis.SysConfigRedis;
 import io.renren.modules.sys.service.SysConfigService;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,8 +41,8 @@ import java.util.Arrays;
 
 @Service("sysConfigService")
 public class SysConfigServiceImpl extends ServiceImpl<SysConfigDao, SysConfigEntity> implements SysConfigService {
-	@Autowired
-	private SysConfigRedis sysConfigRedis;
+//	@Autowired
+//	private SysConfigRedis sysConfigRedis;
 
 	@Resource(name = "caffeineCacheProjectWorkEntity")
 	private Cache<String, ProjectWorkEntity> caffeineCacheProjectWorkEntity;
@@ -114,7 +114,7 @@ public class SysConfigServiceImpl extends ServiceImpl<SysConfigDao, SysConfigEnt
 	@Transactional(rollbackFor = Exception.class)
 	public void updateValueByKey(String key, String value) {
 		baseMapper.updateValueByKey(key, value);
-		sysConfigRedis.delete(key);
+//		sysConfigRedis.delete(key);
 	}
 
 	@Override
@@ -122,7 +122,7 @@ public class SysConfigServiceImpl extends ServiceImpl<SysConfigDao, SysConfigEnt
 	public void deleteBatch(Long[] ids) {
 		for(Long id : ids){
 			SysConfigEntity config = this.getById(id);
-			sysConfigRedis.delete(config.getParamKey());
+//			sysConfigRedis.delete(config.getParamKey());
 		}
 
 		this.removeByIds(Arrays.asList(ids));
@@ -130,13 +130,14 @@ public class SysConfigServiceImpl extends ServiceImpl<SysConfigDao, SysConfigEnt
 
 	@Override
 	public String getValue(String key) {
-		SysConfigEntity config = sysConfigRedis.get(key);
-		if(config == null){
-			config = baseMapper.queryByKey(key);
-			sysConfigRedis.saveOrUpdate(config);
-		}
+//		SysConfigEntity config = sysConfigRedis.get(key);
+//		if(config == null){
+//			config = baseMapper.queryByKey(key);
+//			sysConfigRedis.saveOrUpdate(config);
+//		}
 
-		return config == null ? null : config.getParamValue();
+//		return config == null ? null : config.getParamValue();
+		return null;
 	}
 
 	@Override

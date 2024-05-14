@@ -95,7 +95,7 @@ public class AtDataSubtaskServiceImpl extends ServiceImpl<AtDataSubtaskDao, AtDa
     @Override
     public List<AtDataSubtaskVO> groupByUserId(AtDataSubtaskEntity dto) {
         dto.setMod(systemConstant.getSERVERS_MOD());
-        dto.setMod(systemConstant.getSERVERS_TOTAL_MOD());
+        dto.setTotalMod(systemConstant.getSERVERS_TOTAL_MOD());
         return baseMapper.groupByUserId(dto);
     }
 

@@ -99,7 +99,9 @@ public class Data5Task {
     @Async
     public void task3() {
 
-        AtDataSubtaskEntity dto = new AtDataSubtaskEntity().setTaskStatus(TaskStatus.TaskStatus9.getKey()).setGroupType(GroupType.GroupType5.getKey());
+        AtDataSubtaskEntity dto = new AtDataSubtaskEntity();
+        dto.setTaskStatus(TaskStatus.TaskStatus9.getKey());
+        dto.setGroupType(GroupType.GroupType5.getKey());
         List<AtDataSubtaskVO> atDataSubtaskEntities = atDataSubtaskService.groupByUserId(dto);
         //任务为空
         if (CollUtil.isEmpty(atDataSubtaskEntities)) {
@@ -234,7 +236,9 @@ public class Data5Task {
     @Async
     public void task2() {
 
-        AtDataSubtaskEntity dto = new AtDataSubtaskEntity().setTaskStatus(TaskStatus.TaskStatus2.getKey()).setGroupType(GroupType.GroupType5.getKey());
+        AtDataSubtaskEntity dto = new AtDataSubtaskEntity();
+                dto.setTaskStatus(TaskStatus.TaskStatus2.getKey());
+                dto.setGroupType(GroupType.GroupType5.getKey());
         List<AtDataSubtaskVO> atDataSubtaskEntities = atDataSubtaskService.groupByUserId(dto);
         //任务为空
         if (CollUtil.isEmpty(atDataSubtaskEntities)) {

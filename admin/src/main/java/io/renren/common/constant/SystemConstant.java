@@ -24,7 +24,7 @@ public class SystemConstant {
     /**
      * 总服务器数量
      */
-    @Value(value = "${servers.total-mod}")
+    @Value(value = "${servers.totalMod}")
     private Integer SERVERS_TOTAL_MOD;
 
     @Value(value = "${magicServer.url}")

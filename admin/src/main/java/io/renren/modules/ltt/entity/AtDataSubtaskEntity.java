@@ -20,11 +20,10 @@ import java.util.Date;
  * @email chenweilong@qq.com
  * @date 2024-03-18 10:53:33
  */
-@Data
+
 @TableName("at_data_subtask")
 @ApiModel("加粉任务子任务")
 @Accessors(chain = true)
-
 public class AtDataSubtaskEntity implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -256,4 +255,364 @@ public class AtDataSubtaskEntity implements Serializable {
 	@ApiModelProperty(required=false,value="totalMod")
 	@TableField(exist = false)
 	private Integer totalMod;
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public Integer getDataTaskId() {
+		return dataTaskId;
+	}
+
+	public void setDataTaskId(Integer dataTaskId) {
+		this.dataTaskId = dataTaskId;
+	}
+
+	public Integer getUserId() {
+		return userId;
+	}
+
+	public void setUserId(Integer userId) {
+		this.userId = userId;
+	}
+
+	public Integer getChangeUserId() {
+		return changeUserId;
+	}
+
+	public void setChangeUserId(Integer changeUserId) {
+		this.changeUserId = changeUserId;
+	}
+
+	public Integer getTaskStatus() {
+		return taskStatus;
+	}
+
+	public void setTaskStatus(Integer taskStatus) {
+		this.taskStatus = taskStatus;
+	}
+
+	public Integer getGroupType() {
+		return groupType;
+	}
+
+	public void setGroupType(Integer groupType) {
+		this.groupType = groupType;
+	}
+
+	public String getLuid() {
+		return luid;
+	}
+
+	public void setLuid(String luid) {
+		this.luid = luid;
+	}
+
+	public String getContactType() {
+		return contactType;
+	}
+
+	public void setContactType(String contactType) {
+		this.contactType = contactType;
+	}
+
+	public String getContactKey() {
+		return contactKey;
+	}
+
+	public void setContactKey(String contactKey) {
+		this.contactKey = contactKey;
+	}
+
+	public String getMid() {
+		return mid;
+	}
+
+	public void setMid(String mid) {
+		this.mid = mid;
+	}
+
+	public String getCreatedTime() {
+		return createdTime;
+	}
+
+	public void setCreatedTime(String createdTime) {
+		this.createdTime = createdTime;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public String getRelation() {
+		return relation;
+	}
+
+	public void setRelation(String relation) {
+		this.relation = relation;
+	}
+
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
+
+	public String getPhoneticName() {
+		return phoneticName;
+	}
+
+	public void setPhoneticName(String phoneticName) {
+		this.phoneticName = phoneticName;
+	}
+
+	public String getPictureStatus() {
+		return pictureStatus;
+	}
+
+	public void setPictureStatus(String pictureStatus) {
+		this.pictureStatus = pictureStatus;
+	}
+
+	public String getThumbnailUrl() {
+		return thumbnailUrl;
+	}
+
+	public void setThumbnailUrl(String thumbnailUrl) {
+		this.thumbnailUrl = thumbnailUrl;
+	}
+
+	public String getStatusMessage() {
+		return statusMessage;
+	}
+
+	public void setStatusMessage(String statusMessage) {
+		this.statusMessage = statusMessage;
+	}
+
+	public String getDisplayNameOverridden() {
+		return displayNameOverridden;
+	}
+
+	public void setDisplayNameOverridden(String displayNameOverridden) {
+		this.displayNameOverridden = displayNameOverridden;
+	}
+
+	public String getFavoriteTime() {
+		return favoriteTime;
+	}
+
+	public void setFavoriteTime(String favoriteTime) {
+		this.favoriteTime = favoriteTime;
+	}
+
+	public String getCapableVoiceCall() {
+		return capableVoiceCall;
+	}
+
+	public void setCapableVoiceCall(String capableVoiceCall) {
+		this.capableVoiceCall = capableVoiceCall;
+	}
+
+	public String getCapableVideoCall() {
+		return capableVideoCall;
+	}
+
+	public void setCapableVideoCall(String capableVideoCall) {
+		this.capableVideoCall = capableVideoCall;
+	}
+
+	public String getCapableMyhome() {
+		return capableMyhome;
+	}
+
+	public void setCapableMyhome(String capableMyhome) {
+		this.capableMyhome = capableMyhome;
+	}
+
+	public String getCapableBuddy() {
+		return capableBuddy;
+	}
+
+	public void setCapableBuddy(String capableBuddy) {
+		this.capableBuddy = capableBuddy;
+	}
+
+	public String getAttributes() {
+		return attributes;
+	}
+
+	public void setAttributes(String attributes) {
+		this.attributes = attributes;
+	}
+
+	public String getSettings() {
+		return settings;
+	}
+
+	public void setSettings(String settings) {
+		this.settings = settings;
+	}
+
+	public String getPicturePath() {
+		return picturePath;
+	}
+
+	public void setPicturePath(String picturePath) {
+		this.picturePath = picturePath;
+	}
+
+	public String getRecommendpArams() {
+		return recommendpArams;
+	}
+
+	public void setRecommendpArams(String recommendpArams) {
+		this.recommendpArams = recommendpArams;
+	}
+
+	public String getFriendRequestStatus() {
+		return friendRequestStatus;
+	}
+
+	public void setFriendRequestStatus(String friendRequestStatus) {
+		this.friendRequestStatus = friendRequestStatus;
+	}
+
+	public String getMusicProfile() {
+		return musicProfile;
+	}
+
+	public void setMusicProfile(String musicProfile) {
+		this.musicProfile = musicProfile;
+	}
+
+	public String getVideoProfile() {
+		return videoProfile;
+	}
+
+	public void setVideoProfile(String videoProfile) {
+		this.videoProfile = videoProfile;
+	}
+
+	public Integer getDeleteFlag() {
+		return deleteFlag;
+	}
+
+	public void setDeleteFlag(Integer deleteFlag) {
+		this.deleteFlag = deleteFlag;
+	}
+
+	public Date getCreateTime() {
+		return createTime;
+	}
+
+	public void setCreateTime(Date createTime) {
+		this.createTime = createTime;
+	}
+
+	public Date getUpdateTime() {
+		return updateTime;
+	}
+
+	public void setUpdateTime(Date updateTime) {
+		this.updateTime = updateTime;
+	}
+
+	public String getLineTaskId() {
+		return lineTaskId;
+	}
+
+	public void setLineTaskId(String lineTaskId) {
+		this.lineTaskId = lineTaskId;
+	}
+
+	public String getMsg() {
+		return msg;
+	}
+
+	public void setMsg(String msg) {
+		this.msg = msg;
+	}
+
+	public Integer getRefreshContactStatus() {
+		return refreshContactStatus;
+	}
+
+	public void setRefreshContactStatus(Integer refreshContactStatus) {
+		this.refreshContactStatus = refreshContactStatus;
+	}
+
+	public Long getSysUserId() {
+		return sysUserId;
+	}
+
+	public void setSysUserId(Long sysUserId) {
+		this.sysUserId = sysUserId;
+	}
+
+	public Integer getDataType() {
+		return dataType;
+	}
+
+	public void setDataType(Integer dataType) {
+		this.dataType = dataType;
+	}
+
+	public Integer getGroupId() {
+		return groupId;
+	}
+
+	public void setGroupId(Integer groupId) {
+		this.groupId = groupId;
+	}
+
+	public Integer getRecordId() {
+		return recordId;
+	}
+
+	public void setRecordId(Integer recordId) {
+		this.recordId = recordId;
+	}
+
+	public Integer getOpenApp() {
+		return openApp;
+	}
+
+	public void setOpenApp(Integer openApp) {
+		this.openApp = openApp;
+	}
+
+	public Integer getMod() {
+		return mod;
+	}
+
+	public void setMod(Integer mod) {
+		this.mod = mod;
+	}
+
+	public Integer getTotalMod() {
+		return totalMod;
+	}
+
+	public void setTotalMod(Integer totalMod) {
+		this.totalMod = totalMod;
+	}
 }

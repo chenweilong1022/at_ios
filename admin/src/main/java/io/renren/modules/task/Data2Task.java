@@ -118,37 +118,31 @@ public class Data2Task {
     @Transactional(rollbackFor = Exception.class)
     @Async
     public void task2() {
-//        AtDataSubtaskEntity dto = new AtDataSubtaskEntity().setTaskStatus(TaskStatus.TaskStatus2.getKey()).setGroupType(GroupType.GroupType2.getKey());
-//        List<AtDataSubtaskVO> atDataSubtaskEntities = atDataSubtaskService.groupByUserId(dto);
         Set<String> members = stringRedisTemplate.opsForSet().members(RedisKeys.USER_TASKS_POOL.getValue(String.valueOf(systemConstant.getSERVERS_MOD())));
         //任务为空
         if (CollUtil.isEmpty(members)) {
             log.info("Data2Task task2 atDataSubtaskEntities isEmpty");
             return;
         }
-
-        //获取用户MAP
-        List<AtUserEntity> atUserEntities = atUserService.listByIds(members);
-        List<Integer> userTokenIds = atUserEntities.stream().map(AtUserEntity::getUserTokenId).collect(Collectors.toList());
-        if (CollUtil.isEmpty(userTokenIds)) {
-            return;
-        }
-        List<AtUserTokenEntity> tokenEntities = atUserTokenService.listByIds(userTokenIds);
-        Map<Integer, AtUserTokenEntity> atUserTokenEntityMap = tokenEntities.stream().collect(Collectors.toMap(AtUserTokenEntity::getId, item -> item));
-        Map<Integer, AtUserTokenEntity> userIdAtUserTokenEntityMap = atUserEntities.stream().collect(Collectors.toMap(AtUserEntity::getId, item -> atUserTokenEntityMap.get(item.getUserTokenId()).setTelephone(item.getTelephone())));
         for (String userId : members) {
             threadPoolTaskExecutor.execute(() -> {
                 Boolean b = stringRedisTemplate.opsForValue().setIfAbsent(RedisKeys.USER_TASKS_WORKING_NX.getValue(userId), userId);
                 if (!b) {
                     return;
                 }
-                AtDataSubtaskEntity atDataSubtaskEntity = (AtDataSubtaskEntity) redisTemplate.opsForList().rightPop(RedisKeys.USER_TASKS_WORKING.getValue(userId));
-                if (ObjectUtil.isNull(atDataSubtaskEntity)) {
-                    return;
-                }
-
+                AtDataSubtaskEntity atDataSubtaskEntity = null;
                 try {
-
+                    atDataSubtaskEntity = (AtDataSubtaskEntity) redisTemplate.opsForList().rightPop(RedisKeys.USER_TASKS_WORKING.getValue(userId));
+                    if (ObjectUtil.isNull(atDataSubtaskEntity)) {
+                        return;
+                    }
+                    if (!TaskStatus.TaskStatus2.getKey().equals(atDataSubtaskEntity.getTaskStatus())) {
+                        return;
+                    }
+                    AtUserTokenEntity atUserTokenEntity = atUserTokenService.getByUserIdCache(Integer.valueOf(userId));
+                    if (ObjectUtil.isNull(atUserTokenEntity)) {
+                        return;
+                    }
                     AtGroupEntity atGroupEntityConfig = null;
                     if (ObjectUtil.isNotNull(atDataSubtaskEntity.getGroupId())) {
                         atGroupEntityConfig = atGroupService.getByIdCache(atDataSubtaskEntity.getGroupId());
@@ -173,11 +167,6 @@ public class Data2Task {
                         Date nextTime = DateUtil.offsetSecond(DateUtil.date(), i);
                         caffeineCacheDate.put(atGroupEntityConfig.getId(),nextTime);
                     }
-                    //获取用户token
-                    AtUserTokenEntity atUserTokenEntity = userIdAtUserTokenEntityMap.get(atDataSubtaskEntity.getUserId());
-                    if (ObjectUtil.isNull(atUserTokenEntity)) {
-                        return;
-                    }
                     //获取代理
                     CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
                     cdLineIpProxyDTO.setTokenPhone(atUserTokenEntity.getTelephone());
@@ -192,22 +181,15 @@ public class Data2Task {
                     }
                     SearchPhoneVO searchPhoneVO = null;
                     if (DataType.DataType3.getKey().equals(atDataSubtaskEntity.getDataType())) {
-//                            AtUserEntity one = atUserService.getOne(new QueryWrapper<AtUserEntity>().lambda()
-//                                    .eq(AtUserEntity::getTelephone,atDataSubtaskVO.getContactKey())
-//                            );
-                        AtUserVO one = atUserService.getById(atDataSubtaskEntity.getChangeUserId());
-                        if (ObjectUtil.isNull(one)) {
-                            return;
-                        }
-                        AtUserTokenVO atUserTokenVO = atUserTokenService.getById(one.getUserTokenId());
+                        AtUserTokenEntity atUserTokenVO = atUserTokenService.getByUserIdCache(atDataSubtaskEntity.getChangeUserId());
                         if (ObjectUtil.isNull(atUserTokenVO)) {
                             return;
                         }
 
                         //获取代理
                         CdLineIpProxyDTO cdLineIpProxyDTO1 = new CdLineIpProxyDTO();
-                        cdLineIpProxyDTO1.setTokenPhone(one.getTelephone());
-                        cdLineIpProxyDTO1.setLzPhone(one.getTelephone());
+                        cdLineIpProxyDTO1.setTokenPhone(atUserTokenVO.getTelephone());
+                        cdLineIpProxyDTO1.setLzPhone(atUserTokenVO.getTelephone());
                         //去设置区号
                         if (ObjectUtil.isNotNull(atGroupEntityConfig.getIpCountryCode())) {
                             cdLineIpProxyDTO1.setCountryCode(atGroupEntityConfig.getIpCountryCode().longValue());
@@ -272,14 +254,14 @@ public class Data2Task {
                             atDataTaskEntity.setId(atDataSubtaskEntity.getDataTaskId());
                             atDataTaskEntity.setTaskStatus(TaskStatus.TaskStatus5.getKey());
                             //任务失败 设置加粉任务队列
-                            redisTemplate.opsForList().leftPushAll(RedisKeys.ATDATATASKENTITY_LIST.getValue(String.valueOf(systemConstant.getSERVERS_MOD())), atDataTaskEntity);
+                            redisTemplate.opsForList().leftPush(RedisKeys.ATDATATASKENTITY_LIST.getValue(String.valueOf(systemConstant.getSERVERS_MOD())), atDataTaskEntity);
                             if (ObjectUtil.isNotNull(atDataSubtaskEntity.getGroupId())) {
                                 //拉群改状态
                                 AtGroupEntity atGroupEntity = new AtGroupEntity();
                                 atGroupEntity.setId(atDataSubtaskEntity.getGroupId());
                                 atGroupEntity.setGroupStatus(GroupStatus.GroupStatus11.getKey());
                                 // 任务失败 设置群任务队列
-                                redisTemplate.opsForList().leftPushAll(RedisKeys.ATGROUPENTITY_LIST.getValue(String.valueOf(systemConstant.getSERVERS_MOD())), atGroupEntity);
+                                redisTemplate.opsForList().leftPush(RedisKeys.ATGROUPENTITY_LIST.getValue(String.valueOf(systemConstant.getSERVERS_MOD())), atGroupEntity);
                             }
 
                             if (TaskStatus.TaskStatus5.getKey().equals(atDataSubtaskEntity.getTaskStatus()) || TaskStatus.TaskStatus13.getKey().equals(atDataSubtaskEntity.getTaskStatus())) {
@@ -288,18 +270,19 @@ public class Data2Task {
                                 AtDataSubtaskEntity element = null;
                                 while ((element = (AtDataSubtaskEntity) redisTemplate.opsForList().rightPop(RedisKeys.USER_TASKS_WORKING.getValue(userId))) != null) {
                                     element.setTaskStatus(atDataSubtaskEntity.getTaskStatus());
+                                    element.setMsg(atDataSubtaskEntity.getMsg());
                                     elements.add(element);
                                 }
-                                //工作完成队列
-                                Long l = redisTemplate.opsForList().leftPushAll(RedisKeys.USER_TASKS_WORK_FINISH.getValue(userId), elements);
-                                log.info("工作完成队列保存成功条数 ====》 {}",l);
-                                if (l > 0) {
-                                    AtUserEntity atUserEntity = new AtUserEntity();
-                                    atUserEntity.setId(atDataSubtaskEntity.getUserId());
-                                    atUserEntity.setStatus(userStatus.getKey());
-                                    Long l1 = redisTemplate.opsForList().leftPushAll(RedisKeys.ATUSERENTITY_LIST.getValue(String.valueOf(systemConstant.getSERVERS_MOD())), atUserEntity);
-                                    log.info("用户任务队列保存成功条数 ====》 {}",l1);
+                                for (AtDataSubtaskEntity dataSubtaskEntity : elements) {
+                                    //工作完成队列
+                                    Long l = redisTemplate.opsForList().leftPush(RedisKeys.USER_TASKS_WORK_FINISH.getValue(userId), dataSubtaskEntity);
+                                    log.info("工作完成队列保存成功条数 ====》 {}",l);
                                 }
+                                AtUserEntity atUserEntity = new AtUserEntity();
+                                atUserEntity.setId(atDataSubtaskEntity.getUserId());
+                                atUserEntity.setStatus(userStatus.getKey());
+                                Long l1 = redisTemplate.opsForList().leftPush(RedisKeys.ATUSERENTITY_LIST.getValue(String.valueOf(systemConstant.getSERVERS_MOD())), atUserEntity);
+                                log.info("用户任务队列保存成功条数 ====》 {}",l1);
                             }
                         }
                     }
@@ -318,11 +301,19 @@ public class Data2Task {
                 }catch (Exception e){
                     log.error("data2Task error = {}",e.getMessage());
                 }finally {
-                    //任务结束，队列移除到任务结束队列 释放用户锁
-                    Long l = redisTemplate.opsForList().leftPushAll(RedisKeys.USER_TASKS_WORK_FINISH.getValue(userId), atDataSubtaskEntity);
-                    log.info("任务结束，队列移除到任务结束队列保存成功条数 ====》 {}",l);
-                    if (l > 0) {
-                        stringRedisTemplate.delete(RedisKeys.USER_TASKS_WORKING_NX.getValue(userId));
+                    stringRedisTemplate.delete(RedisKeys.USER_TASKS_WORKING_NX.getValue(userId));
+                    Long l = 0L;
+                    if (ObjectUtil.isNull(atDataSubtaskEntity)) {
+                        return;
+                    }
+                    //如果状态还是2
+                    if (TaskStatus.TaskStatus2.getKey().equals(atDataSubtaskEntity.getTaskStatus())) {
+                        l = redisTemplate.opsForList().rightPush(RedisKeys.USER_TASKS_WORKING.getValue(userId), atDataSubtaskEntity);
+                        log.info("任务失败，队列返回 ====》 {}",l);
+                    }else {
+                        //任务结束，队列移除到任务结束队列 释放用户锁
+                        l = redisTemplate.opsForList().leftPush(RedisKeys.USER_TASKS_WORK_FINISH.getValue(userId), atDataSubtaskEntity);
+                        log.info("任务结束，队列移除到任务结束队列保存成功条数 ====》 {}",l);
                     }
                 }
             });

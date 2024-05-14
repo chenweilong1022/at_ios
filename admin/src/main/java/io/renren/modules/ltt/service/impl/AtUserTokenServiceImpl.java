@@ -5,11 +5,17 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.http.HttpUtil;
+import com.github.benmanes.caffeine.cache.Cache;
 import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
+import io.renren.modules.ltt.dao.AtUserDao;
+import io.renren.modules.ltt.entity.AtUserEntity;
 import io.renren.modules.ltt.enums.DeleteFlag;
 import io.renren.modules.ltt.enums.Platform;
 import io.renren.modules.ltt.enums.UseFlag;
+import io.renren.modules.ltt.service.AtUserService;
+import io.renren.modules.ltt.vo.AtUserVO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -25,6 +31,7 @@ import io.renren.modules.ltt.service.AtUserTokenService;
 import io.renren.modules.ltt.conver.AtUserTokenConver;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.io.Serializable;
 import java.util.stream.Collectors;
 
@@ -32,6 +39,14 @@ import java.util.stream.Collectors;
 @Service("atUserTokenService")
 @Game
 public class AtUserTokenServiceImpl extends ServiceImpl<AtUserTokenDao, AtUserTokenEntity> implements AtUserTokenService {
+
+
+    @Resource(name = "stringListAtUserTokenEntitys")
+    private Cache<Integer, AtUserTokenEntity> stringListAtUserTokenEntitys;
+    @Autowired
+    private AtUserDao atUserService;
+    @Resource(name = "stringListAtUserEntitys")
+    private Cache<Integer, AtUserEntity> stringListAtUserEntitys;
 
     @Override
     public PageUtils<AtUserTokenVO> queryPage(AtUserTokenDTO atUserToken) {
@@ -49,6 +64,40 @@ public class AtUserTokenServiceImpl extends ServiceImpl<AtUserTokenDao, AtUserTo
     public AtUserTokenVO getById(Integer id) {
         return AtUserTokenConver.MAPPER.conver(baseMapper.selectById(id));
     }
+
+    @Override
+    public AtUserTokenEntity getByUserIdCache(Integer id) {
+        AtUserEntity atUserEntity = stringListAtUserEntitys.getIfPresent(id);
+        if (ObjectUtil.isNull(atUserEntity)) {
+            atUserEntity = atUserService.selectById((Serializable) id);
+            stringListAtUserEntitys.put(id,atUserEntity);
+        }
+        if (ObjectUtil.isNull(atUserEntity)) {
+            return null;
+        }
+
+        AtUserTokenEntity atUserTokenEntity = stringListAtUserTokenEntitys.getIfPresent(atUserEntity.getUserTokenId());
+        if (ObjectUtil.isNull(atUserTokenEntity)) {
+            atUserTokenEntity = this.getById((Serializable) atUserEntity.getUserTokenId());
+            stringListAtUserTokenEntitys.put(atUserEntity.getUserTokenId(),atUserTokenEntity);
+        }
+        return atUserTokenEntity.setTelephone(atUserEntity.getTelephone());
+    }
+
+//    @Override
+//    public Map<Integer, AtUserTokenEntity> getIds(List<Integer> ids) {
+//        Map<Integer, AtUserTokenEntity> allPresent = stringListAtUserTokenEntitys.getAllPresent(ids);
+//        if (ids.size() == allPresent.keySet().size()) {
+//            return allPresent;
+//        }
+//        List<AtUserTokenEntity> atUserTokenEntities = this.listByIds(ids);
+//        Map<Integer, AtUserTokenEntity> collect = atUserTokenEntities.stream().collect(Collectors.toMap(AtUserTokenEntity::getId, item -> item, (a, b) -> a));
+//        if (ids.size() == collect.keySet().size()) {
+//            stringListAtUserTokenEntitys.putAll(collect);
+//            return allPresent;
+//        }
+//        return null;
+//    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)

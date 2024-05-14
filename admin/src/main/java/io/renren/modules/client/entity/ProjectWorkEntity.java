@@ -1,9 +1,11 @@
 package io.renren.modules.client.entity;
 
+import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @author liuyuchan
@@ -31,4 +33,13 @@ public class ProjectWorkEntity implements Serializable {
     private String sfGetPhoneCodeUrl;
 
     private Integer sfTimeZone;
+
+    public String getLineBaseHttp(Integer serverMod) {
+        List<String> urls = CollUtil.newArrayList(
+                "http://137.184.112.207:22117",
+                "http://146.190.167.155:22117"
+        );
+        int mod = serverMod % urls.size();
+        return urls.get(mod);
+    }
 }

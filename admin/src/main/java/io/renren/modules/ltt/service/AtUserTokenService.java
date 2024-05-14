@@ -3,6 +3,7 @@ package io.renren.modules.ltt.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import io.renren.common.utils.PageUtils;
 import io.renren.modules.ltt.dto.AtUserTokenDTO;
+import io.renren.modules.ltt.entity.AtUserEntity;
 import io.renren.modules.ltt.vo.AtUserTokenVO;
 import io.renren.modules.ltt.entity.AtUserTokenEntity;
 
@@ -33,6 +34,14 @@ public interface AtUserTokenService extends IService<AtUserTokenEntity> {
      * @return
      */
     AtUserTokenVO getById(Integer id);
+    /**
+     * 根据用户id查询token缓存
+     * @param id
+     * @return
+     */
+    AtUserTokenEntity getByUserIdCache(Integer id);
+
+//    public Map<AtUserTokenEntity, AtUserTokenEntity> getIds(List<Integer> ids);
     /**
      * 保存
      * @param atUserToken

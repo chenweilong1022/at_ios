@@ -90,6 +90,7 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
     @Resource
     private CdGetPhoneService cdGetPhoneService;
 
+
     @Override
     public PageUtils<AtUserVO> queryPage1(AtUserDTO atUser) {
         atUser.setPageStart((atUser.getPage() - 1) * atUser.getLimit());
@@ -134,6 +135,21 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
     public AtUserVO getById(Integer id) {
         return AtUserConver.MAPPER.conver(baseMapper.selectById(id));
     }
+
+//    @Override
+//    public Map<Integer, AtUserEntity> getIds(List<Integer> ids) {
+//        Map<Integer, AtUserEntity> allPresent = stringListAtUserEntitys.getAllPresent(ids);
+//        if (ids.size() == allPresent.keySet().size()) {
+//            return allPresent;
+//        }
+//        List<AtUserEntity> atUserEntities = this.listByIds(ids);
+//        Map<Integer, AtUserEntity> collect = atUserEntities.stream().collect(Collectors.toMap(AtUserEntity::getId, item -> item, (a, b) -> a));
+//        if (ids.size() == collect.keySet().size()) {
+//            stringListAtUserEntitys.putAll(collect);
+//            return allPresent;
+//        }
+//        return null;
+//    }
 
     @Override
     public boolean unlock(Integer id, UserStatus userStatus) {

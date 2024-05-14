@@ -47,6 +47,12 @@ public interface AtUserService extends IService<AtUserEntity> {
      * @return
      */
     AtUserVO getById(Integer id);
+//    /**
+//     * 根据id查询
+//     * @param ids
+//     * @return
+//     */
+//    Map<Integer, AtUserEntity> getIds(List<Integer> ids);
     /**
      * 根据id查询
      * @param id

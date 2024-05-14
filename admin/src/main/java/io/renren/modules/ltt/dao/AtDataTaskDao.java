@@ -18,5 +18,5 @@ import java.util.List;
 @Mapper
 public interface AtDataTaskDao extends BaseMapper<AtDataTaskEntity> {
 
-    List<GroupCountByDataTaskIdVO> groupCountByDataTaskId(@Param("mod") Integer mod,@Param("mod") Integer totalMod);
+    List<GroupCountByDataTaskIdVO> groupCountByDataTaskId(@Param("mod") Integer mod,@Param("totalMod") Integer totalMod);
 }

@@ -94,9 +94,10 @@ public class GroupTask {
     @Transactional(rollbackFor = Exception.class)
     @Async
     public void task5() {
+        String format = String.format("and MOD(change_user_id, %s) = %s limit 50", systemConstant.getSERVERS_TOTAL_MOD(), systemConstant.getSERVERS_MOD());
         //获取群名和真实名称不一样的列表，同步服务器真实群名
         List<AtGroupEntity> cdGroupTasksEntities = atGroupService.list(new QueryWrapper<AtGroupEntity>().lambda()
-                .last("and MOD(change_user_id, 2) = "+systemConstant.getSERVERS_MOD()+" limit 50")
+                .last(format)
                 .eq(AtGroupEntity::getGroupStatus, GroupStatus.GroupStatus15.getKey())
                 .eq(AtGroupEntity::getRandomGroupName, OpenApp.OpenApp2.getKey())
                 .apply("group_name <> real_group_name")
@@ -114,9 +115,10 @@ public class GroupTask {
     @Transactional(rollbackFor = Exception.class)
     @Async
     public void task4() {
+        String format = String.format("and MOD(change_user_id, %s) = %s limit 50", systemConstant.getSERVERS_TOTAL_MOD(), systemConstant.getSERVERS_MOD());
         //获取群人数同步,且需要更改群名的任务
         List<AtGroupEntity> cdGroupTasksEntities = atGroupService.list(new QueryWrapper<AtGroupEntity>().lambda()
-                .last("and MOD(change_user_id, 2) = "+systemConstant.getSERVERS_MOD()+" limit 50")
+                .last(format)
                 .eq(AtGroupEntity::getGroupStatus, GroupStatus.GroupStatus9.getKey())
                 .eq(AtGroupEntity::getRandomGroupName, OpenApp.OpenApp2.getKey())
         );
@@ -193,10 +195,10 @@ public class GroupTask {
     @Async
     public void task3() {
 
-
+        String format = String.format("and MOD(id, %s) = %s limit 50", systemConstant.getSERVERS_TOTAL_MOD(), systemConstant.getSERVERS_MOD());
         //获取当前需要同步通讯的任务
         List<AtGroupEntity> cdGroupTasksEntities = atGroupService.list(new QueryWrapper<AtGroupEntity>().lambda()
-                .last("and MOD(id, 2) = "+systemConstant.getSERVERS_MOD()+" limit 50")
+                .last(format)
                 .eq(AtGroupEntity::getGroupStatus,GroupStatus.GroupStatus5.getKey())
         );
         if (CollUtil.isEmpty(cdGroupTasksEntities)) {
@@ -313,10 +315,10 @@ public class GroupTask {
     @Async
     public void task2() {
 
+        String format = String.format("and MOD(id, %s) = %s limit 50", systemConstant.getSERVERS_TOTAL_MOD(), systemConstant.getSERVERS_MOD());
         //获取当前需要同步通讯的任务
         List<AtGroupEntity> cdGroupTasksEntities = atGroupService.list(new QueryWrapper<AtGroupEntity>().lambda()
-                .last("limit 50")
-                .last("and MOD(id, 2) = "+systemConstant.getSERVERS_MOD()+" limit 50")
+                .last(format)
                 .eq(AtGroupEntity::getGroupStatus,GroupStatus.GroupStatus3.getKey())
         );
         if (CollUtil.isEmpty(cdGroupTasksEntities)) {
@@ -408,9 +410,11 @@ public class GroupTask {
     @Async
     public void task1() {
 
+        //配置总机器
+        String format = String.format("and MOD(id, %s) = %s limit 50", systemConstant.getSERVERS_TOTAL_MOD(), systemConstant.getSERVERS_MOD());
         //获取当前需要同步通讯的任务
         List<AtGroupEntity> cdGroupTasksEntities = atGroupService.list(new QueryWrapper<AtGroupEntity>().lambda()
-                .last("and MOD(id, 2) = "+systemConstant.getSERVERS_MOD()+" limit 50")
+                .last(format)
                 .eq(AtGroupEntity::getGroupStatus,GroupStatus.GroupStatus7.getKey())
         );
         if (CollUtil.isEmpty(cdGroupTasksEntities)) {
