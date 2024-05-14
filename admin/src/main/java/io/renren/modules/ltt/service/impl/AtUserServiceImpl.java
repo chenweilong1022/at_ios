@@ -101,6 +101,10 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
         for (AtUserVO atUserVO : resultList) {
             //查询手机号可用状态
             Boolean phoneRegisterState = cdGetPhoneService.getPhoneUseState(atUserVO.getTelephone());
+            if (Boolean.FALSE.equals(phoneRegisterState)) {
+                atUserVO.setPhoneExpire(redisTemplate
+                        .getExpire(RedisKeys.RedisKeys12.getValue(atUserVO.getTelephone()), TimeUnit.MINUTES));
+            }
             atUserVO.setPhoneState(phoneRegisterState);
         }
         return new PageUtils(resultList, count, atUser.getLimit(), atUser.getPage());
