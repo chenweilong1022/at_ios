@@ -330,7 +330,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 
     private String getRolaIp(String regions) {
         //curl -x  ipinfo.io
-        String format = String.format("chenweilong_%s-country-%s:ch1433471850@proxysg.rola.vip:2000", RandomUtil.randomInt(1,10000),regions);
+        String format = String.format("chenweilong_%s-country-%s:ch1433471850@proxysg.rola.vip:2000", RandomUtil.randomInt(1,99999999),regions);
         System.out.println(format);
         return format;
     }
