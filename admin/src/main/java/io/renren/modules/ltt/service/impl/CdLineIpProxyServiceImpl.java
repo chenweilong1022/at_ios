@@ -300,7 +300,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         }else if (i == 4) {
             s5Ip = getRolaIp(regions);
         }
-        return null;
+        return s5Ip;
     }
 
     private CurlVO getProxyUse(String ip,String regions) {
