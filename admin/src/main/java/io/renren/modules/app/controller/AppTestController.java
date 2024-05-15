@@ -1,24 +1,36 @@
 package io.renren.modules.app.controller;
 
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.benmanes.caffeine.cache.Cache;
 import io.renren.common.base.vo.EnumVo;
+import io.renren.modules.ltt.dto.CdLineIpProxyDTO;
+import io.renren.modules.ltt.entity.CdGetPhoneEntity;
 import io.renren.modules.ltt.enums.*;
 import io.renren.common.utils.EnumUtil;
 import io.renren.common.utils.R;
 import io.renren.common.validator.AssertI18n;
 import io.renren.modules.app.code.UserCode;
 import io.renren.modules.app.dto.UserUpdateDTO;
+import io.renren.modules.ltt.service.CdGetPhoneService;
+import io.renren.modules.ltt.service.CdLineIpProxyService;
+import io.renren.modules.ltt.vo.CdRegisterSubtasksVO;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * APP测试接口
@@ -124,5 +136,27 @@ public class AppTestController {
         jpSfPhoneCacheListString.put("jpSfPhone",phoneList);
         return R.data(true);
     }
+//
+//
+//    /**
+//     * 更新手机号注册次数
+//     */
+//    private Integer savePhoneRegisterCount(String phone) {
+//        try {
+//            Integer registerCount = cdGetPhoneService.getPhoneRegisterCount(phone) + 1;
+//
+//            log.error("更新手机号注册次数 {}, 次数：{}", phone, registerCount);
+//            redisTemplate.opsForHash().put(RedisKeys.RedisKeys10.getValue(), phone, String.valueOf(registerCount));
+//
+//            //大于等于3次的卡，与前两次的做对比，超过24小时，才为可用状态
+//            if (registerCount >= 3) {
+//                redisTemplate.opsForValue().set(RedisKeys.RedisKeys12.getValue(phone), String.valueOf(registerCount), (24 * 60) + 30, TimeUnit.MINUTES);
+//            }
+//            return registerCount;
+//        } catch (Exception e) {
+//            log.error("更新手机号注册次数异常 {}, {}", phone, e);
+//        }
+//        return 0;
+//    }
 
 }

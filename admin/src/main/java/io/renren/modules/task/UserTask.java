@@ -19,6 +19,7 @@ import io.renren.modules.ltt.dto.CdLineIpProxyDTO;
 import io.renren.modules.ltt.entity.AtUserEntity;
 import io.renren.modules.ltt.entity.AtUserTokenEntity;
 import io.renren.modules.ltt.entity.AtUserTokenIosEntity;
+import io.renren.modules.ltt.entity.CdLineRegisterEntity;
 import io.renren.modules.ltt.enums.*;
 import io.renren.modules.ltt.service.*;
 import io.renren.modules.ltt.vo.IssueLiffViewVO;
@@ -81,6 +82,8 @@ public class UserTask {
     private LineService lineService;
     @Autowired
     private CdLineIpProxyService cdLineIpProxyService;
+    @Autowired
+    private CdLineRegisterService cdLineRegisterService;
 
     @Autowired
     ThreadPoolTaskExecutor threadPoolTaskExecutor;
@@ -392,6 +395,14 @@ public class UserTask {
 
                         //查询手机号注册次数
                         atUserEntity.setRegisterCount(cdGetPhoneService.getPhoneRegisterCount(atUserEntity.getTelephone()));
+
+                        //注册信息
+                        CdLineRegisterEntity cdLineRegisterEntity = cdLineRegisterService.queryLineRegisterByPhone(telephone);
+                        if (ObjectUtil.isNotNull(cdLineRegisterEntity)) {
+                            atUserEntity.setRegisterTime(cdLineRegisterEntity.getCreateTime());
+                        } else {
+                            atUserEntity.setRegisterTime(new Date());
+                        }
 
 //                        if (ObjectUtil.isNotNull(one)) {
 //                            atUserEntity.setId(one.getId());

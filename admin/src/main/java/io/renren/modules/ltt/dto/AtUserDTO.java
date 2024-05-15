@@ -107,6 +107,11 @@ public class AtUserDTO extends PageParam implements Serializable {
 	@ApiModelProperty(required=false,value="创建时间")
 	private Date createTime;
 	/**
+	 * 创建时间
+	 */
+	@ApiModelProperty(required=false,value="line注册时间")
+	private Date registerTime;
+	/**
 	 * 用户tokenid
 	 */
 	@ApiModelProperty(required=false,value="用户tokenid")

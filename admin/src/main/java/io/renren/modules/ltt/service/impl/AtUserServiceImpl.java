@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.google.common.collect.Lists;
+import io.renren.common.utils.DateUtils;
 import io.renren.common.utils.PageUtils;
 import io.renren.common.utils.Query;
 import io.renren.common.validator.Assert;
@@ -24,14 +25,12 @@ import io.renren.modules.ltt.dto.AtUserDTO;
 import io.renren.modules.ltt.dto.UserSummaryResultDto;
 import io.renren.modules.ltt.entity.AtUserEntity;
 import io.renren.modules.ltt.entity.AtUserTokenEntity;
+import io.renren.modules.ltt.entity.CdLineRegisterEntity;
 import io.renren.modules.ltt.enums.CountryCode;
 import io.renren.modules.ltt.enums.DeleteFlag;
 import io.renren.modules.ltt.enums.RedisKeys;
 import io.renren.modules.ltt.enums.UserStatus;
-import io.renren.modules.ltt.service.AtUserService;
-import io.renren.modules.ltt.service.AtUserTokenService;
-import io.renren.modules.ltt.service.CdGetPhoneService;
-import io.renren.modules.ltt.service.CdLineIpProxyService;
+import io.renren.modules.ltt.service.*;
 import io.renren.modules.ltt.vo.AtUserVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -77,6 +76,9 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
 
     @Resource
     private CdLineIpProxyService lineIpProxyService;
+
+    @Resource
+    private CdLineRegisterService cdLineRegisterService;
 
     @Resource(name = "caffeineCacheListString")
     private Cache<String, Queue<String>> caffeineCacheListString;
@@ -516,20 +518,22 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
     @Override
     @Async
     public void syncRegisterCountTest(String phone) {
-        if (StringUtils.isNotEmpty(phone)) {
-            redisTemplate.opsForHash().delete(RedisKeys.RedisKeys10.getValue(), phone);
-
-        } else {
-            redisTemplate.delete(RedisKeys.RedisKeys10.getValue());
-        }
+//        if (StringUtils.isNotEmpty(phone)) {
+//            redisTemplate.opsForHash().delete(RedisKeys.RedisKeys10.getValue(), phone);
+//
+//        } else {
+//            redisTemplate.delete(RedisKeys.RedisKeys10.getValue());
+//        }
         AtUserDTO atUser = new AtUserDTO();
         atUser.setPage(1);
         atUser.setLimit(500);
         boolean hasNextPage = true;
+
         while (hasNextPage) {
             IPage<AtUserEntity> page = baseMapper.selectPage(new Query<AtUserEntity>(atUser).getPage(),
                     new QueryWrapper<AtUserEntity>().lambda()
                             .eq(StringUtils.isNotEmpty(phone), AtUserEntity::getTelephone, phone)
+                            .eq(AtUserEntity::getNation, "TH")
                             .orderByAsc(AtUserEntity::getCreateTime)
             );
             List<AtUserEntity> currentPageData = page.getRecords();
@@ -542,21 +546,129 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
             List<AtUserEntity> updateAtUserList = new ArrayList<>();
             for (AtUserEntity atUserEntity : currentPageData) {
                 //更新次数
-                Integer registerCount = cdGetPhoneService.getPhoneRegisterCount(atUserEntity.getTelephone()) + 1;
+                Integer registerCount = cdGetPhoneService.getPhoneRegisterCount(atUserEntity.getTelephone());
 
 
-                AtUserEntity updateAtUserEntity = new AtUserEntity();
-                updateAtUserEntity.setId(atUserEntity.getId());
-                updateAtUserEntity.setRegisterCount(registerCount);
-                updateAtUserList.add(updateAtUserEntity);
-                redisTemplate.opsForHash().put(RedisKeys.RedisKeys10.getValue(), atUserEntity.getTelephone(), registerCount.toString());
-//                if (registerCount >= 3) {
-//                    redisTemplate.opsForValue().set(RedisKeys.RedisKeys12.getValue(phone), String.valueOf(registerCount), (24 * 60) + 30, TimeUnit.MINUTES);
-//                }
+//                AtUserEntity updateAtUserEntity = new AtUserEntity();
+//                updateAtUserEntity.setId(atUserEntity.getId());
+//                updateAtUserEntity.setRegisterCount(registerCount);
+//                updateAtUserList.add(updateAtUserEntity);
+//                redisTemplate.opsForHash().put(RedisKeys.RedisKeys10.getValue(), atUserEntity.getTelephone(), registerCount.toString());
+                if (registerCount >= 3) {
+                    redisTemplate.opsForValue().set(RedisKeys.RedisKeys12.getValue(phone), String.valueOf(registerCount), (24 * 60) + 30, TimeUnit.MINUTES);
+                }
             }
-            this.updateBatchById(updateAtUserList);
+//            this.updateBatchById(updateAtUserList);
         }
         log.info("同步注册次数结束，总页码:{}", atUser.getPage());
+
+    }
+
+    @Override
+    public void syncPhoneRegisterTest() {
+        AtUserDTO atUser = new AtUserDTO();
+        atUser.setPage(1);
+        atUser.setLimit(500);
+        boolean hasNextPage = true;
+        while (hasNextPage) {
+            IPage<AtUserEntity> page = baseMapper.selectPage(new Query<AtUserEntity>(atUser).getPage(),
+                    new QueryWrapper<AtUserEntity>().lambda()
+                            .eq(AtUserEntity::getNation, "JP")
+                            .orderByDesc(AtUserEntity::getCreateTime)
+            );
+            List<AtUserEntity> currentPageData = page.getRecords();
+            hasNextPage = currentPageData.size() >= atUser.getLimit();
+            if (hasNextPage) {
+                atUser.setPage(atUser.getPage() + 1);
+            }
+
+            List<AtUserEntity> updateAtUserList = new ArrayList<>();
+            for (AtUserEntity atUserEntity : currentPageData) {
+                threadPoolTaskExecutor.execute(() -> {
+                    AtUserEntity updateUser = new AtUserEntity();
+                    CdLineRegisterEntity cdLineRegisterEntity = cdLineRegisterService.queryLineRegisterByPhone(atUserEntity.getTelephone());
+                    if (ObjectUtil.isNotNull(cdLineRegisterEntity)) {
+                        log.info(atUserEntity.getCreateTime()  + "---" + cdLineRegisterEntity.getCreateTime());
+                        if ( atUserEntity.getCreateTime().after(cdLineRegisterEntity.getCreateTime())) {
+                            updateUser.setId(atUserEntity.getId());
+                            updateUser.setRegisterTime(cdLineRegisterEntity.getCreateTime());
+                            updateAtUserList.add(updateUser);
+                            baseMapper.updateById(updateUser);
+                        }
+                    }
+                });
+            }
+        }
+
+    }
+
+    public static void main(String[] args) {
+
+    }
+
+    @Override
+    @Async
+    public void syncPhoneInvalidTest(String phoneParam) {
+        Set<String> keys = redisTemplate.keys(RedisKeys.RedisKeys12.getValue("*"));
+        for (String key : keys) {
+            try {
+
+            String phoneKey = key.replace(RedisKeys.RedisKeys12.getValue(), "");
+            if (StringUtils.isNotEmpty(phoneParam)) {
+                if (!phoneParam.equals(phoneKey)) {
+                    continue;
+                }
+            }
+            log.info("同步红灯开始 {}", phoneKey);
+
+            Integer registerCount = cdGetPhoneService.getPhoneRegisterCount(phoneKey);
+            if (registerCount < 3) {
+                log.info("同步红灯时间异常 {}, {}", phoneKey, registerCount);
+                continue;
+            }
+
+
+
+            Map<Integer, Date> userMap = baseMapper.selectList(new QueryWrapper<AtUserEntity>()
+                            .lambda().eq(AtUserEntity::getTelephone, phoneKey)).stream()
+                    .filter(i -> i.getRegisterCount() != null)
+                    .collect(Collectors.toMap(AtUserEntity::getRegisterCount,
+                            i -> i.getRegisterTime() != null ? i.getRegisterTime() : i.getCreateTime(),(a,b)->b));
+
+            Integer judgeFrequency = registerCount - 2;//与前两次的对比
+
+            Date time = null;
+            if (ObjectUtil.isNotNull(userMap.get(judgeFrequency))) {
+                time = userMap.get(judgeFrequency);
+            } else {
+                Map.Entry<Integer, Date> integerDateEntry = userMap.entrySet().stream().max(Map.Entry.comparingByValue(Comparator.comparing(Date::getTime))).orElse(null);
+                if (integerDateEntry != null) {
+                    time = integerDateEntry.getValue();
+                } else {
+                    log.info("错误数据 {}", key);
+                }
+            }
+
+            //在此时间上加24小时+30分钟
+            Date expireDate = DateUtils.addDateMinutes(time, (24 * 60) + 30);//过期时间
+
+            Long expireMinutes = DateUtils.betweenMinutes(new Date(), expireDate);
+
+            log.info("同步红灯时间 {}, {}", phoneKey, expireMinutes);
+            if (expireMinutes <= 0) {
+                log.info("删除红绿灯时间 {}, {}", phoneKey, expireMinutes);
+                redisTemplate.delete(RedisKeys.RedisKeys12.getValue(phoneKey));
+                continue;
+            }
+
+            redisTemplate.opsForValue().set(RedisKeys.RedisKeys12.getValue(phoneKey),
+                    String.valueOf(registerCount), expireMinutes, TimeUnit.MINUTES);
+        }catch (Exception e){
+                log.info("同步红灯异常 {}, {}", key, e);
+
+            }
+
+        }
 
     }
 }

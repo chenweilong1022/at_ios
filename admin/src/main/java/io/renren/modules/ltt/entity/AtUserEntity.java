@@ -106,6 +106,9 @@ public class AtUserEntity implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="创建时间")
 	private Date createTime;
+
+	@ApiModelProperty(required=false,value="line注册时间")
+	private Date registerTime;
 	/**
 	 * 用户tokenid
 	 */
