@@ -101,4 +101,4 @@ ipConfig:
 
 servers:
   mod: ${SERVERS_MOD:0}
-  totalMod: ${SERVERS_TOTALMOD:5}
+  totalMod: ${SERVERS_TOTALMOD:1}
