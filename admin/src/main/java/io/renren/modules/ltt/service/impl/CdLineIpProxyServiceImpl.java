@@ -243,7 +243,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                 redisTemplate.opsForHash().put(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), cdLineIpProxyDTO.getTokenPhone(), proxyUse.getIp());
                 return true;
             }else {
-                redisTemplate.opsForHash().delete(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), cdLineIpProxyDTO.getTokenPhone());
+                redisTemplate.opsForHash().put(RedisKeys.RedisKeys1.getValue(), proxyUse.getIp(), ipS5);
             }
         }
         return false;
@@ -480,7 +480,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 
 
     private String getLunaIp(String regions) {
-        String format = String.format("user-lu9904136-region-%s-sessid-%s-sesstime-63:Ch1433471850@na.ej29ly49.lunaproxy.net:12233",regions, RandomUtil.randomString(18));
+        String format = String.format("user-lu9904136-region-%s-sessid-%s-sesstime-10:Ch1433471850@na.ej29ly49.lunaproxy.net:12233",regions, RandomUtil.randomString(18));
         System.out.println(format);
         return format;
     }
