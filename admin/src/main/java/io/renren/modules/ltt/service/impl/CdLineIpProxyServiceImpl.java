@@ -369,7 +369,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         }else if (i == 3) {
             s5Ip = getIpmarsIp(regions);
         }else if (i == 4) {
-            s5Ip = getRolaIp("",regions);
+            s5Ip = getRolaIp(regions);
         }
         return s5Ip;
     }
@@ -391,9 +391,9 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
     }
 
 
-    private String getRolaIp(String regions,String num) {
+    private String getRolaIp(String regions) {
         //curl -x  ipinfo.io
-        String format = String.format("chenweilong_%s-country-%s:ch1433471850@proxyus.rola.vip:2000", num,regions);
+        String format = String.format("chenweilong_%s-country-%s:ch1433471850@proxyus.rola.vip:2000", RandomUtil.randomInt(1,100000),regions);
         System.out.println(format);
         return format;
     }
