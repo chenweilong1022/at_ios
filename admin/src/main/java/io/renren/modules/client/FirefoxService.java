@@ -1,7 +1,10 @@
 package io.renren.modules.client;
 
 
+import io.renren.modules.client.vo.CardJpGetPhoneSmsVO;
 import io.renren.modules.client.vo.GetPhoneVO;
+
+import java.util.Map;
 
 /**
  * @author liuyuchan
@@ -22,6 +25,14 @@ public interface FirefoxService {
      * @return
      */
     public String getPhoneCode(String pKey);
+    /**
+     * 获取验证码
+     * @param pKey
+     * @return
+     */
+    default Map<Long, CardJpGetPhoneSmsVO.Data.Ret.Sm> getPhoneCodes(String pKeys){
+        return null;
+    };
 
     /**
      * 释放手机号

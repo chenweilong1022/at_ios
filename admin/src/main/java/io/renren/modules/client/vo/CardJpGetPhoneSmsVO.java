@@ -32,6 +32,7 @@ public class CardJpGetPhoneSmsVO {
                 public static class Sm {
                     private String recvTime;
                     private String content;
+                    private Long time;
                 }
             }
         }

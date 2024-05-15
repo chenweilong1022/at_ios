@@ -163,6 +163,58 @@ public class CardJpServiceImpl implements FirefoxService {
 //        }
 //    }
 
+
+    @Override
+    public Map<Long,CardJpGetPhoneSmsVO.Data.Ret.Sm> getPhoneCodes(String pKeys) {
+
+
+
+        HashMap<String, String> paramMap = new HashMap<>();
+        paramMap.put("user_code", systemConstant.getJpSmsConfigUserCode());//必填，用户号
+        paramMap.put("take_ids", pKeys);//必填，取号ID,多个ID请用英文半角逗号分隔
+        String currentTime = DateUtils.getTimestampMillis();
+        paramMap.put("timestamp", currentTime);//必填，请求时间戳(秒)
+        paramMap.put("sign", getSign(paramMap));//必填，签名
+
+        String paramStr = JSONUtil.toJsonStr(paramMap);
+        log.info("CardJpServiceImpl_getPhoneCode_param {}", paramStr);
+
+        String url = String.format("%s/GetState", systemConstant.getJpSmsConfigInterfaceUrl());
+        String resp = HttpUtil.post(url, paramStr);
+        //{"code":1,"msg":"SUCCESS","time":"1712064278","data":{"ret":[{"take_id":129216,"state":1,"phone_number":"08023755245","take_time":1712064202,"sms":[]}]}}
+        log.info("CardJpServiceImpl_getPhoneCode_result {}", resp);
+
+        CardJpGetPhoneSmsVO resultDto = JSON.parseObject(resp, CardJpGetPhoneSmsVO.class);
+        log.info("CardJpServiceImpl_getPhoneCode_resultDto {}", resultDto);
+
+        if (StringUtils.isNotEmpty(resultDto.getMsg()) && resultDto.getMsg().contains("API超限")) {
+            cardJpSmsOver.put("jpSmsOverFlag", "true");
+            return null;
+        }
+
+        if (resultDto.getCode() != 1 || resultDto.getData() == null) {
+            log.error("CardJpServiceImpl_getPhoneCode_error {}, result :{}", paramStr, resultDto);
+            return null;
+        }
+        List<CardJpGetPhoneSmsVO.Data.Ret> ret = resultDto.getData().getRet();
+        Map<Long,CardJpGetPhoneSmsVO.Data.Ret.Sm> map = new HashMap();
+        for (CardJpGetPhoneSmsVO.Data.Ret ret1 : ret) {
+            List<CardJpGetPhoneSmsVO.Data.Ret.Sm> sms = ret1.getSms();
+            for (CardJpGetPhoneSmsVO.Data.Ret.Sm sm : sms) {
+                long timestamp = Long.valueOf(sm.getRecvTime());  // Your Unix timestamp
+//                LocalDateTime localDateTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(timestamp), ZoneId.of("Asia/Shanghai"));
+//                ZonedDateTime zonedDateTime = localDateTime.atZone(ZoneId.of("Asia/Shanghai"));
+//                Date recvTime = Date.from(zonedDateTime.toInstant());
+                sm.setTime(timestamp);
+            }
+            CardJpGetPhoneSmsVO.Data.Ret.Sm max = Collections.max(sms, Comparator.comparingLong(CardJpGetPhoneSmsVO.Data.Ret.Sm::getTime));
+            if (ObjectUtil.isNotNull(max)) {
+                map.put(ret1.getTakeid(),max);
+            }
+        }
+        return map;
+    }
+
     @Override
     public String getPhoneCode(String pKey) {
         try {

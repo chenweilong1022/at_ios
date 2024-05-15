@@ -227,6 +227,12 @@ public class UserTask {
         }
     }
 
+    public static void main(String[] args) {
+
+
+    }
+
+
     @Resource(name = "cardJpSmsOver")
     private Cache<String, String> cardJpSmsOver;
 

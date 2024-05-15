@@ -115,6 +115,7 @@ public class GroupTask {
     @Transactional(rollbackFor = Exception.class)
     @Async
     public void task4() {
+
         String format = String.format("and MOD(change_user_id, %s) = %s limit 50", systemConstant.getSERVERS_TOTAL_MOD(), systemConstant.getSERVERS_MOD());
         //获取群人数同步,且需要更改群名的任务
         List<AtGroupEntity> cdGroupTasksEntities = atGroupService.list(new QueryWrapper<AtGroupEntity>().lambda()
@@ -148,7 +149,7 @@ public class GroupTask {
         for (AtGroupEntity cdGroupTasksEntity : cdGroupTasksEntities) {
             threadPoolTaskExecutor.execute(() -> {
                 String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource13,
-                         ObjectUtil.isNotNull(cdGroupTasksEntity.getChangeUserId()) ? cdGroupTasksEntity.getChangeUserId() : cdGroupTasksEntity.getId());
+                         ObjectUtil.isNotNull(cdGroupTasksEntity.getChangeUserId()) ? cdGroupTasksEntity.getId() : cdGroupTasksEntity.getId());
                 Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
                 boolean triedLock = lock.tryLock();
                 log.info("keyByResource = {} 获取的锁为 = {}", keyByResource, triedLock);

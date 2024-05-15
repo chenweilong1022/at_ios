@@ -9,8 +9,10 @@ import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.benmanes.caffeine.cache.Cache;
+import io.renren.common.base.vo.EnumVo;
 import io.renren.common.utils.ConfigConstant;
 import io.renren.common.utils.DateUtils;
+import io.renren.common.utils.EnumUtil;
 import io.renren.modules.client.FirefoxService;
 import io.renren.modules.client.LineService;
 import io.renren.modules.client.dto.*;
@@ -38,6 +40,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.io.Serializable;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -48,6 +54,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
+import static io.renren.modules.client.impl.CardJpServiceImpl.extractVerificationCode;
 import static io.renren.modules.ltt.enums.PhoneStatus.*;
 
 /**
@@ -60,7 +67,7 @@ import static io.renren.modules.ltt.enums.PhoneStatus.*;
 @Profile({"prod","dev"})
 public class RegisterTask {
 
-
+//curl -x socks5h://chenweilong_112233-country-jp:ch1433471850@proxyus.rola.vip:2000 http://www.ip234.in/ip.json
 
     @Autowired
     private CdRegisterTaskService cdRegisterTaskService;
@@ -222,6 +229,95 @@ public class RegisterTask {
 
     Lock task1Lock = new ReentrantLock();
 
+    /**
+     *
+     */
+    @Scheduled(fixedDelay = 5000)
+    @Transactional(rollbackFor = Exception.class)
+    public void task10() {
+
+        boolean b3 = task1Lock.tryLock();
+        if (!b3) {
+            log.error("task1Lock ip推送队列 = {}",b3);
+            return;
+        }
+        try{
+
+            //获取验证码
+            List<CdGetPhoneEntity> list = cdGetPhoneService.list(new QueryWrapper<CdGetPhoneEntity>().lambda()
+                            .in(CdGetPhoneEntity::getPhoneStatus, PhoneStatus.PhoneStatus2.getKey())
+//                .last("limit 50")
+                            .eq(CdGetPhoneEntity::getCountry,"81")
+                            .orderByDesc(CdGetPhoneEntity::getId)
+            );
+
+            String pks = list.stream().map(CdGetPhoneEntity::getPkey).collect(Collectors.joining(","));
+            Map<Long, CardJpGetPhoneSmsVO.Data.Ret.Sm> phoneCodes = cardJpService.getPhoneCodes(pks);
+            Map<String, CdGetPhoneEntity> collect = list.stream().collect(Collectors.toMap(CdGetPhoneEntity::getPkey, item -> item, (a, b) -> a));
+            List<CdGetPhoneEntity> cdGetPhoneEntities = new ArrayList<>();
+            List<CdLineRegisterEntity> cdLineRegisterEntities = new ArrayList<>();
+
+
+            for (Long l : phoneCodes.keySet()) {
+                CdGetPhoneEntity cdGetPhoneEntity = collect.get(String.valueOf(l));
+                if (ObjectUtil.isNull(cdGetPhoneEntity)) {
+                    continue;
+                }
+                CardJpGetPhoneSmsVO.Data.Ret.Sm sm = phoneCodes.get(l);
+
+
+                LocalDateTime localDateTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(sm.getTime()), ZoneId.of("Asia/Shanghai"));
+                ZonedDateTime zonedDateTime = localDateTime.atZone(ZoneId.of("Asia/Shanghai"));
+                Date recvTime = Date.from(zonedDateTime.toInstant());
+                boolean before = cdGetPhoneEntity.getCreateTime().before(recvTime);
+                if (before) {
+                    String phoneCode = extractVerificationCode(sm.getContent());
+                    cdGetPhoneEntity.setCode(phoneCode);
+                    cdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus3.getKey());
+                    cdGetPhoneEntities.add(cdGetPhoneEntity);
+
+                    CdLineRegisterEntity lineRegisterVO = cdLineRegisterService.getById((Serializable) cdGetPhoneEntity.getLineRegisterId());
+                    if (ObjectUtil.isNull(lineRegisterVO)) {
+                        lineRegisterVO = cdLineRegisterService.getOne(new QueryWrapper<CdLineRegisterEntity>().lambda()
+                                .eq(CdLineRegisterEntity::getGetPhoneId,cdGetPhoneEntity.getId())
+                        );
+                        if (ObjectUtil.isNull(lineRegisterVO)) {
+                            return;
+                        }
+                    }
+
+                    SMSCodeDTO smsCodeDTO = new SMSCodeDTO();
+                    smsCodeDTO.setsmsCode(phoneCode);
+                    smsCodeDTO.setTaskId(lineRegisterVO.getTaskId());
+                    SMSCodeVO smsCodeVO = lineService.smsCode(smsCodeDTO);
+                    if (ObjectUtil.isNull(smsCodeVO)) {
+                        return;
+                    }
+                    if (200 == smsCodeVO.getCode()) {
+                        CdLineRegisterEntity update = new CdLineRegisterEntity();
+                        update.setId(lineRegisterVO.getId());
+                        update.setRegisterStatus(RegisterStatus.RegisterStatus3.getKey());
+                        update.setSmsCode(phoneCode);
+                        cdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus4.getKey());
+                        cdLineRegisterEntities.add(update);
+                    }
+
+                }
+            }
+            if (CollUtil.isNotEmpty(cdGetPhoneEntities)) {
+                cdGetPhoneService.updateBatchById(cdGetPhoneEntities);
+            }
+            if (CollUtil.isNotEmpty(cdLineRegisterEntities)) {
+                cdLineRegisterService.updateBatchById(cdLineRegisterEntities);
+            }
+        }catch (Exception e) {
+            log.error("err = {}",e.getMessage());
+        }finally {
+            task1Lock.unlock();
+        }
+
+    }
+
 
     /**
      *
@@ -234,6 +330,7 @@ public class RegisterTask {
         List<CdGetPhoneEntity> list = cdGetPhoneService.list(new QueryWrapper<CdGetPhoneEntity>().lambda()
                 .in(CdGetPhoneEntity::getPhoneStatus, PhoneStatus.PhoneStatus2.getKey(), PhoneStatus5.getKey())
 //                .last("limit 50")
+                        .notIn(CdGetPhoneEntity::getCountry,"81")
                 .orderByDesc(CdGetPhoneEntity::getId)
         );
         if (CollUtil.isEmpty(list)) {
@@ -754,9 +851,7 @@ public class RegisterTask {
             });
         }
 
-    }
-
-//
+    }//
 //     poolExecutor.execute(() -> {
 //        String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource1, cdRegisterTaskEntity.getId());
 //        Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
@@ -772,6 +867,8 @@ public class RegisterTask {
 //            log.info("keyByResource = {} 在执行",keyByResource);
 //        }
 //    });
+
+
 
 
 }
