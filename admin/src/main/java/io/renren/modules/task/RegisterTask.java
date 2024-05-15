@@ -319,131 +319,131 @@ public class RegisterTask {
     }
 
 
-//    /**
-//     *
-//     */
-//    @Scheduled(fixedDelay = 5000)
-//    @Transactional(rollbackFor = Exception.class)
-//    @Async
-//    public void task6() {
-//        //获取验证码
-//        List<CdGetPhoneEntity> list = cdGetPhoneService.list(new QueryWrapper<CdGetPhoneEntity>().lambda()
-//                .in(CdGetPhoneEntity::getPhoneStatus, PhoneStatus.PhoneStatus2.getKey(), PhoneStatus5.getKey())
-////                .last("limit 50")
-//                        .notIn(CdGetPhoneEntity::getCountry,"81")
-//                .orderByDesc(CdGetPhoneEntity::getId)
-//        );
-//        if (CollUtil.isEmpty(list)) {
-//            log.info("RegisterTask task6 list isEmpty");
-//            return;
-//        }
-//        for (CdGetPhoneEntity cdGetPhoneEntity : list) {
-//            poolExecutor.execute(() -> {
-//                String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource4, cdGetPhoneEntity.getId());
-//                Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
-//                CdLineRegisterEntity update = null;
-//                boolean triedLock = lock.tryLock();
-//                log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
-//                if(triedLock) {
-//                    try{
-//                        //如果需要释放
-//                        if(PhoneStatus5.getKey().equals(cdGetPhoneEntity.getPhoneStatus())) {
-//                            boolean b;
-//
-//                            if (StringUtils.isNotEmpty(cdGetPhoneEntity.getCountrycode())
-//                                    && CountryCode.CountryCode3.getValue().equals(cdGetPhoneEntity.getCountrycode())) {
-//                                //日本
-//                                b = cardJpService.setRel(cdGetPhoneEntity.getPkey());
-//                            } else if (StringUtils.isNotEmpty(cdGetPhoneEntity.getCountrycode())
-//                                    && CountryCode.CountryCode5.getValue().equals(cdGetPhoneEntity.getCountrycode())) {
-//                                //香港
-//                                b = firefoxServiceImpl.setRel(cdGetPhoneEntity.getPkey());
-//                            } else {
-//                                b = firefoxService.setRel(cdGetPhoneEntity.getPkey());
-//                            }
-//
-//                            if (b) {
-//                                cdGetPhoneEntity.setPhoneStatus(PhoneStatus6.getKey());
-//                            }
-//                            //如果需要修改验证码
-//                        }else {
-//                            String phoneCode = cdGetPhoneEntity.getCode();
-//                            //超过20分
-//                            long between = DateUtil.between(cdGetPhoneEntity.getCreateTime(), DateUtil.date(), DateUnit.MINUTE);
-//                            if (between > 10) {
-//                                cdGetPhoneEntity.setCode("验证码超时");
-//                                cdGetPhoneEntity.setPhoneStatus(PhoneStatus5.getKey());
-//                                return;
-//                            }
-//                            if (StrUtil.isEmpty(phoneCode) && StringUtils.isNotEmpty(cdGetPhoneEntity.getCountrycode())) {
-//                                if (CountryCode.CountryCode3.getValue().equals(cdGetPhoneEntity.getCountrycode()) && CountryCode.CountryCode3.getKey().toString().equals(cdGetPhoneEntity.getCountry())) {
-//                                    //日本
-//                                    if (cardJpSmsOver.getIfPresent("jpSmsOverFlag") != null) {
-//                                        return;
-//                                    }
-//                                    cardJpSms.put(cdGetPhoneEntity.getPkey(), cdGetPhoneEntity.getCreateTime());
-//                                    phoneCode = cardJpService.getPhoneCode(cdGetPhoneEntity.getPkey());
-//                                }else if (CountryCode.CountryCode8.getValue().equals(cdGetPhoneEntity.getCountrycode())  && CountryCode.CountryCode8.getKey().toString().equals(cdGetPhoneEntity.getCountry())) {
-//                                    cardJpSms.put(cdGetPhoneEntity.getPkey(), cdGetPhoneEntity.getCreateTime());
-//                                    String s = cdGetPhoneEntity.getPkey() + "#" + cdGetPhoneEntity.getSfApi() + "#" + cdGetPhoneEntity.getTimeZone();
-//                                    //日本-四方
-//                                    phoneCode = cardJpSFService.getPhoneCode(s);
-//                                } else if (CountryCode.CountryCode5.getValue().equals(cdGetPhoneEntity.getCountrycode())) {
-//                                    //香港
-//                                    phoneCode = firefoxServiceImpl.getPhoneCode(cdGetPhoneEntity.getPkey());
-//                                } else {
-//                                    phoneCode = firefoxService.getPhoneCode(cdGetPhoneEntity.getPkey());
-//                                }
-//                            }
-//                            if (StrUtil.isEmpty(phoneCode)) {
-//                                return;
-//                            }
-//                            log.info("phoneCode = {}", phoneCode);
-//                            if (StrUtil.isNotEmpty(phoneCode)) {
-//                                cdGetPhoneEntity.setCode(phoneCode);
-//                                cdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus3.getKey());
-//
-//                                CdLineRegisterEntity lineRegisterVO = cdLineRegisterService.getById((Serializable) cdGetPhoneEntity.getLineRegisterId());
-//                                if (ObjectUtil.isNull(lineRegisterVO)) {
-//                                    lineRegisterVO = cdLineRegisterService.getOne(new QueryWrapper<CdLineRegisterEntity>().lambda()
-//                                            .eq(CdLineRegisterEntity::getGetPhoneId,cdGetPhoneEntity.getId())
-//                                    );
-//                                    if (ObjectUtil.isNull(lineRegisterVO)) {
-//                                        return;
-//                                    }
-//                                }
-//
-//                                SMSCodeDTO smsCodeDTO = new SMSCodeDTO();
-//                                smsCodeDTO.setsmsCode(phoneCode);
-//                                smsCodeDTO.setTaskId(lineRegisterVO.getTaskId());
-//                                SMSCodeVO smsCodeVO = lineService.smsCode(smsCodeDTO);
-//                                if (ObjectUtil.isNull(smsCodeVO)) {
-//                                    return;
-//                                }
-//                                log.info("smsCodeVO = {}", JSONUtil.toJsonStr(smsCodeVO));
-//                                if (200 == smsCodeVO.getCode()) {
-//                                    update = new CdLineRegisterEntity();
-//                                    update.setId(lineRegisterVO.getId());
-//                                    update.setRegisterStatus(RegisterStatus.RegisterStatus3.getKey());
-//                                    update.setSmsCode(phoneCode);
-//                                    cdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus4.getKey());
-//                                }
-//                            }
-//                        }
-//                    }finally {
-//                        lock.unlock();
-//                        cdGetPhoneService.updateById(cdGetPhoneEntity);
-//                        if (ObjectUtil.isNotNull(update)) {
-//                            cdLineRegisterService.updateById(update);
-//                        }
-//                    }
-//                }else {
-//                    log.info("keyByResource = {} 在执行",keyByResource);
-//                }
-//            });
-//        }
-//
-//    }
+    /**
+     *
+     */
+    @Scheduled(fixedDelay = 5000)
+    @Transactional(rollbackFor = Exception.class)
+    @Async
+    public void task6() {
+        //获取验证码
+        List<CdGetPhoneEntity> list = cdGetPhoneService.list(new QueryWrapper<CdGetPhoneEntity>().lambda()
+                .in(CdGetPhoneEntity::getPhoneStatus, PhoneStatus.PhoneStatus2.getKey(), PhoneStatus5.getKey())
+//                .last("limit 50")
+                        .notIn(CdGetPhoneEntity::getCountry,"81")
+                .orderByDesc(CdGetPhoneEntity::getId)
+        );
+        if (CollUtil.isEmpty(list)) {
+            log.info("RegisterTask task6 list isEmpty");
+            return;
+        }
+        for (CdGetPhoneEntity cdGetPhoneEntity : list) {
+            poolExecutor.execute(() -> {
+                String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource4, cdGetPhoneEntity.getId());
+                Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
+                CdLineRegisterEntity update = null;
+                boolean triedLock = lock.tryLock();
+                log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
+                if(triedLock) {
+                    try{
+                        //如果需要释放
+                        if(PhoneStatus5.getKey().equals(cdGetPhoneEntity.getPhoneStatus())) {
+                            boolean b;
+
+                            if (StringUtils.isNotEmpty(cdGetPhoneEntity.getCountrycode())
+                                    && CountryCode.CountryCode3.getValue().equals(cdGetPhoneEntity.getCountrycode())) {
+                                //日本
+                                b = cardJpService.setRel(cdGetPhoneEntity.getPkey());
+                            } else if (StringUtils.isNotEmpty(cdGetPhoneEntity.getCountrycode())
+                                    && CountryCode.CountryCode5.getValue().equals(cdGetPhoneEntity.getCountrycode())) {
+                                //香港
+                                b = firefoxServiceImpl.setRel(cdGetPhoneEntity.getPkey());
+                            } else {
+                                b = firefoxService.setRel(cdGetPhoneEntity.getPkey());
+                            }
+
+                            if (b) {
+                                cdGetPhoneEntity.setPhoneStatus(PhoneStatus6.getKey());
+                            }
+                            //如果需要修改验证码
+                        }else {
+                            String phoneCode = cdGetPhoneEntity.getCode();
+                            //超过20分
+                            long between = DateUtil.between(cdGetPhoneEntity.getCreateTime(), DateUtil.date(), DateUnit.MINUTE);
+                            if (between > 10) {
+                                cdGetPhoneEntity.setCode("验证码超时");
+                                cdGetPhoneEntity.setPhoneStatus(PhoneStatus5.getKey());
+                                return;
+                            }
+                            if (StrUtil.isEmpty(phoneCode) && StringUtils.isNotEmpty(cdGetPhoneEntity.getCountrycode())) {
+                                if (CountryCode.CountryCode3.getValue().equals(cdGetPhoneEntity.getCountrycode()) && CountryCode.CountryCode3.getKey().toString().equals(cdGetPhoneEntity.getCountry())) {
+                                    //日本
+                                    if (cardJpSmsOver.getIfPresent("jpSmsOverFlag") != null) {
+                                        return;
+                                    }
+                                    cardJpSms.put(cdGetPhoneEntity.getPkey(), cdGetPhoneEntity.getCreateTime());
+                                    phoneCode = cardJpService.getPhoneCode(cdGetPhoneEntity.getPkey());
+                                }else if (CountryCode.CountryCode8.getValue().equals(cdGetPhoneEntity.getCountrycode())  && CountryCode.CountryCode8.getKey().toString().equals(cdGetPhoneEntity.getCountry())) {
+                                    cardJpSms.put(cdGetPhoneEntity.getPkey(), cdGetPhoneEntity.getCreateTime());
+                                    String s = cdGetPhoneEntity.getPkey() + "#" + cdGetPhoneEntity.getSfApi() + "#" + cdGetPhoneEntity.getTimeZone();
+                                    //日本-四方
+                                    phoneCode = cardJpSFService.getPhoneCode(s);
+                                } else if (CountryCode.CountryCode5.getValue().equals(cdGetPhoneEntity.getCountrycode())) {
+                                    //香港
+                                    phoneCode = firefoxServiceImpl.getPhoneCode(cdGetPhoneEntity.getPkey());
+                                } else {
+                                    phoneCode = firefoxService.getPhoneCode(cdGetPhoneEntity.getPkey());
+                                }
+                            }
+                            if (StrUtil.isEmpty(phoneCode)) {
+                                return;
+                            }
+                            log.info("phoneCode = {}", phoneCode);
+                            if (StrUtil.isNotEmpty(phoneCode)) {
+                                cdGetPhoneEntity.setCode(phoneCode);
+                                cdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus3.getKey());
+
+                                CdLineRegisterEntity lineRegisterVO = cdLineRegisterService.getById((Serializable) cdGetPhoneEntity.getLineRegisterId());
+                                if (ObjectUtil.isNull(lineRegisterVO)) {
+                                    lineRegisterVO = cdLineRegisterService.getOne(new QueryWrapper<CdLineRegisterEntity>().lambda()
+                                            .eq(CdLineRegisterEntity::getGetPhoneId,cdGetPhoneEntity.getId())
+                                    );
+                                    if (ObjectUtil.isNull(lineRegisterVO)) {
+                                        return;
+                                    }
+                                }
+
+                                SMSCodeDTO smsCodeDTO = new SMSCodeDTO();
+                                smsCodeDTO.setsmsCode(phoneCode);
+                                smsCodeDTO.setTaskId(lineRegisterVO.getTaskId());
+                                SMSCodeVO smsCodeVO = lineService.smsCode(smsCodeDTO);
+                                if (ObjectUtil.isNull(smsCodeVO)) {
+                                    return;
+                                }
+                                log.info("smsCodeVO = {}", JSONUtil.toJsonStr(smsCodeVO));
+                                if (200 == smsCodeVO.getCode()) {
+                                    update = new CdLineRegisterEntity();
+                                    update.setId(lineRegisterVO.getId());
+                                    update.setRegisterStatus(RegisterStatus.RegisterStatus3.getKey());
+                                    update.setSmsCode(phoneCode);
+                                    cdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus4.getKey());
+                                }
+                            }
+                        }
+                    }finally {
+                        lock.unlock();
+                        cdGetPhoneService.updateById(cdGetPhoneEntity);
+                        if (ObjectUtil.isNotNull(update)) {
+                            cdLineRegisterService.updateById(update);
+                        }
+                    }
+                }else {
+                    log.info("keyByResource = {} 在执行",keyByResource);
+                }
+            });
+        }
+
+    }
 
 
     /**
