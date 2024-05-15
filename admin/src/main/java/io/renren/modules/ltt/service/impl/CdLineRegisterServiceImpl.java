@@ -9,7 +9,6 @@ import io.renren.modules.ltt.dto.LineRegisterSummaryResultDto;
 import io.renren.modules.ltt.entity.CdGetPhoneEntity;
 import io.renren.modules.ltt.enums.CountryCode;
 import io.renren.modules.ltt.enums.PhoneStatus;
-import io.renren.modules.ltt.enums.RedisKeys;
 import io.renren.modules.ltt.enums.RegisterStatus;
 import io.renren.modules.ltt.service.CdGetPhoneService;
 import io.renren.modules.ltt.service.CdLineIpProxyService;
@@ -264,5 +263,15 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
         List<LineRegisterSummaryResultDto> summaryResultDtos = baseMapper.queryLineRegisterSummary(searchTime);
         return summaryResultDtos;
     }
+
+
+    @Override
+    public CdLineRegisterEntity queryLineRegisterByPhone(String phone) {
+        return baseMapper.selectOne(new QueryWrapper<CdLineRegisterEntity>().lambda()
+                .eq(CdLineRegisterEntity::getPhone, phone)
+                .in(CdLineRegisterEntity::getRegisterStatus,
+                        Arrays.asList(RegisterStatus.RegisterStatus4.getKey(), RegisterStatus.RegisterStatus11.getKey())));
+    }
+
 
 }

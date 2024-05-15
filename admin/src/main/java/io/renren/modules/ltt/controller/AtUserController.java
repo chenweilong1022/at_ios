@@ -13,6 +13,7 @@ import io.renren.modules.sys.controller.AbstractController;
 import org.apache.commons.io.IOUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.*;
 
 import io.renren.modules.ltt.dto.AtUserDTO;
@@ -175,6 +176,27 @@ public class AtUserController extends AbstractController {
     @RequestMapping("/syncRegisterCountTest")
     public R syncRegisterCountTest(@RequestParam(value = "phone", required = false) String phone) {
         atUserService.syncRegisterCountTest(phone);
+
+        return R.ok();
+    }
+
+    /**
+     * 内部使用接口，同步注册时间
+     */
+    @RequestMapping("/syncPhoneRegisterTest")
+    public R syncPhoneRegisterTest() {
+        atUserService.syncPhoneRegisterTest();
+
+        return R.ok();
+    }
+
+    /**
+     * 内部使用接口，同步红灯时间
+     *
+     */
+    @RequestMapping("/syncPhoneInvalidTest")
+    public R syncPhoneInvalidTest(@RequestParam(value = "phone", required = false) String phone) {
+        atUserService.syncPhoneInvalidTest(phone);
 
         return R.ok();
     }

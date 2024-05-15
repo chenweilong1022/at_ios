@@ -26,6 +26,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 日期处理
@@ -250,6 +251,19 @@ public class DateUtils {
         return java.time.LocalDate.now().atTime(LocalTime.MAX);
     }
 
+    /**
+     * 两个时间相差分钟
+     * @param beginDate
+     * @param endDate
+     * @return
+     */
+    public static Long betweenMinutes(Date beginDate, Date endDate) {
+        // 计算两个时间点之间的毫秒差
+        long millisBetween = endDate.getTime() - beginDate.getTime();
+
+        // 将毫秒差转换为分钟
+        return TimeUnit.MILLISECONDS.toMinutes(millisBetween);
+    }
     public static void main(String[] args) {
         getTodayStart();
         getTodayEnd();

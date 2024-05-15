@@ -10,6 +10,7 @@ import io.renren.modules.ltt.dto.UserSummaryResultDto;
 import io.renren.modules.ltt.enums.UserStatus;
 import io.renren.modules.ltt.vo.AtUserVO;
 import io.renren.modules.ltt.entity.AtUserEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
@@ -154,5 +155,16 @@ public interface AtUserService extends IService<AtUserEntity> {
      * @param phone 传入则同步此phone
      */
     void syncRegisterCountTest(String phone);
+
+    /**
+     * 内部使用接口，同步注册时间
+     */
+    void syncPhoneRegisterTest();
+
+    /**
+     * 内部使用接口，通过红灯时间
+     */
+    @Async
+    void syncPhoneInvalidTest(String phoneParam);
 }
 

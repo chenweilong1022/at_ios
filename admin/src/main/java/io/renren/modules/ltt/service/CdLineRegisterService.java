@@ -140,5 +140,7 @@ public interface CdLineRegisterService extends IService<CdLineRegisterEntity> {
      * @return
      */
     List<LineRegisterSummaryResultDto> queryLineRegisterSummary(LocalDate searchTime);
+
+    CdLineRegisterEntity queryLineRegisterByPhone(String phone);
 }
 
