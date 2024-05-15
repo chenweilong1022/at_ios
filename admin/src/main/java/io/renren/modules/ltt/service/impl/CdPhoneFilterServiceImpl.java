@@ -155,7 +155,7 @@ public class CdPhoneFilterServiceImpl extends ServiceImpl<CdPhoneFilterDao, CdPh
                         List<AtUserEntity> atUserEntities = atUserService.list(new QueryWrapper<AtUserEntity>().lambda()
                                 .in(AtUserEntity::getStatus, UserStatus.UserStatus4.getKey())
                                 .eq(AtUserEntity::getNation, regions)
-                                .orderByAsc(AtUserEntity::getId)
+                                .orderByDesc(AtUserEntity::getId)
                                 .last("limit 1")
                         );
                         if (CollUtil.isNotEmpty(atUserEntities)) {
