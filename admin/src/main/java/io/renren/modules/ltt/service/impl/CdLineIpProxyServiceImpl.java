@@ -282,6 +282,67 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
     }
 
 
+    public void get() throws InterruptedException {
+        ExecutorService executorService = Executors.newFixedThreadPool(1000);
+        Set<String> ips = ConcurrentHashMap.newKeySet();
+        for (int i = 0; i < 100000; i++) {
+            CdLineIpProxyServiceImpl cdLineIpProxyService = new CdLineIpProxyServiceImpl();
+            int finalI = i;
+            executorService.submit(() -> {
+                String jp = cdLineIpProxyService.getRolaIp("jp",String.valueOf(finalI));
+                CurlVO jp1 = cdLineIpProxyService.isProxyUseRolaIp(jp, "jp");
+                if (jp1.isProxyUse()) {
+                    ips.add(jp1.getIp());
+                    log.info("i = {} set size = {}",finalI,ips.size());
+                }
+            });
+            executorService.submit(() -> {
+                String getLunaIp = cdLineIpProxyService.getLunaIp("jp");
+                CurlVO getLunaIpVO = cdLineIpProxyService.isProxyUse(getLunaIp, "jp");
+                if (getLunaIpVO.isProxyUse()) {
+                    ips.add(getLunaIpVO.getIp());
+                    log.info("i = {} set size = {}",finalI,ips.size());
+                }
+            });
+            executorService.submit(() -> {
+                String getIp2WorldIp = cdLineIpProxyService.getIp2WorldIp("jp");
+                CurlVO getIp2WorldIpVO = cdLineIpProxyService.isProxyUseIp2World(getIp2WorldIp, "jp");
+                if (getIp2WorldIpVO.isProxyUse()) {
+                    ips.add(getIp2WorldIpVO.getIp());
+                    log.info("i = {} set size = {}",finalI,ips.size());
+                }
+            });
+            executorService.submit(() -> {
+                String getAbcIp = cdLineIpProxyService.getAbcIp("jp");
+                CurlVO getAbcIpVO = cdLineIpProxyService.isProxyUseAbcIp(getAbcIp, "jp");
+                if (getAbcIpVO.isProxyUse()) {
+                    ips.add(getAbcIpVO.getIp());
+                    log.info("i = {} set size = {}",finalI,ips.size());
+                }
+            });
+            executorService.submit(() -> {
+                String getIpmarsIp = cdLineIpProxyService.getIpmarsIp("jp");
+                CurlVO getIpmarsIpVO = cdLineIpProxyService.isProxyUseIpmarsIp(getIpmarsIp, "jp");
+                if (getIpmarsIpVO.isProxyUse()) {
+                    ips.add(getIpmarsIpVO.getIp());
+                    log.info("i = {} set size = {}",finalI,ips.size());
+                }
+            });
+        }
+
+        // 关闭线程池
+        executorService.shutdown();
+
+        // 等待所有任务完成
+        if (!executorService.awaitTermination(1, TimeUnit.HOURS)) {
+            // 如果超时，则强制关闭尚未完成的任务
+            executorService.shutdownNow();
+        }
+        System.out.println(ips);
+        System.out.println(ips.size());
+        System.out.println("All tasks are finished.");
+    }
+
 
 
 
@@ -306,7 +367,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         }else if (i == 3) {
             s5Ip = getIpmarsIp(regions);
         }else if (i == 4) {
-            s5Ip = getRolaIp(regions);
+            s5Ip = getRolaIp("",regions);
         }
         return s5Ip;
     }
@@ -328,9 +389,9 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
     }
 
 
-    private String getRolaIp(String regions) {
+    private String getRolaIp(String regions,String num) {
         //curl -x  ipinfo.io
-        String format = String.format("chenweilong_%s-country-%s:ch1433471850@proxysg.rola.vip:2000", RandomUtil.randomInt(1,100000),regions);
+        String format = String.format("chenweilong_%s-country-%s:ch1433471850@proxyus.rola.vip:2000", num,regions);
         System.out.println(format);
         return format;
     }
@@ -340,9 +401,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         CurlVO falseCurlVO = new CurlVO().setProxyUse(false);
         try {
             String format1 = String.format("curl -x %s http://www.ip234.in/ip.json",ip);
-            System.out.println(format1);
             List<String> strings = RuntimeUtil.execForLines(format1);
-            log.info("curl resp = {}",CollUtil.join(strings,""));
             boolean flag = false;
 
             List<String> newStr = new ArrayList<>();
@@ -353,7 +412,6 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                 }
             }
             String resp = CollUtil.join(newStr, "");
-            log.info("ip = {} country = {} format = {}",ip,country,resp);
             IPWorldRespCurl curlVO = JSONUtil.toBean(resp, IPWorldRespCurl.class);
             if (curlVO.getCountry_code().toLowerCase().equals(country.toLowerCase())) {
                 return falseCurlVO.setProxyUse(true).setIp(curlVO.getIp()).setCountry(curlVO.getCountry_code());
@@ -369,7 +427,6 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
     private String getIpmarsIp(String regions) {
         //curl -x  ipinfo.io
         String format = String.format("CFD5XBNu6O-zone-mars-region-%s-session-%s-sessTime-10:23941850@as.e52a499f3821702f.ipmars.vip:4900",regions.toUpperCase(), RandomUtil.randomString(18));
-        System.out.println(format);
         return format;
     }
 
@@ -380,7 +437,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
             String format1 = String.format("curl -x %s ipinfo.io",ip);
             System.out.println(format1);
             List<String> strings = RuntimeUtil.execForLines(format1);
-            log.info("curl resp = {}",CollUtil.join(strings,""));
+
             boolean flag = false;
 
             List<String> newStr = new ArrayList<>();
@@ -391,7 +448,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                 }
             }
             String resp = CollUtil.join(newStr, "");
-            log.info("ip = {} country = {} format = {}",ip,country,resp);
+
             IPWorldRespCurl curlVO = JSONUtil.toBean(resp, IPWorldRespCurl.class);
             if (curlVO.getCountry().toLowerCase().equals(country.toLowerCase())) {
                 return falseCurlVO.setProxyUse(true).setIp(curlVO.getIp()).setCountry(curlVO.getCountry());
@@ -419,7 +476,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
             String format1 = String.format("curl -x %s ipinfo.io",ip);
             System.out.println(format1);
             List<String> strings = RuntimeUtil.execForLines(format1);
-            log.info("curl resp = {}",CollUtil.join(strings,""));
+
             boolean flag = false;
 
             List<String> newStr = new ArrayList<>();
@@ -430,7 +487,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                 }
             }
             String resp = CollUtil.join(newStr, "");
-            log.info("ip = {} country = {} format = {}",ip,country,resp);
+
             IPWorldRespCurl curlVO = JSONUtil.toBean(resp, IPWorldRespCurl.class);
             if (curlVO.getCountry().toLowerCase().equals(country.toLowerCase())) {
                 return falseCurlVO.setProxyUse(true).setIp(curlVO.getIp()).setCountry(curlVO.getCountry());
@@ -455,7 +512,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
             String format1 = String.format("curl -x %s ipinfo.io",ip);
             System.out.println(format1);
             List<String> strings = RuntimeUtil.execForLines(format1);
-            log.info("curl resp = {}",CollUtil.join(strings,""));
+
             boolean flag = false;
 
             List<String> newStr = new ArrayList<>();
@@ -466,7 +523,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                 }
             }
             String resp = CollUtil.join(newStr, "");
-            log.info("ip = {} country = {} format = {}",ip,country,resp);
+
             IPWorldRespCurl curlVO = JSONUtil.toBean(resp, IPWorldRespCurl.class);
             if (curlVO.getCountry().toLowerCase().equals(country.toLowerCase())) {
                 return falseCurlVO.setProxyUse(true).setIp(curlVO.getIp()).setCountry(curlVO.getCountry());
@@ -495,12 +552,12 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         if (split.length == 5) {
             String outIp = split[0];
             String outCountry = split[2];
-            log.info("ip = {} country = {} format = {}",ip,country,s);
+
             if (outCountry.toLowerCase().equals(country.toLowerCase())) {
                 return falseCurlVO.setProxyUse(true).setIp(outIp).setCountry(outCountry);
             }
         }
-        log.info("ip = {} country = {} format = {}",ip,country,"没有找到JSON数据");
+
         return falseCurlVO;
     }
 

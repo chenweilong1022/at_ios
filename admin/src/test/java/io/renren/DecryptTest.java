@@ -1,6 +1,7 @@
 package io.renren;
 
 import io.renren.common.utils.Decrypt;
+import io.renren.modules.ltt.service.impl.CdLineIpProxyServiceImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,14 @@ public class DecryptTest {
 
     @Autowired
     private Decrypt decrypt;
+    @Autowired
+    private CdLineIpProxyServiceImpl cdLineIpProxyService;
+
+    @Test
+    public void test2() throws IOException, GeneralSecurityException, InterruptedException {
+        cdLineIpProxyService.get();;
+    }
+
 
     @Test
     public void test1() throws IOException, GeneralSecurityException {
