@@ -182,9 +182,9 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                     redisTemplate.opsForHash().delete(RedisKeys.RedisKeys1.getValue(), outIpv4);
                 }
             } else {
-                String lunaIpS5 = getLunaIp(regions);
+                String ip = getLunaIp(regions);
 
-                CurlVO proxyUse = getProxyUse(lunaIpS5, regions, proxy,phoneNumberInfo);
+                CurlVO proxyUse = getProxyUse(ip, regions, proxy,phoneNumberInfo);
                 if (proxyUse.isProxyUse()) {
                     //判断ip黑名单缓存中是否有
                     String ipCache = redisTemplate.opsForValue().get(RedisKeys.RedisKeys4.getValue(proxyUse.getIp()));
@@ -193,7 +193,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                     }
                     //如果国家一样
                     if (regions.toLowerCase().equals(proxyUse.getCountry().toLowerCase())) {
-                        Boolean b = redisTemplate.opsForHash().putIfAbsent(RedisKeys.RedisKeys1.getValue(), proxyUse.getIp(), "ip");
+                        Boolean b = redisTemplate.opsForHash().putIfAbsent(RedisKeys.RedisKeys1.getValue(), proxyUse.getIp(), ip);
                         if (b) {
                             if (StrUtil.isNotEmpty(outIpv4)) {
                                 if (!outIpv4.equals(proxyUse.getIp())) {
@@ -202,13 +202,13 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                                 }
                             }//8107010757560
                             redisTemplate.opsForHash().put(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), cdLineIpProxyDTO.getTokenPhone(), proxyUse.getIp());
-                            return socks5Pre("ip");
+                            return socks5Pre(ip);
                         }
                     }
                 }else {
                     //如果失败并且是静态代理把ip放回去
                     if (ProxyStatus.ProxyStatus3.getKey().equals(proxy)) {
-                        redisTemplate.opsForList().leftPush(RedisKeys.RedisKeys9.getValue(regions),"ip");
+                        redisTemplate.opsForList().leftPush(RedisKeys.RedisKeys9.getValue(regions),ip);
                     }
                 }
 
