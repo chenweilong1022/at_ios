@@ -41,7 +41,7 @@ import static io.renren.modules.ltt.enums.PhoneFilterStatus.PhoneFilterStatus4;
 @Component
 @Slf4j
 @EnableAsync
-@Profile({"prod","dev"})
+@Profile({"prod","register"})
 public class PhoneFilterTask {
 
 

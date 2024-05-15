@@ -24,7 +24,7 @@ import java.util.concurrent.locks.ReentrantLock;
 @Component
 @Slf4j
 @EnableAsync
-@Profile({"prod", "dev"})
+@Profile({"prod", "register"})
 public class DataSummaryTask {
 
     @Autowired
