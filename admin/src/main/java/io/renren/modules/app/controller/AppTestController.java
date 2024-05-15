@@ -1,15 +1,11 @@
 package io.renren.modules.app.controller;
 
 
-import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.benmanes.caffeine.cache.Cache;
 import io.renren.common.base.vo.EnumVo;
-import io.renren.modules.ltt.dto.CdLineIpProxyDTO;
+import io.renren.modules.ltt.dto.CdRegisterRedisDto;
 import io.renren.modules.ltt.entity.CdGetPhoneEntity;
 import io.renren.modules.ltt.enums.*;
 import io.renren.common.utils.EnumUtil;
@@ -18,8 +14,6 @@ import io.renren.common.validator.AssertI18n;
 import io.renren.modules.app.code.UserCode;
 import io.renren.modules.app.dto.UserUpdateDTO;
 import io.renren.modules.ltt.service.CdGetPhoneService;
-import io.renren.modules.ltt.service.CdLineIpProxyService;
-import io.renren.modules.ltt.vo.CdRegisterSubtasksVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -29,8 +23,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * APP测试接口
@@ -134,6 +126,29 @@ public class AppTestController {
     @PostMapping("setJpSfPhoneCache")
     public R setJpSfPhoneCache(@RequestBody LinkedList<String> phoneList) {
         jpSfPhoneCacheListString.put("jpSfPhone",phoneList);
+        return R.data(true);
+    }
+
+    @Resource
+    private CdGetPhoneService cdGetPhoneService;
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+    @PostMapping("test")
+    public R test() {
+        List<CdGetPhoneEntity> list = cdGetPhoneService.list(new QueryWrapper<CdGetPhoneEntity>().lambda()
+                .eq(CdGetPhoneEntity::getCountry, "81").last("limit 10"));
+
+        cdGetPhoneService.saveWaitRegisterPhone(list);
+        List<Object> waitRegisterList = stringRedisTemplate.opsForHash().values(RedisKeys.WAIT_START_REGISTER_PHONE.getValue()).subList(0, 100);
+
+
+        for (Object object : waitRegisterList) {
+            log.info(JSON.toJSONString(object));
+            CdRegisterRedisDto cdGetPhoneEntity =  JSON.parseObject((String) object, CdRegisterRedisDto.class);
+            log.info(JSON.toJSONString(cdGetPhoneEntity));
+        }
+
         return R.data(true);
     }
 //

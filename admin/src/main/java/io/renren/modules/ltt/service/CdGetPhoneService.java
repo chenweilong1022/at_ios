@@ -3,6 +3,7 @@ package io.renren.modules.ltt.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import io.renren.common.utils.PageUtils;
 import io.renren.modules.ltt.dto.CdGetPhoneDTO;
+import io.renren.modules.ltt.dto.CdRegisterRedisDto;
 import io.renren.modules.ltt.vo.CdGetPhoneVO;
 import io.renren.modules.ltt.entity.CdGetPhoneEntity;
 
@@ -64,6 +65,13 @@ public interface CdGetPhoneService extends IService<CdGetPhoneEntity> {
     boolean removeByIds(Collection<? extends Serializable> ids);
 
     List<CdGetPhoneEntity> addCount(CdGetPhoneDTO cdGetPhone);
+
+    /**
+     * 待注册的手机号存redis
+     *
+     * @param phoneEntityList
+     */
+    void saveWaitRegisterPhone(List<CdGetPhoneEntity> phoneEntityList);
 
     Integer getPhoneRegisterCount(String phone);
 

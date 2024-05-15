@@ -192,6 +192,7 @@ public class CdRegisterTaskServiceImpl extends ServiceImpl<CdRegisterTaskDao, Cd
                         cdGetPhoneEntity.setCom("");
                         cdGetPhoneEntity.setPhone(CountryCode.CountryCode3.getKey() + poll);
                         cdGetPhoneEntity.setDeleteFlag(DeleteFlag.NO.getKey());
+                        //todo 存redis
                         cdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus1.getKey());
                         cdGetPhoneEntity.setCreateTime(DateUtil.date());
                         cdGetPhoneEntity.setSubtasksId(cdRegisterSubtasksEntity.getId());

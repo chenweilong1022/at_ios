@@ -195,12 +195,13 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
 
                 }else {
                     //ip暂时拉黑
-                    this.clearTokenPhone(cdGetPhone);
+//                    this.clearTokenPhone(cdGetPhone);
                 }
             }
             //更新此条数据，发起重新注册
             CdGetPhoneEntity updateCdGetPhoneEntity = new CdGetPhoneEntity();
             updateCdGetPhoneEntity.setId(cdGetPhone.getId());
+            //todo 存redis
             updateCdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus1.getKey());
             updateCdGetPhoneEntity.setCode("");
             updateCdGetPhoneEntity.setCreateTime(new Date());
@@ -228,11 +229,15 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
             CdGetPhoneVO cdGetPhone = getPhoneService.getById(cdLineRegisterEntity.getGetPhoneId());
             if (ObjectUtil.isNotNull(cdGetPhone)) {
                 //ip暂时拉黑
-                this.clearTokenPhone(cdGetPhone);
+                if (StringUtils.isEmpty(cdGetPhone.getCode())
+                        || Boolean.FALSE.equals(StrTextUtil.verificationCodeFlag(cdGetPhone.getCode()))) {
+                    cdLineIpProxyService.clearTokenPhone(cdGetPhone.getPhone(), CountryCode.getKeyByValue(cdGetPhone.getCountrycode()));
+                }
 
                 //更新此条数据，发起重新注册
                 CdGetPhoneEntity updateCdGetPhoneEntity = new CdGetPhoneEntity();
                 updateCdGetPhoneEntity.setId(cdGetPhone.getId());
+                //todo 存redis
                 updateCdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus1.getKey());
                 updateCdGetPhoneEntity.setCode("");
                 updateCdGetPhoneEntity.setCreateTime(new Date());
@@ -241,14 +246,6 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
             baseMapper.deleteById(cdLineRegisterEntity.getId());
         }
         return false;
-    }
-
-    private void clearTokenPhone(CdGetPhoneVO cdGetPhone) {
-        //ip暂时拉黑
-        if (StringUtils.isEmpty(cdGetPhone.getCode())
-                || Boolean.FALSE.equals(StrTextUtil.verificationCodeFlag(cdGetPhone.getCode()))) {
-            cdLineIpProxyService.clearTokenPhone(cdGetPhone.getPhone(), CountryCode.getKeyByValue(cdGetPhone.getCountrycode()));
-        }
     }
 
     @Override

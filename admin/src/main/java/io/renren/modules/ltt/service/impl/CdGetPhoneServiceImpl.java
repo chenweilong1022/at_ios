@@ -3,10 +3,12 @@ package io.renren.modules.ltt.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson.JSON;
 import com.github.benmanes.caffeine.cache.Cache;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.client.FirefoxService;
 import io.renren.modules.client.vo.GetPhoneVO;
+import io.renren.modules.ltt.dto.CdRegisterRedisDto;
 import io.renren.modules.ltt.enums.CountryCode;
 import io.renren.modules.ltt.enums.DeleteFlag;
 import io.renren.modules.ltt.enums.PhoneStatus;
@@ -14,6 +16,7 @@ import io.renren.modules.ltt.enums.RedisKeys;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -45,6 +48,9 @@ public class CdGetPhoneServiceImpl extends ServiceImpl<CdGetPhoneDao, CdGetPhone
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
     @Override
     public PageUtils<CdGetPhoneVO> queryPage(CdGetPhoneDTO cdGetPhone) {
@@ -193,10 +199,31 @@ public class CdGetPhoneServiceImpl extends ServiceImpl<CdGetPhoneDao, CdGetPhone
                     .filter(i -> !repeatPhoneList.contains(i.getPhone())).collect(Collectors.toList());
             if (CollUtil.isNotEmpty(cdGetPhoneEntities)) {
                 this.saveBatch(cdGetPhoneEntities);
+                //待注册的手机号存redis
+                this.saveWaitRegisterPhone(cdGetPhoneEntities);
             }
         }
         return cdGetPhoneEntities;
     }
+
+    /**
+     * 待注册的手机号存redis
+     *
+     */
+    @Override
+    public void saveWaitRegisterPhone(List<CdGetPhoneEntity> phoneEntityList) {
+        CdRegisterRedisDto cdGetPhoneRedisDto;
+        for (CdGetPhoneEntity cdGetPhoneEntity : phoneEntityList) {
+            cdGetPhoneRedisDto = new CdRegisterRedisDto();
+            cdGetPhoneRedisDto.setTelPhone(cdGetPhoneEntity.getPhone());
+            cdGetPhoneRedisDto.setPhoneEntity(cdGetPhoneEntity);
+            cdGetPhoneRedisDto.setLineRegister(null);
+            //存redis
+            stringRedisTemplate.opsForHash().put(RedisKeys.WAIT_START_REGISTER_PHONE.getValue(),
+                    cdGetPhoneEntity.getPhone(), JSON.toJSONString(cdGetPhoneRedisDto));
+        }
+    }
+
 
     /**
      * 查询手机号注册次数
