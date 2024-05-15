@@ -281,69 +281,69 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         return resp;
     }
 
-
-    @EventListener
-    @Order(value = 9999)//t35323ha-1027-61697		tha-1027-44108
-    public void handlerApplicationReadyEvent(ApplicationReadyEvent event) throws InterruptedException {
-        ExecutorService executorService = Executors.newFixedThreadPool(1000);
-        Set<String> ips = ConcurrentHashMap.newKeySet();
-        for (int i = 0; i < 100000; i++) {
-            CdLineIpProxyServiceImpl cdLineIpProxyService = new CdLineIpProxyServiceImpl();
-            int finalI = i;
-            executorService.submit(() -> {
-                String jp = cdLineIpProxyService.getRolaIp("jp",String.valueOf(finalI));
-                CurlVO jp1 = cdLineIpProxyService.isProxyUseRolaIp(jp, "jp");
-                if (jp1.isProxyUse()) {
-                    ips.add(jp1.getIp());
-                    log.info("i = {} set size = {}",finalI,ips.size());
-                }
-            });
-            executorService.submit(() -> {
-                String getLunaIp = cdLineIpProxyService.getLunaIp("jp");
-                CurlVO getLunaIpVO = cdLineIpProxyService.isProxyUse(getLunaIp, "jp");
-                if (getLunaIpVO.isProxyUse()) {
-                    ips.add(getLunaIpVO.getIp());
-                    log.info("i = {} set size = {}",finalI,ips.size());
-                }
-            });
-            executorService.submit(() -> {
-                String getIp2WorldIp = cdLineIpProxyService.getIp2WorldIp("jp");
-                CurlVO getIp2WorldIpVO = cdLineIpProxyService.isProxyUseIp2World(getIp2WorldIp, "jp");
-                if (getIp2WorldIpVO.isProxyUse()) {
-                    ips.add(getIp2WorldIpVO.getIp());
-                    log.info("i = {} set size = {}",finalI,ips.size());
-                }
-            });
-            executorService.submit(() -> {
-                String getAbcIp = cdLineIpProxyService.getAbcIp("jp");
-                CurlVO getAbcIpVO = cdLineIpProxyService.isProxyUseAbcIp(getAbcIp, "jp");
-                if (getAbcIpVO.isProxyUse()) {
-                    ips.add(getAbcIpVO.getIp());
-                    log.info("i = {} set size = {}",finalI,ips.size());
-                }
-            });
-            executorService.submit(() -> {
-                String getIpmarsIp = cdLineIpProxyService.getIpmarsIp("jp");
-                CurlVO getIpmarsIpVO = cdLineIpProxyService.isProxyUseIpmarsIp(getIpmarsIp, "jp");
-                if (getIpmarsIpVO.isProxyUse()) {
-                    ips.add(getIpmarsIpVO.getIp());
-                    log.info("i = {} set size = {}",finalI,ips.size());
-                }
-            });
-        }
-
-        // 关闭线程池
-        executorService.shutdown();
-
-        // 等待所有任务完成
-        if (!executorService.awaitTermination(1, TimeUnit.HOURS)) {
-            // 如果超时，则强制关闭尚未完成的任务
-            executorService.shutdownNow();
-        }
-        System.out.println(ips);
-        System.out.println(ips.size());
-        System.out.println("All tasks are finished.");
-    }
+//
+//    @EventListener
+//    @Order(value = 9999)//t35323ha-1027-61697		tha-1027-44108
+//    public void handlerApplicationReadyEvent(ApplicationReadyEvent event) throws InterruptedException {
+//        ExecutorService executorService = Executors.newFixedThreadPool(50);
+//        Set<String> ips = ConcurrentHashMap.newKeySet();
+//        for (int i = 0; i < 100000; i++) {
+//            CdLineIpProxyServiceImpl cdLineIpProxyService = new CdLineIpProxyServiceImpl();
+//            int finalI = i;
+//            executorService.submit(() -> {
+//                String jp = cdLineIpProxyService.getRolaIp("jp",String.valueOf(finalI));
+//                CurlVO jp1 = cdLineIpProxyService.isProxyUseRolaIp(jp, "jp");
+//                if (jp1.isProxyUse()) {
+//                    ips.add(jp1.getIp());
+//                    log.info("i = {} set size = {}",finalI,ips.size());
+//                }
+//            });
+//            executorService.submit(() -> {
+//                String getLunaIp = cdLineIpProxyService.getLunaIp("jp");
+//                CurlVO getLunaIpVO = cdLineIpProxyService.isProxyUse(getLunaIp, "jp");
+//                if (getLunaIpVO.isProxyUse()) {
+//                    ips.add(getLunaIpVO.getIp());
+//                    log.info("i = {} set size = {}",finalI,ips.size());
+//                }
+//            });
+//            executorService.submit(() -> {
+//                String getIp2WorldIp = cdLineIpProxyService.getIp2WorldIp("jp");
+//                CurlVO getIp2WorldIpVO = cdLineIpProxyService.isProxyUseIp2World(getIp2WorldIp, "jp");
+//                if (getIp2WorldIpVO.isProxyUse()) {
+//                    ips.add(getIp2WorldIpVO.getIp());
+//                    log.info("i = {} set size = {}",finalI,ips.size());
+//                }
+//            });
+//            executorService.submit(() -> {
+//                String getAbcIp = cdLineIpProxyService.getAbcIp("jp");
+//                CurlVO getAbcIpVO = cdLineIpProxyService.isProxyUseAbcIp(getAbcIp, "jp");
+//                if (getAbcIpVO.isProxyUse()) {
+//                    ips.add(getAbcIpVO.getIp());
+//                    log.info("i = {} set size = {}",finalI,ips.size());
+//                }
+//            });
+//            executorService.submit(() -> {
+//                String getIpmarsIp = cdLineIpProxyService.getIpmarsIp("jp");
+//                CurlVO getIpmarsIpVO = cdLineIpProxyService.isProxyUseIpmarsIp(getIpmarsIp, "jp");
+//                if (getIpmarsIpVO.isProxyUse()) {
+//                    ips.add(getIpmarsIpVO.getIp());
+//                    log.info("i = {} set size = {}",finalI,ips.size());
+//                }
+//            });
+//        }
+//
+//        // 关闭线程池
+//        executorService.shutdown();
+//
+//        // 等待所有任务完成
+//        if (!executorService.awaitTermination(1, TimeUnit.HOURS)) {
+//            // 如果超时，则强制关闭尚未完成的任务
+//            executorService.shutdownNow();
+//        }
+//        System.out.println(ips);
+//        System.out.println(ips.size());
+//        System.out.println("All tasks are finished.");
+//    }
 
 
 
