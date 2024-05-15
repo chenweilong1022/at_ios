@@ -131,6 +131,17 @@ public class CdLineRegisterController {
     }
 
     /**
+     * 注册重试
+     */
+    @RequestMapping("/registerRetry2")
+    @RequiresPermissions("ltt:cdregistertask:info")
+    public R registerRetry2(@RequestBody Integer[] ids){
+        boolean b = cdLineRegisterService.registerRetry2(ids);
+
+        return R.ok();
+    }
+
+    /**
      * 查询line注册数量
      * @param countryCode
      * @return

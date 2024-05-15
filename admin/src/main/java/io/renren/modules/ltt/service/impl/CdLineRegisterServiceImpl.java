@@ -251,6 +251,14 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
         }
     }
 
+    private void clearTokenPhone2(CdGetPhoneVO cdGetPhone) {
+        //ip暂时拉黑
+        if (StringUtils.isEmpty(cdGetPhone.getCode())
+                || Boolean.FALSE.equals(StrTextUtil.verificationCodeFlag(cdGetPhone.getCode()))) {
+            cdLineIpProxyService.clearTokenPhone2(cdGetPhone.getPhone(), CountryCode.getKeyByValue(cdGetPhone.getCountrycode()));
+        }
+    }
+
     @Override
     public Integer queryLineRegisterCount(String countryCode) {
         return baseMapper.selectCount(new QueryWrapper<CdLineRegisterEntity>().lambda()
@@ -271,6 +279,46 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
                 .eq(CdLineRegisterEntity::getPhone, phone)
                 .in(CdLineRegisterEntity::getRegisterStatus,
                         Arrays.asList(RegisterStatus.RegisterStatus4.getKey(), RegisterStatus.RegisterStatus11.getKey())));
+    }
+
+    @Override
+    public boolean registerRetry2(Integer[] ids) {
+        List<CdGetPhoneVO> cdGetPhoneList = getPhoneService.getByIds(Arrays.asList(ids));
+        Assert.isTrue(CollectionUtils.isEmpty(cdGetPhoneList), "数据为空");
+
+        List<CdGetPhoneEntity> updateCdGetPhoneList = new ArrayList<>();
+        List<Integer> lineRegisterIds = new ArrayList<>();
+        for (CdGetPhoneVO cdGetPhone : cdGetPhoneList) {
+            CdLineRegisterEntity cdLineRegisterEntity = baseMapper.selectList(new QueryWrapper<CdLineRegisterEntity>().lambda()
+                    .eq(CdLineRegisterEntity::getGetPhoneId, cdGetPhone.getId())).stream().findFirst().orElse(null);
+            if (cdLineRegisterEntity != null) {
+//                Assert.isTrue(!RegisterStatus.RegisterStatus5.getKey().equals(cdLineRegisterEntity.getRegisterStatus()), "注册状态正常，无需重试");
+                //删除line注册此条记录
+                lineRegisterIds.add(cdLineRegisterEntity.getId());
+                if (cdLineRegisterEntity.getProxy().contains("@")) {
+
+                }else {
+                    //ip暂时拉黑
+                    this.clearTokenPhone2(cdGetPhone);
+                }
+            }
+            //更新此条数据，发起重新注册
+            CdGetPhoneEntity updateCdGetPhoneEntity = new CdGetPhoneEntity();
+            updateCdGetPhoneEntity.setId(cdGetPhone.getId());
+            updateCdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus1.getKey());
+            updateCdGetPhoneEntity.setCode("");
+            updateCdGetPhoneEntity.setCreateTime(new Date());
+            updateCdGetPhoneList.add(updateCdGetPhoneEntity);
+        }
+
+        getPhoneService.updateBatchById(updateCdGetPhoneList);
+
+        //删除line注册此条记录
+        if (CollectionUtils.isNotEmpty(lineRegisterIds)) {
+            baseMapper.deleteBatchIds(lineRegisterIds);
+        }
+
+        return true;
     }
 
 
