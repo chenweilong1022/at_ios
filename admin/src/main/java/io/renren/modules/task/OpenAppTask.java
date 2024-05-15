@@ -10,6 +10,7 @@ import cn.hutool.http.HttpResponse;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import io.renren.common.constant.SystemConstant;
 import io.renren.modules.client.LineService;
 import io.renren.modules.client.dto.LineTokenJson;
 import io.renren.modules.client.dto.OpenApp;
@@ -93,14 +94,13 @@ public class OpenAppTask {
     @Transactional(rollbackFor = Exception.class)
     @Async
     public void task4() {
-
-
+        String format = String.format("and MOD(id, %s) = %s limit 200", systemConstant.getSERVERS_TOTAL_MOD(), systemConstant.getSERVERS_MOD());
         List<AtUserTokenEntity> atUserTokenEntities = atUserTokenService.list(new QueryWrapper<AtUserTokenEntity>().lambda()
                 .eq(AtUserTokenEntity::getOpenStatus, OpenStatus.OpenStatus5.getKey())
                 .eq(AtUserTokenEntity::getTokenType, AtUserTokenTypeEnum.AtUserTokenType1.getKey())
                 .eq(AtUserTokenEntity::getUseFlag, UseFlag.YES.getKey())
                 .isNotNull(AtUserTokenEntity::getToken)
-                .last("limit 100")
+                .last(format)
         );
 
         if (CollUtil.isEmpty(atUserTokenEntities)) {
@@ -162,13 +162,14 @@ public class OpenAppTask {
             return;
         }
         try {
+            String format = String.format("and MOD(id, %s) = %s limit 200", systemConstant.getSERVERS_TOTAL_MOD(), systemConstant.getSERVERS_MOD());
             List<AtUserTokenEntity> atUserTokenEntities = atUserTokenService.list(new QueryWrapper<AtUserTokenEntity>().lambda()
                     .eq(AtUserTokenEntity::getOpenStatus, OpenStatus.OpenStatus2.getKey())
                     .eq(AtUserTokenEntity::getTokenType, AtUserTokenTypeEnum.AtUserTokenType1.getKey())
                     .eq(AtUserTokenEntity::getUseFlag, UseFlag.YES.getKey())
                     .isNotNull(AtUserTokenEntity::getToken)
                     .lt(AtUserTokenEntity::getOpenTime, DateUtil.date())
-                    .last("limit 100")
+                    .last(format)
             );
 
             if (CollUtil.isEmpty(atUserTokenEntities)) {
@@ -250,17 +251,20 @@ public class OpenAppTask {
 
     static ReentrantLock task1Lock = new ReentrantLock();
 
+    @Autowired
+    private SystemConstant systemConstant;
     @Scheduled(fixedDelay = 10000)
     @Transactional(rollbackFor = Exception.class)
     @Async
     public void task1() {
+        String format = String.format("and MOD(id, %s) = %s limit 200", systemConstant.getSERVERS_TOTAL_MOD(), systemConstant.getSERVERS_MOD());
         List<AtUserTokenEntity> atUserTokenEntities = atUserTokenService.list(new QueryWrapper<AtUserTokenEntity>().lambda()
                 .eq(AtUserTokenEntity::getOpenStatus, OpenStatus.OpenStatus1.getKey())
                 .eq(AtUserTokenEntity::getTokenType, AtUserTokenTypeEnum.AtUserTokenType1.getKey())
                 .isNotNull(AtUserTokenEntity::getToken)
                 .eq(AtUserTokenEntity::getUseFlag, UseFlag.YES.getKey())
                 .lt(AtUserTokenEntity::getOpenTime, DateUtil.date())
-                .last("limit 100")
+                .last(format)
         );
 
 
