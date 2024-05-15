@@ -234,6 +234,13 @@ public class OpenAppTask {
                                 update.setOpenStatus(OpenStatus.OpenStatus1.getKey());
                                 update.setOpenTime(DateUtil.date());
                                 atUserTokenService.updateById(update);
+                            }else {
+                                AtUserTokenEntity update = new AtUserTokenEntity();
+                                update.setId(atUserTokenEntity.getId());
+                                OpenAppResult.Data data = openAppResult.getData();
+                                String concat = StrUtil.concat(true, data.getRemark(), openAppResult.getMsg());
+                                update.setErrMsg(concat);
+                                atUserTokenService.updateById(update);
                             }
                         }finally {
                             lock.unlock();
