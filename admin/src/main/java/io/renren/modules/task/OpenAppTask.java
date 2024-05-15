@@ -138,6 +138,7 @@ public class OpenAppTask {
                         }else if (ObjectUtil.isNotNull(refreshAccessTokenVO) && 201 == refreshAccessTokenVO.getCode()) {
                             atUserTokenEntity.setOpenStatus(OpenStatus.OpenStatus4.getKey());
                         }
+                        atUserTokenEntity.setErrMsg(refreshAccessTokenVO.getMsg());
                         atUserTokenService.updateById(atUserTokenEntity);
                     }finally {
                         lock.unlock();
@@ -227,7 +228,8 @@ public class OpenAppTask {
                             }else if (201 == openAppResult.getCode()){
                                 AtUserTokenEntity update = new AtUserTokenEntity();
                                 update.setId(atUserTokenEntity.getId());
-                                String concat = StrUtil.concat(true, openAppResult.getMsg());
+                                OpenAppResult.Data data = openAppResult.getData();
+                                String concat = StrUtil.concat(true, data.getRemark(), openAppResult.getMsg());
                                 update.setErrMsg(concat);
                                 update.setOpenStatus(OpenStatus.OpenStatus1.getKey());
                                 update.setOpenTime(DateUtil.date());
