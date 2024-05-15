@@ -154,7 +154,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
             }
             //如果有ip直接返回
             if (StrUtil.isNotEmpty(outIpv4) && StrUtil.isNotEmpty(ipS5)) {
-                CurlVO proxyUse = getProxyUse(ipS5, regions, proxy,phoneNumberInfo);
+                CurlVO proxyUse = getProxyUse(ipS5, regions);
                 if (proxyUse.isProxyUse()) {
                     //判断ip黑名单缓存中是否有
                     String value = RedisKeys.RedisKeys4.getValue(proxyUse.getIp());
@@ -182,9 +182,9 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                     redisTemplate.opsForHash().delete(RedisKeys.RedisKeys1.getValue(), outIpv4);
                 }
             } else {
-                String ip = getLunaIp(regions);
 
-                CurlVO proxyUse = getProxyUse(ip, regions, proxy,phoneNumberInfo);
+                String ip = getDyIp(regions);
+                CurlVO proxyUse = getProxyUse(ip, regions);
                 if (proxyUse.isProxyUse()) {
                     //判断ip黑名单缓存中是否有
                     String ipCache = redisTemplate.opsForValue().get(RedisKeys.RedisKeys4.getValue(proxyUse.getIp()));
@@ -220,12 +220,6 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         return null;
     }
 
-
-    private String getLunaIp(String regions) {
-        String format = String.format("user-lu9904136-region-%s-sessid-%s-sesstime-63:Ch1433471850@na.ej29ly49.lunaproxy.net:12233",regions, RandomUtil.randomString(18));
-        return format;
-    }
-
     private boolean extracted(CdLineIpProxyDTO cdLineIpProxyDTO, Long countryCode, CurlVO proxyUse, String outIpv4, String regions, String ipS5) {
         //如果ip相同并且国家一样
         if (proxyUse.getIp().equals(outIpv4) && regions.toLowerCase().equals(proxyUse.getCountry().toLowerCase())) {
@@ -247,59 +241,6 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
             }
         }
         return false;
-    }
-
-    private Queue<String> getIpResp(String regions, Integer proxy,PhoneCountryVO phoneNumberInfo) {
-        if (ObjectUtil.isNull(proxy)) {
-            log.error("getIpResp_error_proxy_null");
-            return null;
-        }
-        String ipResp = null;
-
-        //whiteip
-        //137.184.112.207
-        //137.184.112.206
-        //202.79.171.146
-        //143.92.40.151
-        //216.83.53.90
-        //113.21.242.163
-        String number = phoneNumberInfo.getNumber();
-        int lastDigit = Character.getNumericValue(number.charAt(number.length() - 1));
-        int mod = lastDigit % 4;
-        List<String> urls = CollUtil.newArrayList(
-                "https://tq.lunaproxy.com/getflowip?neek=1136881&num=500&type=1&sep=1&regions=%s&ip_si=1&level=1&sb=",//luna
-                "http://api.proxy.ip2world.com/getProxyIp?return_type=txt&protocol=http&num=500&regions=%s&lb=1",//ip2world
-                "https://info.proxy.ipmars.com/extractProxyIp?regions=%s&num=500&protocol=http&return_type=txt&lh=1&st=",//ipmars
-                "https://info.proxy.abcproxy.com/extractProxyIp?regions=%s&num=500&protocol=http&return_type=txt&lh=1&mode=1"//abcproxy
-        );
-        String url = urls.get(mod);
-        ipResp = getRandomIp(url, regions);
-//        if (proxy == 1) {
-//            //lunaproxy
-//            ipResp = getLunaIpResp(regions);
-//        } else if (proxy == 2) {
-//            //ip2world
-//            ipResp = getIp2World(regions);
-//        } else if (proxy == 3) {
-//            //静态代理
-//            ipResp = getStaticIpResp(regions);
-//        }
-        if (StringUtils.isEmpty(ipResp)) {
-            log.info("getIpResp_error_proxy_null = {}",url);
-            return null;
-        }
-        String[] split = ipResp.split("\r\n");
-        Queue<String> getflowipNew = new LinkedList<>();
-        for (String s : split) {
-            s = s.trim();
-            if (StrUtil.isEmpty(s)) {
-                continue;
-            }
-            getflowipNew.offer(s);
-        }
-        caffeineCacheListString.put(regions, getflowipNew);
-
-        return getflowipNew;
     }
 
     private String getStaticIpResp(String regions) {
@@ -345,128 +286,52 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         return String.format("socks5://%s", ip);
     }
 
-    //43.159.18.174:24496 curl --socks5 43.159.18.174:24496 ipinfo.io
-    private CurlVO getProxyUse(String ip,String country, Integer proxy,PhoneCountryVO phoneNumberInfo) {
-        if (ObjectUtil.isNull(proxy)) {
-            log.error("selectProxyUse_error_proxy_null");
-            return null;
+    public String getDyIp(String regions) {
+        int i = RandomUtil.randomInt(0, 5);
+        String s5Ip = null;
+        if (i == 0) {
+            s5Ip = getLunaIp(regions);
+        }else if (i == 1) {
+            s5Ip = getIp2WorldIp(regions);
+        }else if (i == 2) {
+            s5Ip = getAbcIp(regions);
+        }else if (i == 3) {
+            s5Ip = getIpmarsIp(regions);
+        }else if (i == 4) {
+            s5Ip = getRolaIp(regions);
         }
+        return null;
+    }
 
-//        if (proxy == 1) {
-//            //lunaproxy
-//           return isProxyUse(ip, country);
-//        } else if (proxy == 2) {
-//            //ip2world
-//            return
-//        } else if (proxy == 3) {
-//            //静态代理
-//            return isProxyUseMe(ip, country);
-//        }
-
-//        String number = phoneNumberInfo.getNumber();
-//        int lastDigit = Character.getNumericValue(number.charAt(number.length() - 1));
-//        List<String> urls = CollUtil.newArrayList(
-//                "202.79.171.146:8080",
-//                "143.92.40.151:8080",
-//                "134.122.130.163:8080"
-//        );
-//        int mod = lastDigit % urls.size();
-//        String url = urls.get(mod);
-//        log.info("selectProxyUse_error_proxy {}", proxy);
-//        CurlVO proxyUseMe = isProxyUseMe(ip, country,url);
-//        if (proxyUseMe.isProxyUse()) {
-//            return proxyUseMe;
-//        }
-//        proxyUseMe = isProxyUseIp2World(ip, country);
-//        if (proxyUseMe.isProxyUse()) {
-//            return proxyUseMe;
-//        }
-//        proxyUseMe = isProxyUseMeIpecho(ip, country);
-//        if (proxyUseMe.isProxyUse()) {
-//            return proxyUseMe;
-//        }
-        CurlVO proxyUse = isProxyUse(ip, country);
+    private CurlVO getProxyUse(String ip,String regions) {
+        CurlVO proxyUse = new CurlVO().setProxyUse(false);
+        if (ip.contains("lunaproxy")) {
+            proxyUse = isProxyUse(ip,regions);
+        }else if (ip.contains("ip2world")) {
+            proxyUse = isProxyUseIp2World(ip,regions);
+        }else if (ip.contains("abcproxy")) {
+            proxyUse = isProxyUseAbcIp(ip,regions);
+        }else if (ip.contains("ipmars")) {
+            proxyUse = isProxyUseIpmarsIp(ip,regions);
+        }else if (ip.contains("rola")) {
+            proxyUse = isProxyUseRolaIp(ip,regions);
+        }
         return proxyUse;
     }
-    private CurlVO isProxyUse(String ip,String country) {
-        CurlVO falseCurlVO = new CurlVO().setProxyUse(false);
-        String format1 = String.format("curl -x %s myip.lunaproxy.io",ip);
-        List<String> strings = RuntimeUtil.execForLines(format1);
-        String s = strings.get(strings.size() - 1);
-        String[] split = s.split("\\|");
-        System.out.println(split.length);
-        if (split.length == 5) {
-            String outIp = split[0];
-            String outCountry = split[2];
-            log.info("ip = {} country = {} format = {}",ip,country,s);
-            return falseCurlVO.setProxyUse(true).setIp(outIp).setCountry(outCountry);
-        }
-        log.info("ip = {} country = {} format = {}",ip,country,"没有找到JSON数据");
-        return falseCurlVO;
-    }
-//http://134.122.130.163:8080/
-    private CurlVO isProxyUseMe(String ip,String country,String url) {
-        CurlVO falseCurlVO = new CurlVO().setProxyUse(false);
-        String format1 = String.format("curl -x %s %s",ip,url);
-        log.info("curl = {}",format1);
-        List<String> strings = RuntimeUtil.execForLines(format1);
-        log.info("curl resp = {}",JSONUtil.toJsonStr(strings));
-        String outIp = strings.get(strings.size() - 1);
-        boolean match = ReUtil.isMatch(IPV4, outIp);
-        if (match) {
-            log.info("ip = {} country = {} format = {}",ip,country,outIp);
-            return falseCurlVO.setProxyUse(true).setIp(outIp).setCountry(country);
-        }
-        log.info("ip = {} country = {} format = {}",ip,country,"没有找到JSON数据");
-        return falseCurlVO;
-        // 分割字符串以提取 IP 地址和端口号
-//        String[] parts = address.split(":");
-//        if (parts.length != 2) {
-//            System.err.println("Invalid address format");
-//            return null;
-//        }
-//        String ip = parts[0];
-//        int port = Integer.parseInt(parts[1]);  // 将端口号的字符串转换为整数
-//        HttpResponse execute = HttpRequest.post("http://202.79.171.146:8080")
-//                .setProxy(new Proxy(Proxy.Type.SOCKS, new InetSocketAddress(ip, port))).timeout(20000).execute();
-//        String outIp = execute.body();
-//        boolean match = ReUtil.isMatch(IPV4, outIp);
-//        if (match) {
-//            log.info("ip = {} country = {} format = {}",ip,country,outIp);
-//            return falseCurlVO.setProxyUse(true).setIp(outIp).setCountry(country);
-//        }
-//        log.info("ip = {} country = {} format = {}",ip,country,"没有找到JSON数据");
-//        return falseCurlVO;
-    }
 
-    public static void main(String[] args) {
-        String lunaIp = new CdLineIpProxyServiceImpl().getLunaIp("jp");
-        CurlVO proxyUse = new CdLineIpProxyServiceImpl().isProxyUse(lunaIp, "jp");
-        System.out.println(proxyUse);
+
+    private String getRolaIp(String regions) {
+        //curl -x  ipinfo.io
+        String format = String.format("chenweilong_%s-country-jp:ch1433471850@proxysg.rola.vip:2000",regions.toUpperCase(), RandomUtil.randomInt(111111111,999999999));
+        return format;
     }
 
 
-    private CurlVO isProxyUseMeIpecho(String ip,String country) {
-        CurlVO falseCurlVO = new CurlVO().setProxyUse(false);
-        String format1 = String.format("curl -x %s https://ipecho.net/plain",ip);
-        log.info("curl = {}",format1);
-        List<String> strings = RuntimeUtil.execForLines(format1);
-        log.info("curl resp = {}",JSONUtil.toJsonStr(strings));
-        String outIp = strings.get(strings.size() - 1);
-        boolean match = ReUtil.isMatch(IPV4, outIp);
-        if (match) {
-            log.info("ip = {} country = {} format = {}",ip,country,outIp);
-            return falseCurlVO.setProxyUse(true).setIp(outIp).setCountry(country);
-        }
-        log.info("ip = {} country = {} format = {}",ip,country,"没有找到JSON数据");
-        return falseCurlVO;
-    }
-
-    private CurlVO isProxyUseIp2World(String ip,String country) {
+    private CurlVO isProxyUseRolaIp(String ip,String country) {
         CurlVO falseCurlVO = new CurlVO().setProxyUse(false);
         try {
-            String format1 = String.format("curl -x socks5://%s ipinfo.io?token=a8e5532c38cef4",ip);
-            log.info("format1 = {}",format1);
+            String format1 = String.format("curl -x %s http://www.ip234.in/ip.json",ip);
+            System.out.println(format1);
             List<String> strings = RuntimeUtil.execForLines(format1);
             log.info("curl resp = {}",CollUtil.join(strings,""));
             boolean flag = false;
@@ -478,14 +343,151 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                     newStr.add(string);
                 }
             }
-
             String resp = CollUtil.join(newStr, "");
             log.info("ip = {} country = {} format = {}",ip,country,resp);
             IPWorldRespCurl curlVO = JSONUtil.toBean(resp, IPWorldRespCurl.class);
-            return falseCurlVO.setProxyUse(true).setIp(curlVO.getIp()).setCountry(curlVO.getCountry());
+            if (curlVO.getCountry_code().toLowerCase().equals(country.toLowerCase())) {
+                return falseCurlVO.setProxyUse(true).setIp(curlVO.getIp()).setCountry(curlVO.getCountry_code());
+            }
         }catch (Exception e) {
 
         }
+        return falseCurlVO;
+    }
+
+
+
+    private String getIpmarsIp(String regions) {
+        //curl -x  ipinfo.io
+        String format = String.format("CFD5XBNu6O-zone-mars-region-%s-session-%s-sessTime-10:23941850@as.e52a499f3821702f.ipmars.vip:4900",regions.toUpperCase(), RandomUtil.randomString(18));
+        return format;
+    }
+
+
+    private CurlVO isProxyUseIpmarsIp(String ip,String country) {
+        CurlVO falseCurlVO = new CurlVO().setProxyUse(false);
+        try {
+            String format1 = String.format("curl -x %s ipinfo.io",ip);
+            System.out.println(format1);
+            List<String> strings = RuntimeUtil.execForLines(format1);
+            log.info("curl resp = {}",CollUtil.join(strings,""));
+            boolean flag = false;
+
+            List<String> newStr = new ArrayList<>();
+            for (String string : strings) {
+                if (string.contains("{") || flag) {
+                    flag = true;
+                    newStr.add(string);
+                }
+            }
+            String resp = CollUtil.join(newStr, "");
+            log.info("ip = {} country = {} format = {}",ip,country,resp);
+            IPWorldRespCurl curlVO = JSONUtil.toBean(resp, IPWorldRespCurl.class);
+            if (curlVO.getCountry().toLowerCase().equals(country.toLowerCase())) {
+                return falseCurlVO.setProxyUse(true).setIp(curlVO.getIp()).setCountry(curlVO.getCountry());
+            }
+        }catch (Exception e) {
+
+        }
+        return falseCurlVO;
+    }
+
+
+
+
+    private String getAbcIp(String regions) {
+        //curl -x  ipinfo.io
+        String format = String.format("DZHtDGILHC-zone-abc-region-%s-session-%s-sessTime-10:05421929@na.0e03d29f9c28cbfd.abcproxy.vip:4950",regions.toUpperCase(), RandomUtil.randomString(18));
+        return format;
+    }
+
+
+    private CurlVO isProxyUseAbcIp(String ip,String country) {
+        CurlVO falseCurlVO = new CurlVO().setProxyUse(false);
+        try {
+            String format1 = String.format("curl -x %s ipinfo.io",ip);
+            System.out.println(format1);
+            List<String> strings = RuntimeUtil.execForLines(format1);
+            log.info("curl resp = {}",CollUtil.join(strings,""));
+            boolean flag = false;
+
+            List<String> newStr = new ArrayList<>();
+            for (String string : strings) {
+                if (string.contains("{") || flag) {
+                    flag = true;
+                    newStr.add(string);
+                }
+            }
+            String resp = CollUtil.join(newStr, "");
+            log.info("ip = {} country = {} format = {}",ip,country,resp);
+            IPWorldRespCurl curlVO = JSONUtil.toBean(resp, IPWorldRespCurl.class);
+            if (curlVO.getCountry().toLowerCase().equals(country.toLowerCase())) {
+                return falseCurlVO.setProxyUse(true).setIp(curlVO.getIp()).setCountry(curlVO.getCountry());
+            }
+        }catch (Exception e) {
+
+        }
+        return falseCurlVO;
+    }
+
+
+    private String getIp2WorldIp(String regions) {
+        //curl -x  ipinfo.io
+        String format = String.format("chenweilong-zone-resi-region-%s-session-%s-sessTime-10:123456@4a6974acaeab2113.us.ip2world.vip:6001",regions, RandomUtil.randomString(18));
+        return format;
+    }
+
+    private CurlVO isProxyUseIp2World(String ip,String country) {
+        CurlVO falseCurlVO = new CurlVO().setProxyUse(false);
+        try {
+            String format1 = String.format("curl -x %s ipinfo.io",ip);
+            System.out.println(format1);
+            List<String> strings = RuntimeUtil.execForLines(format1);
+            log.info("curl resp = {}",CollUtil.join(strings,""));
+            boolean flag = false;
+
+            List<String> newStr = new ArrayList<>();
+            for (String string : strings) {
+                if (string.contains("{") || flag) {
+                    flag = true;
+                    newStr.add(string);
+                }
+            }
+            String resp = CollUtil.join(newStr, "");
+            log.info("ip = {} country = {} format = {}",ip,country,resp);
+            IPWorldRespCurl curlVO = JSONUtil.toBean(resp, IPWorldRespCurl.class);
+            if (curlVO.getCountry().toLowerCase().equals(country.toLowerCase())) {
+                return falseCurlVO.setProxyUse(true).setIp(curlVO.getIp()).setCountry(curlVO.getCountry());
+            }
+        }catch (Exception e) {
+
+        }
+        return falseCurlVO;
+    }
+
+
+
+    private String getLunaIp(String regions) {
+        String format = String.format("user-lu9904136-region-%s-sessid-%s-sesstime-63:Ch1433471850@na.ej29ly49.lunaproxy.net:12233",regions, RandomUtil.randomString(18));
+        return format;
+    }
+
+    private CurlVO isProxyUse(String ip,String country) {
+        CurlVO falseCurlVO = new CurlVO().setProxyUse(false);
+        String format1 = String.format("curl -x %s myip.lunaproxy.io",ip);
+        List<String> strings = RuntimeUtil.execForLines(format1);
+        String s = strings.get(strings.size() - 1);
+        String[] split = s.split("\\|");
+        System.out.println(split.length);
+        if (split.length == 5) {
+            String outIp = split[0];
+            String outCountry = split[2];
+            log.info("ip = {} country = {} format = {}",ip,country,s);
+            if (outCountry.toLowerCase().equals(country.toLowerCase())) {
+                return falseCurlVO.setProxyUse(true).setIp(outIp).setCountry(outCountry);
+            }
+        }
+        log.info("ip = {} country = {} format = {}",ip,country,"没有找到JSON数据");
         return falseCurlVO;
     }
 
@@ -522,6 +524,10 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         redisTemplate.opsForValue().set(RedisKeys.RedisKeys4.getValue(outIpv4), tokenPhone, 1, TimeUnit.DAYS);
         return true;
     }
+
+
+
+
 
     @Override
     @Async
