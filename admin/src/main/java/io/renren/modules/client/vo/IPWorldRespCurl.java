@@ -10,6 +10,7 @@ import java.util.List;
 @Data
 public class IPWorldRespCurl {
     private String country;
+    private String country_code;
     private String loc;
     private String city;
     private String timezone;
