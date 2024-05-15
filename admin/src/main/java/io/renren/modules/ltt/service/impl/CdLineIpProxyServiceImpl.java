@@ -194,8 +194,10 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                     if (regions.toLowerCase().equals(proxyUse.getCountry().toLowerCase())) {
                         if (StrUtil.isNotEmpty(proxyUse.getIp())) {
                             String s = (String) redisTemplate.opsForHash().get(RedisKeys.RedisKeys1.getValue(), proxyUse.getIp());
-                            if (!s.contains("@")) {
-                                redisTemplate.opsForHash().delete(RedisKeys.RedisKeys1.getValue(), proxyUse.getIp());
+                            if (StrUtil.isNotEmpty(s)) {
+                                if (!s.contains("@")) {
+                                    redisTemplate.opsForHash().delete(RedisKeys.RedisKeys1.getValue(), proxyUse.getIp());
+                                }
                             }
                         }
 
