@@ -142,7 +142,6 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
     }
 
     private String getIp(CdLineIpProxyDTO cdLineIpProxyDTO, Long countryCode, Integer proxy,PhoneCountryVO phoneNumberInfo) {
-        ExecutorService executor = Executors.newFixedThreadPool(50);
         try{
             //国家英文
             String regions = EnumUtil.queryValueByKey(countryCode.intValue(), CountryCode.values());
@@ -183,7 +182,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                 }
             } else {
 
-                String ip = getDyIp(regions);
+                String ip = getDyIp(regions,phoneNumberInfo);
                 CurlVO proxyUse = getProxyUse(ip, regions);
                 if (proxyUse.isProxyUse()) {
                     //判断ip黑名单缓存中是否有
@@ -193,6 +192,13 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                     }
                     //如果国家一样
                     if (regions.toLowerCase().equals(proxyUse.getCountry().toLowerCase())) {
+                        if (StrUtil.isNotEmpty(proxyUse.getIp())) {
+                            String s = (String) redisTemplate.opsForHash().get(RedisKeys.RedisKeys1.getValue(), proxyUse.getIp());
+                            if (!s.contains("@")) {
+                                redisTemplate.opsForHash().delete(RedisKeys.RedisKeys1.getValue(), proxyUse.getIp());
+                            }
+                        }
+
                         Boolean b = redisTemplate.opsForHash().putIfAbsent(RedisKeys.RedisKeys1.getValue(), proxyUse.getIp(), ip);
                         if (b) {
                             if (StrUtil.isNotEmpty(outIpv4)) {
@@ -286,8 +292,10 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         return String.format("socks5://%s", ip);
     }
 
-    public String getDyIp(String regions) {
-        int i = RandomUtil.randomInt(0, 5);
+    public String getDyIp(String regions,PhoneCountryVO phoneNumberInfo) {
+        String number = phoneNumberInfo.getNumber();
+        int lastDigit = Character.getNumericValue(number.charAt(number.length() - 1));
+        int i = lastDigit % 5;
         String s5Ip = null;
         if (i == 0) {
             s5Ip = getLunaIp(regions);
@@ -322,7 +330,8 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 
     private String getRolaIp(String regions) {
         //curl -x  ipinfo.io
-        String format = String.format("chenweilong_%s-country-jp:ch1433471850@proxysg.rola.vip:2000",regions.toUpperCase(), RandomUtil.randomInt(111111111,999999999));
+        String format = String.format("chenweilong_%s-country-%s:ch1433471850@proxysg.rola.vip:2000",regions.toUpperCase(), RandomUtil.randomInt(111111111,999999999));
+        System.out.println(format);
         return format;
     }
 
@@ -360,6 +369,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
     private String getIpmarsIp(String regions) {
         //curl -x  ipinfo.io
         String format = String.format("CFD5XBNu6O-zone-mars-region-%s-session-%s-sessTime-10:23941850@as.e52a499f3821702f.ipmars.vip:4900",regions.toUpperCase(), RandomUtil.randomString(18));
+        System.out.println(format);
         return format;
     }
 
@@ -398,6 +408,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
     private String getAbcIp(String regions) {
         //curl -x  ipinfo.io
         String format = String.format("DZHtDGILHC-zone-abc-region-%s-session-%s-sessTime-10:05421929@na.0e03d29f9c28cbfd.abcproxy.vip:4950",regions.toUpperCase(), RandomUtil.randomString(18));
+        System.out.println(format);
         return format;
     }
 
@@ -434,6 +445,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
     private String getIp2WorldIp(String regions) {
         //curl -x  ipinfo.io
         String format = String.format("chenweilong-zone-resi-region-%s-session-%s-sessTime-10:123456@4a6974acaeab2113.us.ip2world.vip:6001",regions, RandomUtil.randomString(18));
+        System.out.println(format);
         return format;
     }
 
@@ -469,6 +481,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 
     private String getLunaIp(String regions) {
         String format = String.format("user-lu9904136-region-%s-sessid-%s-sesstime-63:Ch1433471850@na.ej29ly49.lunaproxy.net:12233",regions, RandomUtil.randomString(18));
+        System.out.println(format);
         return format;
     }
 

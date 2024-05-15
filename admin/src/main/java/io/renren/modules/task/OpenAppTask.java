@@ -129,6 +129,9 @@ public class OpenAppTask {
                         refreshAccessTokenDTO.setProxy(proxyIp);
                         refreshAccessTokenDTO.setToken(atUserTokenEntity.getToken());
                         RefreshAccessTokenVO refreshAccessTokenVO = lineService.refreshAccessToken(refreshAccessTokenDTO);
+                        if (ObjectUtil.isNull(refreshAccessTokenVO)) {
+                            return;
+                        }
                         if (ObjectUtil.isNotNull(refreshAccessTokenVO) && 200 == refreshAccessTokenVO.getCode()) {
                             lineTokenJson.setAccessToken(refreshAccessTokenVO.getData().getAccessToken());
                             lineTokenJson.setRefreshToken(refreshAccessTokenVO.getData().getRefreshToken());
@@ -189,6 +192,15 @@ public class OpenAppTask {
                             RegisterResultDTO registerResultDTO = new RegisterResultDTO();
                             registerResultDTO.setTaskId(atUserTokenEntity.getTaskId());
                             OpenAppResult openAppResult = lineService.openAppResult(registerResultDTO);
+                            if (ObjectUtil.isNull(openAppResult)) {
+                                AtUserTokenEntity update = new AtUserTokenEntity();
+                                update.setId(atUserTokenEntity.getId());
+                                update.setOpenStatus(OpenStatus.OpenStatus1.getKey());
+                                update.setOpenTime(DateUtil.date());
+                                update.setTaskId("");
+                                atUserTokenService.updateById(update);
+                                return;
+                            }
                             if (ObjectUtil.isNotNull(openAppResult) && 200 == openAppResult.getCode()) {
                                 OpenAppResult.Data data = openAppResult.getData();
                                 if (ObjectUtil.isNull(data)) {
