@@ -166,6 +166,7 @@ public class GroupTask {
                                                 || RegisterStatus.RegisterStatus11.getKey().equals(i.getRegisterStatus())
                                                 || (RegisterStatus.RegisterStatus5.getKey().equals(i.getRegisterStatus())
                                                     && StringUtils.isNotEmpty(i.getErrMsg())
+                                                    && !i.getErrMsg().contains("セッションがタイムアウトしました。 もう一度お試しください")
                                                     && i.getErrMsg().contains("Code:100"))
                                         ))
                                         .findFirst().orElse(null);

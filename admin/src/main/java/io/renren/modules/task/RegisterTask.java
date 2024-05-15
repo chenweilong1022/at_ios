@@ -242,12 +242,12 @@ public class RegisterTask {
     @Transactional(rollbackFor = Exception.class)
     public void task10() {
 
-        boolean b3 = task1Lock.tryLock();
-        if (!b3) {
-            log.error("task1Lock ip推送队列 = {}",b3);
-            return;
-        }
-        try{
+//        boolean b3 = task1Lock.tryLock();
+//        if (!b3) {
+//            log.error("task1Lock ip推送队列 = {}",b3);
+//            return;
+//        }
+//        try{
 
             List<Object> waitRegisterList = redisTemplate.opsForHash()
                     .values(RedisKeys.WAIT_SMS_PHONE.getValue("81")).subList(0, 100);
@@ -329,11 +329,11 @@ public class RegisterTask {
             if (CollUtil.isNotEmpty(cdLineRegisterEntities)) {
                 cdLineRegisterService.updateBatchById(cdLineRegisterEntities);
             }
-        }catch (Exception e) {
-            log.error("err = {}",e.getMessage());
-        }finally {
-            task1Lock.unlock();
-        }
+//        }catch (Exception e) {
+//            log.error("err = {}",e.getMessage());
+//        }finally {
+//            task1Lock.unlock();
+//        }
 
     }
 
@@ -611,7 +611,7 @@ public class RegisterTask {
                 //在此时间上加24小时+30分钟
                 Date expireDate = DateUtils.addDateMinutes(time, (24 * 60) + 30);
 
-                Long expireMinutes = DateUtils.betweenMinutes(time, expireDate);
+                Long expireMinutes = DateUtils.betweenMinutes(new Date(), expireDate);
 
                 redisTemplate.opsForValue().set(RedisKeys.RedisKeys12.getValue(phone), String.valueOf(registerCount), expireMinutes, TimeUnit.MINUTES);
             }
