@@ -363,7 +363,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         if (i == 0) {
             s5Ip = getLunaIp(regions);
         }else if (i == 1) {
-            s5Ip = getIp2WorldIp(regions);
+            s5Ip = getLunaIp(regions);
         }else if (i == 2) {
             s5Ip = getAbcIp(regions);
         }else if (i == 3) {
