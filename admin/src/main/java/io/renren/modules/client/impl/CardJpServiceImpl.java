@@ -1,5 +1,6 @@
 package io.renren.modules.client.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -198,19 +199,27 @@ public class CardJpServiceImpl implements FirefoxService {
         }
         List<CardJpGetPhoneSmsVO.Data.Ret> ret = resultDto.getData().getRet();
         Map<Long,CardJpGetPhoneSmsVO.Data.Ret.Sm> map = new HashMap();
-        for (CardJpGetPhoneSmsVO.Data.Ret ret1 : ret) {
-            List<CardJpGetPhoneSmsVO.Data.Ret.Sm> sms = ret1.getSms();
-            for (CardJpGetPhoneSmsVO.Data.Ret.Sm sm : sms) {
-                long timestamp = Long.valueOf(sm.getRecvTime());  // Your Unix timestamp
+        try{
+            for (CardJpGetPhoneSmsVO.Data.Ret ret1 : ret) {
+                List<CardJpGetPhoneSmsVO.Data.Ret.Sm> sms = ret1.getSms();
+                for (CardJpGetPhoneSmsVO.Data.Ret.Sm sm : sms) {
+                    long timestamp = Long.valueOf(sm.getRecvTime());  // Your Unix timestamp
 //                LocalDateTime localDateTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(timestamp), ZoneId.of("Asia/Shanghai"));
 //                ZonedDateTime zonedDateTime = localDateTime.atZone(ZoneId.of("Asia/Shanghai"));
 //                Date recvTime = Date.from(zonedDateTime.toInstant());
-                sm.setTime(timestamp);
+                    sm.setTime(timestamp);
+                }
+                if (CollUtil.isEmpty(sms)) {
+                    continue;
+                }
+                CardJpGetPhoneSmsVO.Data.Ret.Sm max = Collections.max(sms, Comparator.comparingLong(CardJpGetPhoneSmsVO.Data.Ret.Sm::getTime));
+                if (ObjectUtil.isNotNull(max)) {
+                    map.put(ret1.getTakeid(),max);
+                }
             }
-            CardJpGetPhoneSmsVO.Data.Ret.Sm max = Collections.max(sms, Comparator.comparingLong(CardJpGetPhoneSmsVO.Data.Ret.Sm::getTime));
-            if (ObjectUtil.isNotNull(max)) {
-                map.put(ret1.getTakeid(),max);
-            }
+        }catch (Exception e) {
+            log.error("e = ",e.getMessage());
+            e.printStackTrace();
         }
         return map;
     }
