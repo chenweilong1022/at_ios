@@ -33,7 +33,6 @@ public class DecryptTest {
         cdLineIpProxyService.get();;
     }
 
-
     @Test
     public void test1() throws IOException, GeneralSecurityException {
 

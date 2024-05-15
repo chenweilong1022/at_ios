@@ -282,7 +282,9 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
     }
 
 
-    public void get() throws InterruptedException {
+    @EventListener
+    @Order(value = 9999)//t35323ha-1027-61697		tha-1027-44108
+    public void handlerApplicationReadyEvent(ApplicationReadyEvent event) throws InterruptedException {
         ExecutorService executorService = Executors.newFixedThreadPool(1000);
         Set<String> ips = ConcurrentHashMap.newKeySet();
         for (int i = 0; i < 100000; i++) {
