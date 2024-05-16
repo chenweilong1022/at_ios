@@ -34,7 +34,9 @@ public interface CdGetPhoneService extends IService<CdGetPhoneEntity> {
      */
     CdGetPhoneVO getById(Integer id);
 
-    List<CdGetPhoneVO> getByIds(List<Integer> ids);
+    CdGetPhoneEntity queryById(Integer id);
+
+    List<CdGetPhoneEntity> getByIds(List<Integer> ids);
 
     /**
      * 保存

@@ -90,29 +90,9 @@ public enum RedisKeys implements BaseEnum {
      */
     USER_TASKS_WORKING_CLEAN_NX(22,"USER_TASKS_WORKING_CLEAN_NX"),
     /**
-     * 待发起注册手机号
+     * 注册流程缓存
      */
-    WAIT_START_REGISTER_PHONE(23,"WAIT_START_REGISTER_PHONE"),
-    /**
-     * 待获取验证码手机号
-     */
-    SAVE_WAIT_SMS_PHONE(24,"SAVE_WAIT_SMS_PHONE"),
-    /**
-     * 待获取验证码手机号
-     */
-    WAIT_SMS_PHONE(25,"WAIT_SMS_PHONE"),
-    /**
-     * 保存已获取到验证码数据
-     */
-    SAVE_WAIT_REGISTER_PHONE(26,"SAVE_WAIT_REGISTER_PHONE"),
-    /**
-     * 已获取到验证码，发起注册数据
-     */
-    WAIT_REGISTER_PHONE(27,"WAIT_REGISTER_PHONE"),
-    /**
-     * 注册流程街结束，成功/出现问题
-     */
-    REGISTER_FINISH(28,"REGISTER_FINISH"),
+    REGISTER_TASK(23,"REGISTER_TASK"),
     ;
 
     RedisKeys(int key, String value) {

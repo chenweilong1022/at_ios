@@ -67,8 +67,13 @@ public class CdGetPhoneServiceImpl extends ServiceImpl<CdGetPhoneDao, CdGetPhone
     }
 
     @Override
-    public List<CdGetPhoneVO> getByIds(List<Integer> ids) {
-        return CdGetPhoneConver.MAPPER.conver(baseMapper.selectBatchIds(ids));
+    public CdGetPhoneEntity queryById(Integer id) {
+        return baseMapper.selectById(id);
+    }
+
+    @Override
+    public List<CdGetPhoneEntity> getByIds(List<Integer> ids) {
+        return baseMapper.selectBatchIds(ids);
     }
 
     @Override
@@ -219,8 +224,8 @@ public class CdGetPhoneServiceImpl extends ServiceImpl<CdGetPhoneDao, CdGetPhone
             cdGetPhoneRedisDto.setPhoneEntity(cdGetPhoneEntity);
             cdGetPhoneRedisDto.setLineRegister(null);
             //存redis
-            stringRedisTemplate.opsForHash().put(RedisKeys.WAIT_START_REGISTER_PHONE.getValue(),
-                    cdGetPhoneEntity.getPhone(), JSON.toJSONString(cdGetPhoneRedisDto));
+            stringRedisTemplate.opsForHash().put(RedisKeys.REGISTER_TASK.getValue(),
+                    cdGetPhoneRedisDto.getTelPhone(), JSON.toJSONString(cdGetPhoneRedisDto).toString());
         }
     }
 

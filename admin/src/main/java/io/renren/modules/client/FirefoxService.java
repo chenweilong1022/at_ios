@@ -30,7 +30,7 @@ public interface FirefoxService {
      * @param pKey
      * @return
      */
-    default Map<Long, CardJpGetPhoneSmsVO.Data.Ret.Sm> getPhoneCodes(String pKeys){
+    default CardJpGetPhoneSmsVO.Data.Ret.Sm getPhoneCodes(String pKey){
         return null;
     };
 

@@ -22,11 +22,6 @@ public class CdRegisterRedisDto implements Serializable {
 
     private String telPhone;
 
-    /**
-     * 验证码是否发送成功
-     */
-    private Boolean smsFlag;
-
     private CdGetPhoneEntity phoneEntity;
 
     private CdLineRegisterEntity lineRegister;

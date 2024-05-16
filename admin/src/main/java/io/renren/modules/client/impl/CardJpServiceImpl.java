@@ -166,13 +166,13 @@ public class CardJpServiceImpl implements FirefoxService {
 
 
     @Override
-    public Map<Long,CardJpGetPhoneSmsVO.Data.Ret.Sm> getPhoneCodes(String pKeys) {
-
+    public CardJpGetPhoneSmsVO.Data.Ret.Sm getPhoneCodes(String pKey) {
+//todo 去查pkeys
 
 
         HashMap<String, String> paramMap = new HashMap<>();
         paramMap.put("user_code", systemConstant.getJpSmsConfigUserCode());//必填，用户号
-        paramMap.put("take_ids", pKeys);//必填，取号ID,多个ID请用英文半角逗号分隔
+        paramMap.put("take_ids", pKey);//必填，取号ID,多个ID请用英文半角逗号分隔
         String currentTime = DateUtils.getTimestampMillis();
         paramMap.put("timestamp", currentTime);//必填，请求时间戳(秒)
         paramMap.put("sign", getSign(paramMap));//必填，签名
@@ -221,7 +221,7 @@ public class CardJpServiceImpl implements FirefoxService {
             log.error("e = ",e.getMessage());
             e.printStackTrace();
         }
-        return map;
+        return map.get(0);
     }
 
     @Override

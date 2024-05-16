@@ -1,5 +1,6 @@
 package io.renren.modules.ltt.service.impl;
 
+import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
 import io.renren.common.utils.*;
 import io.renren.common.validator.Assert;
@@ -9,6 +10,7 @@ import io.renren.modules.ltt.dto.LineRegisterSummaryResultDto;
 import io.renren.modules.ltt.entity.CdGetPhoneEntity;
 import io.renren.modules.ltt.enums.CountryCode;
 import io.renren.modules.ltt.enums.PhoneStatus;
+import io.renren.modules.ltt.enums.RedisKeys;
 import io.renren.modules.ltt.enums.RegisterStatus;
 import io.renren.modules.ltt.service.CdGetPhoneService;
 import io.renren.modules.ltt.service.CdLineIpProxyService;
@@ -179,12 +181,12 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean registerRetry(Integer[] ids) {
-        List<CdGetPhoneVO> cdGetPhoneList = getPhoneService.getByIds(Arrays.asList(ids));
+        List<CdGetPhoneEntity> cdGetPhoneList = getPhoneService.getByIds(Arrays.asList(ids));
         Assert.isTrue(CollectionUtils.isEmpty(cdGetPhoneList), "数据为空");
 
         List<CdGetPhoneEntity> updateCdGetPhoneList = new ArrayList<>();
         List<Integer> lineRegisterIds = new ArrayList<>();
-        for (CdGetPhoneVO cdGetPhone : cdGetPhoneList) {
+        for (CdGetPhoneEntity cdGetPhone : cdGetPhoneList) {
             CdLineRegisterEntity cdLineRegisterEntity = baseMapper.selectList(new QueryWrapper<CdLineRegisterEntity>().lambda()
                     .eq(CdLineRegisterEntity::getGetPhoneId, cdGetPhone.getId())).stream().findFirst().orElse(null);
             if (cdLineRegisterEntity != null) {
@@ -201,6 +203,7 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
             //更新此条数据，发起重新注册
             CdGetPhoneEntity updateCdGetPhoneEntity = new CdGetPhoneEntity();
             updateCdGetPhoneEntity.setId(cdGetPhone.getId());
+            updateCdGetPhoneEntity.setPhone(cdGetPhone.getPhone());
             updateCdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus1.getKey());
             updateCdGetPhoneEntity.setCode("");
             updateCdGetPhoneEntity.setCreateTime(new Date());
@@ -214,7 +217,30 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
             baseMapper.deleteBatchIds(lineRegisterIds);
         }
 
+        //redis注册流程改为：待处理
+        this.registerRetryRedis(cdGetPhoneList);
+
         return true;
+    }
+
+    /**
+     * 错误重试
+     * @param phoneEntityList 必须是实体类全部的值
+     */
+    private void registerRetryRedis(List<CdGetPhoneEntity> phoneEntityList) {
+        phoneEntityList.stream().forEach(i -> {
+            i.setPhoneStatus(PhoneStatus.PhoneStatus1.getKey());
+            i.setCode("");
+            i.setCreateTime(new Date());
+        });
+        //删除注册流程，回到待处理
+        List<String> phoneList = phoneEntityList.stream().map(CdGetPhoneEntity::getPhone).distinct().collect(Collectors.toList());
+        for (String phone : phoneList) {
+            redisTemplate.opsForHash().delete(RedisKeys.REGISTER_TASK.getValue(), phone);
+        }
+
+        //保存redis
+        cdGetPhoneService.saveWaitRegisterPhone(phoneEntityList);
     }
 
     @Override
@@ -225,7 +251,7 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
                 .last("limit 1")
         );
         if (ObjectUtil.isNotNull(cdLineRegisterEntity)) {
-            CdGetPhoneVO cdGetPhone = getPhoneService.getById(cdLineRegisterEntity.getGetPhoneId());
+            CdGetPhoneEntity cdGetPhone = getPhoneService.queryById(cdLineRegisterEntity.getGetPhoneId());
             if (ObjectUtil.isNotNull(cdGetPhone)) {
                 //ip暂时拉黑
                 this.clearTokenPhone(cdGetPhone);
@@ -237,13 +263,16 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
                 updateCdGetPhoneEntity.setCode("");
                 updateCdGetPhoneEntity.setCreateTime(new Date());
                 getPhoneService.updateById(updateCdGetPhoneEntity);
+                //redis注册流程改为：待处理
+                this.registerRetryRedis(Arrays.asList(cdGetPhone));
             }
             baseMapper.deleteById(cdLineRegisterEntity.getId());
         }
+
         return false;
     }
 
-    private void clearTokenPhone(CdGetPhoneVO cdGetPhone) {
+    private void clearTokenPhone(CdGetPhoneEntity cdGetPhone) {
         //ip暂时拉黑
         if (StringUtils.isEmpty(cdGetPhone.getCode())
                 || Boolean.FALSE.equals(StrTextUtil.verificationCodeFlag(cdGetPhone.getCode()))) {
@@ -251,7 +280,7 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
         }
     }
 
-    private void clearTokenPhone2(CdGetPhoneVO cdGetPhone) {
+    private void clearTokenPhone2(CdGetPhoneEntity cdGetPhone) {
         //ip暂时拉黑
         if (StringUtils.isEmpty(cdGetPhone.getCode())
                 || Boolean.FALSE.equals(StrTextUtil.verificationCodeFlag(cdGetPhone.getCode()))) {
@@ -283,12 +312,12 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
 
     @Override
     public boolean registerRetry2(Integer[] ids) {
-        List<CdGetPhoneVO> cdGetPhoneList = getPhoneService.getByIds(Arrays.asList(ids));
+        List<CdGetPhoneEntity> cdGetPhoneList = getPhoneService.getByIds(Arrays.asList(ids));
         Assert.isTrue(CollectionUtils.isEmpty(cdGetPhoneList), "数据为空");
 
         List<CdGetPhoneEntity> updateCdGetPhoneList = new ArrayList<>();
         List<Integer> lineRegisterIds = new ArrayList<>();
-        for (CdGetPhoneVO cdGetPhone : cdGetPhoneList) {
+        for (CdGetPhoneEntity cdGetPhone : cdGetPhoneList) {
             CdLineRegisterEntity cdLineRegisterEntity = baseMapper.selectList(new QueryWrapper<CdLineRegisterEntity>().lambda()
                     .eq(CdLineRegisterEntity::getGetPhoneId, cdGetPhone.getId())).stream().findFirst().orElse(null);
             if (cdLineRegisterEntity != null) {
@@ -317,6 +346,8 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
         if (CollectionUtils.isNotEmpty(lineRegisterIds)) {
             baseMapper.deleteBatchIds(lineRegisterIds);
         }
+        //redis注册流程改为：待处理
+        this.registerRetryRedis(cdGetPhoneList);
 
         return true;
     }

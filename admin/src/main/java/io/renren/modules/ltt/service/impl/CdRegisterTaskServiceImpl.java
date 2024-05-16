@@ -61,9 +61,9 @@ public class CdRegisterTaskServiceImpl extends ServiceImpl<CdRegisterTaskDao, Cd
                 new Query<CdRegisterTaskEntity>(cdRegisterTask).getPage(),
                 new QueryWrapper<CdRegisterTaskEntity>().lambda()
                         .lt(CdRegisterTaskEntity::getFillUpRegisterTaskId, 0)
-                        .eq(ObjectUtil.isNotNull(cdRegisterTask.getCountryCode()),CdRegisterTaskEntity::getCountryCode, cdRegisterTask.getCountryCode() )
-                        .eq(ObjectUtil.isNotNull(cdRegisterTask.getRegistrationStatus()),CdRegisterTaskEntity::getRegistrationStatus, cdRegisterTask.getRegistrationStatus() )
-                        .like(StringUtils.isNotEmpty(cdRegisterTask.getTaskName()),CdRegisterTaskEntity::getTaskName, cdRegisterTask.getTaskName() )
+                        .eq(ObjectUtil.isNotNull(cdRegisterTask.getCountryCode()), CdRegisterTaskEntity::getCountryCode, cdRegisterTask.getCountryCode())
+                        .eq(ObjectUtil.isNotNull(cdRegisterTask.getRegistrationStatus()), CdRegisterTaskEntity::getRegistrationStatus, cdRegisterTask.getRegistrationStatus())
+                        .like(StringUtils.isNotEmpty(cdRegisterTask.getTaskName()), CdRegisterTaskEntity::getTaskName, cdRegisterTask.getTaskName())
                         .orderByDesc(CdRegisterTaskEntity::getId)
         );
 
@@ -111,7 +111,7 @@ public class CdRegisterTaskServiceImpl extends ServiceImpl<CdRegisterTaskDao, Cd
         CdRegisterTaskEntity cdRegisterTaskEntity = CdRegisterTaskConver.MAPPER.converDTO(cdRegisterTask);
         boolean save = this.save(cdRegisterTaskEntity);
         //设置注册代理类型
-        redisTemplate.opsForHash().put(RedisKeys.RedisKeys5.getValue(),String.valueOf(cdRegisterTaskEntity.getId()),String.valueOf(cdRegisterTask.getProxyIp()));
+        redisTemplate.opsForHash().put(RedisKeys.RedisKeys5.getValue(), String.valueOf(cdRegisterTaskEntity.getId()), String.valueOf(cdRegisterTask.getProxyIp()));
         //获取国家 如果是四方
         Integer countryCode = cdRegisterTask.getCountryCode();
         List<String> phones = new ArrayList<>();
@@ -150,7 +150,7 @@ public class CdRegisterTaskServiceImpl extends ServiceImpl<CdRegisterTaskDao, Cd
                     Integer newNumberRegistrations = totalAmount - numberRegistered;
                     if (newNumberRegistrations > numberThreads) {
                         newNumberRegistrations = numberThreads;
-                    }else{
+                    } else {
                         flag = false;
                         cdRegisterTaskEntity.setRegistrationStatus(RegistrationStatus.RegistrationStatus2.getKey());
                     }
@@ -171,7 +171,7 @@ public class CdRegisterTaskServiceImpl extends ServiceImpl<CdRegisterTaskDao, Cd
                     cdRegisterTaskEntity.setNumberRegistered(cdRegisterTaskEntity.getNumberRegistered() + newNumberRegistrations);
                 }
                 //保存子任务
-                cdRegisterSubtasksService.saveBatch(cdRegisterSubtasksEntities,cdRegisterSubtasksEntities.size());
+                cdRegisterSubtasksService.saveBatch(cdRegisterSubtasksEntities, cdRegisterSubtasksEntities.size());
                 //修改状态
                 this.updateById(cdRegisterTaskEntity);
 
@@ -181,7 +181,7 @@ public class CdRegisterTaskServiceImpl extends ServiceImpl<CdRegisterTaskDao, Cd
                     Integer numberRegistrations = cdRegisterSubtasksEntity.getNumberRegistrations();
                     for (Integer i = 0; i < numberRegistrations; i++) {
                         String poll = queue.poll();
-                        Assert.isTrue(StrUtil.isEmpty(poll),"注册数据小于注册数量");
+                        Assert.isTrue(StrUtil.isEmpty(poll), "注册数据小于注册数量");
                         CdGetPhoneEntity cdGetPhoneEntity = new CdGetPhoneEntity();
                         cdGetPhoneEntity.setNumber(poll);
                         cdGetPhoneEntity.setPkey(poll);
@@ -205,6 +205,8 @@ public class CdRegisterTaskServiceImpl extends ServiceImpl<CdRegisterTaskDao, Cd
                     }
                 }
                 cdGetPhoneService.saveBatch(cdGetPhoneEntities);
+                //注册流程保存redis
+                cdGetPhoneService.saveWaitRegisterPhone(cdGetPhoneEntities);
             }
         }
         return save;
@@ -291,7 +293,7 @@ public class CdRegisterTaskServiceImpl extends ServiceImpl<CdRegisterTaskDao, Cd
     public boolean updateById(CdRegisterTaskDTO cdRegisterTask) {
         CdRegisterTaskEntity cdRegisterTaskEntity = CdRegisterTaskConver.MAPPER.converDTO(cdRegisterTask);
         //设置注册代理类型
-        redisTemplate.opsForHash().put(RedisKeys.RedisKeys5.getValue(),String.valueOf(cdRegisterTaskEntity.getId()),String.valueOf(cdRegisterTask.getProxyIp()));
+        redisTemplate.opsForHash().put(RedisKeys.RedisKeys5.getValue(), String.valueOf(cdRegisterTaskEntity.getId()), String.valueOf(cdRegisterTask.getProxyIp()));
         return true;
     }
 
