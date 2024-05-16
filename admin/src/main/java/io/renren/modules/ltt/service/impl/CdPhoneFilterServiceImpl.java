@@ -8,6 +8,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -68,15 +69,11 @@ public class CdPhoneFilterServiceImpl extends ServiceImpl<CdPhoneFilterDao, CdPh
 
     @Override
     public PageUtils<CdPhoneFilterVO> queryPage(CdPhoneFilterDTO cdPhoneFilter) {
-        IPage<CdPhoneFilterEntity> page = baseMapper.selectPage(
+        IPage<CdPhoneFilterVO> page = baseMapper.listPage(
                 new Query<CdPhoneFilterEntity>(cdPhoneFilter).getPage(),
-                new QueryWrapper<CdPhoneFilterEntity>().lambda()
-                        .eq(CdPhoneFilterEntity::getRecordId, cdPhoneFilter.getRecordId())
-                        .eq(ObjectUtil.isNotNull(cdPhoneFilter.getTaskStatus()), CdPhoneFilterEntity::getTaskStatus, cdPhoneFilter.getTaskStatus())
-                        .orderByDesc(CdPhoneFilterEntity::getRecordId)
+                cdPhoneFilter
         );
-
-        return PageUtils.<CdPhoneFilterVO>page(page).setList(CdPhoneFilterConver.MAPPER.conver(page.getRecords()));
+        return PageUtils.<CdPhoneFilterVO>page(page);
     }
 
     @Override
@@ -289,6 +286,52 @@ public class CdPhoneFilterServiceImpl extends ServiceImpl<CdPhoneFilterDao, CdPh
     @Override
     public CdPhoneFilterStatusDto queryByTaskStatus(Integer recordId) {
         return baseMapper.queryByTaskStatus(recordId);
+    }
+
+    @Override
+    public void reallocateToken(Integer id) {
+        List<AtDataSubtaskEntity> list = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
+                .eq(AtDataSubtaskEntity::getRecordId,id)
+        );
+        Map<Integer, List<AtDataSubtaskEntity>> integerListMap = list.stream().collect(Collectors.groupingBy(AtDataSubtaskEntity::getUserId));
+
+        for (Integer userId : integerListMap.keySet()) {
+            //获取全部数据 根据用户分组，如果任务为2跳出循环，如果不为2
+            List<AtDataSubtaskEntity> atDataSubtaskEntityList = integerListMap.get(userId);
+            long count = atDataSubtaskEntityList.stream().filter(item -> TaskStatus.TaskStatus2.getKey().equals(item.getTaskStatus())).count();
+            if (count > 0) {
+                continue;
+            }
+            AtDataSubtaskEntity atDataSubtaskEntity1 = atDataSubtaskEntityList.get(0);
+            try {
+                PhoneCountryVO phoneNumberInfo = PhoneUtil.getPhoneNumberInfo(atDataSubtaskEntity1.getContactKey());
+                Long countryCode = phoneNumberInfo.getCountryCode();
+                String regions = EnumUtil.queryValueByKey(countryCode.intValue(), CountryCode.values());
+                List<AtUserEntity> atUserEntities = atUserService.list(new QueryWrapper<AtUserEntity>().lambda()
+                        .in(AtUserEntity::getStatus, UserStatus.UserStatus4.getKey())
+                        .eq(AtUserEntity::getNation, regions)
+                        .orderByAsc(AtUserEntity::getId)
+                        .last("limit 1")
+                );
+                if (CollUtil.isNotEmpty(atUserEntities)) {
+                    //修改用户为已使用
+                    AtUserEntity poll = atUserEntities.get(0);
+                    AtUserEntity atUserEntity = new AtUserEntity();
+                    atUserEntity.setId(poll.getId());
+                    atUserEntity.setStatus(UserStatus.UserStatus6.getKey());
+                    atUserService.updateById(atUserEntity);
+
+                    for (AtDataSubtaskEntity atDataSubtaskEntity : atDataSubtaskEntityList) {
+                        atDataSubtaskEntity.setUserId(poll.getId());
+                        atDataSubtaskEntity.setTaskStatus(TaskStatus.TaskStatus2.getKey());
+                    }
+                    atDataSubtaskService.updateBatchById(atDataSubtaskEntityList);
+                }
+            } catch (Exception e) {
+
+            }
+        }
+
     }
 
 }

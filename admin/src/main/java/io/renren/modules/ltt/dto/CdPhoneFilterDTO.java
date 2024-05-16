@@ -44,6 +44,11 @@ public class CdPhoneFilterDTO extends PageParam implements Serializable {
 	@ApiModelProperty(required=false,value="任务状态")
 	private Integer taskStatus;
 	/**
+	 * 任务状态
+	 */
+	@ApiModelProperty(required=false,value="任务状态")
+	private Integer taskStatus2;
+	/**
 	 *
 	 */
 	@ApiModelProperty(required=false,value="")

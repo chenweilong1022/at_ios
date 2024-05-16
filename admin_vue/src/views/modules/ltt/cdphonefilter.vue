@@ -20,6 +20,7 @@
       </el-form-item>
       <el-form-item>
         <el-button @click="getDataList()">查询</el-button>
+        <el-button @click="reallocateToken()">子任务失败重试</el-button>
 <!--        <el-button v-if="isAuth('ltt:cdphonefilter:save')" type="primary" @click="addOrUpdateHandle()">新增</el-button>-->
 <!--        <el-button v-if="isAuth('ltt:cdphonefilter:delete')" type="danger" @click="deleteHandle()" :disabled="dataListSelections.length <= 0">批量删除</el-button>-->
       </el-form-item>
@@ -36,8 +37,11 @@
         align="center"
         label="任务状态">
         <template slot-scope="scope">
-          <el-tag v-for="item in taskStatusCodes" :key="item.key" v-if="scope.row.taskStatus === item.key">
-            {{ item.value }}
+          <el-tag v-if="scope.row.taskStatus === 3">
+            {{scope.row.taskStatusStr}}
+          </el-tag>
+          <el-tag v-else>
+            {{scope.row.taskStatus2Str}}
           </el-tag>
         </template>
       </el-table-column>
@@ -150,6 +154,27 @@
             this.dataList = []
             this.totalPage = 0
           }
+          this.dataListLoading = false
+        })
+      },
+      // 获取数据列表
+      reallocateToken () {
+        this.dataListLoading = true
+        this.$http({
+          url: this.$http.adornUrl(`/ltt/cdphonefilter/reallocateToken/${this.dataForm.recordId}`),
+          method: 'get'
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.$message({
+              message: '操作成功',
+              type: 'success',
+              duration: 1500,
+              onClose: () => {
+                this.getDataList()
+              }
+            })
+          }
+        }).finally(() => {
           this.dataListLoading = false
         })
       },

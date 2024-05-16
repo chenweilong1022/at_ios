@@ -30,4 +30,27 @@
     WHERE
         record_id = #{recordId}
 </select>
+    <select id="listPage" resultType="io.renren.modules.ltt.vo.CdPhoneFilterVO">
+        SELECT
+            cd_phone_filter.id id,
+            cd_phone_filter.record_id recordId,
+            cd_phone_filter.task_status taskStatus,
+            cd_phone_filter.contact_key contactKey,
+            cd_phone_filter.mid mid,
+            cd_phone_filter.display_name displayName,
+            cd_phone_filter.delete_flag deleteFlag,
+            cd_phone_filter.create_time createTime,
+            cd_phone_filter.update_time updateTime,
+            cd_phone_filter.msg msg,
+            at_data_subtask.task_status taskStatus2
+        FROM
+            cd_phone_filter
+                LEFT JOIN at_data_subtask ON at_data_subtask.record_id = cd_phone_filter.record_id
+                AND at_data_subtask.contact_key = cd_phone_filter.contact_key
+                AND at_data_subtask.data_type = 4
+        WHERE
+            ( cd_phone_filter.record_id = #{dto.recordId} )
+        ORDER BY
+            cd_phone_filter.record_id DESC
+    </select>
 </mapper>
