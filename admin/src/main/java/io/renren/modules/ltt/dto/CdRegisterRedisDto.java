@@ -14,7 +14,6 @@ import java.io.Serializable;
  * @email chenweilong@qq.com
  * @date 2024-03-27 12:36:12
  */
-@Data
 @TableName("cd_get_phone")
 @ApiModel("")
 @Accessors(chain = true)
@@ -26,4 +25,27 @@ public class CdRegisterRedisDto implements Serializable {
 
     private CdLineRegisterEntity lineRegister;
 
+    public String getTelPhone() {
+        return telPhone;
+    }
+
+    public void setTelPhone(String telPhone) {
+        this.telPhone = telPhone;
+    }
+
+    public CdGetPhoneEntity getPhoneEntity() {
+        return phoneEntity;
+    }
+
+    public void setPhoneEntity(CdGetPhoneEntity phoneEntity) {
+        this.phoneEntity = phoneEntity;
+    }
+
+    public CdLineRegisterEntity getLineRegister() {
+        return lineRegister;
+    }
+
+    public void setLineRegister(CdLineRegisterEntity lineRegister) {
+        this.lineRegister = lineRegister;
+    }
 }

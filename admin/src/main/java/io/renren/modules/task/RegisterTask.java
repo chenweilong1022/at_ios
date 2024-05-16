@@ -189,7 +189,7 @@ public class RegisterTask {
      *
      */
     public CdRegisterRedisDto getSmsJp(ProjectWorkEntity projectWorkEntity,
-                                        CdRegisterRedisDto registerRedisDto) {
+                                       CdRegisterRedisDto registerRedisDto) {
         if (ObjectUtil.isNull(projectWorkEntity)
                 || ObjectUtil.isNull(registerRedisDto)
                 || ObjectUtil.isNull(registerRedisDto.getPhoneEntity())
@@ -242,7 +242,7 @@ public class RegisterTask {
 
 
     public CdRegisterRedisDto getSms(ProjectWorkEntity projectWorkEntity,
-                                      CdRegisterRedisDto registerRedisDto) {
+                                     CdRegisterRedisDto registerRedisDto) {
         if (ObjectUtil.isNull(projectWorkEntity)
                 || ObjectUtil.isNull(registerRedisDto)
                 || ObjectUtil.isNull(registerRedisDto.getPhoneEntity())
@@ -270,7 +270,7 @@ public class RegisterTask {
             String phoneCode = phoneEntity.getCode();
             //超过20分
             long between = DateUtil.between(phoneEntity.getCreateTime(), DateUtil.date(), DateUnit.MINUTE);
-            if (between > 10) {
+            if (between > 2) {
                 phoneEntity.setCode("验证码超时");
                 phoneEntity.setPhoneStatus(PhoneStatus5.getKey());
                 lineRegisterEntity.setRegisterStatus(RegisterStatus.RegisterStatus5.getKey());
@@ -716,7 +716,7 @@ public class RegisterTask {
     /**
      * 使用协议去注册
      */
-    @Scheduled(fixedDelay = 10 * 1000)
+    @Scheduled(fixedDelay = 5 * 1000)
     @Transactional(rollbackFor = Exception.class)
     @Async
     public void registerTaskDistribution() {
@@ -746,36 +746,42 @@ public class RegisterTask {
             Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
             boolean triedLock = lock.tryLock();
             log.info("注册任务分发{}，keyByResource = {} 获取的锁为 = {}", registerRedisDto.getTelPhone(), keyByResource, triedLock);
-            if (PhoneStatus1.getKey().equals(phoneEntity.getPhoneStatus())) {
-                //去注册
-                registerRedisDto = this.startRegister(projectWorkEntity, registerRedisDto);
-                if (PhoneStatus1.getKey().equals(phoneEntity.getPhoneStatus())) {
-                    //未做变更
-                    continue;
+            if (triedLock) {
+                try {
+                    if (PhoneStatus1.getKey().equals(phoneEntity.getPhoneStatus())) {
+                        //去注册
+                        registerRedisDto = this.startRegister(projectWorkEntity, registerRedisDto);
+                    } else if (ObjectUtil.isNotNull(lineRegisterEntity)
+                            && RegisterStatus.RegisterStatus2.getKey().equals(lineRegisterEntity.getRegisterStatus())) {
+                        //去获取验证码
+                        if (CountryCode.CountryCode3.getKey().equals(phoneEntity.getCountry())) {
+                            //山谷
+                            registerRedisDto = this.getSmsJp(projectWorkEntity, registerRedisDto);
+                        } else {
+                            registerRedisDto = this.getSms(projectWorkEntity, registerRedisDto);
+                        }
+                    } else if (PhoneStatus5.getKey().equals(phoneEntity.getPhoneStatus())) {
+                        registerRedisDto = this.getSms(projectWorkEntity, registerRedisDto);
+                    } else if (ObjectUtil.isNotNull(lineRegisterEntity)
+                            && RegisterStatus.RegisterStatus3.getKey().equals(lineRegisterEntity.getRegisterStatus())) {
+                        //去提交验证码，完成注册
+                        registerRedisDto = this.submitRegister(projectWorkEntity, registerRedisDto);
+                    } else {
+                        continue;
+                    }
+
+                    log.info("注册发起流程结束 {}, {}", registerRedisDto.getTelPhone(), registerRedisDto);
+
+                    //存redis，异步保存，避免卡顿超时
+                    redisTemplate.opsForHash().put(RedisKeys.REGISTER_TASK.getValue(),
+                            registerRedisDto.getTelPhone(), JSON.toJSONString(registerRedisDto));
+                } finally {
+                    lock.unlock();
                 }
-            } else if ((ObjectUtil.isNotNull(lineRegisterEntity)
-                    && RegisterStatus.RegisterStatus2.getKey().equals(lineRegisterEntity.getRegisterStatus()))
-                    || PhoneStatus5.getKey().equals(phoneEntity.getPhoneStatus())) {
-                //去获取验证码
-                if (CountryCode.CountryCode3.getKey().equals(phoneEntity.getCountry())) {
-                    //山谷
-                    registerRedisDto = this.getSmsJp(projectWorkEntity, registerRedisDto);
-                } else {
-                    registerRedisDto = this.getSms(projectWorkEntity, registerRedisDto);
-                }
-            } else if (ObjectUtil.isNotNull(lineRegisterEntity)
-                    && RegisterStatus.RegisterStatus3.getKey().equals(lineRegisterEntity.getRegisterStatus())) {
-                //去提交验证码，完成注册
-                registerRedisDto = this.submitRegister(projectWorkEntity, registerRedisDto);
             } else {
-                continue;
+                log.info("注册任务分发{}在执行，keyByResource = {} 获取的锁为 = {}", registerRedisDto.getTelPhone(), keyByResource);
             }
 
-            log.info("注册发起流程结束 {}, {}", registerRedisDto.getTelPhone(), registerRedisDto);
-
-            //存redis，异步保存，避免卡顿超时
-            redisTemplate.opsForHash().put(RedisKeys.REGISTER_TASK.getValue(),
-                    registerRedisDto.getTelPhone(), JSON.toJSONString(registerRedisDto));
 //            });
         }
 
@@ -785,88 +791,76 @@ public class RegisterTask {
     /**
      * 注册流程保存数据库
      */
-    @Scheduled(fixedDelay = 10 * 1000)
+    @Scheduled(fixedDelay = 5 * 1000)
     @Transactional(rollbackFor = Exception.class)
     @Async
     public void saveRegisterTask() {
-        ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
-        if (ObjectUtil.isNull(projectWorkEntity)) {
-            return;
-        }
-
         List<Object> registerList = redisTemplate.opsForHash()
                 .values(RedisKeys.REGISTER_TASK.getValue());
+        log.info("注册任务保存 {}", registerList);
         if (CollUtil.isEmpty(registerList)) {
             log.info("注册任务保存，暂无执行的");
             return;
         }
-
-        List<CdGetPhoneEntity> updateCdGetPhoneList = new ArrayList<>();
-        List<CdLineRegisterEntity> updateLineRegisterEntityList = new ArrayList<>();
         for (Object object : registerList) {
-            CdRegisterRedisDto registerRedisDto = JSON.parseObject((String) object, CdRegisterRedisDto.class);
-            if (registerRedisDto == null || registerRedisDto.getPhoneEntity() == null) {
-                log.info("注册任务保存，数据为空 {}", object);
-                continue;
-            }
-            CdGetPhoneEntity phoneEntity = registerRedisDto.getPhoneEntity();
-            CdLineRegisterEntity lineRegisterEntity = registerRedisDto.getLineRegister();
-
-            String keyByResource = LockMapKeyResource
-                    .getKeyByResource(LockMapKeyResource.REGISTER_TASK_SAVE, registerRedisDto.getTelPhone());
-            Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
-            boolean triedLock = lock.tryLock();
-            log.info("注册任务保存{}，keyByResource = {} 获取的锁为 = {}", registerRedisDto.getTelPhone(), keyByResource, triedLock);
-
-            if (ObjectUtil.isNotNull(lineRegisterEntity)
-                    && RegisterStatus.RegisterStatus1.getKey().equals(lineRegisterEntity.getRegisterStatus())) {
-                //保存line
-                cdGetPhoneService.updateById(phoneEntity);
-                try {
-                    cdLineRegisterService.save(lineRegisterEntity);
-                } catch (Exception e) {
-                    log.warn("注册表重复 {}", lineRegisterEntity, e);
+            poolExecutor.execute(() -> {
+                CdRegisterRedisDto registerRedisDto = JSON.parseObject((String) object, CdRegisterRedisDto.class);
+                if (registerRedisDto == null || registerRedisDto.getPhoneEntity() == null) {
+                    log.info("注册任务保存，数据为空 {}", object);
+                    return;
                 }
-                lineRegisterEntity.setRegisterStatus(RegisterStatus.RegisterStatus2.getKey());
-                redisTemplate.opsForHash().put(RedisKeys.REGISTER_TASK.getValue(),
-                        registerRedisDto.getTelPhone(), JSON.toJSONString(registerRedisDto));
-                continue;
-            }
+                String keyByResource = LockMapKeyResource
+                        .getKeyByResource(LockMapKeyResource.REGISTER_TASK_SAVE, registerRedisDto.getTelPhone());
+                Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
+                boolean triedLock = lock.tryLock();
+                if (triedLock) {
+                    try {
+                        log.info("注册任务保存{}，keyByResource = {} 获取的锁为 = {}", registerRedisDto.getTelPhone(), keyByResource, triedLock);
+                        CdGetPhoneEntity phoneEntity = registerRedisDto.getPhoneEntity();
+                        CdLineRegisterEntity lineRegisterEntity = registerRedisDto.getLineRegister();
+                        if (PhoneStatus1.getKey().equals(phoneEntity.getPhoneStatus())) {
+                            //去注册
+                            return;
+                        }
 
-            if (ObjectUtil.isNotNull(lineRegisterEntity)
-                    && RegisterStatus.RegisterStatus4.getKey().equals(lineRegisterEntity.getRegisterStatus())) {
-                //更新手机号注册次数
-                this.savePhoneRegisterCount(lineRegisterEntity.getPhone());
-            }
-            updateCdGetPhoneList.add(phoneEntity);
-            if (lineRegisterEntity != null) {
-                updateLineRegisterEntityList.add(lineRegisterEntity);
-            }
-            log.info("注册任务保存流程结束 {}, {}", registerRedisDto.getTelPhone(), registerRedisDto);
-        }
-
-        if (CollUtil.isNotEmpty(updateCdGetPhoneList)) {
-            cdGetPhoneService.updateBatchById(updateCdGetPhoneList);
-        }
-
-        if (CollUtil.isNotEmpty(updateLineRegisterEntityList)) {
-
-            List<String> finishRegisterPhone = updateLineRegisterEntityList.stream()
-                    .filter(i -> RegisterStatus.RegisterStatus4.getKey().equals(i.getRegisterStatus())
-                            || RegisterStatus.RegisterStatus5.getKey().equals(i.getRegisterStatus())).collect(Collectors.toList())
-                    .stream().map(i -> i.getPhone()).distinct().collect(Collectors.toList());
-
-
-            //删除redis缓存
-            if (CollectionUtils.isNotEmpty(finishRegisterPhone)) {
-                for (String phone : finishRegisterPhone) {
-                    redisTemplate.opsForHash().delete(RedisKeys.REGISTER_TASK.getValue(), phone);
+                        if (ObjectUtil.isNotNull(lineRegisterEntity)
+                                && RegisterStatus.RegisterStatus1.getKey().equals(lineRegisterEntity.getRegisterStatus())) {
+                            try {
+                                log.info("保存line {},{} ", lineRegisterEntity.getPhone(), LocalDateTime.now());
+                                lineRegisterEntity.setRegisterStatus(RegisterStatus.RegisterStatus2.getKey());
+                                cdLineRegisterService.save(lineRegisterEntity);
+                                phoneEntity.setLineRegisterId(lineRegisterEntity.getId());
+                                //保存line
+                                boolean b = cdGetPhoneService.updateById(phoneEntity);
+                                if (b) {
+                                    registerRedisDto.setLineRegister(lineRegisterEntity);
+                                    redisTemplate.opsForHash().put(RedisKeys.REGISTER_TASK.getValue(),
+                                            registerRedisDto.getTelPhone(), JSON.toJSONString(registerRedisDto));
+                                    log.info("保存line结果 {},{},{} ", lineRegisterEntity.getPhone(), LocalDateTime.now(), JSONUtil.toJsonStr(registerRedisDto));
+                                }
+                            } catch (Exception e) {
+                                log.warn("注册表重复 {}", lineRegisterEntity, e);
+                                return;
+                            }
+                        }else {
+                            //保存line
+                            boolean b1 = cdGetPhoneService.updateById(phoneEntity);
+                            boolean b2 = cdLineRegisterService.updateById(lineRegisterEntity);
+                        }
+                        if (ObjectUtil.isNotNull(lineRegisterEntity)
+                                && RegisterStatus.RegisterStatus4.getKey().equals(lineRegisterEntity.getRegisterStatus())) {
+                            //更新手机号注册次数
+                            this.savePhoneRegisterCount(lineRegisterEntity.getPhone());
+                        }
+                        log.info("注册任务保存流程结束 {}, {}", registerRedisDto.getTelPhone(), registerRedisDto);
+                    } finally {
+                        lock.unlock();
+                    }
+                } else {
+                    log.info("注册任务分发{}在执行，keyByResource = {} 获取的锁为 = {}", registerRedisDto.getTelPhone(), keyByResource);
                 }
-            }
-            cdLineRegisterService.updateBatchById(updateLineRegisterEntityList);
+            });
         }
-        log.info("注册任务保存流程结束 修改条数 {}, {}", updateCdGetPhoneList.size(), updateLineRegisterEntityList.size());
     }
-
 
 }
