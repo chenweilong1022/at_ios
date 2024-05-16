@@ -259,14 +259,29 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
         if (GroupType.GroupType6.getKey().equals(atGroupTask.getGroupType())) {
             atGroupTask.setPullGroupNumber(2);
         }
+
+        //如果需要改群名，校验分组
+        if (OpenApp.OpenApp2.getKey().equals(atGroupTask.getRandomGroupName())) {
+            Assert.isNull(atGroupTask.getChangeGroupId(),"改名号分组不能为空");
+            Assert.isTrue(atGroupTask.getChangeGroupId().equals(atGroupTask.getUserGroupId()),"改名号分组不能和拉群号分组一样");
+        }
+
         //获取所有群信息
         List<OnGroupPreVO> onGroupPreVOS = onGroupPre(atGroupTask);
         //校验拉群号国家
         List<AtUserVO> atUserVOS = getAtUserVOS(atGroupTask, onGroupPreVOS);
-
         //校验改群名号国家
         List<AtUserVO> atUserChangeGroupVOS = getChangeGroupAtUserVOS(atGroupTask, onGroupPreVOS);
-
+        //拉群号国家
+        List<Integer> atUserIds = atUserVOS.stream().map(AtUserVO::getId).collect(Collectors.toList());
+        //拉群号手机号
+        List<String> atUserPhones = atUserVOS.stream().map(AtUserVO::getTelephone).collect(Collectors.toList());
+        //改群号国家
+        List<Integer> atUserChangeIds = atUserChangeGroupVOS.stream().map(AtUserVO::getId).collect(Collectors.toList());
+        //改群号手机号
+        List<String> atUserChangePhones = atUserChangeGroupVOS.stream().map(AtUserVO::getTelephone).collect(Collectors.toList());
+        Assert.isTrue(atUserIds.retainAll(atUserChangeIds),"拉群号不能和改群号重复");
+        Assert.isTrue(atUserPhones.retainAll(atUserChangePhones),"拉群号不能和改群号重复");
         List<AtUserVO> atUserVOSH = CollUtil.newArrayList();
         if (GroupType.GroupType6.getKey().equals(atGroupTask.getGroupType())) {
             atUserVOSH = getAtUserVOSH(atGroupTask, onGroupPreVOS);

@@ -266,13 +266,15 @@ public class RegisterTask {
                 CdRegisterRedisDto registerRedisDto =  JSON.parseObject((String) object, CdRegisterRedisDto.class);
                 CdGetPhoneEntity phoneEntity = registerRedisDto.getPhoneEntity();
                 pkeyList.add(phoneEntity.getPkey());
-                registerRedisMap.put(phoneEntity.getPkey())
+                registerRedisMap.put(phoneEntity.getPkey(),registerRedisDto);
 
             }
 
+            List<CdGetPhoneEntity> phoneEntities = registerRedisMap.values().stream().map(item -> item.getPhoneEntity()).collect(Collectors.toList());
+
             String pks = pkeyList.stream().collect(Collectors.joining(","));
             Map<Long, CardJpGetPhoneSmsVO.Data.Ret.Sm> phoneCodes = cardJpService.getPhoneCodes(pks);
-            Map<String, CdGetPhoneEntity> collect = list.stream().collect(Collectors.toMap(CdGetPhoneEntity::getPkey, item -> item, (a, b) -> a));
+            Map<String, CdGetPhoneEntity> collect = phoneEntities.stream().collect(Collectors.toMap(CdGetPhoneEntity::getPkey, item -> item, (a, b) -> a));
             List<CdGetPhoneEntity> cdGetPhoneEntities = new ArrayList<>();
             List<CdLineRegisterEntity> cdLineRegisterEntities = new ArrayList<>();
 
