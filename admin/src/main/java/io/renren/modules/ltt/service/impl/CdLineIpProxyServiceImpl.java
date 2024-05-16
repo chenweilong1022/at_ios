@@ -142,9 +142,18 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         return ip;
     }
 
+    @Resource(name = "caffeineCacheCodeListObject")
+    private Cache<String, List<String>> caffeineCacheCodeListObject;
+
     private String getIp(CdLineIpProxyDTO cdLineIpProxyDTO, Long countryCode, Integer proxy,PhoneCountryVO phoneNumberInfo) {
+        List<String> ifPresent = caffeineCacheCodeListObject.getIfPresent(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)));
+        if (CollUtil.isEmpty(ifPresent)) {
+            List<Object> values = redisTemplate.opsForHash().values(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)));
+            ifPresent = values.stream().map(obj -> obj.toString()).collect(Collectors.toList());
+            caffeineCacheCodeListObject.put(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)),ifPresent);
+        }
         try{
-            ExecutorService executorService = Executors.newFixedThreadPool(5);
+//            ExecutorService executorService = Executors.newFixedThreadPool(5);
             //国家英文
             String regions = EnumUtil.queryValueByKey(countryCode.intValue(), CountryCode.values());
             //出口ip
@@ -186,21 +195,24 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 
                 Set<CurlVO> ips = ConcurrentHashMap.newKeySet();
 
-                for (int i = 0; i < 50; i++) {
-                    executorService.submit(() -> {
-                        String ip = getDyIp(regions,phoneNumberInfo);
-                        CurlVO proxyUse = getProxyUse(ip, regions);
-                        proxyUse.setS5Ip(ip);
-                        ips.add(proxyUse);
-                    });
-                }
-                // 关闭线程池
-                executorService.shutdown();
-                // 等待所有任务完成
-                if (!executorService.awaitTermination(1, TimeUnit.HOURS)) {
-                    // 如果超时，则强制关闭尚未完成的任务
-                    executorService.shutdownNow();
-                }
+                String ips5 = getDyIp(regions,phoneNumberInfo);
+                CurlVO proxyUseOld = getProxyUse(ips5, regions);
+                proxyUseOld.setS5Ip(ips5);
+                ips.add(proxyUseOld);
+//                for (int i = 0; i < 50; i++) {
+//                    executorService.submit(() -> {
+//                        CurlVO proxyUse = getProxyUse(ip, regions);
+//                        proxyUse.setS5Ip(ip);
+//                        ips.add(proxyUse);
+//                    });
+//                }
+//                // 关闭线程池
+//                executorService.shutdown();
+//                // 等待所有任务完成
+//                if (!executorService.awaitTermination(1, TimeUnit.HOURS)) {
+//                    // 如果超时，则强制关闭尚未完成的任务
+//                    executorService.shutdownNow();
+//                }
 
                 for (CurlVO proxyUse : ips) {
                     String ip = proxyUse.getS5Ip();
@@ -220,7 +232,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                                     }
                                 }
                             }
-
+//60.101.7.65
                             Boolean b = redisTemplate.opsForHash().putIfAbsent(RedisKeys.RedisKeys1.getValue(), proxyUse.getIp(), ip);
                             if (b) {
                                 if (StrUtil.isNotEmpty(outIpv4)) {
@@ -231,6 +243,10 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                                 }//8107010757560
                                 redisTemplate.opsForHash().put(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), cdLineIpProxyDTO.getTokenPhone(), proxyUse.getIp());
                                 return socks5Pre(ip);
+                            }else {
+                                if (!ifPresent.contains(proxyUse.getIp())) {
+                                    redisTemplate.opsForHash().delete(RedisKeys.RedisKeys1.getValue(), proxyUse.getIp());
+                                }
                             }
                         }
                     }else {
@@ -248,6 +264,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
     }
 
     private boolean extracted(CdLineIpProxyDTO cdLineIpProxyDTO, Long countryCode, CurlVO proxyUse, String outIpv4, String regions, String ipS5) {
+        List<String> ifPresent = caffeineCacheCodeListObject.getIfPresent(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)));
         //如果ip相同并且国家一样
         if (proxyUse.getIp().equals(outIpv4) && regions.toLowerCase().equals(proxyUse.getCountry().toLowerCase())) {
             return true;
@@ -264,7 +281,10 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                 redisTemplate.opsForHash().put(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), cdLineIpProxyDTO.getTokenPhone(), proxyUse.getIp());
                 return true;
             }else {
-                redisTemplate.opsForHash().put(RedisKeys.RedisKeys1.getValue(), proxyUse.getIp(), ipS5);
+                if (CollUtil.isNotEmpty(ifPresent) && !ifPresent.contains(proxyUse.getIp())) {
+                    redisTemplate.opsForHash().delete(RedisKeys.RedisKeys1.getValue(), proxyUse.getIp());
+                }
+//                redisTemplate.opsForHash().put(RedisKeys.RedisKeys1.getValue(), proxyUse.getIp(), ipS5);
                 redisTemplate.opsForHash().delete(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), cdLineIpProxyDTO.getTokenPhone());
             }
         }
@@ -527,7 +547,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 
     private String getIp2WorldIp(String regions) {
         //curl -x  ipinfo.io
-        String format = String.format("chenweilong122-zone-resi-region-%s-session-%s-sessTime-5:ch1433471850:4a6974acaeab2113.us.ip2world.vip:6001",regions, RandomUtil.randomString(12));
+        String format = String.format("chenweilong122-zone-resi-region-%s-session-%s-sessTime-5:ch1433471850@4a6974acaeab2113.us.ip2world.vip:6001",regions, RandomUtil.randomString(12));
         System.out.println(format);
         return format;
     }

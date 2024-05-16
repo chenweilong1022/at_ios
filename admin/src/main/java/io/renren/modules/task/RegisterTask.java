@@ -236,12 +236,12 @@ public class RegisterTask {
     @Transactional(rollbackFor = Exception.class)
     public void task10() {
 
-//        boolean b3 = task1Lock.tryLock();
-//        if (!b3) {
-//            log.error("task1Lock ip推送队列 = {}",b3);
-//            return;
-//        }
-//        try{
+        boolean b3 = task1Lock.tryLock();
+        if (!b3) {
+            log.error("task1Lock ip推送队列 = {}",b3);
+            return;
+        }
+        try{
 
             //获取验证码
             List<CdGetPhoneEntity> list = cdGetPhoneService.list(new QueryWrapper<CdGetPhoneEntity>().lambda()
@@ -282,7 +282,7 @@ public class RegisterTask {
                                 .eq(CdLineRegisterEntity::getGetPhoneId,cdGetPhoneEntity.getId())
                         );
                         if (ObjectUtil.isNull(lineRegisterVO)) {
-                            return;
+                            continue;
                         }
                     }
 
@@ -291,7 +291,7 @@ public class RegisterTask {
                     smsCodeDTO.setTaskId(lineRegisterVO.getTaskId());
                     SMSCodeVO smsCodeVO = lineService.smsCode(smsCodeDTO);
                     if (ObjectUtil.isNull(smsCodeVO)) {
-                        return;
+                        continue;
                     }
                     if (200 == smsCodeVO.getCode()) {
                         CdLineRegisterEntity update = new CdLineRegisterEntity();
@@ -310,11 +310,11 @@ public class RegisterTask {
             if (CollUtil.isNotEmpty(cdLineRegisterEntities)) {
                 cdLineRegisterService.updateBatchById(cdLineRegisterEntities);
             }
-//        }catch (Exception e) {
-//            log.error("err = {}",e.getMessage());
-//        }finally {
-//            task1Lock.unlock();
-//        }
+        }catch (Exception e) {
+            log.error("err = {}",e.getMessage());
+        }finally {
+            task1Lock.unlock();
+        }
 
     }
 
