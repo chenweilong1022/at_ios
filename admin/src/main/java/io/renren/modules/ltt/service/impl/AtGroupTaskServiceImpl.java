@@ -200,12 +200,14 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
                 List<Integer> integers = extractTwoNumbers(s);
                 Assert.isTrue(integers.size() != 2,"水军数据导入错误，请检查群名");
                 Integer start = integers.get(0);
-                Integer number = integers.get(1);
-                for (int i = start; i < start + number; i++) {
+                Integer end = integers.get(1);
+                Integer number = end - start;
+                for (int i = start; i <= start + number; i++) {
                     if (resultNavyTextListsList.size() < groupCount) {
                         String trim = removeNumbers(s).trim();
-                        element.set(0, trim + i);
-                        resultNavyTextListsList.add(CollUtil.newArrayList(element));
+                        ArrayList<String> elementCopy = CollUtil.newArrayList(element);
+                        elementCopy.set(0, trim + i);
+                        resultNavyTextListsList.add(CollUtil.newArrayList(elementCopy));
                     } else {
                         break;
                     }
