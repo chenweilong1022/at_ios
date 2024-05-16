@@ -46,6 +46,16 @@ public class CdPhoneFilterController {
         return R.ok().put("page", page);
     }
 
+    /**
+     * 更换token
+     */
+    @RequestMapping("/reallocateToken/{id}")
+    @RequiresPermissions("ltt:atmessagerecord:list")
+    public R reallocateToken(@PathVariable("id") Integer id) {
+        cdPhoneFilterService.reallocateToken(id);
+        return R.ok();
+    }
+
 
     /**
      * 列表

@@ -64,5 +64,10 @@ public interface CdPhoneFilterService extends IService<CdPhoneFilterEntity> {
 
     CdPhoneFilterStatusDto queryByTaskStatus(Integer recordId);
 
+    /**
+     * 更换token
+     * @param id
+     */
+    void reallocateToken(Integer id);
 }
 

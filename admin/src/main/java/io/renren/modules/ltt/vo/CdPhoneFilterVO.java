@@ -3,6 +3,9 @@ package io.renren.modules.ltt.vo;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.renren.common.utils.EnumUtil;
+import io.renren.modules.ltt.enums.PhoneFilterStatus;
+import io.renren.modules.ltt.enums.TaskStatus;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -76,5 +79,17 @@ public class CdPhoneFilterVO implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="line的协议返回信息")
 	private String msg;
+	/**
+	 * 任务状态
+	 */
+	@ApiModelProperty(required=false,value="任务状态")
+	private Integer taskStatus2;
+	public String getTaskStatusStr() {
+		return EnumUtil.queryValueByKey(this.taskStatus, PhoneFilterStatus.values());
+	}
+
+	public String getTaskStatus2Str() {
+		return EnumUtil.queryValueByKey(this.taskStatus2, TaskStatus.values());
+	}
 
 }

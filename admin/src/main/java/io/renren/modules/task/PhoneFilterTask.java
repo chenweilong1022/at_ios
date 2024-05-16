@@ -94,26 +94,29 @@ public class PhoneFilterTask {
             //
             Map<Integer, List<CdPhoneFilterEntity>> integerListMap = cdPhoneFilterEntities.stream().collect(Collectors.groupingBy(CdPhoneFilterEntity::getRecordId));
             for (Integer i : integerListMap.keySet()) {
+                //筛选列表所有数据
                 List<CdPhoneFilterEntity> cdPhoneFilterEntities1 = integerListMap.get(i);
+                //筛选好的数据
                 List<AtDataSubtaskEntity> atDataSubtaskEntityList = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
                         .eq(AtDataSubtaskEntity::getRecordId,i)
-                        .eq(AtDataSubtaskEntity::getTaskStatus,TaskStatus.TaskStatus10.getKey())
+//                        .eq(AtDataSubtaskEntity::getTaskStatus,TaskStatus.TaskStatus10.getKey())
                 );
                 if (CollUtil.isEmpty(atDataSubtaskEntityList)) {
                     continue;
                 }
+
                 Map<String, AtDataSubtaskEntity> stringAtDataSubtaskEntityMap = atDataSubtaskEntityList.stream().collect(Collectors.toMap(AtDataSubtaskEntity::getContactKey, item -> item,(a, c) -> a));
-
                 for (CdPhoneFilterEntity cdPhoneFilterEntity : cdPhoneFilterEntities1) {
-                    cdPhoneFilterEntity.setTaskStatus(PhoneFilterStatus4.getKey());
-                }
-
-                for (CdPhoneFilterEntity cdPhoneFilterEntity : cdPhoneFilterEntities1) {
+                    //获取筛选好的数据
                     AtDataSubtaskEntity atDataSubtaskEntity = stringAtDataSubtaskEntityMap.get(cdPhoneFilterEntity.getContactKey());
                     if (ObjectUtil.isNotNull(atDataSubtaskEntity)) {
-                        cdPhoneFilterEntity.setTaskStatus(PhoneFilterStatus3.getKey());
-                        cdPhoneFilterEntity.setMid(atDataSubtaskEntity.getMid());
-                        cdPhoneFilterEntity.setDisplayName(atDataSubtaskEntity.getDisplayName());
+                        if (TaskStatus.TaskStatus10.getKey().equals(atDataSubtaskEntity.getTaskStatus())) {
+                            cdPhoneFilterEntity.setTaskStatus(PhoneFilterStatus3.getKey());
+                            cdPhoneFilterEntity.setMid(atDataSubtaskEntity.getMid());
+                            cdPhoneFilterEntity.setDisplayName(atDataSubtaskEntity.getDisplayName());
+                        }else if (TaskStatus.TaskStatus5.getKey().equals(atDataSubtaskEntity.getTaskStatus())) {
+                            cdPhoneFilterEntity.setTaskStatus(PhoneFilterStatus4.getKey());
+                        }
                     }
                 }
                 cdPhoneFilterService.updateBatchById(cdPhoneFilterEntities1);

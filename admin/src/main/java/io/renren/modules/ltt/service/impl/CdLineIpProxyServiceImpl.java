@@ -401,14 +401,51 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         CurlVO proxyUse = new CurlVO().setProxyUse(false);
         if (ip.contains("lunaproxy")) {
             proxyUse = isProxyUse(ip,regions);
+            if (!proxyUse.isProxyUse()) {
+                proxyUse = otherProxyOutIpv4(ip, regions, proxyUse);
+            }
         }else if (ip.contains("ip2world")) {
-            proxyUse = isProxyUseMe(ip,regions);
+            proxyUse = isProxyUseIp2World(ip,regions);
+            if (!proxyUse.isProxyUse()) {
+                proxyUse = otherProxyOutIpv4(ip, regions, proxyUse);
+            }
         }else if (ip.contains("abcproxy")) {
-            proxyUse = isProxyUseMe(ip,regions);
+            proxyUse = isProxyUseAbcIp(ip,regions);
+            if (!proxyUse.isProxyUse()) {
+                proxyUse = otherProxyOutIpv4(ip, regions, proxyUse);
+            }
         }else if (ip.contains("ipmars")) {
-            proxyUse = isProxyUseMe(ip,regions);
+            proxyUse = isProxyUseIpmarsIp(ip,regions);
+            if (!proxyUse.isProxyUse()) {
+                proxyUse = otherProxyOutIpv4(ip, regions, proxyUse);
+            }
         }else if (ip.contains("rola")) {
             proxyUse = isProxyUseRolaIp(ip,regions);
+            if (!proxyUse.isProxyUse()) {
+                proxyUse = otherProxyOutIpv4(ip, regions, proxyUse);
+            }
+        }
+        return proxyUse;
+    }
+
+    private CurlVO otherProxyOutIpv4(String ip, String regions, CurlVO proxyUse) {
+        if (!proxyUse.isProxyUse()) {
+            proxyUse = isProxyUse(ip, regions);
+        }
+        if (!proxyUse.isProxyUse()) {
+            proxyUse = isProxyUseIp2World(ip, regions);
+        }
+        if (!proxyUse.isProxyUse()) {
+            proxyUse = isProxyUseAbcIp(ip, regions);
+        }
+        if (!proxyUse.isProxyUse()) {
+            proxyUse = isProxyUseIpmarsIp(ip, regions);
+        }
+        if (!proxyUse.isProxyUse()) {
+            proxyUse = isProxyUseRolaIp(ip, regions);
+        }
+        if (!proxyUse.isProxyUse()) {
+            proxyUse = isProxyUseMe(ip, regions);
         }
         return proxyUse;
     }

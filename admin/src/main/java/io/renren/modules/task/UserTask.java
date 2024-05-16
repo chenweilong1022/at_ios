@@ -10,6 +10,7 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.benmanes.caffeine.cache.Cache;
 import io.renren.common.base.vo.EnumVo;
+import io.renren.common.constant.SystemConstant;
 import io.renren.common.utils.EnumUtil;
 import io.renren.modules.client.LineService;
 import io.renren.modules.client.dto.IssueLiffViewDTO;
@@ -95,143 +96,6 @@ public class UserTask {
 
     static ReentrantLock task1Lock = new ReentrantLock();
 
-    /**
-     * ip推送队列
-     */
-    @Scheduled(fixedDelay = 1000)
-    @Transactional(rollbackFor = Exception.class)
-    @Async
-    public void task9() {
-        boolean b = task1Lock.tryLock();
-        if (!b) {
-            log.error("task1Lock ip推送队列 = {}",b);
-            return;
-        }
-        try{
-            ArrayList<EnumVo> enumVos = CollUtil.newArrayList(
-                    new EnumVo().setKey(CountryCode.CountryCode1.getKey()),
-//                    new EnumVo().setKey(CountryCode.CountryCode3.getKey()),
-                    new EnumVo().setKey(CountryCode.CountryCode7.getKey())
-
-            );
-            List<String> urls = CollUtil.newArrayList(
-                    "https://tq.lunaproxy.com/getflowip?neek=1136881&num=500&type=1&sep=1&regions=%s&ip_si=1&level=1&sb=",//luna
-                    "http://api.proxy.ip2world.com/getProxyIp?return_type=txt&protocol=http&num=500&regions=%s&lb=1",//ip2world
-                    "https://info.proxy.ipmars.com/extractProxyIp?regions=%s&num=500&protocol=http&return_type=txt&lh=1&st=",//ipmars
-                    "https://info.proxy.abcproxy.com/extractProxyIp?regions=%s&num=500&protocol=http&return_type=txt&lh=1&mode=1"//abcproxy
-            );
-            //给每个国家补充ip
-            for (EnumVo enumVo : enumVos) {
-                String regions = EnumUtil.queryValueByKey(enumVo.getKey(), CountryCode.values());
-                Long size = redisTemplate.opsForList().size(RedisKeys.RedisKeys8.getValue(regions));
-                if (size > 50000) {
-                    continue;
-                }
-                for (String url : urls) {
-                    threadPoolTaskExecutor.execute(() -> {
-                        String ipResp = getRandomIp(url, regions);
-                        if (StringUtils.isEmpty(ipResp)) {
-                            log.info("getIpResp_error_proxy_null = {}",url);
-                            return;
-                        }
-                        String[] split = ipResp.split("\r\n");
-                        List<String> ips = new ArrayList<>();
-                        for (String s : split) {
-                            s = s.trim();
-                            if (StrUtil.isEmpty(s)) {
-                                continue;
-                            }
-                            ips.add(s);
-                        }
-                        redisTemplate.opsForList().leftPushAll(RedisKeys.RedisKeys8.getValue(regions),ips);
-                    });
-                }
-            }
-        }catch (Exception e) {
-            log.error("err = {}",e.getMessage());
-        }finally {
-            task1Lock.unlock();
-        }
-    }
-
-    /**
-     * ip推送队列
-     */
-    @Scheduled(fixedDelay = 1000)
-    @Transactional(rollbackFor = Exception.class)
-    @Async
-    public void task3() {
-        boolean b = task1Lock.tryLock();
-        if (!b) {
-            log.error("task1Lock ip推送队列 = {}",b);
-            return;
-        }
-        try{
-            ArrayList<EnumVo> enumVos = CollUtil.newArrayList(
-//                    new EnumVo().setKey(CountryCode.CountryCode1.getKey()),
-                    new EnumVo().setKey(CountryCode.CountryCode3.getKey())
-//                    new EnumVo().setKey(CountryCode.CountryCode7.getKey())
-
-            );
-
-//                    "http://list.rola.vip:8088/user_get_ip_list?token=blgRn3dqzQ6FL95f1715615375953&qty=500&country=%s&state=&city=&time=10&format=txt&protocol=socks5&filter=1",//abcproxy
-//                    "https://tq.lunaproxy.com/getflowip?neek=1136881&num=500&type=1&sep=1&regions=%s&ip_si=1&level=1&sb=",//luna
-//                    "http://list.rola.vip:8088/user_get_ip_list?token=blgRn3dqzQ6FL95f1715615375953&qty=500&country=%s&state=&city=&time=10&format=txt&protocol=socks5&filter=1",//abcproxy
-//                    "http://api.proxy.ip2world.com/getProxyIp?return_type=txt&protocol=http&num=500&regions=%s&lb=1",//ip2world
-//                    "http://list.rola.vip:8088/user_get_ip_list?token=blgRn3dqzQ6FL95f1715615375953&qty=500&country=%s&state=&city=&time=10&format=txt&protocol=socks5&filter=1",//abcproxy
-//                    "https://info.proxy.ipmars.com/extractProxyIp?regions=%s&num=500&protocol=http&return_type=txt&lh=1&st=",//ipmars
-//                    "http://list.rola.vip:8088/user_get_ip_list?token=blgRn3dqzQ6FL95f1715615375953&qty=500&country=%s&state=&city=&time=10&format=txt&protocol=socks5&filter=1",//abcproxy
-//                    "https://info.proxy.abcproxy.com/extractProxyIp?regions=%s&num=500&protocol=http&return_type=txt&lh=1&mode=1",//abcproxy
-//                    "http://list.rola.vip:8088/user_get_ip_list?token=blgRn3dqzQ6FL95f1715615375953&qty=500&country=%s&state=&city=&time=10&format=txt&protocol=socks5&filter=1"
-            List<String> urls = CollUtil.newArrayList(
-                    "https://tq.lunaproxy.com/getflowip?neek=1136881&num=100&type=1&sep=1&regions=%s&ip_si=1&level=1&sb=",//luna
-                    "http://api.proxy.ip2world.com/getProxyIp?return_type=txt&protocol=http&num=100&regions=%s&lb=1",//ip2world
-                    "https://info.proxy.ipmars.com/extractProxyIp?regions=%s&num=100&protocol=http&return_type=txt&lh=1&st=",//ipmars
-                    "https://info.proxy.abcproxy.com/extractProxyIp?regions=%s&num=100&protocol=http&return_type=txt&lh=1&mode=1",//abcproxy
-                    "http://list.rola.vip:8088/user_get_ip_list?token=blgRn3dqzQ6FL95f1715615375953&qty=100&country=%s&state=&city=&time=10&format=txt&protocol=socks5&filter=1"
-            );
-            //给每个国家补充ip
-            for (EnumVo enumVo : enumVos) {
-                String regions = EnumUtil.queryValueByKey(enumVo.getKey(), CountryCode.values());
-                Long size = redisTemplate.opsForList().size(RedisKeys.RedisKeys8.getValue(regions));
-                if (size >= 4000) {
-                    continue;
-                }
-                for (String url : urls) {
-                    threadPoolTaskExecutor.execute(() -> {
-                        String ipResp = getRandomIp(url, regions);
-                        if (StringUtils.isEmpty(ipResp)) {
-                            log.info("getIpResp_error_proxy_null = {}",url);
-                            return;
-                        }
-                        String[] split = ipResp.split("\r\n");
-                        List<String> ips = new ArrayList<>();
-                        for (String s : split) {
-                            s = s.trim();
-                            if (StrUtil.isEmpty(s)) {
-                                continue;
-                            }
-                            if (s.contains("未使用的IP")) {
-                                continue;
-                            }
-                            ips.add(s);
-                        }
-                        redisTemplate.opsForList().leftPushAll(RedisKeys.RedisKeys8.getValue(regions),ips);
-                    });
-                }
-            }
-        }catch (Exception e) {
-            log.error("err = {}",e.getMessage());
-        }finally {
-            task1Lock.unlock();
-        }
-    }
-
-    public static void main(String[] args) {
-
-
-    }
-
 
     @Resource(name = "cardJpSmsOver")
     private Cache<String, String> cardJpSmsOver;
@@ -253,6 +117,10 @@ public class UserTask {
         return resp;
     }
 
+
+    @Autowired
+    private SystemConstant systemConstant;
+
     /**
      * 同步token信息到用户表
      */
@@ -260,12 +128,13 @@ public class UserTask {
     @Transactional(rollbackFor = Exception.class)
     @Async
     public void task2() {
-
+        String format = String.format("MOD(id, %s) = %s", systemConstant.getSERVERS_TOTAL_MOD(), systemConstant.getSERVERS_MOD());
         //获取用户未验证的状态
         List<AtUserEntity> atUserEntities = atUserService.list(new QueryWrapper<AtUserEntity>().lambda()
                 .eq(AtUserEntity::getStatus,UserStatus.UserStatus1.getKey())
-                .last("limit 50")
+                .and(item -> item.last(format))
                 .orderByAsc(AtUserEntity::getStatus)
+                .last("limit 150")
         );
         if (CollUtil.isEmpty(atUserEntities)) {
             log.info("UserTask task2 atUserEntities isEmpty");
@@ -290,6 +159,7 @@ public class UserTask {
                     try{
                         AtUserTokenEntity atUserTokenEntity = atUserTokenEntityMap.get(atUserEntity.getUserTokenId());
                         if (ObjectUtil.isNull(atUserTokenEntity)) {
+                            atUserService.removeById(atUserEntity.getId());
                             return;
                         }
 
@@ -297,6 +167,7 @@ public class UserTask {
                         CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
                         cdLineIpProxyDTO.setTokenPhone(atUserEntity.getTelephone());
                         cdLineIpProxyDTO.setLzPhone(atUserEntity.getTelephone());
+                        cdLineIpProxyDTO.setCountryCode(CountryCode.CountryCode7.getKey().longValue());
                         String proxyIp = cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO);
                         if (StrUtil.isEmpty(proxyIp)) {
                             return;
@@ -348,12 +219,12 @@ public class UserTask {
     @Transactional(rollbackFor = Exception.class)
     @Async
     public void task1() {
-
-
+        String format = String.format("MOD(id, %s) = %s", systemConstant.getSERVERS_TOTAL_MOD(), systemConstant.getSERVERS_MOD());
         //获取刚导入的token去转化为账号
         List<AtUserTokenEntity> atUserTokenEntities = atUserTokenService.list(new QueryWrapper<AtUserTokenEntity>().lambda()
                 .eq(AtUserTokenEntity::getUseFlag, UseFlag.NO.getKey())
-                .last("limit 20")
+                .and(item -> item.last(format))
+                .last("limit 150")
         );
         if (CollUtil.isEmpty(atUserTokenEntities)) {
             log.info("UserTask task1 atUserTokenEntities isEmpty");
@@ -445,8 +316,10 @@ public class UserTask {
             return;
         }
         try {
+            String format = String.format("MOD(id, %s) = %s", systemConstant.getSERVERS_TOTAL_MOD(), systemConstant.getSERVERS_MOD());
             //获取刚导入的token去转化为账号
-            List<AtUserTokenIosEntity> atUserTokenIosEntityList = atUserTokenIosService.list(new QueryWrapper<AtUserTokenIosEntity>().lambda().isNull(AtUserTokenIosEntity::getAtUserTokenId).last("limit 10"));
+            List<AtUserTokenIosEntity> atUserTokenIosEntityList = atUserTokenIosService.list(new QueryWrapper<AtUserTokenIosEntity>().lambda().
+                    isNull(AtUserTokenIosEntity::getAtUserTokenId).last("limit 150").and(item -> item.last(format)));
             if (CollUtil.isEmpty(atUserTokenIosEntityList)) {
                 log.info("UserTask task5 atUserTokenIosEntityList isEmpty");
                 return;
