@@ -280,8 +280,10 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
         List<Integer> atUserChangeIds = atUserChangeGroupVOS.stream().map(AtUserVO::getId).collect(Collectors.toList());
         //改群号手机号
         List<String> atUserChangePhones = atUserChangeGroupVOS.stream().map(AtUserVO::getTelephone).collect(Collectors.toList());
-        Assert.isTrue(atUserIds.retainAll(atUserChangeIds),"拉群号不能和改群号重复");
-        Assert.isTrue(atUserPhones.retainAll(atUserChangePhones),"拉群号不能和改群号重复");
+        // 判断是否有交集
+        Assert.isTrue(atUserIds.stream().anyMatch(atUserChangeIds::contains),"拉群号不能和改群号重复");
+        Assert.isTrue(atUserPhones.stream().anyMatch(atUserChangePhones::contains),"拉群号不能和改群号重复");
+
         List<AtUserVO> atUserVOSH = CollUtil.newArrayList();
         if (GroupType.GroupType6.getKey().equals(atGroupTask.getGroupType())) {
             atUserVOSH = getAtUserVOSH(atGroupTask, onGroupPreVOS);
