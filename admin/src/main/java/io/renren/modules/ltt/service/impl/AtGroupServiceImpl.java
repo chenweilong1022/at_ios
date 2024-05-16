@@ -355,7 +355,7 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
             }
 
 
-            atDataTask.setTaskStatus(TaskStatus.TaskStatus2.getKey());
+            atDataTask.setTaskStatus(TaskStatus.TaskStatus1.getKey());
             dataTaskEntitiesUpdate.add(atDataTask);
 
 
@@ -399,7 +399,7 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
                         atDataSubtaskService.removeById(atDataSubtaskEntity);
                         continue;
                     }
-                    atDataSubtaskEntity.setTaskStatus(TaskStatus.TaskStatus2.getKey());
+                    atDataSubtaskEntity.setTaskStatus(TaskStatus.TaskStatus1.getKey());
                     atDataSubtaskEntity.setUserId(poll.getId());
                     atDataSubtaskEntitiesUpdate.add(atDataSubtaskEntity);
                 }

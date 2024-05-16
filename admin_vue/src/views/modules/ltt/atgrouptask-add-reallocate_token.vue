@@ -1,5 +1,6 @@
 <template>
   <el-dialog
+    v-loading="isLoading"
     :title="!dataForm.id ? '新增' : '修改'"
     :close-on-click-modal="false"
     :visible.sync="visible">
@@ -42,6 +43,7 @@
         visible: false,
         countryCodes: [],
         dataUserGroupList: [],
+        isLoading: false,
         dataForm: {
           id: 0,
           countryCode: null,
@@ -138,6 +140,7 @@
       dataFormSubmit () {
         this.$refs['dataForm'].validate((valid) => {
           if (valid) {
+            this.isLoading = true;
             this.$http({
               url: this.$http.adornUrl(`/ltt/atgroup/reallocateToken`),
               method: 'post',
@@ -161,6 +164,8 @@
               } else {
                 this.$message.error(data.msg)
               }
+            }).finally(() => {
+              this.isLoading = false
             })
           }
         })
