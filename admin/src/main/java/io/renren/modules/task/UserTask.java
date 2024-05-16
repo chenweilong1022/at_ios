@@ -128,11 +128,11 @@ public class UserTask {
     @Transactional(rollbackFor = Exception.class)
     @Async
     public void task2() {
-        String format = String.format("and MOD(id, %s) = %s limit 150", systemConstant.getSERVERS_TOTAL_MOD(), systemConstant.getSERVERS_MOD());
+        String format = String.format("MOD(id, %s) = %s limit 150", systemConstant.getSERVERS_TOTAL_MOD(), systemConstant.getSERVERS_MOD());
         //获取用户未验证的状态
         List<AtUserEntity> atUserEntities = atUserService.list(new QueryWrapper<AtUserEntity>().lambda()
                 .eq(AtUserEntity::getStatus,UserStatus.UserStatus1.getKey())
-                .last(format)
+                .and(item -> item.last(format))
                 .orderByAsc(AtUserEntity::getStatus)
         );
         if (CollUtil.isEmpty(atUserEntities)) {
@@ -218,11 +218,11 @@ public class UserTask {
     @Transactional(rollbackFor = Exception.class)
     @Async
     public void task1() {
-        String format = String.format("and MOD(id, %s) = %s limit 150", systemConstant.getSERVERS_TOTAL_MOD(), systemConstant.getSERVERS_MOD());
+        String format = String.format("MOD(id, %s) = %s limit 150", systemConstant.getSERVERS_TOTAL_MOD(), systemConstant.getSERVERS_MOD());
         //获取刚导入的token去转化为账号
         List<AtUserTokenEntity> atUserTokenEntities = atUserTokenService.list(new QueryWrapper<AtUserTokenEntity>().lambda()
                 .eq(AtUserTokenEntity::getUseFlag, UseFlag.NO.getKey())
-                .last(format)
+                .and(item -> item.last(format))
         );
         if (CollUtil.isEmpty(atUserTokenEntities)) {
             log.info("UserTask task1 atUserTokenEntities isEmpty");
@@ -314,10 +314,10 @@ public class UserTask {
             return;
         }
         try {
-            String format = String.format("and MOD(id, %s) = %s limit 150", systemConstant.getSERVERS_TOTAL_MOD(), systemConstant.getSERVERS_MOD());
+            String format = String.format("MOD(id, %s) = %s limit 150", systemConstant.getSERVERS_TOTAL_MOD(), systemConstant.getSERVERS_MOD());
             //获取刚导入的token去转化为账号
             List<AtUserTokenIosEntity> atUserTokenIosEntityList = atUserTokenIosService.list(new QueryWrapper<AtUserTokenIosEntity>().lambda().
-                    isNull(AtUserTokenIosEntity::getAtUserTokenId).last(format));
+                    isNull(AtUserTokenIosEntity::getAtUserTokenId).and(item -> item.last(format)));
             if (CollUtil.isEmpty(atUserTokenIosEntityList)) {
                 log.info("UserTask task5 atUserTokenIosEntityList isEmpty");
                 return;
