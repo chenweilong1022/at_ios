@@ -127,7 +127,7 @@ public class UserTask {
         //获取用户未验证的状态
         List<AtUserEntity> atUserEntities = atUserService.list(new QueryWrapper<AtUserEntity>().lambda()
                 .eq(AtUserEntity::getStatus,UserStatus.UserStatus1.getKey())
-                .last("limit 50")
+                .last("limit 100")
                 .orderByAsc(AtUserEntity::getStatus)
         );
         if (CollUtil.isEmpty(atUserEntities)) {
@@ -153,6 +153,7 @@ public class UserTask {
                     try{
                         AtUserTokenEntity atUserTokenEntity = atUserTokenEntityMap.get(atUserEntity.getUserTokenId());
                         if (ObjectUtil.isNull(atUserTokenEntity)) {
+                            atUserService.removeById(atUserEntity.getId());
                             return;
                         }
 
