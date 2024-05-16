@@ -93,6 +93,10 @@ public enum RedisKeys implements BaseEnum {
      * 注册流程缓存
      */
     REGISTER_TASK(23,"REGISTER_TASK"),
+    /**
+     * 山谷短信验证码
+     */
+    JP_SMS_SG(24,"JP_SMS_SG"),
     ;
 
     RedisKeys(int key, String value) {

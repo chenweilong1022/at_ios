@@ -17,11 +17,15 @@ import io.renren.modules.client.FirefoxService;
 import io.renren.modules.client.entity.ProjectWorkEntity;
 import io.renren.modules.client.vo.*;
 import io.renren.modules.ltt.enums.CountryCode;
+import io.renren.modules.ltt.enums.RedisKeys;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -31,6 +35,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -56,6 +61,13 @@ public class CardJpServiceImpl implements FirefoxService {
 
     @Resource(name = "cardJpSmsOver")
     private Cache<String, String> cardJpSmsOver;
+
+
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+
+    @Autowired
+    private RedisTemplate<String, Object> redisObjectTemplate;
 
     @EventListener
     @Order(value = 8888)
@@ -166,13 +178,10 @@ public class CardJpServiceImpl implements FirefoxService {
 
 
     @Override
-    public CardJpGetPhoneSmsVO.Data.Ret.Sm getPhoneCodes(String pKey) {
-//todo 去查pkeys
-
-
+    public Map<Long,CardJpGetPhoneSmsVO.Data.Ret.Sm> getPhoneCodes(String pKeys) {
         HashMap<String, String> paramMap = new HashMap<>();
         paramMap.put("user_code", systemConstant.getJpSmsConfigUserCode());//必填，用户号
-        paramMap.put("take_ids", pKey);//必填，取号ID,多个ID请用英文半角逗号分隔
+        paramMap.put("take_ids", pKeys);//必填，取号ID,多个ID请用英文半角逗号分隔
         String currentTime = DateUtils.getTimestampMillis();
         paramMap.put("timestamp", currentTime);//必填，请求时间戳(秒)
         paramMap.put("sign", getSign(paramMap));//必填，签名
@@ -215,13 +224,15 @@ public class CardJpServiceImpl implements FirefoxService {
                 CardJpGetPhoneSmsVO.Data.Ret.Sm max = Collections.max(sms, Comparator.comparingLong(CardJpGetPhoneSmsVO.Data.Ret.Sm::getTime));
                 if (ObjectUtil.isNotNull(max)) {
                     map.put(ret1.getTakeid(),max);
+                    redisObjectTemplate.opsForValue()
+                            .set(RedisKeys.JP_SMS_SG.getValue(String.valueOf(ret1.getTakeid())), max, 5, TimeUnit.MINUTES);
                 }
             }
         }catch (Exception e) {
             log.error("e = ",e.getMessage());
             e.printStackTrace();
         }
-        return map.get(0);
+        return map;
     }
 
     @Override

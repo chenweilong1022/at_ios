@@ -1,6 +1,5 @@
 package io.renren.modules.ltt.service.impl;
 
-import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
 import io.renren.common.utils.*;
 import io.renren.common.validator.Assert;
@@ -14,12 +13,12 @@ import io.renren.modules.ltt.enums.RedisKeys;
 import io.renren.modules.ltt.enums.RegisterStatus;
 import io.renren.modules.ltt.service.CdGetPhoneService;
 import io.renren.modules.ltt.service.CdLineIpProxyService;
-import io.renren.modules.ltt.vo.CdGetPhoneVO;
 import io.renren.modules.ltt.vo.GetCountBySubTaskIdVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -52,7 +51,8 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
 
     @Autowired
     private StringRedisTemplate redisTemplate;
-
+    @Autowired
+    private RedisTemplate<String, Object> redisObjectTemplate;
     @Resource
     private CdGetPhoneService cdGetPhoneService;
 
@@ -236,7 +236,7 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
         //删除注册流程，回到待处理
         List<String> phoneList = phoneEntityList.stream().map(CdGetPhoneEntity::getPhone).distinct().collect(Collectors.toList());
         for (String phone : phoneList) {
-            redisTemplate.opsForHash().delete(RedisKeys.REGISTER_TASK.getValue(), phone);
+            redisObjectTemplate.opsForHash().delete(RedisKeys.REGISTER_TASK.getValue(), phone);
         }
 
         //保存redis
@@ -308,6 +308,13 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
                 .eq(CdLineRegisterEntity::getPhone, phone)
                 .in(CdLineRegisterEntity::getRegisterStatus,
                         Arrays.asList(RegisterStatus.RegisterStatus4.getKey(), RegisterStatus.RegisterStatus11.getKey())));
+    }
+
+
+    @Override
+    public CdLineRegisterEntity queryByPhone(String phone) {
+        return baseMapper.selectOne(new QueryWrapper<CdLineRegisterEntity>().lambda()
+                .eq(CdLineRegisterEntity::getPhone, phone));
     }
 
     @Override

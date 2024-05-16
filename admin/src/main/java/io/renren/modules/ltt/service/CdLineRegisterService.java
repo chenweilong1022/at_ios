@@ -143,6 +143,8 @@ public interface CdLineRegisterService extends IService<CdLineRegisterEntity> {
 
     CdLineRegisterEntity queryLineRegisterByPhone(String phone);
 
+    CdLineRegisterEntity queryByPhone(String phone);
+
     boolean registerRetry2(Integer[] ids);
 }
 
