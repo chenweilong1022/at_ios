@@ -134,23 +134,7 @@ public class AppTestController {
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
-    @PostMapping("test")
-    public R test() {
-        List<CdGetPhoneEntity> list = cdGetPhoneService.list(new QueryWrapper<CdGetPhoneEntity>().lambda()
-                .eq(CdGetPhoneEntity::getCountry, "81").last("limit 10"));
 
-        cdGetPhoneService.saveWaitRegisterPhone(list);
-        List<Object> waitRegisterList = stringRedisTemplate.opsForHash().values(RedisKeys.WAIT_START_REGISTER_PHONE.getValue()).subList(0, 100);
-
-
-        for (Object object : waitRegisterList) {
-            log.info(JSON.toJSONString(object));
-            CdRegisterRedisDto cdGetPhoneEntity =  JSON.parseObject((String) object, CdRegisterRedisDto.class);
-            log.info(JSON.toJSONString(cdGetPhoneEntity));
-        }
-
-        return R.data(true);
-    }
 //
 //
 //    /**
