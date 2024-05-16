@@ -23,7 +23,8 @@ public enum LockMapKeyResource implements BaseEnum {
     LockMapKeyResource14(14,"CdLineIp"),
     LockMapKeyResource15(15,"HTTP_LOCK"),
     SAVE_WAIT_SMS_PHONE(16,"SAVE_WAIT_SMS_PHONE"),
-    SAVE_WAIT_REGISTER_PHONE(16,"SAVE_WAIT_REGISTER_PHONE"),
+    SAVE_WAIT_REGISTER_PHONE(17,"SAVE_WAIT_REGISTER_PHONE"),
+    SAVE_REGISTER_FINISH_PHONE(18,"SAVE_REGISTER_FINISH_PHONE"),
     ;
 
     LockMapKeyResource(int key, String value) {

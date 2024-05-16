@@ -109,6 +109,10 @@ public enum RedisKeys implements BaseEnum {
      * 已获取到验证码，发起注册数据
      */
     WAIT_REGISTER_PHONE(27,"WAIT_REGISTER_PHONE"),
+    /**
+     * 注册流程街结束，成功/出现问题
+     */
+    REGISTER_FINISH(28,"REGISTER_FINISH"),
     ;
 
     RedisKeys(int key, String value) {

@@ -263,7 +263,7 @@ public class LineServiceImpl implements LineService {
             String getPhoneHttp = String.format("%s/api/v1/msg/updateChat", projectWorkEntity.getLineBaseHttp(systemConstant.getSERVERS_MOD()));
             String jsonStr = JSONUtil.toJsonStr(updateGroup);
             String resp = HttpUtil.post(getPhoneHttp, jsonStr, 20000);
-            log.info("updateChat_result {}", resp);
+            log.info("updateChat_result {}, {}", jsonStr, resp);
             if (code300(updateGroup.getProxy(), jsonStr, resp)) return new SearchPhoneVO().setCode(300).setMsg("网络异常");
             SearchPhoneVO lineRegisterVO = JSON.parseObject(resp, SearchPhoneVO.class);
             extracted(jsonStr, resp);
