@@ -10,6 +10,7 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.benmanes.caffeine.cache.Cache;
 import io.renren.common.base.vo.EnumVo;
+import io.renren.common.constant.SystemConstant;
 import io.renren.common.utils.EnumUtil;
 import io.renren.modules.client.LineService;
 import io.renren.modules.client.dto.IssueLiffViewDTO;
@@ -116,6 +117,10 @@ public class UserTask {
         return resp;
     }
 
+
+    @Autowired
+    private SystemConstant systemConstant;
+
     /**
      * 同步token信息到用户表
      */
@@ -123,11 +128,11 @@ public class UserTask {
     @Transactional(rollbackFor = Exception.class)
     @Async
     public void task2() {
-
+        String format = String.format("and MOD(id, %s) = %s limit 150", systemConstant.getSERVERS_TOTAL_MOD(), systemConstant.getSERVERS_MOD());
         //获取用户未验证的状态
         List<AtUserEntity> atUserEntities = atUserService.list(new QueryWrapper<AtUserEntity>().lambda()
                 .eq(AtUserEntity::getStatus,UserStatus.UserStatus1.getKey())
-                .last("limit 100")
+                .last(format)
                 .orderByAsc(AtUserEntity::getStatus)
         );
         if (CollUtil.isEmpty(atUserEntities)) {
@@ -213,12 +218,11 @@ public class UserTask {
     @Transactional(rollbackFor = Exception.class)
     @Async
     public void task1() {
-
-
+        String format = String.format("and MOD(id, %s) = %s limit 150", systemConstant.getSERVERS_TOTAL_MOD(), systemConstant.getSERVERS_MOD());
         //获取刚导入的token去转化为账号
         List<AtUserTokenEntity> atUserTokenEntities = atUserTokenService.list(new QueryWrapper<AtUserTokenEntity>().lambda()
                 .eq(AtUserTokenEntity::getUseFlag, UseFlag.NO.getKey())
-                .last("limit 20")
+                .last(format)
         );
         if (CollUtil.isEmpty(atUserTokenEntities)) {
             log.info("UserTask task1 atUserTokenEntities isEmpty");
@@ -310,8 +314,10 @@ public class UserTask {
             return;
         }
         try {
+            String format = String.format("and MOD(id, %s) = %s limit 150", systemConstant.getSERVERS_TOTAL_MOD(), systemConstant.getSERVERS_MOD());
             //获取刚导入的token去转化为账号
-            List<AtUserTokenIosEntity> atUserTokenIosEntityList = atUserTokenIosService.list(new QueryWrapper<AtUserTokenIosEntity>().lambda().isNull(AtUserTokenIosEntity::getAtUserTokenId).last("limit 10"));
+            List<AtUserTokenIosEntity> atUserTokenIosEntityList = atUserTokenIosService.list(new QueryWrapper<AtUserTokenIosEntity>().lambda().
+                    isNull(AtUserTokenIosEntity::getAtUserTokenId).last(format));
             if (CollUtil.isEmpty(atUserTokenIosEntityList)) {
                 log.info("UserTask task5 atUserTokenIosEntityList isEmpty");
                 return;
