@@ -96,6 +96,11 @@ public class CdGetPhoneEntity implements Serializable {
 	@ApiModelProperty(required=false,value="")
 	private Date createTime;
 	/**
+	 *首次取号时间
+	 */
+	@ApiModelProperty(required=false,value="")
+	private Date firstEnterTime;
+	/**
 	 *
 	 */
 	@ApiModelProperty(required=false,value="")
@@ -115,6 +120,8 @@ public class CdGetPhoneEntity implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="")
 	private Integer timeZone;
+
+
 
 	public Integer getId() {
 		return id;

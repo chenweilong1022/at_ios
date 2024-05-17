@@ -97,6 +97,12 @@ public class CdLineRegisterVO implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="")
 	private Date createTime;
+
+	/**
+	 *首次取号时间
+	 */
+	@ApiModelProperty(required=false,value="")
+	private Date firstEnterTime;
 	/**
 	 *
 	 */
@@ -163,6 +169,10 @@ public class CdLineRegisterVO implements Serializable {
 
 	@ApiModelProperty(required=false,value="手机号使用状态")
 	private Boolean phoneState;
+
+	@ApiModelProperty(required=false,value="")
+	private Integer phoneStatus;
+
 	public String getCountryCode() {
 		if (StringUtils.isNotEmpty(this.countryCode)) {
 			return this.countryCode;

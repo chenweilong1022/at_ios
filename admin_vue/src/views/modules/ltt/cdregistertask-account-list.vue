@@ -1,6 +1,6 @@
 <template>
   <el-dialog
-    width="70%"
+    width="80%"
     :title="dataForm.taskName"
     :close-on-click-modal="false"
     :visible.sync="visible">
@@ -65,19 +65,19 @@
         <el-table-column
           prop="appVersion"
           header-align="center"
-          align="center"
+          align="center" width="100px"
           label="app版本号">
         </el-table-column>
         <el-table-column
           prop="countryCode"
           header-align="center"
-          align="center"
+          align="center" width="100px"
           label="国家代码">
         </el-table-column>
         <el-table-column
           prop="phone"
           header-align="center"
-          align="center" width="150px"
+          align="center" width="130px"
           label="手机号">
           <template slot-scope="scope">
           <el-badge :value="scope.row.registerCount" :class="badgeClass(scope.row.phoneState)" class="item">
@@ -88,22 +88,26 @@
         <el-table-column
           prop="proxy"
           header-align="center"
-          align="center"
+          align="center" width="250px"
           label="注册代理">
         </el-table-column>
         <el-table-column
           prop="smsCode"
           header-align="center"
-          align="center"
+          align="center" width="100px"
           label="验证码">
         </el-table-column>
         <el-table-column
           prop="registerStatus"
-          header-align="center"
+          header-align="center" width="110px"
           align="center"
           label="注册状态">
           <template slot-scope="scope">
-            <el-tag v-for="item in registerStatusCodes" :key="item.value" v-if="scope.row.registerStatus === item.key">
+            <el-tag v-if="scope.row.phoneStatus === 7" type="danger">
+              作废
+            </el-tag>
+            <el-tag v-for="item in registerStatusCodes" :key="item.value"
+                    v-if="scope.row.registerStatus === item.key && scope.row.phoneStatus !== 7">
               {{ item.value }}
             </el-tag>
           </template>
@@ -111,28 +115,34 @@
         <el-table-column
           prop="errMsg"
           header-align="center"
-          align="center"
+          align="center" width="150px"
           label="失败原因">
         </el-table-column>
         <el-table-column
           prop="createTime"
           header-align="center"
-          align="center"
+          align="center" width="210px"
           label="时间">
+          <template slot-scope="scope">
+            <div>注册：{{ scope.row.createTime }}</div>
+<!--
+            <div>取号：{{ scope.row.firstEnterTime }}</div>
+-->
+          </template>
         </el-table-column>
         <el-table-column
           fixed="right"
           header-align="center"
           align="center"
-          width="150"
           label="操作">
           <template slot-scope="scope">
 <!--            <el-button type="text" size="small" @click="addOrUpdateHandle(scope.row.id)">修改</el-button>-->
 <!--            <el-button type="text" size="small" @click="deleteHandle(scope.row.id)">删除</el-button>-->
 <!--            v-if="scope.row.registerStatus === 5 && scope.row.countryCode === 'jp'"-->
-            <el-button type="text" size="small"
-
+            <el-button type="primary" size="small" v-if="scope.row.phoneStatus !== 7"
                        @click="registerRetryHandle(scope.row.id)">错误重试</el-button>
+            <el-button type="danger" size="small" v-if="scope.row.phoneStatus !== 7"
+                       @click="invalidatePhoneHandle(scope.row.id)">作废</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -307,6 +317,32 @@
       selectionChangeHandle (val) {
         this.dataListSelections = val
       },
+      // 账号作废
+      invalidatePhoneHandle (id) {
+        this.$confirm(`确定作废?`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$http({
+            url: this.$http.adornUrl(`/ltt/cdlineregister/invalidatePhone?id=` + id),
+            method: 'post'
+          }).then(({data}) => {
+            if (data && data.code === 0) {
+              this.$message({
+                message: '操作成功',
+                type: 'success',
+                duration: 1500,
+                onClose: () => {
+                  this.getDataList()
+                }
+              })
+            } else {
+              this.$message.error(data.msg)
+            }
+          })
+        })
+      },
       // 删除
       registerRetryHandle (id) {
         var ids = id ? [id] : this.dataListSelections.map(item => {
@@ -388,7 +424,7 @@
       },
       filterErrorCode () {
         this.dataList = this.dataList.filter(item => {
-          return !(item.errMsg != null && item.errMsg !== '' && item.errMsg.includes('Code:100'))
+          return (item.phoneStatus !== 7) || !(item.errMsg != null && item.errMsg !== '' && item.errMsg.includes('Code:100') && item.errMsg !== 'セッションがタイムアウトしました。 もう一度お試しください')
         })
       },
       getRegisterStatus () {

@@ -18,6 +18,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -216,6 +217,7 @@ public class CdGetPhoneServiceImpl extends ServiceImpl<CdGetPhoneDao, CdGetPhone
      *
      */
     @Override
+    @Async
     public void saveWaitRegisterPhone(List<CdGetPhoneEntity> phoneEntityList) {
         CdRegisterRedisDto cdGetPhoneRedisDto;
         for (CdGetPhoneEntity cdGetPhoneEntity : phoneEntityList) {

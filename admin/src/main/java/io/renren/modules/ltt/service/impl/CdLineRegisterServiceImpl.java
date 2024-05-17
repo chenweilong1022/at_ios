@@ -359,5 +359,15 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
         return true;
     }
 
+    @Override
+    public Boolean invalidatePhone(Integer id) {
+        if (id == null) {
+            return false;
+        }
+        CdGetPhoneEntity getPhoneEntity = new CdGetPhoneEntity();
+        getPhoneEntity.setId(id);
+        getPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus7.getKey());
+        return getPhoneService.updateById(getPhoneEntity);
+    }
 
 }

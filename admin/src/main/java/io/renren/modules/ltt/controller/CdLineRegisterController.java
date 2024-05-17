@@ -142,6 +142,16 @@ public class CdLineRegisterController {
     }
 
     /**
+     * 账号作废
+     */
+    @RequestMapping("/invalidatePhone")
+    @RequiresPermissions("ltt:cdregistertask:info")
+    public R invalidatePhone(@RequestParam Integer id) {
+        boolean b = cdLineRegisterService.invalidatePhone(id);
+        return R.ok();
+    }
+
+    /**
      * 查询line注册数量
      * @param countryCode
      * @return

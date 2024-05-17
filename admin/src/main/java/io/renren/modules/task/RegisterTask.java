@@ -201,6 +201,16 @@ public class RegisterTask {
         CdLineRegisterEntity lineRegisterEntity = registerRedisDto.getLineRegister();
 
         String phoneCode = cdGetPhoneEntity.getCode();
+
+        //超过20分
+        long between = DateUtil.between(cdGetPhoneEntity.getCreateTime(), DateUtil.date(), DateUnit.MINUTE);
+        if (between > 20) {
+            cdGetPhoneEntity.setCode("验证码超时");
+            cdGetPhoneEntity.setPhoneStatus(PhoneStatus5.getKey());
+            lineRegisterEntity.setRegisterStatus(RegisterStatus.RegisterStatus5.getKey());
+            return registerRedisDto;
+        }
+
         if (StringUtils.isEmpty(phoneCode)) {
             CardJpGetPhoneSmsVO.Data.Ret.Sm sm = (CardJpGetPhoneSmsVO.Data.Ret.Sm) redisObjectTemplate.opsForValue()
                     .get(RedisKeys.JP_SMS_SG.getValue(String.valueOf(cdGetPhoneEntity.getPkey())));
@@ -745,7 +755,7 @@ public class RegisterTask {
             CdRegisterRedisDto registerRedisDto = (CdRegisterRedisDto) object;
             if (ObjectUtil.isNotNull(registerRedisDto) && ObjectUtil.isNotNull(registerRedisDto.getLineRegister())
                     && RegisterStatus.RegisterStatus2.getKey().equals(registerRedisDto.getLineRegister().getRegisterStatus())
-                    && CountryCode.CountryCode3.getKey().equals(registerRedisDto.getPhoneEntity().getCountry())) {
+                    && CountryCode.CountryCode3.getKey().toString().equals(registerRedisDto.getPhoneEntity().getCountry())) {
                 pkeys.add(registerRedisDto.getPhoneEntity().getPkey());
             }
         }
@@ -774,7 +784,7 @@ public class RegisterTask {
                         } else if (ObjectUtil.isNotNull(lineRegisterEntity)
                                 && RegisterStatus.RegisterStatus2.getKey().equals(lineRegisterEntity.getRegisterStatus())) {
                             //去获取验证码
-                            if (CountryCode.CountryCode3.getKey().equals(phoneEntity.getCountry())) {
+                            if (CountryCode.CountryCode3.getKey().toString().equals(phoneEntity.getCountry())) {
                                 //山谷
                                 registerRedisDto = this.getSmsJp(registerRedisDto, pkeys);
                             } else {
