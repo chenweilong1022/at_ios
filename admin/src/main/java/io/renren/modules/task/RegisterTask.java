@@ -62,7 +62,7 @@ import static io.renren.modules.ltt.enums.PhoneStatus.*;
  */
 @Component
 @Slf4j
-@Profile({"prod", "dev"})
+@Profile({"prod", "register"})
 public class RegisterTask {
 
 //curl -x socks5h://chenweilong_112233-country-jp:ch1433471850@proxyus.rola.vip:2000 http://www.ip234.in/ip.json
