@@ -109,9 +109,8 @@ public class OrderTask {
                     } finally {
                         lock.unlock();
                     }
-                } else {
-                    log.info("keyByResource = {} 在执行", keyByResource);
                 }
+                latch.countDown();
             });
         }
             latch.await();
