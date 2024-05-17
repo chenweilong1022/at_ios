@@ -60,7 +60,7 @@ import java.util.concurrent.locks.ReentrantLock;
 @Component
 @Slf4j
 @EnableAsync
-@Profile({"register"}) //打开服务
+@Profile({"open"}) //打开服务
 public class OpenAppTask {
 
 
