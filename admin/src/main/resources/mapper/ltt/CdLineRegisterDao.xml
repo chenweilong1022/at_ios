@@ -72,6 +72,8 @@
         r.app_version as appVersion,
         r.country_code as countryCode,
         p.phone as phone,
+        p.phone_status as phoneStatus,
+        p.first_enter_time as firstEnterTime,
         r.token as token,
         r.proxy as proxy,
         r.txt_token as txtToken,

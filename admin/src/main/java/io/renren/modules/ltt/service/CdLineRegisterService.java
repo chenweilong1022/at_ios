@@ -146,5 +146,12 @@ public interface CdLineRegisterService extends IService<CdLineRegisterEntity> {
     CdLineRegisterEntity queryByPhone(String phone);
 
     boolean registerRetry2(Integer[] ids);
+
+    /**
+     * 账号作废
+     * @param id
+     * @return
+     */
+    Boolean invalidatePhone(Integer id);
 }
 

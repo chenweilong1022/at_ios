@@ -97,6 +97,11 @@ public class CdGetPhoneDTO extends PageParam implements Serializable {
 	@ApiModelProperty(required=false,value="")
 	private Date createTime;
 	/**
+	 *首次取号时间
+	 */
+	@ApiModelProperty(required=false,value="")
+	private Date firstEnterTime;
+	/**
 	 *
 	 */
 	@ApiModelProperty(required=false,value="")
