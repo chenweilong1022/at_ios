@@ -208,20 +208,6 @@ public class GroupTask {
             return;
         }
 
-
-
-        //获取用户MAP
-        List<Integer> userIds = cdGroupTasksEntities.stream().map(AtGroupEntity::getUserId).collect(Collectors.toList());
-        List<AtUserEntity> atUserEntities = atUserService.listByIds(userIds);
-        List<Integer> userTokenIds = atUserEntities.stream().map(AtUserEntity::getUserTokenId).collect(Collectors.toList());
-        if (CollUtil.isEmpty(userTokenIds)) {
-            return;
-        }
-        List<AtUserTokenEntity> tokenEntities = atUserTokenService.listByIds(userTokenIds);
-        Map<Integer, AtUserTokenEntity> atUserTokenEntityMap = tokenEntities.stream().collect(Collectors.toMap(AtUserTokenEntity::getId, item -> item));
-        Map<Integer, AtUserTokenEntity> userIdAtUserTokenEntityMap = atUserEntities.stream().collect(Collectors.toMap(AtUserEntity::getId, item -> atUserTokenEntityMap.get(item.getUserTokenId()).setTelephone(item.getTelephone())));
-
-
         for (AtGroupEntity cdGroupTasksEntity : cdGroupTasksEntities) {
 
             threadPoolTaskExecutor.execute(() -> {
@@ -231,17 +217,14 @@ public class GroupTask {
                 log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
                 if(triedLock) {
                     try{
-
-                        List<AtDataSubtaskEntity> atDataSubtaskEntities = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
-                                .eq(AtDataSubtaskEntity::getGroupId,cdGroupTasksEntity.getId())
-                        );
-
                         //获取用户token
-                        AtUserTokenEntity atUserTokenEntity = userIdAtUserTokenEntityMap.get(cdGroupTasksEntity.getUserId());
+                        AtUserTokenEntity atUserTokenEntity = atUserTokenService.getByUserIdCache(cdGroupTasksEntity.getUserId());
                         if (ObjectUtil.isNull(atUserTokenEntity)) {
                             return;
                         }
-
+                        List<AtDataSubtaskEntity> atDataSubtaskEntities = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
+                                .eq(AtDataSubtaskEntity::getGroupId,cdGroupTasksEntity.getId())
+                        );
                         CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
                         cdLineIpProxyDTO.setTokenPhone(atUserTokenEntity.getTelephone());
                         cdLineIpProxyDTO.setLzPhone(atUserTokenEntity.getTelephone());
@@ -405,7 +388,7 @@ public class GroupTask {
     }
 
     /**
-     * 获取初始化的添加粉任务
+     * 同步通讯路成功的群
      */
     @Scheduled(fixedDelay = 5000)
     @Transactional(rollbackFor = Exception.class)
@@ -424,25 +407,6 @@ public class GroupTask {
             return;
         }
 
-
-
-
-
-
-
-        //获取用户MAP
-        List<Integer> userIds = cdGroupTasksEntities.stream().map(AtGroupEntity::getUserId).collect(Collectors.toList());
-        List<AtUserEntity> atUserEntities = atUserService.listByIds(userIds);
-        List<Integer> userTokenIds = atUserEntities.stream().map(AtUserEntity::getUserTokenId).collect(Collectors.toList());
-        if (CollUtil.isEmpty(userTokenIds)) {
-            return;
-        }
-        List<AtUserTokenEntity> tokenEntities = atUserTokenService.listByIds(userTokenIds);
-        Map<Integer, AtUserTokenEntity> atUserTokenEntityMap = tokenEntities.stream().collect(Collectors.toMap(AtUserTokenEntity::getId, item -> item));
-        Map<Integer, AtUserTokenEntity> userIdAtUserTokenEntityMap = atUserEntities.stream().collect(Collectors.toMap(AtUserEntity::getId,
-                item -> atUserTokenEntityMap.get(item.getUserTokenId()).setTelephone(item.getTelephone()).setNickName(item.getNickName())));
-
-
         for (AtGroupEntity cdGroupTasksEntity : cdGroupTasksEntities) {
              threadPoolTaskExecutor.execute(() -> {
                 String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource8, cdGroupTasksEntity.getId());
@@ -451,13 +415,10 @@ public class GroupTask {
                 log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
                 if(triedLock) {
                     try{
-
-                        //获取用户token
-                        AtUserTokenEntity atUserTokenEntity = userIdAtUserTokenEntityMap.get(cdGroupTasksEntity.getUserId());
+                        AtUserTokenEntity atUserTokenEntity = atUserTokenService.getByUserIdCache(cdGroupTasksEntity.getUserId());
                         if (ObjectUtil.isNull(atUserTokenEntity)) {
                             return;
                         }
-
                         List<AtDataSubtaskEntity> atDataSubtaskEntities = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
                                 .eq(AtDataSubtaskEntity::getGroupId,cdGroupTasksEntity.getId())
                                 .eq(AtDataSubtaskEntity::getUserId,cdGroupTasksEntity.getUserId())

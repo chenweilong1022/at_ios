@@ -81,7 +81,7 @@ public class AtUserTokenServiceImpl extends ServiceImpl<AtUserTokenDao, AtUserTo
             atUserTokenEntity = this.getById((Serializable) atUserEntity.getUserTokenId());
             stringListAtUserTokenEntitys.put(atUserEntity.getUserTokenId(),atUserTokenEntity);
         }
-        return atUserTokenEntity.setTelephone(atUserEntity.getTelephone());
+        return atUserTokenEntity.setTelephone(atUserEntity.getTelephone()).setNickName(atUserEntity.getNickName());
     }
 
 //    @Override
