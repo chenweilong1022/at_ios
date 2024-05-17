@@ -27,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -83,7 +84,8 @@ public class GroupTask {
     private CdLineRegisterService cdLineRegisterService;
     @Resource
     private SystemConstant systemConstant;
-
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
 //    @Scheduled(fixedDelay = 5000)
 //    @Transactional(rollbackFor = Exception.class)
@@ -418,7 +420,11 @@ public class GroupTask {
                         AtUserTokenEntity atUserTokenEntity = atUserTokenService.getByUserIdCache(cdGroupTasksEntity.getUserId());
                         if (ObjectUtil.isNull(atUserTokenEntity)) {
                             return;
+                            //这里如果群同步成功删除任务队列
+                        }else {
+                            Long add = stringRedisTemplate.opsForSet().remove(RedisKeys.USER_TASKS_POOL.getValue(String.valueOf(systemConstant.getSERVERS_MOD())), String.valueOf(cdGroupTasksEntity.getUserId()));
                         }
+
                         List<AtDataSubtaskEntity> atDataSubtaskEntities = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
                                 .eq(AtDataSubtaskEntity::getGroupId,cdGroupTasksEntity.getId())
                                 .eq(AtDataSubtaskEntity::getUserId,cdGroupTasksEntity.getUserId())
