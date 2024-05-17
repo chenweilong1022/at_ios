@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -51,6 +52,7 @@ public class OrderTask {
     @Resource(name = "poolExecutor")
     private ThreadPoolTaskExecutor poolExecutor;
 
+    static ReentrantLock tokenOrderTaskLock = new ReentrantLock();
     /**
      * token订单处理
      */
@@ -58,7 +60,11 @@ public class OrderTask {
     @Transactional(rollbackFor = Exception.class)
     @Async
     public void tokenOrderRegister() {
-
+        boolean b = tokenOrderTaskLock.tryLock();
+        if (!b) {
+            return;
+        }
+        try {
         List<AtOrdersEntity> list = atOrdersService.list(new QueryWrapper<AtOrdersEntity>()
                 .lambda().in(AtOrdersEntity::getOrderStatus,
                         Arrays.asList(OrderStatus.OrderStatus1.getKey(), OrderStatus.OrderStatus2.getKey()))
@@ -67,7 +73,9 @@ public class OrderTask {
             log.info("tokenOrderRegister list isEmpty");
             return;
         }
-        for (AtOrdersEntity atOrdersEntity : list) {
+        final CountDownLatch latch = new CountDownLatch(list.size());
+
+            for (AtOrdersEntity atOrdersEntity : list) {
             poolExecutor.execute(() -> {
                 String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource6, atOrdersEntity.getCountryCode());
                 Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
@@ -82,21 +90,22 @@ public class OrderTask {
                         if (pendingCount <= 0) {
                             //订单已处理完成,更改订单状态
                             this.updateAtOrder(atOrdersEntity, 0);
-                            return;
-                        }
+                            latch.countDown();
+                            return;                        }
 
                         //查询符合条件的数据
                         List<CdLineRegisterVO> registerList = cdLineRegisterService.getListByRegisterStatus(RegisterStatus.RegisterStatus4.getKey(), atOrdersEntity.getCountryCode(), pendingCount);
                         if (CollUtil.isEmpty(registerList)) {
                             log.info("tokenOrderRegister registerList = {}", registerList.size());
-                            return;
-                        }
+                            latch.countDown();
+                            return;                        }
 
                         //插入AtUserTokenEntity
                         this.handleRegisterData(registerList, atOrdersEntity.getSysUserId());
 
                         //更新订单表
                         this.updateAtOrder(atOrdersEntity, registerList.size());
+                        latch.countDown();
                     } finally {
                         lock.unlock();
                     }
@@ -104,6 +113,12 @@ public class OrderTask {
                     log.info("keyByResource = {} 在执行", keyByResource);
                 }
             });
+        }
+            latch.await();
+        } catch (Exception e) {
+            log.info("注册分发异常 {}", e);
+        } finally {
+            tokenOrderTaskLock.unlock();
         }
 
     }
