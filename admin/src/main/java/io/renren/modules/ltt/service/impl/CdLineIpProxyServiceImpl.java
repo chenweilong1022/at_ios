@@ -381,7 +381,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
     public String getDyIp(String regions,PhoneCountryVO phoneNumberInfo) {
         String number = phoneNumberInfo.getNumber();
         int lastDigit = Character.getNumericValue(number.charAt(number.length() - 1));
-        int i = lastDigit % 5;
+        int i = lastDigit % 6;
         String s5Ip = null;
         if (i == 0) {
             s5Ip = getLunaIp(regions);
@@ -393,6 +393,8 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
             s5Ip = getIp2WorldIp(regions);
         }else if (i == 4) {
             s5Ip = getRolaIp(regions);
+        }else if (i == 5) {
+            s5Ip = getProxyUpIp(regions);
         }
         return s5Ip;
     }
@@ -424,6 +426,11 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
             if (!proxyUse.isProxyUse()) {
                 proxyUse = otherProxyOutIpv4(ip, regions, proxyUse);
             }
+        }else if (ip.contains("pyproxy")) {
+            proxyUse = isProxyUseProxyUp(ip,regions);
+            if (!proxyUse.isProxyUse()) {
+                proxyUse = otherProxyOutIpv4(ip, regions, proxyUse);
+            }
         }
         return proxyUse;
     }
@@ -448,6 +455,39 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
             proxyUse = isProxyUseMe(ip, regions);
         }
         return proxyUse;
+    }
+
+    private String getProxyUpIp(String regions) {
+        //curl -x  ipinfo.io
+        String format = String.format("ch1433471850-zone-resi-region-%s-session-%s-sessTime-9:ch143347185@89de9443270b9927.xuw.as.pyproxy.io:16666",regions, RandomUtil.randomString(8));
+        System.out.println(format);
+        return format;
+    }
+
+
+    private CurlVO isProxyUseProxyUp(String ip,String country) {
+        CurlVO falseCurlVO = new CurlVO().setProxyUse(false);
+        try {
+            String format1 = String.format("curl -x %s ipinfo.pyproxy.io",ip);
+            List<String> strings = RuntimeUtil.execForLines(format1);
+            boolean flag = false;
+
+            List<String> newStr = new ArrayList<>();
+            for (String string : strings) {
+                if (string.contains("{") || flag) {
+                    flag = true;
+                    newStr.add(string);
+                }
+            }
+            String resp = CollUtil.join(newStr, "");
+            IPWorldRespCurl curlVO = JSONUtil.toBean(resp, IPWorldRespCurl.class);
+            if (curlVO.getCountry_code().toLowerCase().equals(country.toLowerCase())) {
+                return falseCurlVO.setProxyUse(true).setIp(curlVO.getIp()).setCountry(curlVO.getCountry_code());
+            }
+        }catch (Exception e) {
+
+        }
+        return falseCurlVO;
     }
 
 
