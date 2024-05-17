@@ -147,7 +147,7 @@ public class RegisterTask {
         RegisterResultDTO registerResultDTO = new RegisterResultDTO();
         registerResultDTO.setTaskId(lineRegisterEntity.getTaskId());
         RegisterResultVO registerResultVO = lineService.registerResult(registerResultDTO);
-        log.info("发起注册返回结果 {}, {}", lineRegisterEntity, registerResultVO);
+        log.info("发起注册返回结果 {}, {}", lineRegisterEntity.getPhone(), registerResultVO);
         if (ObjectUtil.isNull(registerResultVO)) {
             return registerRedisDto;
         }
@@ -216,9 +216,26 @@ public class RegisterTask {
             CardJpGetPhoneSmsVO.Data.Ret.Sm sm = (CardJpGetPhoneSmsVO.Data.Ret.Sm) redisObjectTemplate.opsForValue()
                     .get(RedisKeys.JP_SMS_SG.getValue(String.valueOf(cdGetPhoneEntity.getPkey())));
             if (ObjectUtil.isNull(sm)) {
-                Map<Long, CardJpGetPhoneSmsVO.Data.Ret.Sm> smMap = cardJpService
-                        .getPhoneCodes(pkey);
-                sm = smMap.get(cdGetPhoneEntity.getPkey());
+
+                String keyByResource = LockMapKeyResource
+                        .getKeyByResource(LockMapKeyResource.REGISTER_TASK_DISTRIBUTION, CountryCode.CountryCode3.getKey());
+                Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
+                boolean triedLock = lock.tryLock();
+                log.info("注册任务分发{}，keyByResource = {} 获取的锁为 = {},状态 = {}",
+                        registerRedisDto.getTelPhone(), keyByResource, triedLock, CountryCode.CountryCode3.getKey());
+                if (triedLock) {
+                    try {
+                        Map<Long, CardJpGetPhoneSmsVO.Data.Ret.Sm> smMap = cardJpService
+                                .getPhoneCodes(pkey);
+                        if (smMap != null) {
+                            sm = smMap.get(cdGetPhoneEntity.getPkey());
+                        }
+                    }catch (Exception e) {
+                        log.info("err = {}",e);
+                    }finally {
+                        lock.unlock();
+                    }
+                }
             }
             if (ObjectUtil.isNull(sm)) {
                 log.error("获取验证码为空，山谷 {}", cdGetPhoneEntity.getPkey());
@@ -746,95 +763,96 @@ public class RegisterTask {
         if (ObjectUtil.isNull(projectWorkEntity)) {
             return;
         }
-        boolean b = registerTaskLock.tryLock();
-        if (!b) {
+
+
+        List<Object> registerList = redisObjectTemplate.opsForHash()
+                .values(RedisKeys.REGISTER_TASK.getValue());
+        if (CollUtil.isEmpty(registerList)) {
+            log.info("注册任务分发，暂无执行的");
             return;
         }
-        try {
 
-            List<Object> registerList = redisObjectTemplate.opsForHash()
-                    .values(RedisKeys.REGISTER_TASK.getValue());
-            if (CollUtil.isEmpty(registerList)) {
-                log.info("注册任务分发，暂无执行的");
-                return;
+        List<String> pkeys = new ArrayList<>();
+        for (Object object : registerList) {
+            CdRegisterRedisDto registerRedisDto = (CdRegisterRedisDto) object;
+            if (ObjectUtil.isNotNull(registerRedisDto.getPhoneEntity().getPkey())) {
+                pkeys.add(registerRedisDto.getPhoneEntity().getPkey());
             }
+        }
+        final CountDownLatch latch = new CountDownLatch(registerList.size());
 
-            List<String> pkeys = new ArrayList<>();
-            for (Object object : registerList) {
+
+        for (Object object : registerList) {
+            poolExecutor.execute(() -> {
                 CdRegisterRedisDto registerRedisDto = (CdRegisterRedisDto) object;
-                if (ObjectUtil.isNotNull(registerRedisDto) && ObjectUtil.isNotNull(registerRedisDto.getLineRegister())
-                        && RegisterStatus.RegisterStatus2.getKey().equals(registerRedisDto.getLineRegister().getRegisterStatus())
-                        && CountryCode.CountryCode3.getKey().toString().equals(registerRedisDto.getPhoneEntity().getCountry())) {
-                    pkeys.add(registerRedisDto.getPhoneEntity().getPkey());
+                if (registerRedisDto == null || registerRedisDto.getPhoneEntity() == null) {
+                    log.info("注册任务分发，数据为空 {}", object);
+                    latch.countDown();
+                    return;
                 }
-            }
-            final CountDownLatch latch = new CountDownLatch(registerList.size());
+                CdGetPhoneEntity phoneEntity = registerRedisDto.getPhoneEntity();
+                CdLineRegisterEntity lineRegisterEntity = registerRedisDto.getLineRegister();
 
-
-            for (Object object : registerList) {
-                poolExecutor.execute(() -> {
-                    CdRegisterRedisDto registerRedisDto = (CdRegisterRedisDto) object;
-                    if (registerRedisDto == null || registerRedisDto.getPhoneEntity() == null) {
-                        log.info("注册任务分发，数据为空 {}", object);
-                        latch.countDown();
-                        return;
-                    }
-                    CdGetPhoneEntity phoneEntity = registerRedisDto.getPhoneEntity();
-                    CdLineRegisterEntity lineRegisterEntity = registerRedisDto.getLineRegister();
-
-                    String keyByResource = LockMapKeyResource
-                            .getKeyByResource(LockMapKeyResource.REGISTER_TASK_DISTRIBUTION, registerRedisDto.getTelPhone());
-                    Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
-                    boolean triedLock = lock.tryLock();
-                    log.info("注册任务分发{}，keyByResource = {} 获取的锁为 = {},状态 = {}",
-                            registerRedisDto.getTelPhone(), keyByResource, triedLock, phoneEntity.getPhoneStatus());
-                    if (triedLock) {
-                        try {
-                            if (PhoneStatus1.getKey().equals(phoneEntity.getPhoneStatus())) {
-                                //去注册
-                                registerRedisDto = this.startRegister(projectWorkEntity, registerRedisDto);
-                            } else if (ObjectUtil.isNotNull(lineRegisterEntity)
-                                    && RegisterStatus.RegisterStatus2.getKey().equals(lineRegisterEntity.getRegisterStatus())) {
-                                //去获取验证码
-                                if (CountryCode.CountryCode3.getKey().toString().equals(phoneEntity.getCountry())) {
-                                    //山谷
-                                    registerRedisDto = this.getSmsJp(registerRedisDto, pkeys);
-                                } else {
-                                    registerRedisDto = this.getSms(projectWorkEntity, registerRedisDto);
-                                }
-                            } else if (PhoneStatus5.getKey().equals(phoneEntity.getPhoneStatus())) {
-                                registerRedisDto = this.getSms(projectWorkEntity, registerRedisDto);
-                            } else if (ObjectUtil.isNotNull(lineRegisterEntity)
-                                    && RegisterStatus.RegisterStatus3.getKey().equals(lineRegisterEntity.getRegisterStatus())) {
-                                //去提交验证码，完成注册
-                                registerRedisDto = this.submitRegister(projectWorkEntity, registerRedisDto);
+                String keyByResource = LockMapKeyResource
+                        .getKeyByResource(LockMapKeyResource.REGISTER_TASK_DISTRIBUTION, registerRedisDto.getTelPhone());
+                Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
+                boolean triedLock = lock.tryLock();
+                log.info("注册任务分发{}，keyByResource = {} 获取的锁为 = {},状态 = {}",
+                        registerRedisDto.getTelPhone(), keyByResource, triedLock, phoneEntity.getPhoneStatus());
+                if (triedLock) {
+                    try {
+                        if (PhoneStatus1.getKey().equals(phoneEntity.getPhoneStatus())) {
+                            //去注册
+                            registerRedisDto = this.startRegister(projectWorkEntity, registerRedisDto);
+                        } else if (ObjectUtil.isNotNull(lineRegisterEntity)
+                                && RegisterStatus.RegisterStatus2.getKey().equals(lineRegisterEntity.getRegisterStatus())) {
+                            //去获取验证码
+                            if (CountryCode.CountryCode3.getKey().toString().equals(phoneEntity.getCountry())) {
+                                //山谷
+                                registerRedisDto = this.getSmsJp(registerRedisDto, pkeys);
                             } else {
-                                latch.countDown();
-                                return;
+                                registerRedisDto = this.getSms(projectWorkEntity, registerRedisDto);
                             }
-
-                            log.info("注册发起流程结束 {}, {}", registerRedisDto.getTelPhone(), JSON.toJSONString(registerRedisDto).toString());
-
-                            //存redis，异步保存，避免卡顿超时
-                            redisObjectTemplate.opsForHash().put(RedisKeys.REGISTER_TASK.getValue(),
-                                    registerRedisDto.getTelPhone(), registerRedisDto);
+                        } else if (PhoneStatus5.getKey().equals(phoneEntity.getPhoneStatus())) {
+                            registerRedisDto = this.getSms(projectWorkEntity, registerRedisDto);
+                        } else if (ObjectUtil.isNotNull(lineRegisterEntity)
+                                && RegisterStatus.RegisterStatus3.getKey().equals(lineRegisterEntity.getRegisterStatus())) {
+                            //去提交验证码，完成注册
+                            registerRedisDto = this.submitRegister(projectWorkEntity, registerRedisDto);
+                        } else {
                             latch.countDown();
-                        } finally {
-                            lock.unlock();
+                            return;
                         }
-                    } else {
-                        log.info("注册任务分发{}在执行，keyByResource = {} 获取的锁为 = {}", registerRedisDto.getTelPhone(), keyByResource);
-                    }
 
-                });
-            }
+                        log.info("注册发起流程结束 {}, {}", registerRedisDto.getTelPhone(), JSON.toJSONString(registerRedisDto).toString());
+
+                        //存redis，异步保存，避免卡顿超时
+                        redisObjectTemplate.opsForHash().put(RedisKeys.REGISTER_TASK.getValue(),
+                                registerRedisDto.getTelPhone(), registerRedisDto);
+                    }catch (Exception e){
+                        log.error("e = {}",e);
+                    }finally {
+                        lock.unlock();
+                    }
+                }
+                latch.countDown();
+            });
+        }
+        try {
             latch.await();
-        } catch (Exception e) {
-            log.info("注册分发异常 {}", e);
-        } finally {
-            registerTaskLock.unlock();
+        } catch (InterruptedException e) {
+            log.error("e = {}",e);
         }
 
+//        boolean b = registerTaskLock.tryLock();
+//        if (!b) {
+//            return;
+//        }
+//        try {} catch (Exception e) {
+//            log.info("注册分发异常 {}", e);
+//        } finally {
+//            registerTaskLock.unlock();
+//        }
 
     }
 
@@ -848,18 +866,18 @@ public class RegisterTask {
     @Transactional(rollbackFor = Exception.class)
     @Async
     public void saveRegisterTask() {
-        boolean flag = registerTaskLock.tryLock();
+        boolean flag = registerSaveTaskLock.tryLock();
         if (!flag) {
             return;
         }
-        List<Object> registerList = redisObjectTemplate.opsForHash()
-                .values(RedisKeys.REGISTER_TASK.getValue());
-        log.info("注册任务保存 {}", registerList);
-        if (CollUtil.isEmpty(registerList)) {
-            log.info("注册任务保存，暂无执行的");
-            return;
-        }
         try {
+            List<Object> registerList = redisObjectTemplate.opsForHash()
+                    .values(RedisKeys.REGISTER_TASK.getValue());
+            log.info("注册任务保存 {}", registerList);
+            if (CollUtil.isEmpty(registerList)) {
+                log.info("注册任务保存，暂无执行的");
+                return;
+            }
             final CountDownLatch latch = new CountDownLatch(registerList.size());
             for (Object object : registerList) {
                 poolExecutor.execute(() -> {
@@ -937,6 +955,7 @@ public class RegisterTask {
                         latch.countDown();
                     } else {
                         log.info("注册任务分发{}在执行，keyByResource = {} 获取的锁为 = {}", registerRedisDto.getTelPhone(), keyByResource);
+                        latch.countDown();
                     }
                 });
             }
@@ -944,7 +963,7 @@ public class RegisterTask {
         } catch (Exception e) {
             log.info("保存注册异常 {}", e);
         } finally {
-            registerTaskLock.unlock();
+            registerSaveTaskLock.unlock();
         }
     }
 
