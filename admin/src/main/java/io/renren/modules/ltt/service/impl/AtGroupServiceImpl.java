@@ -169,12 +169,14 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
 
 
         List<AtGroupEntity> cdGroupTasksEntities = this.list(new QueryWrapper<AtGroupEntity>().lambda()
-                .in(AtGroupEntity::getId, importZipDTO.getIds())
+                .in(AtGroupEntity::getGroupTaskId, importZipDTO.getId())
                 .in(AtGroupEntity::getGroupStatus, GroupStatus.GroupStatus9.getKey(),GroupStatus.GroupStatus15.getKey())
         );
 
+        List<Integer> groupIds = cdGroupTasksEntities.stream().map(AtGroupEntity::getId).collect(Collectors.toList());
+
         List<AtDataSubtaskEntity> list = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
-                .in(AtDataSubtaskEntity::getGroupId, importZipDTO.getIds())
+                .in(AtDataSubtaskEntity::getGroupId, groupIds)
                 .in(AtDataSubtaskEntity::getTaskStatus, TaskStatus.TaskStatus11.getKey())
         );
 

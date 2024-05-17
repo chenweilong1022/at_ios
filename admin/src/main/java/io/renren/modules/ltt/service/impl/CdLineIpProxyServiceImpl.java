@@ -153,7 +153,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
             caffeineCacheCodeListObject.put(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)),ifPresent);
         }
         try{
-//            ExecutorService executorService = Executors.newFixedThreadPool(5);
+            ExecutorService executorService = Executors.newFixedThreadPool(5);
             //国家英文
             String regions = EnumUtil.queryValueByKey(countryCode.intValue(), CountryCode.values());
             //出口ip
@@ -195,24 +195,22 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 
                 Set<CurlVO> ips = ConcurrentHashMap.newKeySet();
 
-                String ips5 = getDyIp(regions,phoneNumberInfo);
-                CurlVO proxyUseOld = getProxyUse(ips5, regions);
-                proxyUseOld.setS5Ip(ips5);
-                ips.add(proxyUseOld);
-//                for (int i = 0; i < 50; i++) {
-//                    executorService.submit(() -> {
-//                        CurlVO proxyUse = getProxyUse(ip, regions);
-//                        proxyUse.setS5Ip(ip);
-//                        ips.add(proxyUse);
-//                    });
-//                }
-//                // 关闭线程池
-//                executorService.shutdown();
-//                // 等待所有任务完成
-//                if (!executorService.awaitTermination(1, TimeUnit.HOURS)) {
-//                    // 如果超时，则强制关闭尚未完成的任务
-//                    executorService.shutdownNow();
-//                }
+
+                for (int i = 0; i < 50; i++) {
+                    executorService.submit(() -> {
+                        String ips5 = getDyIp(regions,phoneNumberInfo);
+                        CurlVO proxyUseOld = getProxyUse(ips5, regions);
+                        proxyUseOld.setS5Ip(ips5);
+                        ips.add(proxyUseOld);
+                    });
+                }//
+                // 关闭线程池
+                executorService.shutdown();
+                // 等待所有任务完成
+                if (!executorService.awaitTermination(1, TimeUnit.HOURS)) {
+                    // 如果超时，则强制关闭尚未完成的任务
+                    executorService.shutdownNow();
+                }
 
                 for (CurlVO proxyUse : ips) {
                     String ip = proxyUse.getS5Ip();
@@ -433,6 +431,13 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         return proxyUse;
     }
 
+
+    private String getPyProxy(String regions) {
+        //curl -x  ipinfo.io
+        String format = String.format("ch1433471850-zone-resi-session-%s-sessTime-9:ch143347185@89de9443270b9927.xuw.as.pyproxy.io:16666", RandomUtil.randomInt(1,100000),regions);
+        System.out.println(format);
+        return format;
+    }
 
     private String getRolaIp(String regions) {
         //curl -x  ipinfo.io

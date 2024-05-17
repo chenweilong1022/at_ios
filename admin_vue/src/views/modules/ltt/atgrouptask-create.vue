@@ -284,7 +284,7 @@
         <el-form-item>
           <el-button @click="getDataList()">查询</el-button>
           <el-button type="primary" @click="nextGroup()">继续拉群</el-button>
-          <el-button type="info" @click="exportHandle()" :disabled="dataListSelections.length <= 0">导出报表</el-button>
+          <el-button type="info" @click="exportHandle()">导出报表</el-button>
           <el-button type="success" @click="startGroup14Handler()" :disabled="dataListSelections.length <= 0">开始拉群</el-button>
           <el-button type="danger" @click="reallocateTokenHandle()" :disabled="dataListSelections.length <= 0">重新分配账号拉群</el-button>
           <el-button type="primary" @click="updateGroupHandle()" :disabled="dataListSelections.length <= 0">修改群名</el-button>
@@ -873,7 +873,7 @@ import ErrLogs from "./atdatatask-err-logs.vue";
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          window.open(this.$http.adornUrl(`/ltt/atgroup/importZip?token=${this.$cookie.get('token')}&ids=${ids.join(',')}`))
+          window.open(this.$http.adornUrl(`/ltt/atgroup/importZip?token=${this.$cookie.get('token')}&id=${this.dataForm.id}`))
         })
       },
       startGroup14Handler (id) {
