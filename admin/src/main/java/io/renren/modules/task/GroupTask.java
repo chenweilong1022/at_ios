@@ -27,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -83,7 +84,8 @@ public class GroupTask {
     private CdLineRegisterService cdLineRegisterService;
     @Resource
     private SystemConstant systemConstant;
-
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
 //    @Scheduled(fixedDelay = 5000)
 //    @Transactional(rollbackFor = Exception.class)
@@ -208,20 +210,6 @@ public class GroupTask {
             return;
         }
 
-
-
-        //获取用户MAP
-        List<Integer> userIds = cdGroupTasksEntities.stream().map(AtGroupEntity::getUserId).collect(Collectors.toList());
-        List<AtUserEntity> atUserEntities = atUserService.listByIds(userIds);
-        List<Integer> userTokenIds = atUserEntities.stream().map(AtUserEntity::getUserTokenId).collect(Collectors.toList());
-        if (CollUtil.isEmpty(userTokenIds)) {
-            return;
-        }
-        List<AtUserTokenEntity> tokenEntities = atUserTokenService.listByIds(userTokenIds);
-        Map<Integer, AtUserTokenEntity> atUserTokenEntityMap = tokenEntities.stream().collect(Collectors.toMap(AtUserTokenEntity::getId, item -> item));
-        Map<Integer, AtUserTokenEntity> userIdAtUserTokenEntityMap = atUserEntities.stream().collect(Collectors.toMap(AtUserEntity::getId, item -> atUserTokenEntityMap.get(item.getUserTokenId()).setTelephone(item.getTelephone())));
-
-
         for (AtGroupEntity cdGroupTasksEntity : cdGroupTasksEntities) {
 
             threadPoolTaskExecutor.execute(() -> {
@@ -231,17 +219,14 @@ public class GroupTask {
                 log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
                 if(triedLock) {
                     try{
-
-                        List<AtDataSubtaskEntity> atDataSubtaskEntities = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
-                                .eq(AtDataSubtaskEntity::getGroupId,cdGroupTasksEntity.getId())
-                        );
-
                         //获取用户token
-                        AtUserTokenEntity atUserTokenEntity = userIdAtUserTokenEntityMap.get(cdGroupTasksEntity.getUserId());
+                        AtUserTokenEntity atUserTokenEntity = atUserTokenService.getByUserIdCache(cdGroupTasksEntity.getUserId());
                         if (ObjectUtil.isNull(atUserTokenEntity)) {
                             return;
                         }
-
+                        List<AtDataSubtaskEntity> atDataSubtaskEntities = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
+                                .eq(AtDataSubtaskEntity::getGroupId,cdGroupTasksEntity.getId())
+                        );
                         CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
                         cdLineIpProxyDTO.setTokenPhone(atUserTokenEntity.getTelephone());
                         cdLineIpProxyDTO.setLzPhone(atUserTokenEntity.getTelephone());
@@ -405,7 +390,7 @@ public class GroupTask {
     }
 
     /**
-     * 获取初始化的添加粉任务
+     * 同步通讯路成功的群
      */
     @Scheduled(fixedDelay = 5000)
     @Transactional(rollbackFor = Exception.class)
@@ -424,25 +409,6 @@ public class GroupTask {
             return;
         }
 
-
-
-
-
-
-
-        //获取用户MAP
-        List<Integer> userIds = cdGroupTasksEntities.stream().map(AtGroupEntity::getUserId).collect(Collectors.toList());
-        List<AtUserEntity> atUserEntities = atUserService.listByIds(userIds);
-        List<Integer> userTokenIds = atUserEntities.stream().map(AtUserEntity::getUserTokenId).collect(Collectors.toList());
-        if (CollUtil.isEmpty(userTokenIds)) {
-            return;
-        }
-        List<AtUserTokenEntity> tokenEntities = atUserTokenService.listByIds(userTokenIds);
-        Map<Integer, AtUserTokenEntity> atUserTokenEntityMap = tokenEntities.stream().collect(Collectors.toMap(AtUserTokenEntity::getId, item -> item));
-        Map<Integer, AtUserTokenEntity> userIdAtUserTokenEntityMap = atUserEntities.stream().collect(Collectors.toMap(AtUserEntity::getId,
-                item -> atUserTokenEntityMap.get(item.getUserTokenId()).setTelephone(item.getTelephone()).setNickName(item.getNickName())));
-
-
         for (AtGroupEntity cdGroupTasksEntity : cdGroupTasksEntities) {
              threadPoolTaskExecutor.execute(() -> {
                 String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource8, cdGroupTasksEntity.getId());
@@ -451,11 +417,12 @@ public class GroupTask {
                 log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
                 if(triedLock) {
                     try{
-
-                        //获取用户token
-                        AtUserTokenEntity atUserTokenEntity = userIdAtUserTokenEntityMap.get(cdGroupTasksEntity.getUserId());
+                        AtUserTokenEntity atUserTokenEntity = atUserTokenService.getByUserIdCache(cdGroupTasksEntity.getUserId());
                         if (ObjectUtil.isNull(atUserTokenEntity)) {
                             return;
+                            //这里如果群同步成功删除任务队列
+                        }else {
+                            Long add = stringRedisTemplate.opsForSet().remove(RedisKeys.USER_TASKS_POOL.getValue(String.valueOf(systemConstant.getSERVERS_MOD())), String.valueOf(cdGroupTasksEntity.getUserId()));
                         }
 
                         List<AtDataSubtaskEntity> atDataSubtaskEntities = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
