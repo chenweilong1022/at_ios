@@ -24,7 +24,25 @@ public class CdLineRegisterSummaryDto implements Serializable {
     /**
      *
      */
-    @ApiModelProperty(required = false, value = "注册中数量（待处理、发起注册、验证码）")
-    private String waitRegisterCount;
+    @ApiModelProperty(required = false, value = "待处理数量")
+    private String waitCount;
+    /**
+     *
+     */
+    @ApiModelProperty(required = false, value = "发起注册数量")
+    private String startRegisterCount;
+
+    /**
+     *
+     */
+    @ApiModelProperty(required = false, value = "提交注册数量")
+    private String submitRegisterCount;
+
+    /**
+     *
+     */
+    @ApiModelProperty(required = false, value = "注册异常数量")
+    private String errorRegisterCount;
+
 
 }

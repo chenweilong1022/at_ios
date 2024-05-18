@@ -125,18 +125,17 @@ public class CdLineRegisterController {
     @RequestMapping("/registerRetry")
     @RequiresPermissions("ltt:cdregistertask:info")
     public R registerRetry(@RequestBody Integer[] ids){
-        boolean b = cdLineRegisterService.registerRetry(ids);
+        boolean b = cdLineRegisterService.registerRetry(ids, false);
 
         return R.ok();
     }
-
     /**
-     * 注册重试
+     * 注册重试，拉黑ip
      */
     @RequestMapping("/registerRetry2")
     @RequiresPermissions("ltt:cdregistertask:info")
     public R registerRetry2(@RequestBody Integer[] ids){
-        boolean b = cdLineRegisterService.registerRetry2(ids);
+        boolean b = cdLineRegisterService.registerRetry(ids, true);
 
         return R.ok();
     }
@@ -146,8 +145,8 @@ public class CdLineRegisterController {
      */
     @RequestMapping("/invalidatePhone")
     @RequiresPermissions("ltt:cdregistertask:info")
-    public R invalidatePhone(@RequestParam Integer id) {
-        boolean b = cdLineRegisterService.invalidatePhone(id);
+    public R invalidatePhone(@RequestBody Integer[] ids) {
+        boolean b = cdLineRegisterService.invalidatePhone(ids);
         return R.ok();
     }
 

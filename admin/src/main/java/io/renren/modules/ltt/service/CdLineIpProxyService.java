@@ -79,7 +79,5 @@ public interface CdLineIpProxyService extends IService<CdLineIpProxyEntity> {
     void cleanIpByCountryCode(Integer countryCode);
 
     void cleanInvalidIp(Long expireHours);
-
-    Boolean clearTokenPhone2(String tokenPhone, Integer countryCode);
 }
 

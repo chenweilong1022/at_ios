@@ -52,14 +52,26 @@
 
     <select id="listSummary" resultType="io.renren.modules.ltt.dto.CdLineRegisterSummaryDto">
         SELECT
-        SUM( CASE WHEN COALESCE ( r.register_status, 0 ) IN ( 0, 1, 2, 3 ) THEN 1 ELSE 0 END ) AS waitRegisterCount,
-        SUM( CASE WHEN COALESCE ( r.register_status, 0 ) = 4 THEN 1 ELSE 0 END ) AS successRegisterCount
+        SUM( CASE WHEN r.register_status = null THEN 1 ELSE 0 END ) AS waitCount,
+        SUM( CASE WHEN COALESCE ( r.register_status, 0 ) = 1 THEN 1 ELSE 0 END ) AS startRegisterCount,
+        SUM( CASE WHEN COALESCE ( r.register_status, 0 ) IN (2, 3 ) THEN 1 ELSE 0 END ) AS submitRegisterCount,
+        SUM( CASE WHEN COALESCE ( r.register_status, 0 ) = 4 THEN 1 ELSE 0 END ) AS successRegisterCount,
+        SUM( CASE WHEN COALESCE ( r.register_status, 0 ) = 5 THEN 1 ELSE 0 END ) AS errorRegisterCount
         FROM
         cd_get_phone p
         LEFT JOIN cd_line_register r ON r.get_phone_id = p.id
         LEFT JOIN cd_register_subtasks s ON p.subtasks_id = s.id
         <where>
-            <include refid="where_if"/>
+            <if test="dto.tasksId != null">
+                AND s.task_id = #{dto.tasksId}
+            </if>
+            <if test="dto.countryCode != null">
+                AND p.country = #{dto.countryCode}
+            </if>
+            <if test="dto.createStartTime !=null and dto.createEndTime !=null ">
+                and p.create_time between CONCAT(#{dto.createStartTime}, ' 00:00:00')
+                and CONCAT(#{dto.createEndTime}, ' 23:59:59')
+            </if>
         </where>
         order by p.create_time desc
     </select>
@@ -72,6 +84,7 @@
         r.app_version as appVersion,
         r.country_code as countryCode,
         p.phone as phone,
+        p.retry_num as retryNum,
         p.phone_status as phoneStatus,
         p.first_enter_time as firstEnterTime,
         r.token as token,
@@ -98,7 +111,7 @@
             AND s.task_id = #{dto.tasksId}
         </if>
         <if test="dto.countryCode != null">
-            AND s.country_code = #{dto.countryCode}
+            AND p.country = #{dto.countryCode}
         </if>
         <if test="dto.registerStatus != null and dto.registerStatus != 0">
             AND r.register_status = #{dto.registerStatus}

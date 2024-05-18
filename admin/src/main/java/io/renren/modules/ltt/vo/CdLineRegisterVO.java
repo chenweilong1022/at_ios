@@ -173,6 +173,9 @@ public class CdLineRegisterVO implements Serializable {
 	@ApiModelProperty(required=false,value="")
 	private Integer phoneStatus;
 
+
+	@ApiModelProperty(value = "重试次数")
+	private Integer retryNum;
 	public String getCountryCode() {
 		if (StringUtils.isNotEmpty(this.countryCode)) {
 			return this.countryCode;

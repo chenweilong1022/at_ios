@@ -119,14 +119,13 @@ public interface CdLineRegisterService extends IService<CdLineRegisterEntity> {
      * @param id
      * @return
      */
-    boolean registerRetry(Integer[] ids);
+    boolean registerRetry(Integer[] ids, Boolean ipClearFlag);
 
     /**
-     * 注册重试
-     * @param id
+     * 注册重试-用于拉群后重新注册
      * @return
      */
-    boolean registerRetry(String telephone);
+    boolean registerAgain(String telephone);
 
     /**
      * 查询line注册数量
@@ -145,13 +144,11 @@ public interface CdLineRegisterService extends IService<CdLineRegisterEntity> {
 
     CdLineRegisterEntity queryByPhone(String phone);
 
-    boolean registerRetry2(Integer[] ids);
-
     /**
      * 账号作废
-     * @param id
+     * @param ids
      * @return
      */
-    Boolean invalidatePhone(Integer id);
+    Boolean invalidatePhone(Integer[] ids);
 }
 

@@ -759,29 +759,4 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         log.info("清理ip黑名单结束，剩余过期时间:{}，共:{}条", expireHours, keys.size());
     }
 
-    @Override
-    public Boolean clearTokenPhone2(String tokenPhone, Integer countryCode) {
-        if (StringUtils.isEmpty(tokenPhone)) {
-            return false;
-        }
-
-        Object o2 = redisTemplate.opsForHash().get(RedisKeys.RedisKeys2.getValue(String.valueOf(countryCode)), tokenPhone);
-
-        if (o2 == null) {
-            return true;
-        }
-
-        String outIpv4 = String.valueOf(o2);
-        if (StringUtils.isEmpty(outIpv4)) {
-            return true;
-        }
-
-        if (outIpv4.contains("@")) {
-            return true;
-        }
-
-        redisTemplate.opsForValue().set(RedisKeys.RedisKeys4.getValue(outIpv4), tokenPhone, 1, TimeUnit.DAYS);
-        return true;
-    }
-
 }

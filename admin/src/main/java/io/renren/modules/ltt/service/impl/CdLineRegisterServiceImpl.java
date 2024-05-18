@@ -180,22 +180,20 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean registerRetry(Integer[] ids) {
+    public boolean registerRetry(Integer[] ids, Boolean ipClearFlag) {
         List<CdGetPhoneEntity> cdGetPhoneList = getPhoneService.getByIds(Arrays.asList(ids));
         Assert.isTrue(CollectionUtils.isEmpty(cdGetPhoneList), "数据为空");
 
         List<CdGetPhoneEntity> updateCdGetPhoneList = new ArrayList<>();
         List<Integer> lineRegisterIds = new ArrayList<>();
+        Integer retryNum;
         for (CdGetPhoneEntity cdGetPhone : cdGetPhoneList) {
             CdLineRegisterEntity cdLineRegisterEntity = baseMapper.selectList(new QueryWrapper<CdLineRegisterEntity>().lambda()
                     .eq(CdLineRegisterEntity::getGetPhoneId, cdGetPhone.getId())).stream().findFirst().orElse(null);
             if (cdLineRegisterEntity != null) {
-//                Assert.isTrue(!RegisterStatus.RegisterStatus5.getKey().equals(cdLineRegisterEntity.getRegisterStatus()), "注册状态正常，无需重试");
                 //删除line注册此条记录
                 lineRegisterIds.add(cdLineRegisterEntity.getId());
-                if (cdLineRegisterEntity.getProxy().contains("@")) {
-
-                }else {
+                if (Boolean.TRUE.equals(ipClearFlag)) {
                     //ip暂时拉黑
                     this.clearTokenPhone(cdGetPhone);
                 }
@@ -207,6 +205,8 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
             updateCdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus1.getKey());
             updateCdGetPhoneEntity.setCode("");
             updateCdGetPhoneEntity.setCreateTime(new Date());
+            retryNum = ObjectUtil.isNull(cdGetPhone.getRetryNum()) ? 1 : cdGetPhone.getRetryNum() + 1;
+            updateCdGetPhoneEntity.setRetryNum(retryNum);
             updateCdGetPhoneList.add(updateCdGetPhoneEntity);
         }
 
@@ -244,7 +244,7 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
     }
 
     @Override
-    public boolean registerRetry(String telephone) {
+    public boolean registerAgain(String telephone) {
         CdLineRegisterEntity cdLineRegisterEntity = this.getOne(new QueryWrapper<CdLineRegisterEntity>().lambda()
                 .eq(CdLineRegisterEntity::getPhone,telephone)
                 .orderByDesc(CdLineRegisterEntity::getId)
@@ -262,6 +262,8 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
                 updateCdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus1.getKey());
                 updateCdGetPhoneEntity.setCode("");
                 updateCdGetPhoneEntity.setCreateTime(new Date());
+                //重试次数，更新为0，从头计数
+                updateCdGetPhoneEntity.setRetryNum(0);
                 getPhoneService.updateById(updateCdGetPhoneEntity);
                 //redis注册流程改为：待处理
                 this.registerRetryRedis(Arrays.asList(cdGetPhone));
@@ -277,14 +279,6 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
         if (StringUtils.isEmpty(cdGetPhone.getCode())
                 || Boolean.FALSE.equals(StrTextUtil.verificationCodeFlag(cdGetPhone.getCode()))) {
             cdLineIpProxyService.clearTokenPhone(cdGetPhone.getPhone(), CountryCode.getKeyByValue(cdGetPhone.getCountrycode()));
-        }
-    }
-
-    private void clearTokenPhone2(CdGetPhoneEntity cdGetPhone) {
-        //ip暂时拉黑
-        if (StringUtils.isEmpty(cdGetPhone.getCode())
-                || Boolean.FALSE.equals(StrTextUtil.verificationCodeFlag(cdGetPhone.getCode()))) {
-            cdLineIpProxyService.clearTokenPhone2(cdGetPhone.getPhone(), CountryCode.getKeyByValue(cdGetPhone.getCountrycode()));
         }
     }
 
@@ -318,56 +312,18 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
     }
 
     @Override
-    public boolean registerRetry2(Integer[] ids) {
-        List<CdGetPhoneEntity> cdGetPhoneList = getPhoneService.getByIds(Arrays.asList(ids));
-        Assert.isTrue(CollectionUtils.isEmpty(cdGetPhoneList), "数据为空");
-
-        List<CdGetPhoneEntity> updateCdGetPhoneList = new ArrayList<>();
-        List<Integer> lineRegisterIds = new ArrayList<>();
-        for (CdGetPhoneEntity cdGetPhone : cdGetPhoneList) {
-            CdLineRegisterEntity cdLineRegisterEntity = baseMapper.selectList(new QueryWrapper<CdLineRegisterEntity>().lambda()
-                    .eq(CdLineRegisterEntity::getGetPhoneId, cdGetPhone.getId())).stream().findFirst().orElse(null);
-            if (cdLineRegisterEntity != null) {
-//                Assert.isTrue(!RegisterStatus.RegisterStatus5.getKey().equals(cdLineRegisterEntity.getRegisterStatus()), "注册状态正常，无需重试");
-                //删除line注册此条记录
-                lineRegisterIds.add(cdLineRegisterEntity.getId());
-                if (cdLineRegisterEntity.getProxy().contains("@")) {
-
-                }else {
-                    //ip暂时拉黑
-                    this.clearTokenPhone2(cdGetPhone);
-                }
-            }
-            //更新此条数据，发起重新注册
-            CdGetPhoneEntity updateCdGetPhoneEntity = new CdGetPhoneEntity();
-            updateCdGetPhoneEntity.setId(cdGetPhone.getId());
-            updateCdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus1.getKey());
-            updateCdGetPhoneEntity.setCode("");
-            updateCdGetPhoneEntity.setCreateTime(new Date());
-            updateCdGetPhoneList.add(updateCdGetPhoneEntity);
-        }
-
-        getPhoneService.updateBatchById(updateCdGetPhoneList);
-
-        //删除line注册此条记录
-        if (CollectionUtils.isNotEmpty(lineRegisterIds)) {
-            baseMapper.deleteBatchIds(lineRegisterIds);
-        }
-        //redis注册流程改为：待处理
-        this.registerRetryRedis(cdGetPhoneList);
-
-        return true;
-    }
-
-    @Override
-    public Boolean invalidatePhone(Integer id) {
-        if (id == null) {
+    public Boolean invalidatePhone(Integer[] ids) {
+        if (ObjectUtil.isNull(ids) || ids.length == 0) {
             return false;
         }
-        CdGetPhoneEntity getPhoneEntity = new CdGetPhoneEntity();
-        getPhoneEntity.setId(id);
-        getPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus7.getKey());
-        return getPhoneService.updateById(getPhoneEntity);
+        List<CdGetPhoneEntity> phoneEntityList = new ArrayList<>();
+        for (Integer id : ids) {
+            CdGetPhoneEntity getPhoneEntity = new CdGetPhoneEntity();
+            getPhoneEntity.setId(id);
+            getPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus7.getKey());
+            phoneEntityList.add(getPhoneEntity);
+        }
+        return getPhoneService.updateBatchById(phoneEntityList);
     }
 
 }

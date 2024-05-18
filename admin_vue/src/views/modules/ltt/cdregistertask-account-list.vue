@@ -1,11 +1,11 @@
 <template>
   <el-dialog
-    width="80%"
+    width="90%"
     :title="dataForm.taskName"
     :close-on-click-modal="false"
     :visible.sync="visible">
     <div class="mod-config">
-      <el-form :inline="true" :model="dataForm" @keyup.enter.native="getDataList()">
+      <el-form :inline="true" :model="dataForm" @keyup.enter.native="getDataList(), listSummary()">
         <el-form-item>
           <el-select v-model="registerStatus" placeholder="注册状态" clearable>
             <el-option
@@ -32,7 +32,7 @@
         </el-form-item>
 
         <div>
-          <el-button @click="getDataList()">查询</el-button>
+          <el-button @click="getDataList(), listSummary()">查询</el-button>
           <el-button v-if="isAuth('ltt:atuser:delete')" type="primary" @click="registerRetryHandle()"
                      :disabled="dataListSelections.length <= 0">错误重试
           </el-button>
@@ -44,11 +44,16 @@
           </el-button>
           <el-button type="primary" @click="filterErrorCode()">过滤封号
           </el-button>
+          <el-button type="danger" size="small"
+                     @click="invalidatePhoneHandle()">作废</el-button>
         </div>
       </el-form>
       <div style="font-size: 25px; font-weight: bold; margin-bottom: 20px; margin-top: 20px">
-        注册中:<div style="color: #17B3A3;display: inline;margin-right: 10px;">{{waitRegisterCount}}</div>
-        注册成功:<div style="color: #17B3A3;display: inline">{{successRegisterCount}}</div>
+        待处理:<div style="color: #17B3A3;display: inline;margin-right: 10px;">{{summary.waitCount}}</div>
+        发起注册:<div style="color: #17B3A3;display: inline">{{summary.startRegisterCount}}</div>
+        提交验证码:<div style="color: #17B3A3;display: inline">{{summary.submitRegisterCount}}</div>
+        注册成功:<div style="color: #17B3A3;display: inline">{{summary.successRegisterCount}}</div>
+<!--        注册异常:<div style="color: #17B3A3;display: inline">{{summary.errorRegisterCount}}</div>-->
       </div>
       <el-table
         :data="dataList"
@@ -125,9 +130,19 @@
           label="时间">
           <template slot-scope="scope">
             <div>注册：{{ scope.row.createTime }}</div>
-<!--
             <div>取号：{{ scope.row.firstEnterTime }}</div>
--->
+          </template>
+        </el-table-column>
+        <el-table-column
+          prop="retryNum"
+          header-align="center"
+          align="center" width="100px"
+          label="重试次数">
+          <template slot-scope="scope">
+          <span :style="{ color: scope.row.retryNum !== null && scope.row.retryNum >= 3 ? 'red' : 'black',
+          fontWeight: 'bold', fontSize: '16px'}">
+          {{ scope.row.retryNum }}
+        </span>
           </template>
         </el-table-column>
         <el-table-column
@@ -170,8 +185,6 @@
         registerStatus: null,
         registerStatusCodes: [],
         dataList: [],
-        waitRegisterCount: null,
-        successRegisterCount: null,
         pageIndex: 1,
         pageSize: 10,
         totalPage: 0,
@@ -184,6 +197,13 @@
           taskName: null,
           countryCode: null,
           timeKey: null
+        },
+        summary: {
+          successRegisterCount: null,
+          waitCount: null,
+          startRegisterCount: null,
+          submitRegisterCount: null,
+          errorRegisterCount: null
         },
         dataRule: {
           totalAmount: [
@@ -254,7 +274,23 @@
           }
           this.dataListLoading = false
         })
-
+      },
+      listSummary () {
+        this.dataListLoading = true
+        var createStartTime = null
+        var createEndTime = null
+        if (this.dataForm.timeKey != null && this.dataForm.timeKey.length >= 2) {
+          createStartTime = this.dataForm.timeKey[0]
+          createEndTime = this.dataForm.timeKey[1]
+        }
+        var param = this.$http.adornParams({
+          'page': this.pageIndex,
+          'limit': this.pageSize,
+          'tasksId': this.dataForm.id,
+          'countryCode': this.countryCode,
+          'createStartTime': createStartTime,
+          'createEndTime': createEndTime
+        })
         // 查询列表数据汇总
         this.$http({
           url: this.$http.adornUrl('/ltt/cdlineregister/listSummary'),
@@ -262,11 +298,17 @@
           params: param
         }).then(({data}) => {
           if (data && data.code === 0 && data.summary != null) {
-            this.waitRegisterCount = data.summary.waitRegisterCount
-            this.successRegisterCount = data.summary.successRegisterCount
+            this.summary.successRegisterCount = data.summary.successRegisterCount
+            this.summary.waitCount = data.summary.waitCount
+            this.summary.startRegisterCount = data.summary.startRegisterCount
+            this.summary.submitRegisterCount = data.summary.submitRegisterCount
+            this.summary.errorRegisterCount = data.summary.errorRegisterCount
           } else {
-            this.waitRegisterCount = 0
-            this.successRegisterCount = 0
+            this.summary.successRegisterCount = 0
+            this.summary.waitCount = 0
+            this.summary.startRegisterCount = 0
+            this.summary.submitRegisterCount = 0
+            this.summary.errorRegisterCount = 0
           }
         })
       },
@@ -282,13 +324,14 @@
         this.getDefaultData()
         this.getRegisterStatus()
         this.getDataList()
+        this.listSummary()
       },
       getDefaultData () {
         // 获取当前日期
         const currentDate = new Date()
         // 获取三天前的日期
         const threeDaysAgo = new Date(currentDate)
-        threeDaysAgo.setDate(currentDate.getDate() - 3)
+        threeDaysAgo.setDate(currentDate.getDate() - 1)
 
         const tomorrowData = new Date(currentDate)
         tomorrowData.setDate(currentDate.getDate() + 1)
@@ -318,15 +361,19 @@
         this.dataListSelections = val
       },
       // 账号作废
-      invalidatePhoneHandle (id) {
+      invalidatePhoneHandle(id) {
+        var ids = id ? [id] : this.dataListSelections.map(item => {
+          return item.id
+        })
         this.$confirm(`确定作废?`, '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
-          type: 'warning'
+          type: 'error'
         }).then(() => {
           this.$http({
-            url: this.$http.adornUrl(`/ltt/cdlineregister/invalidatePhone?id=` + id),
-            method: 'post'
+            url: this.$http.adornUrl(`/ltt/cdlineregister/invalidatePhone`),
+            method: 'post',
+            data: this.$http.adornData(ids, false)
           }).then(({data}) => {
             if (data && data.code === 0) {
               this.$message({
@@ -344,17 +391,23 @@
         })
       },
       // 删除
-      registerRetryHandle (id) {
+      registerRetryHandle (id, ipClearFlag) {
         var ids = id ? [id] : this.dataListSelections.map(item => {
           return item.id
         })
+        let url
+        if (ipClearFlag === true) {
+          url = '/ltt/cdlineregister/registerRetr2'
+        } else {
+          url = '/ltt/cdlineregister/registerRetry'
+        }
         this.$confirm(`确定重新注册操作?`, '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
           this.$http({
-            url: this.$http.adornUrl(`/ltt/cdlineregister/registerRetry`),
+            url: this.$http.adornUrl(url),
             method: 'post',
             data: this.$http.adornData(ids, false)
           }).then(({data}) => {
@@ -424,7 +477,7 @@
       },
       filterErrorCode () {
         this.dataList = this.dataList.filter(item => {
-          return (item.phoneStatus !== 7) || !(item.errMsg != null && item.errMsg !== '' && item.errMsg.includes('Code:100') && item.errMsg !== 'セッションがタイムアウトしました。 もう一度お試しください')
+          return !(item.errMsg != null && item.errMsg !== '' && item.errMsg.includes('Code:100') && item.errMsg !== 'セッションがタイムアウトしました。 もう一度お試しください' && item.phoneStatus !== 7)
         })
       },
       getRegisterStatus () {
@@ -457,5 +510,10 @@
 /deep/ .red-badge .el-badge__content {
   background-color: red;
   color: white;
+}
+.button-style {
+  height: 24px; /* 指定按钮高度 */
+  line-height: 24px; /* 使文本垂直居中 */
+  margin-right: 5px; /* 按钮之间的间距 */
 }
 </style>
