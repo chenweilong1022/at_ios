@@ -29,7 +29,7 @@ public class TaskConfig {
     @Bean
     public ThreadPoolTaskScheduler taskScheduler() {
         ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
-        scheduler.setPoolSize(200); // 设置线程池大小
+        scheduler.setPoolSize(600); // 设置线程池大小
         scheduler.setThreadNamePrefix("scheduled-task-");
         scheduler.setAwaitTerminationSeconds(200);
         scheduler.setWaitForTasksToCompleteOnShutdown(true);
@@ -41,8 +41,8 @@ public class TaskConfig {
         ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
         //设置线程池参数信息
         taskExecutor.setCorePoolSize(200);
-        taskExecutor.setMaxPoolSize(200);
-        taskExecutor.setQueueCapacity(200);
+        taskExecutor.setMaxPoolSize(600);
+        taskExecutor.setQueueCapacity(600);
         taskExecutor.setKeepAliveSeconds(60);
         taskExecutor.setThreadNamePrefix("myExecutor2--");
         taskExecutor.setWaitForTasksToCompleteOnShutdown(true);
