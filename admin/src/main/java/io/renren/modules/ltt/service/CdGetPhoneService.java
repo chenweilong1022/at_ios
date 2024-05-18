@@ -78,5 +78,7 @@ public interface CdGetPhoneService extends IService<CdGetPhoneEntity> {
     Integer getPhoneRegisterCount(String phone);
 
     Boolean getPhoneUseState(String phone);
+
+    Integer savePhoneRegisterCount(String phone);
 }
 

@@ -431,41 +431,6 @@ public class RegisterTask {
         return registerRedisDto;
     }
 
-    /**
-     * 更新手机号注册次数
-     */
-    private Integer savePhoneRegisterCount(String phone) {
-        try {
-            Integer registerCount = cdGetPhoneService.getPhoneRegisterCount(phone) + 1;
-
-            log.error("更新手机号注册次数 {}, 次数：{}", phone, registerCount);
-            redisTemplate.opsForHash().put(RedisKeys.RedisKeys10.getValue(), phone, String.valueOf(registerCount));
-
-            //大于等于3次的卡，与前两次的做对比，超过24小时，才为可用状态
-            if (registerCount >= 3) {
-                Map<Integer, Date> userMap = atUserService.list(new QueryWrapper<AtUserEntity>().lambda()
-                                .eq(AtUserEntity::getTelephone, phone)).stream()
-                        .filter(i -> i.getRegisterCount() != null)
-                        .collect(Collectors.toMap(AtUserEntity::getRegisterCount,
-                                i -> i.getRegisterTime() != null ? i.getRegisterTime() : i.getCreateTime(), (a, b) -> b));
-                Integer judgeFrequency = registerCount - 2;//与前两次的对比
-
-                Date time = ObjectUtil.isNotNull(userMap.get(judgeFrequency)) ?
-                        userMap.get(judgeFrequency) : new Date();
-
-                //在此时间上加24小时+30分钟
-                Date expireDate = DateUtils.addDateMinutes(time, (24 * 60) + 30);
-
-                Long expireMinutes = DateUtils.betweenMinutes(new Date(), expireDate);
-
-                redisTemplate.opsForValue().set(RedisKeys.RedisKeys12.getValue(phone), String.valueOf(registerCount), expireMinutes, TimeUnit.MINUTES);
-            }
-            return registerCount;
-        } catch (Exception e) {
-            log.error("更新手机号注册次数异常 {}, {}", phone, e);
-        }
-        return 0;
-    }
 
 
     /**
@@ -946,7 +911,7 @@ public class RegisterTask {
                             if (ObjectUtil.isNotNull(lineRegisterEntity)
                                     && RegisterStatus.RegisterStatus4.getKey().equals(lineRegisterEntity.getRegisterStatus())) {
                                 //更新手机号注册次数
-                                this.savePhoneRegisterCount(lineRegisterEntity.getPhone());
+                                cdGetPhoneService.savePhoneRegisterCount(lineRegisterEntity.getPhone());
                             }
                             log.info("注册任务保存流程结束 {}, {}", registerRedisDto.getTelPhone(), registerRedisDto);
                         } finally {
