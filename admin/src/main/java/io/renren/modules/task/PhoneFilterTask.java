@@ -158,7 +158,7 @@ public class PhoneFilterTask {
             List<AtUserEntity> atUserEntities = atUserService.list(new QueryWrapper<AtUserEntity>().lambda()
                     .in(AtUserEntity::getStatus, UserStatus.UserStatus4.getKey())
                     .eq(AtUserEntity::getNation, CountryCode.CountryCode1.getValue())
-                    .orderByAsc(AtUserEntity::getId)
+                    .orderByDesc(AtUserEntity::getId)
                     .last("limit 50")
             );
 

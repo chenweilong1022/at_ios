@@ -35,7 +35,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 @Component
 @Slf4j
-@Profile({"prod","dev"})
+@Profile({"prod","register"})
 public class OrderTask {
 
     @Autowired
