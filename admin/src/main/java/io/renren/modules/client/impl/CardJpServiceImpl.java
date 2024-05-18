@@ -225,7 +225,7 @@ public class CardJpServiceImpl implements FirefoxService {
                 if (ObjectUtil.isNotNull(max)) {
                     map.put(ret1.getTakeid(),max);
                     redisObjectTemplate.opsForValue()
-                            .set(RedisKeys.JP_SMS_SG.getValue(String.valueOf(ret1.getTakeid())), max, 5, TimeUnit.MINUTES);
+                            .set(RedisKeys.JP_SMS_SG.getValue(String.valueOf(ret1.getTakeid())), max, 200, TimeUnit.MINUTES);
                 }
             }
         }catch (Exception e) {

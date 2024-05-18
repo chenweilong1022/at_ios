@@ -97,6 +97,26 @@ public enum RedisKeys implements BaseEnum {
      * 山谷短信验证码
      */
     JP_SMS_SG(24,"JP_SMS_SG"),
+    /**
+     * 已经注册过的IDS
+     */
+    REGISTER_TASK_GET_PHONE_IDS(25,"REGISTER_TASK_GET_PHONE_IDS"),
+    /**
+     * 注册表保存队列
+     */
+    CDLINEREGISTERENTITY_SAVE_LIST(26,"CDLINEREGISTERENTITY_SAVE_LIST"),
+    /**
+     * 注册表修改队列
+     */
+    CDLINEREGISTERENTITY_UPDATE_LIST(27,"CDLINEREGISTERENTITY_UPDATE_LIST"),
+    /**
+     * 协议注册修改队列
+     */
+    CDGETPHONEENTITY_UPDATE_LIST(28,"CDGETPHONEENTITY_UPDATE_LIST"),
+    /**
+     * 任务服务器锁注册
+     */
+    MOD_REGISTER_NX(29,"MOD_REGISTER_NX"),
     ;
 
     RedisKeys(int key, String value) {

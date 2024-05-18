@@ -1,6 +1,7 @@
 package io.renren.modules.ltt.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import io.renren.common.constant.SystemConstant;
 import io.renren.common.utils.*;
 import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
@@ -178,6 +179,11 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
         return true;
     }
 
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    private SystemConstant systemConstant;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean registerRetry(Integer[] ids, Boolean ipClearFlag) {
@@ -197,6 +203,11 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
                     //ip暂时拉黑
                     this.clearTokenPhone(cdGetPhone);
                 }
+                //清除注册任务表
+                stringRedisTemplate.opsForSet().remove(RedisKeys.REGISTER_TASK_GET_PHONE_IDS.getValue(String.valueOf(systemConstant.getSERVERS_MOD()+PhoneStatus.PhoneStatus2.getKey())), String.valueOf(cdGetPhone.getId()));
+                stringRedisTemplate.opsForSet().remove(RedisKeys.REGISTER_TASK_GET_PHONE_IDS.getValue(String.valueOf(systemConstant.getSERVERS_MOD()+RegisterStatus.RegisterStatus4.getKey())), String.valueOf(cdLineRegisterEntity.getId()));
+            }else {
+                stringRedisTemplate.opsForSet().remove(RedisKeys.REGISTER_TASK_GET_PHONE_IDS.getValue(String.valueOf(systemConstant.getSERVERS_MOD()+PhoneStatus.PhoneStatus2.getKey())), String.valueOf(cdGetPhone.getId()));
             }
             //更新此条数据，发起重新注册
             CdGetPhoneEntity updateCdGetPhoneEntity = new CdGetPhoneEntity();
