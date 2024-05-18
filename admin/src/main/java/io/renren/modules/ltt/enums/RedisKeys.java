@@ -112,7 +112,7 @@ public enum RedisKeys implements BaseEnum {
     /**
      * 协议注册修改队列
      */
-    CDGETPHONEENTITY_UPDATE_LIST(28,"CDLINEREGISTERENTITY_UPDATE_LIST"),
+    CDGETPHONEENTITY_UPDATE_LIST(28,"CDGETPHONEENTITY_UPDATE_LIST"),
     /**
      * 任务服务器锁注册
      */
