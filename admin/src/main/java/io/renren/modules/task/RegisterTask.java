@@ -9,24 +9,26 @@ import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.benmanes.caffeine.cache.Cache;
+import io.renren.common.base.vo.EnumVo;
+import io.renren.common.constant.SystemConstant;
 import io.renren.common.utils.ConfigConstant;
 import io.renren.common.utils.DateUtils;
+import io.renren.common.utils.EnumUtil;
 import io.renren.modules.client.FirefoxService;
 import io.renren.modules.client.LineService;
 import io.renren.modules.client.dto.*;
 import io.renren.modules.client.entity.ProjectWorkEntity;
 import io.renren.modules.client.vo.*;
 import io.renren.modules.ltt.dto.CdGetPhoneDTO;
-import io.renren.modules.ltt.dto.CdRegisterRedisDto;
 import io.renren.modules.ltt.dto.CdLineIpProxyDTO;
 import io.renren.modules.ltt.entity.*;
 import io.renren.modules.ltt.enums.*;
 import io.renren.modules.ltt.service.*;
 import io.renren.modules.ltt.service.impl.AsyncService;
+import io.renren.modules.ltt.vo.CdLineRegisterVO;
 import io.renren.modules.ltt.vo.CdRegisterSubtasksVO;
 import io.renren.modules.ltt.vo.GetCountBySubTaskIdVO;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
@@ -46,7 +48,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -62,7 +63,7 @@ import static io.renren.modules.ltt.enums.PhoneStatus.*;
  */
 @Component
 @Slf4j
-@Profile({"prod", "register"})
+@Profile({"prod","dev"})
 public class RegisterTask {
 
 //curl -x socks5h://chenweilong_112233-country-jp:ch1433471850@proxyus.rola.vip:2000 http://www.ip234.in/ip.json
@@ -117,6 +118,8 @@ public class RegisterTask {
 
     @Resource(name = "firefoxServiceImpl")
     private FirefoxService firefoxServiceImpl;
+    @Resource(name = "caffeineCacheCode")
+    private Cache<String, String> caffeineCacheCode;
 
     @Resource(name = "cardJpSms")
     private Cache<String, Date> cardJpSms;
@@ -127,310 +130,579 @@ public class RegisterTask {
 
     @Autowired
     private StringRedisTemplate redisTemplate;
+
     @Autowired
-    private RedisTemplate<String, Object> redisObjectTemplate;
+    private RedisTemplate<String, Object> redisTemplateObj;
 
-    public CdRegisterRedisDto submitRegister(ProjectWorkEntity projectWorkEntity,
-                                             CdRegisterRedisDto registerRedisDto) {
-        //获取所有已经发起注册的机器
-        if (ObjectUtil.isNull(projectWorkEntity)
-                || ObjectUtil.isNull(registerRedisDto)
-                || ObjectUtil.isNull(registerRedisDto.getPhoneEntity())
-                || ObjectUtil.isNull(registerRedisDto.getLineRegister())) {
-            log.info("发起注册，入参为空，请检查 {}, {}", registerRedisDto, projectWorkEntity);
-            return registerRedisDto;
+
+    /**
+     * 更新
+     */
+    @Scheduled(fixedDelay = 5000)
+    @Transactional(rollbackFor = Exception.class)
+    @Async
+    public void task8() {
+        //服务器更新锁
+        Integer mod = systemConstant.getSERVERS_MOD();
+        String key = String.valueOf(mod);
+        String MOD_REGISTER_NX_KEY = RedisKeys.MOD_REGISTER_NX.getValue(key+8);
+        Boolean b = stringRedisTemplate.opsForValue().setIfAbsent(MOD_REGISTER_NX_KEY, key);
+        if (!b) {
+            return;
         }
-
-        CdLineRegisterEntity lineRegisterEntity = registerRedisDto.getLineRegister();
-
-
-        RegisterResultDTO registerResultDTO = new RegisterResultDTO();
-        registerResultDTO.setTaskId(lineRegisterEntity.getTaskId());
-        RegisterResultVO registerResultVO = lineService.registerResult(registerResultDTO);
-        log.info("发起注册返回结果 {}, {}", lineRegisterEntity.getPhone(), registerResultVO);
-        if (ObjectUtil.isNull(registerResultVO)) {
-            return registerRedisDto;
-        }
-        if (200 == registerResultVO.getCode()) {
-            Long status = registerResultVO.getData().getStatus();
-            if (2 == status || 1 == status || 0 == status || Long.valueOf(20001).equals(status)) {
-                //注册成功
-                if (2 == status) {
-                    SyncLineTokenDTO syncLineTokenDTO = new SyncLineTokenDTO();
-                    syncLineTokenDTO.setTaskId(lineRegisterEntity.getTaskId());
-                    SyncLineTokenVO syncLineTokenVO = lineService.SyncLineTokenDTO(syncLineTokenDTO);
-                    if (ObjectUtil.isNull(syncLineTokenVO)) {
-                        return registerRedisDto;
-                    }
-                    if (200 == syncLineTokenVO.getCode() && CollUtil.isNotEmpty(syncLineTokenVO.getData())) {
-
-                        SyncLineTokenVOData syncLineTokenVOData = syncLineTokenVO.getData().get(0);
-                        lineRegisterEntity.setRegisterStatus(RegisterStatus.RegisterStatus4.getKey());
-                        String token = syncLineTokenVOData.getToken();
-                        LineTokenJson lineTokenJson = JSON.parseObject(token, LineTokenJson.class);
-                        boolean accountExistStatus = lineTokenJson.isAccountExistStatus();
-                        if (accountExistStatus) {
-                            lineRegisterEntity.setAccountExistStatus(AccountExistStatus.AccountExistStatus2.getKey());
-                        } else {
-                            lineRegisterEntity.setAccountExistStatus(AccountExistStatus.AccountExistStatus1.getKey());
+        redisTemplate.expire(MOD_REGISTER_NX_KEY, 2, TimeUnit.MINUTES);
+        try {
+            //加粉任务保存
+            List<CdLineRegisterEntity> elements = new ArrayList<>();
+            CdLineRegisterEntity element = null;
+            while ((element = (CdLineRegisterEntity) redisTemplateObj.opsForList().rightPop(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST.getValue(key))) != null) {
+                elements.add(element);
+            }
+            if (CollUtil.isNotEmpty(elements)) {
+                try{
+                    boolean b1 = cdLineRegisterService.saveBatch(elements);
+                    //如果保存失败，把数据退回redis
+                    if (!b1) {
+                        for (CdLineRegisterEntity cdLineRegisterEntity : elements) {
+                            Long l = redisTemplateObj.opsForList().leftPush(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST.getValue(key), cdLineRegisterEntity);
                         }
-                        lineRegisterEntity.setToken(token);
+                    }
+                    //如果保存失败，把数据退回redis
+                }catch (Exception e) {
+                    for (CdLineRegisterEntity cdLineRegisterEntity : elements) {
+                        Long l = redisTemplateObj.opsForList().leftPush(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST.getValue(key), cdLineRegisterEntity);
                     }
                 }
-            } else {
-                lineRegisterEntity.setRegisterStatus(RegisterStatus.RegisterStatus5.getKey());
-                lineRegisterEntity.setErrMsg(registerResultVO.getData().getRemark());
+            }
+
+            //注册保存
+            List<CdLineRegisterEntity> elementsLineRegister = new ArrayList<>();
+            CdLineRegisterEntity lineRegister = null;
+            while ((lineRegister = (CdLineRegisterEntity) redisTemplateObj.opsForList().rightPop(RedisKeys.CDLINEREGISTERENTITY_UPDATE_LIST.getValue(key))) != null) {
+                elementsLineRegister.add(lineRegister);
+            }
+            if (CollUtil.isNotEmpty(elementsLineRegister)) {
+                try{
+                    boolean b1 = cdLineRegisterService.updateBatchById(elementsLineRegister);
+                    //如果保存失败，把数据重新保存
+                    if (!b1) {
+                        for (CdLineRegisterEntity elementLineRegister : elementsLineRegister) {
+                            Long l = redisTemplateObj.opsForList().leftPush(RedisKeys.CDLINEREGISTERENTITY_UPDATE_LIST.getValue(key), elementLineRegister);
+                        }
+                    }
+                    //如果保存失败，把数据重新保存
+                }catch (Exception e) {
+                    for (CdLineRegisterEntity elementLineRegister : elementsLineRegister) {
+                        Long l = redisTemplateObj.opsForList().leftPush(RedisKeys.CDLINEREGISTERENTITY_UPDATE_LIST.getValue(key), elementLineRegister);
+                    }
+                }
+            }
+
+            //用户任务队列保存
+            List<CdGetPhoneEntity> elementsGetPhone = new ArrayList<>();
+            CdGetPhoneEntity cdGetPhoneEntity = null;
+            while ((cdGetPhoneEntity = (CdGetPhoneEntity) redisTemplateObj.opsForList().rightPop(RedisKeys.CDGETPHONEENTITY_UPDATE_LIST.getValue(key))) != null) {
+                elementsGetPhone.add(cdGetPhoneEntity);
+            }
+            if (CollUtil.isNotEmpty(elementsGetPhone)) {
+                try{
+                    boolean b1 = cdGetPhoneService.updateBatchById(elementsGetPhone);
+                    //如果保存失败，把数据重新保存
+                    if (!b1) {
+                        for (CdGetPhoneEntity elementscdGetPhoneEntity : elementsGetPhone) {
+                            Long l = redisTemplateObj.opsForList().leftPush(RedisKeys.CDGETPHONEENTITY_UPDATE_LIST.getValue(key), elementscdGetPhoneEntity);
+                        }
+                    }
+                    //如果保存失败，把数据重新保存
+                }catch (Exception e) {
+                    for (CdGetPhoneEntity elementscdGetPhoneEntity : elementsGetPhone) {
+                        Long l = redisTemplateObj.opsForList().leftPush(RedisKeys.CDGETPHONEENTITY_UPDATE_LIST.getValue(key), elementscdGetPhoneEntity);
+                    }
+                }
+            }
+        }catch (Exception e){
+            log.error("data atDataTaskService.updateBatchById atGroupService.updateBatchById atUserService.updateBatchById task7 err = {}",e.getMessage());
+        }finally {
+            if (b) {
+                stringRedisTemplate.delete(MOD_REGISTER_NX_KEY);
             }
         }
-        return registerRedisDto;
+
     }
+
 
 
     /**
      *
      */
-    public CdRegisterRedisDto getSmsJp(CdRegisterRedisDto registerRedisDto,
-                                       List<String> pkeys) {
-        if (registerRedisDto == null || CollectionUtils.isEmpty(pkeys)) {
-            log.info("获取验证码，入参为空，请检查 {}, {}", registerRedisDto);
-
+    @Scheduled(fixedDelay = 5000)
+    @Transactional(rollbackFor = Exception.class)
+    @Async
+    public void task7() {
+        //获取所有已经发起注册的机器
+        List<CdLineRegisterEntity> cdLineRegisterEntities = cdLineRegisterService.list(new QueryWrapper<CdLineRegisterEntity>().lambda()
+                .in(CdLineRegisterEntity::getRegisterStatus,RegisterStatus.RegisterStatus3.getKey(),RegisterStatus.RegisterStatus1.getKey())
+        );
+        if (CollUtil.isEmpty(cdLineRegisterEntities)) {
+            log.info("RegisterTask task7 cdLineRegisterEntities isEmpty");
+            return;
         }
-        String pkey = String.join(", ", pkeys);
-
-
-        CdGetPhoneEntity cdGetPhoneEntity = registerRedisDto.getPhoneEntity();
-        CdLineRegisterEntity lineRegisterEntity = registerRedisDto.getLineRegister();
-
-        String phoneCode = cdGetPhoneEntity.getCode();
-
-        //超过20分
-        long between = DateUtil.between(cdGetPhoneEntity.getCreateTime(), DateUtil.date(), DateUnit.MINUTE);
-        if (between > 7) {
-            cdGetPhoneEntity.setCode("验证码超时");
-            cdGetPhoneEntity.setPhoneStatus(PhoneStatus5.getKey());
-            lineRegisterEntity.setRegisterStatus(RegisterStatus.RegisterStatus5.getKey());
-            return registerRedisDto;
-        }
-
-        if (StringUtils.isEmpty(phoneCode)) {
-            CardJpGetPhoneSmsVO.Data.Ret.Sm sm = (CardJpGetPhoneSmsVO.Data.Ret.Sm) redisObjectTemplate.opsForValue()
-                    .get(RedisKeys.JP_SMS_SG.getValue(String.valueOf(cdGetPhoneEntity.getPkey())));
-            if (ObjectUtil.isNull(sm)) {
-
-                String keyByResource = LockMapKeyResource
-                        .getKeyByResource(LockMapKeyResource.REGISTER_TASK_DISTRIBUTION, CountryCode.CountryCode3.getKey());
+        for (CdLineRegisterEntity cdLineRegisterEntity : cdLineRegisterEntities) {
+            poolExecutor.execute(() -> {
+                String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource5, cdLineRegisterEntity.getId());
                 Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
+                CdLineRegisterEntity update = null;
                 boolean triedLock = lock.tryLock();
-                log.info("注册任务分发{}，keyByResource = {} 获取的锁为 = {},状态 = {}",
-                        registerRedisDto.getTelPhone(), keyByResource, triedLock, CountryCode.CountryCode3.getKey());
-                if (triedLock) {
-                    try {
-                        Map<Long, CardJpGetPhoneSmsVO.Data.Ret.Sm> smMap = cardJpService
-                                .getPhoneCodes(pkey);
-                        if (smMap != null) {
-                            sm = smMap.get(cdGetPhoneEntity.getPkey());
+                log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
+                if(triedLock) {
+                    try{
+                        RegisterResultDTO registerResultDTO = new RegisterResultDTO();
+                        registerResultDTO.setTaskId(cdLineRegisterEntity.getTaskId());
+                        RegisterResultVO registerResultVO = lineService.registerResult(registerResultDTO);
+                        if (ObjectUtil.isNull(registerResultVO)) {
+                            return;
                         }
-                    }catch (Exception e) {
-                        log.info("err = {}",e);
+                        if (200 == registerResultVO.getCode()) {
+                            Long status = registerResultVO.getData().getStatus();
+                            if (2 == status || 1 == status || 0 == status || Long.valueOf(20001).equals(status)) {
+                                if (2 == status) {
+                                    SyncLineTokenDTO syncLineTokenDTO = new SyncLineTokenDTO();
+                                    syncLineTokenDTO.setTaskId(cdLineRegisterEntity.getTaskId());
+                                    SyncLineTokenVO syncLineTokenVO = lineService.SyncLineTokenDTO(syncLineTokenDTO);
+                                    if (ObjectUtil.isNull(syncLineTokenVO)) {
+                                        return;
+                                    }
+                                    if (200 == syncLineTokenVO.getCode() && CollUtil.isNotEmpty(syncLineTokenVO.getData())) {
+                                        //更新手机号注册次数
+                                        this.savePhoneRegisterCount(cdLineRegisterEntity);
+
+                                        SyncLineTokenVOData syncLineTokenVOData = syncLineTokenVO.getData().get(0);
+                                        cdLineRegisterEntity.setRegisterStatus(RegisterStatus.RegisterStatus4.getKey());
+                                        String token = syncLineTokenVOData.getToken();
+                                        LineTokenJson lineTokenJson = JSON.parseObject(token, LineTokenJson.class);
+                                        boolean accountExistStatus = lineTokenJson.isAccountExistStatus();
+                                        if (accountExistStatus) {
+                                            cdLineRegisterEntity.setAccountExistStatus(AccountExistStatus.AccountExistStatus2.getKey());
+                                        }else {
+                                            cdLineRegisterEntity.setAccountExistStatus(AccountExistStatus.AccountExistStatus1.getKey());
+                                        }
+                                        cdLineRegisterEntity.setToken(token);
+                                        cdLineRegisterService.updateById(cdLineRegisterEntity);
+                                    }
+                                }
+                                return;
+                            }
+                            cdLineRegisterEntity.setRegisterStatus(RegisterStatus.RegisterStatus5.getKey());
+                            cdLineRegisterEntity.setErrMsg(registerResultVO.getData().getRemark());
+
+                            CdGetPhoneEntity cdGetPhoneEntity = new CdGetPhoneEntity();
+                            cdGetPhoneEntity.setId(cdLineRegisterEntity.getGetPhoneId());
+                            cdGetPhoneEntity.setPhoneStatus(PhoneStatus6.getKey());
+                            if (StrUtil.isNotEmpty(cdLineRegisterEntity.getPkey())) {
+                                if (StringUtils.isNotEmpty(cdGetPhoneEntity.getCountrycode())
+                                        && CountryCode.CountryCode3.getValue().equals(cdGetPhoneEntity.getCountrycode())) {
+                                    //日本
+                                    cardJpService.withBlackMobile(cdLineRegisterEntity.getPkey());
+                                } else if (StringUtils.isNotEmpty(cdGetPhoneEntity.getCountrycode())
+                                        && CountryCode.CountryCode5.getValue().equals(cdGetPhoneEntity.getCountrycode())) {
+                                    firefoxServiceImpl.withBlackMobile(cdLineRegisterEntity.getPkey());
+                                } else {
+                                    firefoxService.withBlackMobile(cdLineRegisterEntity.getPkey());
+                                }
+                                cdGetPhoneEntity.setPhoneStatus(PhoneStatus6.getKey());
+                            }
+
+                            cdLineRegisterService.updateById(cdLineRegisterEntity);
+
+                            cdGetPhoneService.updateById(cdGetPhoneEntity);
+                        }
                     }finally {
                         lock.unlock();
                     }
+                }else {
+                    log.info("keyByResource = {} 在执行",keyByResource);
                 }
-            }
-            if (ObjectUtil.isNull(sm)) {
-                log.error("获取验证码为空，山谷 {}", cdGetPhoneEntity.getPkey());
-                return registerRedisDto;
-            }
-
-            LocalDateTime localDateTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(sm.getTime()),
-                    ZoneId.of("Asia/Shanghai"));
-            ZonedDateTime zonedDateTime = localDateTime.atZone(ZoneId.of("Asia/Shanghai"));
-            Date recvTime = Date.from(zonedDateTime.toInstant());
-
-            boolean before = cdGetPhoneEntity.getCreateTime().before(recvTime);
-            if (before) {
-                phoneCode = extractVerificationCode(sm.getContent());
-                cdGetPhoneEntity.setCode(phoneCode);
-                cdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus3.getKey());
-            } else {
-                redisObjectTemplate.delete(RedisKeys.JP_SMS_SG.getValue(String.valueOf(cdGetPhoneEntity.getPkey())));
-            }
+            });
         }
-        if (StringUtils.isEmpty(phoneCode)) {
-            return registerRedisDto;
-        }
-        log.info("获取验证码返回,山谷 {}, {}", lineRegisterEntity.getPhone(), phoneCode);
-
-        //提交验证码
-        SMSCodeDTO smsCodeDTO = new SMSCodeDTO();
-        smsCodeDTO.setsmsCode(phoneCode);
-        smsCodeDTO.setTaskId(lineRegisterEntity.getTaskId());
-        SMSCodeVO smsCodeVO = lineService.smsCode(smsCodeDTO);
-        log.info("提交验证码返回 {}, {}", lineRegisterEntity.getPhone(), smsCodeVO);
-        if (ObjectUtil.isNull(smsCodeVO)) {
-            return registerRedisDto;
-        }
-        if (200 == smsCodeVO.getCode()) {
-            lineRegisterEntity.setId(lineRegisterEntity.getId());
-            lineRegisterEntity.setRegisterStatus(RegisterStatus.RegisterStatus3.getKey());
-            lineRegisterEntity.setSmsCode(phoneCode);
-            cdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus4.getKey());
-        }
-        return registerRedisDto;
     }
 
 
-    public CdRegisterRedisDto getSms(ProjectWorkEntity projectWorkEntity,
-                                     CdRegisterRedisDto registerRedisDto) {
-        if (ObjectUtil.isNull(projectWorkEntity)
-                || ObjectUtil.isNull(registerRedisDto)
-                || ObjectUtil.isNull(registerRedisDto.getPhoneEntity())
-                || ObjectUtil.isNull(registerRedisDto.getLineRegister())) {
-            log.info("获取验证码，入参为空，请检查 {}, {}", registerRedisDto, projectWorkEntity);
-            return registerRedisDto;
-        }
+    Lock task1Lock = new ReentrantLock();
 
-        CdGetPhoneEntity phoneEntity = registerRedisDto.getPhoneEntity();
-        CdLineRegisterEntity lineRegisterEntity = registerRedisDto.getLineRegister();
-        //如果需要释放
-        if (PhoneStatus5.getKey().equals(phoneEntity.getPhoneStatus())) {
-            if (StringUtils.isNotEmpty(phoneEntity.getCountrycode())
-                    && CountryCode.CountryCode1.getValue().equals(phoneEntity.getCountrycode())) {
-                //泰国
-                boolean b = firefoxService.setRel(phoneEntity.getPkey());
-                if (b) {
-                    phoneEntity.setPhoneStatus(PhoneStatus6.getKey());
-                }
-            }
-            lineRegisterEntity.setRegisterStatus(RegisterStatus.RegisterStatus5.getKey());
-            return registerRedisDto;
-        } else {
-            //如果需要修改验证码
-            String phoneCode = phoneEntity.getCode();
-            //超过20分
-            long between = DateUtil.between(phoneEntity.getCreateTime(), DateUtil.date(), DateUnit.MINUTE);
-            if (between > 10) {
-                phoneEntity.setCode("验证码超时");
-                phoneEntity.setPhoneStatus(PhoneStatus5.getKey());
-                lineRegisterEntity.setRegisterStatus(RegisterStatus.RegisterStatus5.getKey());
-                return registerRedisDto;
-            }
-            if (StrUtil.isEmpty(phoneCode) && StringUtils.isNotEmpty(phoneEntity.getCountrycode())) {
-                if (CountryCode.CountryCode3.getValue().equals(phoneEntity.getCountrycode())
-                        && CountryCode.CountryCode3.getKey().toString().equals(phoneEntity.getCountry())) {
-                    //日本
-                    if (cardJpSmsOver.getIfPresent("jpSmsOverFlag") != null) {
-                        return registerRedisDto;
+//    /**
+//     *
+//     */
+//    @Scheduled(fixedDelay = 5000)
+//    @Transactional(rollbackFor = Exception.class)
+//    public void task10() {
+//
+//        boolean b3 = task1Lock.tryLock();
+//        if (!b3) {
+//            log.error("task1Lock ip推送队列 = {}",b3);
+//            return;
+//        }
+//        try{
+//
+//            //获取验证码
+//            List<CdGetPhoneEntity> list = cdGetPhoneService.list(new QueryWrapper<CdGetPhoneEntity>().lambda()
+//                            .in(CdGetPhoneEntity::getPhoneStatus, PhoneStatus.PhoneStatus2.getKey())
+////                .last("limit 50")
+//                            .eq(CdGetPhoneEntity::getCountry,"81")
+//                            .orderByDesc(CdGetPhoneEntity::getId)
+//            );
+//
+//            String pks = list.stream().map(CdGetPhoneEntity::getPkey).collect(Collectors.joining(","));
+//            Map<Long, CardJpGetPhoneSmsVO.Data.Ret.Sm> phoneCodes = cardJpService.getPhoneCodes(pks);
+//            Map<String, CdGetPhoneEntity> collect = list.stream().collect(Collectors.toMap(CdGetPhoneEntity::getPkey, item -> item, (a, b) -> a));
+//            List<CdGetPhoneEntity> cdGetPhoneEntities = new ArrayList<>();
+//            List<CdLineRegisterEntity> cdLineRegisterEntities = new ArrayList<>();
+//
+//
+//            for (Long l : phoneCodes.keySet()) {
+//                CdGetPhoneEntity cdGetPhoneEntity = collect.get(String.valueOf(l));
+//                if (ObjectUtil.isNull(cdGetPhoneEntity)) {
+//                    continue;
+//                }
+//                CardJpGetPhoneSmsVO.Data.Ret.Sm sm = phoneCodes.get(l);
+//
+//
+//                LocalDateTime localDateTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(sm.getTime()), ZoneId.of("Asia/Shanghai"));
+//                ZonedDateTime zonedDateTime = localDateTime.atZone(ZoneId.of("Asia/Shanghai"));
+//                Date recvTime = Date.from(zonedDateTime.toInstant());
+//                boolean before = cdGetPhoneEntity.getCreateTime().before(recvTime);
+//                if (before) {
+//                    String phoneCode = extractVerificationCode(sm.getContent());
+//                    cdGetPhoneEntity.setCode(phoneCode);
+//                    cdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus3.getKey());
+//                    cdGetPhoneEntities.add(cdGetPhoneEntity);
+//
+//                    CdLineRegisterEntity lineRegisterVO = cdLineRegisterService.getById((Serializable) cdGetPhoneEntity.getLineRegisterId());
+//                    if (ObjectUtil.isNull(lineRegisterVO)) {
+//                        lineRegisterVO = cdLineRegisterService.getOne(new QueryWrapper<CdLineRegisterEntity>().lambda()
+//                                .eq(CdLineRegisterEntity::getGetPhoneId,cdGetPhoneEntity.getId())
+//                        );
+//                        if (ObjectUtil.isNull(lineRegisterVO)) {
+//                            continue;
+//                        }
+//                    }
+//
+//                    SMSCodeDTO smsCodeDTO = new SMSCodeDTO();
+//                    smsCodeDTO.setsmsCode(phoneCode);
+//                    smsCodeDTO.setTaskId(lineRegisterVO.getTaskId());
+//                    SMSCodeVO smsCodeVO = lineService.smsCode(smsCodeDTO);
+//                    if (ObjectUtil.isNull(smsCodeVO)) {
+//                        continue;
+//                    }
+//                    if (200 == smsCodeVO.getCode()) {
+//                        CdLineRegisterEntity update = new CdLineRegisterEntity();
+//                        update.setId(lineRegisterVO.getId());
+//                        update.setRegisterStatus(RegisterStatus.RegisterStatus3.getKey());
+//                        update.setSmsCode(phoneCode);
+//                        cdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus4.getKey());
+//                        cdLineRegisterEntities.add(update);
+//                    }
+//
+//                }
+//            }
+//            if (CollUtil.isNotEmpty(cdGetPhoneEntities)) {
+//                cdGetPhoneService.updateBatchById(cdGetPhoneEntities);
+//            }
+//            if (CollUtil.isNotEmpty(cdLineRegisterEntities)) {
+//                cdLineRegisterService.updateBatchById(cdLineRegisterEntities);
+//            }
+//        }catch (Exception e) {
+//            log.error("err = {}",e.getMessage());
+//        }finally {
+//            task1Lock.unlock();
+//        }
+//
+//    }
+
+
+    /**
+     *
+     */
+    @Scheduled(fixedDelay = 5000)
+    @Transactional(rollbackFor = Exception.class)
+    @Async
+    public void task6() {
+        //获取验证码
+        List<CdGetPhoneEntity> list = cdGetPhoneService.list(new QueryWrapper<CdGetPhoneEntity>().lambda()
+                        .in(CdGetPhoneEntity::getPhoneStatus, PhoneStatus.PhoneStatus2.getKey(), PhoneStatus5.getKey())
+//                .last("limit 50")
+                        .notIn(CdGetPhoneEntity::getCountry,"81")
+                        .orderByDesc(CdGetPhoneEntity::getId)
+        );
+        if (CollUtil.isEmpty(list)) {
+            log.info("RegisterTask task6 list isEmpty");
+            return;
+        }
+        for (CdGetPhoneEntity cdGetPhoneEntity : list) {
+            poolExecutor.execute(() -> {
+                String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource4, cdGetPhoneEntity.getId());
+                Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
+                CdLineRegisterEntity update = null;
+                boolean triedLock = lock.tryLock();
+                log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
+                if(triedLock) {
+                    try{
+                        //如果需要释放
+                        if(PhoneStatus5.getKey().equals(cdGetPhoneEntity.getPhoneStatus())) {
+                            boolean b;
+
+                            if (StringUtils.isNotEmpty(cdGetPhoneEntity.getCountrycode())
+                                    && CountryCode.CountryCode3.getValue().equals(cdGetPhoneEntity.getCountrycode())) {
+                                //日本
+                                b = cardJpService.setRel(cdGetPhoneEntity.getPkey());
+                            } else if (StringUtils.isNotEmpty(cdGetPhoneEntity.getCountrycode())
+                                    && CountryCode.CountryCode5.getValue().equals(cdGetPhoneEntity.getCountrycode())) {
+                                //香港
+                                b = firefoxServiceImpl.setRel(cdGetPhoneEntity.getPkey());
+                            } else {
+                                b = firefoxService.setRel(cdGetPhoneEntity.getPkey());
+                            }
+
+                            if (b) {
+                                cdGetPhoneEntity.setPhoneStatus(PhoneStatus6.getKey());
+                            }
+                            //如果需要修改验证码
+                        }else {
+                            String phoneCode = cdGetPhoneEntity.getCode();
+                            //超过20分
+                            long between = DateUtil.between(cdGetPhoneEntity.getCreateTime(), DateUtil.date(), DateUnit.MINUTE);
+                            if (between > 10) {
+                                cdGetPhoneEntity.setCode("验证码超时");
+                                cdGetPhoneEntity.setPhoneStatus(PhoneStatus5.getKey());
+                                return;
+                            }
+                            if (StrUtil.isEmpty(phoneCode) && StringUtils.isNotEmpty(cdGetPhoneEntity.getCountrycode())) {
+                                if (CountryCode.CountryCode3.getValue().equals(cdGetPhoneEntity.getCountrycode()) && CountryCode.CountryCode3.getKey().toString().equals(cdGetPhoneEntity.getCountry())) {
+                                    //日本
+                                    if (cardJpSmsOver.getIfPresent("jpSmsOverFlag") != null) {
+                                        return;
+                                    }
+                                    cardJpSms.put(cdGetPhoneEntity.getPkey(), cdGetPhoneEntity.getCreateTime());
+                                    phoneCode = cardJpService.getPhoneCode(cdGetPhoneEntity.getPkey());
+                                }else if (CountryCode.CountryCode8.getValue().equals(cdGetPhoneEntity.getCountrycode())  && CountryCode.CountryCode8.getKey().toString().equals(cdGetPhoneEntity.getCountry())) {
+                                    cardJpSms.put(cdGetPhoneEntity.getPkey(), cdGetPhoneEntity.getCreateTime());
+                                    String s = cdGetPhoneEntity.getPkey() + "#" + cdGetPhoneEntity.getSfApi() + "#" + cdGetPhoneEntity.getTimeZone();
+                                    //日本-四方
+                                    phoneCode = cardJpSFService.getPhoneCode(s);
+                                } else if (CountryCode.CountryCode5.getValue().equals(cdGetPhoneEntity.getCountrycode())) {
+                                    //香港
+                                    phoneCode = firefoxServiceImpl.getPhoneCode(cdGetPhoneEntity.getPkey());
+                                } else {
+                                    phoneCode = firefoxService.getPhoneCode(cdGetPhoneEntity.getPkey());
+                                }
+                            }
+                            if (StrUtil.isEmpty(phoneCode)) {
+                                return;
+                            }
+                            log.info("phoneCode = {}", phoneCode);
+                            if (StrUtil.isNotEmpty(phoneCode)) {
+                                cdGetPhoneEntity.setCode(phoneCode);
+                                cdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus3.getKey());
+
+                                CdLineRegisterEntity lineRegisterVO = cdLineRegisterService.getById((Serializable) cdGetPhoneEntity.getLineRegisterId());
+                                if (ObjectUtil.isNull(lineRegisterVO)) {
+                                    lineRegisterVO = cdLineRegisterService.getOne(new QueryWrapper<CdLineRegisterEntity>().lambda()
+                                            .eq(CdLineRegisterEntity::getGetPhoneId,cdGetPhoneEntity.getId())
+                                    );
+                                    if (ObjectUtil.isNull(lineRegisterVO)) {
+                                        return;
+                                    }
+                                }
+
+                                SMSCodeDTO smsCodeDTO = new SMSCodeDTO();
+                                smsCodeDTO.setsmsCode(phoneCode);
+                                smsCodeDTO.setTaskId(lineRegisterVO.getTaskId());
+                                SMSCodeVO smsCodeVO = lineService.smsCode(smsCodeDTO);
+                                if (ObjectUtil.isNull(smsCodeVO)) {
+                                    return;
+                                }
+                                log.info("smsCodeVO = {}", JSONUtil.toJsonStr(smsCodeVO));
+                                if (200 == smsCodeVO.getCode()) {
+                                    update = new CdLineRegisterEntity();
+                                    update.setId(lineRegisterVO.getId());
+                                    update.setRegisterStatus(RegisterStatus.RegisterStatus3.getKey());
+                                    update.setSmsCode(phoneCode);
+                                    cdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus4.getKey());
+                                }
+                            }
+                        }
+                    }finally {
+                        lock.unlock();
+                        cdGetPhoneService.updateById(cdGetPhoneEntity);
+                        if (ObjectUtil.isNotNull(update)) {
+                            cdLineRegisterService.updateById(update);
+                        }
                     }
-                    cardJpSms.put(phoneEntity.getPkey(), phoneEntity.getCreateTime());
-                    phoneCode = cardJpService.getPhoneCode(phoneEntity.getPkey());
-                } else if (CountryCode.CountryCode8.getValue().equals(phoneEntity.getCountrycode())
-                        && CountryCode.CountryCode8.getKey().toString().equals(phoneEntity.getCountry())) {
-                    cardJpSms.put(phoneEntity.getPkey(), phoneEntity.getCreateTime());
-                    String s = phoneEntity.getPkey() + "#" + phoneEntity.getSfApi() + "#" + phoneEntity.getTimeZone();
-                    //日本-四方
-                    phoneCode = cardJpSFService.getPhoneCode(s);
-                } else if (CountryCode.CountryCode5.getValue().equals(phoneEntity.getCountrycode())) {
-                    //香港
-                    phoneCode = firefoxServiceImpl.getPhoneCode(phoneEntity.getPkey());
-                } else {
-                    phoneCode = firefoxService.getPhoneCode(phoneEntity.getPkey());
+                }else {
+                    log.info("keyByResource = {} 在执行",keyByResource);
                 }
-            }
-            if (StrUtil.isEmpty(phoneCode)) {
-                return registerRedisDto;
-            }
-            log.info("获取验证码 phoneCode = {}, {}", phoneEntity.getPhone(), phoneCode);
-            if (StrUtil.isNotEmpty(phoneCode)) {
-                //更新验证码信息
-                phoneEntity.setCode(phoneCode);
-                phoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus3.getKey());
-
-                SMSCodeDTO smsCodeDTO = new SMSCodeDTO();
-                smsCodeDTO.setsmsCode(phoneCode);
-                smsCodeDTO.setTaskId(lineRegisterEntity.getTaskId());
-                SMSCodeVO smsCodeVO = lineService.smsCode(smsCodeDTO);
-                log.info("提交验证码返回 {}, {}", phoneEntity.getPhone(), smsCodeVO);
-                if (ObjectUtil.isNull(smsCodeVO)) {
-                    return registerRedisDto;
-                }
-                if (200 == smsCodeVO.getCode()) {
-                    lineRegisterEntity.setRegisterStatus(RegisterStatus.RegisterStatus3.getKey());
-                    lineRegisterEntity.setSmsCode(phoneCode);
-                    phoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus4.getKey());
-                }
-            }
+            });
         }
-        return registerRedisDto;
+
     }
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    private SystemConstant systemConstant;
 
     /**
      * 使用协议去注册
      */
-    public CdRegisterRedisDto startRegister(ProjectWorkEntity projectWorkEntity,
-                                            CdRegisterRedisDto registerRedisDto) {
-        if (ObjectUtil.isNull(projectWorkEntity)
-                || ObjectUtil.isNull(registerRedisDto)
-                || ObjectUtil.isNull(registerRedisDto.getPhoneEntity())) {
-            log.info("启动注册，入参为空，请检查 {}, {}", registerRedisDto, projectWorkEntity);
-            return registerRedisDto;
+    @Scheduled(fixedDelay = 5000)
+    @Transactional(rollbackFor = Exception.class)
+    @Async
+    public void task5() {
+        //服务器更新锁先锁住方法
+        Integer mod = systemConstant.getSERVERS_MOD();
+        String key = String.valueOf(mod);
+        String MOD_REGISTER_NX_KEY = RedisKeys.MOD_REGISTER_NX.getValue(key);
+        Boolean b = stringRedisTemplate.opsForValue().setIfAbsent(MOD_REGISTER_NX_KEY, key);
+        if (!b) {
+            return;
         }
-        CdGetPhoneEntity phoneEntity = registerRedisDto.getPhoneEntity();
+        redisTemplate.expire(MOD_REGISTER_NX_KEY, 2, TimeUnit.MINUTES);
+        try{
+            ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
+            if (ObjectUtil.isNull(projectWorkEntity)) {
+                return;
+            }
+            List<CdGetPhoneEntity> list = cdGetPhoneService.list(new QueryWrapper<CdGetPhoneEntity>().lambda()
+                    .eq(CdGetPhoneEntity::getPhoneStatus, PhoneStatus.PhoneStatus1.getKey())
+                    .last("limit 200")
+                    .orderByDesc(CdGetPhoneEntity::getId)
+            );
+            if (CollUtil.isEmpty(list)) {
+                log.info("RegisterTask task5 list isEmpty");
+                return;
+            }
+            for (CdGetPhoneEntity cdGetPhoneEntity : list) {
+                poolExecutor.execute(() -> {
+                    String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource4, cdGetPhoneEntity.getId());
+                    Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
+                    boolean triedLock = lock.tryLock();
+                    log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
+                    if(triedLock) {
+                        try{
+                            //设置到当前机器任务池
+                            Long add = stringRedisTemplate.opsForSet().add(RedisKeys.REGISTER_TASK_GET_PHONE_IDS.getValue(String.valueOf(systemConstant.getSERVERS_MOD())), String.valueOf(cdGetPhoneEntity.getId()));
+                            if (add <= 0) {
+                                return;
+                            }
+                            LineRegisterDTO lineRegisterDTO = new LineRegisterDTO();
+                            lineRegisterDTO.setAb(projectWorkEntity.getLineAb());
+                            lineRegisterDTO.setAppVersion(projectWorkEntity.getLineAppVersion());
+                            lineRegisterDTO.setCountryCode(cdGetPhoneEntity.getCountrycode());
+                            lineRegisterDTO.setPhone(cdGetPhoneEntity.getPhone());
+                            //获取代理
+                            CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
+                            cdLineIpProxyDTO.setTokenPhone(cdGetPhoneEntity.getPhone());
+                            cdLineIpProxyDTO.setLzPhone(cdGetPhoneEntity.getPhone());
+                            String proxyIp = cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO);
+                            if (StrUtil.isEmpty(proxyIp)) {
+                                //如果获取失败删除这个id
+                                stringRedisTemplate.opsForSet().remove(RedisKeys.REGISTER_TASK_GET_PHONE_IDS.getValue(String.valueOf(systemConstant.getSERVERS_MOD())),String.valueOf(cdGetPhoneEntity.getId()));
+                                return;
+                            }
 
-        //发起注册
-        LineRegisterDTO lineRegisterDTO = new LineRegisterDTO();
-        lineRegisterDTO.setAb(projectWorkEntity.getLineAb());
-        lineRegisterDTO.setAppVersion(projectWorkEntity.getLineAppVersion());
-        lineRegisterDTO.setCountryCode(phoneEntity.getCountrycode());
-        lineRegisterDTO.setPhone(phoneEntity.getPhone());
+                            lineRegisterDTO.setProxy(proxyIp);
+                            lineRegisterDTO.setTxtToken(projectWorkEntity.getLineTxtToken());
+                            LineRegisterVO lineRegisterVO = lineService.lineRegister(lineRegisterDTO);
+                            if (ObjectUtil.isNull(lineRegisterVO)) {
+                                return;
+                            }
+                            //注册成功数据
+                            log.info("lineRegisterVO = {}", JSONUtil.toJsonStr(lineRegisterVO));
+                            // 提交成功
+                            if (200 == lineRegisterVO.getCode()) {
 
-        //获取代理
-        CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
-        cdLineIpProxyDTO.setTokenPhone(phoneEntity.getPhone());
-        cdLineIpProxyDTO.setLzPhone(phoneEntity.getPhone());
-        String proxyIp = cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO);
-        if (StrUtil.isEmpty(proxyIp)) {
-            log.info("启动注册，获取代理为空 {}", cdLineIpProxyDTO);
-            return registerRedisDto;
+                                log.info("注册任务池保存成功条数 ====》 {}",add);
+                                if (add > 0) {
+                                    //注册表整理
+                                    CdLineRegisterEntity cdLineRegisterDTO = new CdLineRegisterEntity();
+                                    cdLineRegisterDTO.setAb(lineRegisterDTO.getAb());
+                                    cdLineRegisterDTO.setAppVersion(lineRegisterDTO.getAppVersion());
+                                    cdLineRegisterDTO.setCountryCode(lineRegisterDTO.getCountryCode());
+                                    cdLineRegisterDTO.setPhone(lineRegisterDTO.getPhone());
+                                    cdLineRegisterDTO.setProxy(lineRegisterDTO.getProxy());
+                                    cdLineRegisterDTO.setTxtToken(lineRegisterDTO.getTxtToken());
+                                    DataLineRegisterVO data = lineRegisterVO.getData();
+                                    cdLineRegisterDTO.setTaskId(data.getTaskId());
+                                    cdLineRegisterDTO.setRegisterStatus(RegisterStatus.RegisterStatus1.getKey());
+                                    cdLineRegisterDTO.setDeleteFlag(DeleteFlag.NO.getKey());
+                                    cdLineRegisterDTO.setCreateTime(DateUtil.date());
+                                    cdLineRegisterDTO.setGetPhoneId(cdGetPhoneEntity.getId());
+                                    cdLineRegisterDTO.setPkey(cdGetPhoneEntity.getPkey());
+                                    cdLineRegisterDTO.setSubtasksId(cdGetPhoneEntity.getSubtasksId());
+                                    //设置代理类型
+                                    cdLineRegisterDTO.setProxyStatus(projectWorkEntity.getProxy());
+                                    CdGetPhoneEntity update = new CdGetPhoneEntity();
+                                    update.setId(cdGetPhoneEntity.getId());
+                                    update.setPhoneStatus(PhoneStatus.PhoneStatus2.getKey());
+                                    update.setCreateTime(DateUtil.date());
+                                    //设置保存队列
+                                    Long l1 = redisTemplateObj.opsForList().leftPush(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST.getValue(key), cdLineRegisterDTO);
+                                    //设置修改队列
+                                    Long l2 = redisTemplateObj.opsForList().leftPush(RedisKeys.CDGETPHONEENTITY_UPDATE_LIST.getValue(key), update);
+                                }
+                            }
+                        }finally {
+                            lock.unlock();
+                        }
+                    }else {
+                        log.info("keyByResource = {} 在执行",keyByResource);
+                    }
+                });
+            }
+        }catch (Exception e){
+            log.error(" err = {}",e.getMessage());
+        }finally {
+            stringRedisTemplate.delete(MOD_REGISTER_NX_KEY);
         }
 
-        lineRegisterDTO.setProxy(proxyIp);
-        lineRegisterDTO.setTxtToken(projectWorkEntity.getLineTxtToken());
-        //发起注册
-        LineRegisterVO lineRegisterVO = lineService.lineRegister(lineRegisterDTO);
-        if (ObjectUtil.isNull(lineRegisterVO)) {
-            return registerRedisDto;
-        }
-        log.info("启动注册，注册返回= {} 入参 = {}", lineRegisterVO, lineRegisterDTO);
-        // 提交成功
-        if (200 == lineRegisterVO.getCode()) {
-            CdLineRegisterEntity cdLineRegisterDTO = new CdLineRegisterEntity();
-            cdLineRegisterDTO.setAb(lineRegisterDTO.getAb());
-            cdLineRegisterDTO.setAppVersion(lineRegisterDTO.getAppVersion());
-            cdLineRegisterDTO.setCountryCode(lineRegisterDTO.getCountryCode());
-            cdLineRegisterDTO.setPhone(lineRegisterDTO.getPhone());
-            cdLineRegisterDTO.setProxy(lineRegisterDTO.getProxy());
-            cdLineRegisterDTO.setTxtToken(lineRegisterDTO.getTxtToken());
-            DataLineRegisterVO data = lineRegisterVO.getData();
-            cdLineRegisterDTO.setTaskId(data.getTaskId());
-            cdLineRegisterDTO.setRegisterStatus(RegisterStatus.RegisterStatus1.getKey());
-            cdLineRegisterDTO.setDeleteFlag(DeleteFlag.NO.getKey());
-            cdLineRegisterDTO.setCreateTime(DateUtil.date());
-            cdLineRegisterDTO.setGetPhoneId(phoneEntity.getId());
-            cdLineRegisterDTO.setPkey(phoneEntity.getPkey());
-            cdLineRegisterDTO.setSubtasksId(phoneEntity.getSubtasksId());
-            //设置代理类型
-            cdLineRegisterDTO.setProxyStatus(projectWorkEntity.getProxy());
-
-            //注册状态变更
-            phoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus2.getKey());
-            phoneEntity.setCreateTime(DateUtil.date());
-
-            registerRedisDto.setLineRegister(cdLineRegisterDTO);
-        }
-        return registerRedisDto;
     }
 
+
+    /**
+     * 更新手机号注册次数
+     */
+    private Integer savePhoneRegisterCount(CdLineRegisterEntity cdLineRegisterEntity) {
+        try {
+            String phone = cdLineRegisterEntity.getPhone();
+            Integer registerCount = cdGetPhoneService.getPhoneRegisterCount(phone) + 1;
+
+            log.error("更新手机号注册次数 {}, 次数：{}", phone, registerCount);
+            redisTemplate.opsForHash().put(RedisKeys.RedisKeys10.getValue(), phone, String.valueOf(registerCount));
+
+            //大于等于3次的卡，与前两次的做对比，超过24小时，才为可用状态
+            if (registerCount >= 3) {
+                Map<Integer, Date> userMap = atUserService.list(new QueryWrapper<AtUserEntity>().lambda()
+                                .eq(AtUserEntity::getTelephone, phone)).stream()
+                        .filter(i -> i.getRegisterCount() != null)
+                        .collect(Collectors.toMap(AtUserEntity::getRegisterCount,
+                                i -> i.getRegisterTime() != null ? i.getRegisterTime() : i.getCreateTime(),(a,b)->b));
+                Integer judgeFrequency = registerCount - 2;//与前两次的对比
+
+                Date time = ObjectUtil.isNotNull(userMap.get(judgeFrequency)) ?
+                        userMap.get(judgeFrequency) : new Date();
+
+                //在此时间上加24小时+30分钟
+                Date expireDate = DateUtils.addDateMinutes(time, (24 * 60) + 30);
+
+                Long expireMinutes = DateUtils.betweenMinutes(new Date(), expireDate);
+
+                redisTemplate.opsForValue().set(RedisKeys.RedisKeys12.getValue(phone), String.valueOf(registerCount), expireMinutes, TimeUnit.MINUTES);
+            }
+            return registerCount;
+        } catch (Exception e) {
+            log.error("更新手机号注册次数异常 {}, {}", cdLineRegisterEntity, e);
+        }
+        return 0;
+    }
 
 
     /**
@@ -442,9 +714,9 @@ public class RegisterTask {
     public void task3() {
         //获取所有子任务保存完成的
         List<CdRegisterTaskEntity> cdRegisterTaskEntities = cdRegisterTaskService.list(new QueryWrapper<CdRegisterTaskEntity>().lambda()
-                .eq(CdRegisterTaskEntity::getRegistrationStatus, RegistrationStatus.RegistrationStatus2.getKey())
-                .lt(CdRegisterTaskEntity::getFillUpRegisterTaskId, 0)
-                .or(item -> item.eq(CdRegisterTaskEntity::getFillUp, FillUp.YES.getKey()))
+                .eq(CdRegisterTaskEntity::getRegistrationStatus,RegistrationStatus.RegistrationStatus2.getKey())
+                .lt(CdRegisterTaskEntity::getFillUpRegisterTaskId,0)
+                .or(item -> item.eq(CdRegisterTaskEntity::getFillUp,FillUp.YES.getKey()))
         );
         if (CollUtil.isEmpty(cdRegisterTaskEntities)) {
             log.info("RegisterTask task3 list isEmpty");
@@ -457,12 +729,12 @@ public class RegisterTask {
                 String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource1, cdRegisterTaskEntity.getId());
                 Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
                 boolean triedLock = lock.tryLock();
-                log.info("keyByResource = {} 获取的锁为 = {}", keyByResource, triedLock);
-                if (triedLock) {
-                    try {
+                log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
+                if(triedLock) {
+                    try{
                         //获取所有子任务
                         List<CdRegisterSubtasksEntity> cdRegisterSubtasksEntities = cdRegisterSubtasksService.list(new QueryWrapper<CdRegisterSubtasksEntity>().lambda()
-                                .eq(CdRegisterSubtasksEntity::getTaskId, cdRegisterTaskEntity.getId())
+                                .eq(CdRegisterSubtasksEntity::getTaskId,cdRegisterTaskEntity.getId())
                         );
                         //获取所有的子任务Ids
                         List<Integer> registerSubtasksIds = cdRegisterSubtasksEntities.stream().map(CdRegisterSubtasksEntity::getId).collect(Collectors.toList());
@@ -498,7 +770,7 @@ public class RegisterTask {
                         //如果 注册成功了，去修改状态
                         if (registerSuccessCount >= cdRegisterTaskEntity.getNumberRegistered()) {
                             cdRegisterTaskEntity.setRegistrationStatus(RegistrationStatus.RegistrationStatus7.getKey());
-                        } else {
+                        }else {
                             Integer count = cdRegisterTaskService.sumByTaskId(cdRegisterTaskEntity.getId());
                             //说明都已经去注册了，注册剩余的数量去
                             if (successTotal + errorTotal >= count) {
@@ -529,11 +801,11 @@ public class RegisterTask {
                         cdRegisterTaskService.updateById(cdRegisterTaskEntity);
 
                         cdRegisterSubtasksService.updateBatchById(cdRegisterSubtasksEntities);
-                    } finally {
+                    }finally {
                         lock.unlock();
                     }
-                } else {
-                    log.info("keyByResource = {} 在执行", keyByResource);
+                }else {
+                    log.info("keyByResource = {} 在执行",keyByResource);
                 }
             });
 
@@ -561,14 +833,14 @@ public class RegisterTask {
                 boolean triedLock = false;
                 try {
                     triedLock = lock.tryLock();
-                    log.info("keyByResource = {} 获取的锁为 = {}", keyByResource, triedLock);
-                    if (triedLock) {
-                        try {
+                    log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
+                    if(triedLock) {
+                        try{
                             //如果获取的状态为2跳出循环
                             if (RegistrationStatus.RegistrationStatus2.getKey().equals(cdRegisterSubtasksEntity.getRegistrationStatus())) {
                                 //获取子任务数量
                                 int count = cdGetPhoneService.count(new QueryWrapper<CdGetPhoneEntity>().lambda()
-                                        .eq(CdGetPhoneEntity::getSubtasksId, cdRegisterSubtasksEntity.getId())
+                                        .eq(CdGetPhoneEntity::getSubtasksId,cdRegisterSubtasksEntity.getId())
                                 );
                                 if (cdRegisterSubtasksEntity.getNumberRegistrations() > count) {
                                     CdGetPhoneDTO cdGetPhoneDTO = new CdGetPhoneDTO();
@@ -603,11 +875,11 @@ public class RegisterTask {
 //                                }
                                 cdRegisterSubtasksService.updateById(update);
                             }
-                        } finally {
+                        }finally {
                             lock.unlock();
                         }
-                    } else {
-                        log.info("keyByResource = {} 在执行", keyByResource);
+                    }else {
+                        log.info("keyByResource = {} 在执行",keyByResource);
                     }
                 } catch (Exception e) {
                     log.error("task2_error {}", e);
@@ -637,9 +909,9 @@ public class RegisterTask {
                 String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource1, cdRegisterTaskEntity.getId());
                 Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
                 boolean triedLock = lock.tryLock();
-                log.info("注册任务，插入子任务开始 keyByResource = {} 获取的锁为 = {}", keyByResource, triedLock);
-                if (triedLock) {
-                    try {
+                log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
+                if(triedLock) {
+                    try{
                         //如果是注册四方直接返回
                         if (CountryCode.CountryCode8.getKey().equals(cdRegisterTaskEntity.getCountryCode())) {
                             return;
@@ -663,7 +935,7 @@ public class RegisterTask {
                                 Integer newNumberRegistrations = totalAmount - numberRegistered;
                                 if (newNumberRegistrations > numberThreads) {
                                     newNumberRegistrations = numberThreads;
-                                } else {
+                                }else{
                                     flag = false;
                                     cdRegisterTaskEntity.setRegistrationStatus(RegistrationStatus.RegistrationStatus2.getKey());
                                 }
@@ -684,21 +956,20 @@ public class RegisterTask {
                                 cdRegisterTaskEntity.setNumberRegistered(cdRegisterTaskEntity.getNumberRegistered() + newNumberRegistrations);
                             }
                             //保存子任务
-                            cdRegisterSubtasksService.saveBatch(cdRegisterSubtasksEntities, cdRegisterSubtasksEntities.size());
+                            cdRegisterSubtasksService.saveBatch(cdRegisterSubtasksEntities,cdRegisterSubtasksEntities.size());
                             //修改状态
                             cdRegisterTaskService.updateById(cdRegisterTaskEntity);
                         }
-                    } finally {
+                    }finally {
                         lock.unlock();
                     }
-                } else {
-                    log.info("keyByResource = {} 在执行", keyByResource);
+                }else {
+                    log.info("keyByResource = {} 在执行",keyByResource);
                 }
             });
         }
 
     }
-
     //
 //     poolExecutor.execute(() -> {
 //        String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource1, cdRegisterTaskEntity.getId());
@@ -715,219 +986,8 @@ public class RegisterTask {
 //            log.info("keyByResource = {} 在执行",keyByResource);
 //        }
 //    });
-    static ReentrantLock registerTaskLock = new ReentrantLock();
-
-    /**
-     * 使用协议去注册
-     */
-    @Scheduled(fixedDelay = 5 * 1000)
-    @Transactional(rollbackFor = Exception.class)
-    @Async
-    public void registerTaskDistribution() {
-        ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
-        if (ObjectUtil.isNull(projectWorkEntity)) {
-            return;
-        }
 
 
-        List<Object> registerList = redisObjectTemplate.opsForHash()
-                .values(RedisKeys.REGISTER_TASK.getValue());
-        if (CollUtil.isEmpty(registerList)) {
-            log.info("注册任务分发，暂无执行的");
-            return;
-        }
 
-        List<String> pkeys = new ArrayList<>();
-        for (Object object : registerList) {
-            CdRegisterRedisDto registerRedisDto = (CdRegisterRedisDto) object;
-            if (ObjectUtil.isNotNull(registerRedisDto.getPhoneEntity().getPkey())) {
-                pkeys.add(registerRedisDto.getPhoneEntity().getPkey());
-            }
-        }
-//        final CountDownLatch latch = new CountDownLatch(registerList.size());
-
-
-        for (Object object : registerList) {
-            poolExecutor.execute(() -> {
-                CdRegisterRedisDto registerRedisDto = (CdRegisterRedisDto) object;
-                if (registerRedisDto == null || registerRedisDto.getPhoneEntity() == null) {
-                    log.info("注册任务分发，数据为空 {}", object);
-//                    latch.countDown();
-                    return;
-                }
-                CdGetPhoneEntity phoneEntity = registerRedisDto.getPhoneEntity();
-                CdLineRegisterEntity lineRegisterEntity = registerRedisDto.getLineRegister();
-
-                String keyByResource = LockMapKeyResource
-                        .getKeyByResource(LockMapKeyResource.REGISTER_TASK_DISTRIBUTION, registerRedisDto.getTelPhone());
-                Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
-                boolean triedLock = lock.tryLock();
-                log.info("注册任务分发{}，keyByResource = {} 获取的锁为 = {},状态 = {}",
-                        registerRedisDto.getTelPhone(), keyByResource, triedLock, phoneEntity.getPhoneStatus());
-                if (triedLock) {
-                    try {
-                        if (PhoneStatus1.getKey().equals(phoneEntity.getPhoneStatus())) {
-                            //去注册
-                            registerRedisDto = this.startRegister(projectWorkEntity, registerRedisDto);
-                        } else if (ObjectUtil.isNotNull(lineRegisterEntity)
-                                && RegisterStatus.RegisterStatus2.getKey().equals(lineRegisterEntity.getRegisterStatus())) {
-                            //去获取验证码
-                            if (CountryCode.CountryCode3.getKey().toString().equals(phoneEntity.getCountry())) {
-                                //山谷
-                                registerRedisDto = this.getSmsJp(registerRedisDto, pkeys);
-                            } else {
-                                registerRedisDto = this.getSms(projectWorkEntity, registerRedisDto);
-                            }
-                        } else if (PhoneStatus5.getKey().equals(phoneEntity.getPhoneStatus())) {
-                            registerRedisDto = this.getSms(projectWorkEntity, registerRedisDto);
-                        } else if (ObjectUtil.isNotNull(lineRegisterEntity)
-                                && RegisterStatus.RegisterStatus3.getKey().equals(lineRegisterEntity.getRegisterStatus())) {
-                            //去提交验证码，完成注册
-                            registerRedisDto = this.submitRegister(projectWorkEntity, registerRedisDto);
-                        } else {
-//                            latch.countDown();
-                            return;
-                        }
-
-                        log.info("注册发起流程结束 {}, {}", registerRedisDto.getTelPhone(), JSON.toJSONString(registerRedisDto).toString());
-
-                        //存redis，异步保存，避免卡顿超时
-                        redisObjectTemplate.opsForHash().put(RedisKeys.REGISTER_TASK.getValue(),
-                                registerRedisDto.getTelPhone(), registerRedisDto);
-                    }catch (Exception e){
-                        log.error("e = {}",e);
-                    }finally {
-                        lock.unlock();
-                    }
-                }
-//                latch.countDown();
-            });
-        }
-//        try {
-//            latch.await();
-//        } catch (InterruptedException e) {
-//            log.error("e = {}",e);
-//        }
-
-//        boolean b = registerTaskLock.tryLock();
-//        if (!b) {
-//            return;
-//        }
-//        try {} catch (Exception e) {
-//            log.info("注册分发异常 {}", e);
-//        } finally {
-//            registerTaskLock.unlock();
-//        }
-
-    }
-
-    static ReentrantLock registerSaveTaskLock = new ReentrantLock();
-
-
-    /**
-     * 注册流程保存数据库
-     */
-    @Scheduled(fixedDelay = 5 * 1000)
-    @Transactional(rollbackFor = Exception.class)
-    @Async
-    public void saveRegisterTask() {
-
-        List<Object> registerList = redisObjectTemplate.opsForHash()
-                .values(RedisKeys.REGISTER_TASK.getValue());
-        log.info("注册任务保存 {}", registerList);
-        if (CollUtil.isEmpty(registerList)) {
-            log.info("注册任务保存，暂无执行的");
-            return;
-        }
-//            final CountDownLatch latch = new CountDownLatch(registerList.size());
-        for (Object object : registerList) {
-            poolExecutor.execute(() -> {
-                CdRegisterRedisDto registerRedisDto = (CdRegisterRedisDto) object;
-                if (registerRedisDto == null || registerRedisDto.getPhoneEntity() == null) {
-                    log.info("注册任务保存，数据为空 {}", object);
-//                        latch.countDown();
-                    return;
-                }
-                String keyByResource = LockMapKeyResource
-                        .getKeyByResource(LockMapKeyResource.REGISTER_TASK_SAVE, registerRedisDto.getTelPhone());
-                Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
-                boolean triedLock = lock.tryLock();
-                if (triedLock) {
-                    try {
-                        log.info("注册任务保存{}，keyByResource = {} 获取的锁为 = {}", registerRedisDto.getTelPhone(), keyByResource, triedLock);
-                        CdGetPhoneEntity phoneEntity = registerRedisDto.getPhoneEntity();
-                        CdLineRegisterEntity lineRegisterEntity = registerRedisDto.getLineRegister();
-                        if (PhoneStatus1.getKey().equals(phoneEntity.getPhoneStatus())) {
-                            //去注册
-//                                latch.countDown();
-                            return;
-                        }
-
-                        if (ObjectUtil.isNotNull(lineRegisterEntity)
-                                && RegisterStatus.RegisterStatus1.getKey().equals(lineRegisterEntity.getRegisterStatus())) {
-                            lineRegisterEntity.setRegisterStatus(RegisterStatus.RegisterStatus2.getKey());
-                            try {
-                                //先查
-                                Integer lineRegisterId = null;
-                                CdLineRegisterEntity queryLine = cdLineRegisterService.queryByPhone(lineRegisterEntity.getPhone());
-                                if (ObjectUtil.isNotNull(queryLine) && StringUtils.isEmpty(queryLine.getToken())) {
-                                    log.warn("注册表重复 {}", queryLine);
-                                    lineRegisterId = queryLine.getId();
-                                } else {
-                                    cdLineRegisterService.save(lineRegisterEntity);
-                                    lineRegisterId = lineRegisterEntity.getId();
-                                }
-                                phoneEntity.setLineRegisterId(lineRegisterId);
-                                lineRegisterEntity.setId(lineRegisterId);
-
-                                //保存line
-                                boolean b = cdGetPhoneService.updateById(phoneEntity);
-                                if (b) {
-                                    registerRedisDto.setLineRegister(lineRegisterEntity);
-                                    log.info("保存line结果 {},{},{} ", lineRegisterEntity.getPhone(), LocalDateTime.now(), JSONUtil.toJsonStr(registerRedisDto));
-                                    redisObjectTemplate.opsForHash().put(RedisKeys.REGISTER_TASK.getValue(),
-                                            registerRedisDto.getTelPhone(), registerRedisDto);
-                                }
-                            } catch (Exception e) {
-                                log.warn("注册表重复 {}", lineRegisterEntity, e);
-//                                    latch.countDown();
-                                return;
-                            }
-                        } else {
-                            //保存line
-                            boolean b1 = cdGetPhoneService.updateById(phoneEntity);
-                            boolean b2 = cdLineRegisterService.updateById(lineRegisterEntity);
-
-                                //删除redis缓存
-                                if (RegisterStatus.RegisterStatus4.getKey().equals(lineRegisterEntity.getRegisterStatus())
-                                        || RegisterStatus.RegisterStatus5.getKey().equals(lineRegisterEntity.getRegisterStatus())) {
-                                    redisObjectTemplate.opsForHash().delete(RedisKeys.REGISTER_TASK.getValue(), registerRedisDto.getTelPhone());
-                                }
-                            }
-                            if (ObjectUtil.isNotNull(lineRegisterEntity)
-                                    && RegisterStatus.RegisterStatus4.getKey().equals(lineRegisterEntity.getRegisterStatus())) {
-                                //更新手机号注册次数
-                                cdGetPhoneService.savePhoneRegisterCount(lineRegisterEntity.getPhone());
-                            }
-                            log.info("注册任务保存流程结束 {}, {}", registerRedisDto.getTelPhone(), registerRedisDto);
-                        } finally {
-                            lock.unlock();
-                        }
-                        latch.countDown();
-                    } else {
-                        log.info("注册任务分发{}在执行，keyByResource = {} 获取的锁为 = {}", registerRedisDto.getTelPhone(), keyByResource);
-                        latch.countDown();
-                    }
-                });
-            }
-            latch.await();
-        } catch (Exception e) {
-            log.info("保存注册异常 {}", e);
-        } finally {
-            registerSaveTaskLock.unlock();
-        }
-//            latch.await();
-
-    }
 
 }
