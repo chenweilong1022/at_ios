@@ -3,12 +3,14 @@ package io.renren.modules.ltt.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.alibaba.fastjson.JSON;
 import com.github.benmanes.caffeine.cache.Cache;
+import io.renren.common.utils.DateUtils;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.client.FirefoxService;
 import io.renren.modules.client.vo.GetPhoneVO;
+import io.renren.modules.ltt.dao.AtUserDao;
 import io.renren.modules.ltt.dto.CdRegisterRedisDto;
+import io.renren.modules.ltt.entity.AtUserEntity;
 import io.renren.modules.ltt.enums.CountryCode;
 import io.renren.modules.ltt.enums.DeleteFlag;
 import io.renren.modules.ltt.enums.PhoneStatus;
@@ -36,9 +38,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 
@@ -114,6 +115,9 @@ public class CdGetPhoneServiceImpl extends ServiceImpl<CdGetPhoneDao, CdGetPhone
     @Resource(name = "cardJpSmsOver")
     private Cache<String, String> cardJpSmsOver;
 
+    @Resource
+    private AtUserDao atUserDao;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public List<CdGetPhoneEntity> addCount(CdGetPhoneDTO cdGetPhone){
@@ -165,6 +169,7 @@ public class CdGetPhoneServiceImpl extends ServiceImpl<CdGetPhoneDao, CdGetPhone
                         cdGetPhoneEntity.setDeleteFlag(DeleteFlag.NO.getKey());
                         cdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus1.getKey());
                         cdGetPhoneEntity.setCreateTime(DateUtil.date());
+                        cdGetPhoneEntity.setFirstEnterTime(DateUtil.date());
                         cdGetPhoneEntity.setSubtasksId(cdGetPhone.getSubtasksId());
                         cdGetPhoneEntities.add(cdGetPhoneEntity);
                     }
@@ -181,6 +186,7 @@ public class CdGetPhoneServiceImpl extends ServiceImpl<CdGetPhoneDao, CdGetPhone
                     cdGetPhoneEntity.setDeleteFlag(DeleteFlag.NO.getKey());
                     cdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus1.getKey());
                     cdGetPhoneEntity.setCreateTime(DateUtil.date());
+                    cdGetPhoneEntity.setFirstEnterTime(DateUtil.date());
                     cdGetPhoneEntity.setSubtasksId(cdGetPhone.getSubtasksId());
                     cdGetPhoneEntities.add(cdGetPhoneEntity);
                 }
@@ -271,4 +277,43 @@ public class CdGetPhoneServiceImpl extends ServiceImpl<CdGetPhoneDao, CdGetPhone
         }
         return true;
     }
+
+    /**
+     * 更新手机号注册次数
+     */
+    @Override
+    @Async
+    public Integer savePhoneRegisterCount(String phone) {
+        try {
+            Integer registerCount = this.getPhoneRegisterCount(phone) + 1;
+
+            log.error("更新手机号注册次数 {}, 次数：{}", phone, registerCount);
+            redisTemplate.opsForHash().put(RedisKeys.RedisKeys10.getValue(), phone, String.valueOf(registerCount));
+
+            //大于等于3次的卡，与前两次的做对比，超过24小时，才为可用状态
+            if (registerCount >= 3) {
+                Map<Integer, Date> userMap = atUserDao.selectList(new QueryWrapper<AtUserEntity>().lambda()
+                                .eq(AtUserEntity::getTelephone, phone)).stream()
+                        .filter(i -> i.getRegisterCount() != null)
+                        .collect(Collectors.toMap(AtUserEntity::getRegisterCount,
+                                i -> i.getRegisterTime() != null ? i.getRegisterTime() : i.getCreateTime(), (a, b) -> b));
+                Integer judgeFrequency = registerCount - 2;//与前两次的对比
+
+                Date time = ObjectUtil.isNotNull(userMap.get(judgeFrequency)) ?
+                        userMap.get(judgeFrequency) : new Date();
+
+                //在此时间上加24小时+30分钟
+                Date expireDate = DateUtils.addDateMinutes(time, (24 * 60) + 30);
+
+                Long expireMinutes = DateUtils.betweenMinutes(new Date(), expireDate);
+
+                redisTemplate.opsForValue().set(RedisKeys.RedisKeys12.getValue(phone), String.valueOf(registerCount), expireMinutes, TimeUnit.MINUTES);
+            }
+            return registerCount;
+        } catch (Exception e) {
+            log.error("更新手机号注册次数异常 {}, {}", phone, e);
+        }
+        return 0;
+    }
+
 }
