@@ -279,7 +279,7 @@ public class RegisterTask {
                                     }
                                     if (200 == syncLineTokenVO.getCode() && CollUtil.isNotEmpty(syncLineTokenVO.getData())) {
                                         //更新手机号注册次数
-                                        this.savePhoneRegisterCount(cdLineRegisterEntity);
+                                        cdGetPhoneService.savePhoneRegisterCount(cdLineRegisterEntity.getPhone());
 
                                         SyncLineTokenVOData syncLineTokenVOData = syncLineTokenVO.getData().get(0);
                                         cdLineRegisterEntity.setRegisterStatus(RegisterStatus.RegisterStatus4.getKey());
@@ -667,44 +667,6 @@ public class RegisterTask {
             stringRedisTemplate.delete(MOD_REGISTER_NX_KEY);
         }
 
-    }
-
-
-    /**
-     * 更新手机号注册次数
-     */
-    private Integer savePhoneRegisterCount(CdLineRegisterEntity cdLineRegisterEntity) {
-        try {
-            String phone = cdLineRegisterEntity.getPhone();
-            Integer registerCount = cdGetPhoneService.getPhoneRegisterCount(phone) + 1;
-
-            log.error("更新手机号注册次数 {}, 次数：{}", phone, registerCount);
-            redisTemplate.opsForHash().put(RedisKeys.RedisKeys10.getValue(), phone, String.valueOf(registerCount));
-
-            //大于等于3次的卡，与前两次的做对比，超过24小时，才为可用状态
-            if (registerCount >= 3) {
-                Map<Integer, Date> userMap = atUserService.list(new QueryWrapper<AtUserEntity>().lambda()
-                                .eq(AtUserEntity::getTelephone, phone)).stream()
-                        .filter(i -> i.getRegisterCount() != null)
-                        .collect(Collectors.toMap(AtUserEntity::getRegisterCount,
-                                i -> i.getRegisterTime() != null ? i.getRegisterTime() : i.getCreateTime(),(a,b)->b));
-                Integer judgeFrequency = registerCount - 2;//与前两次的对比
-
-                Date time = ObjectUtil.isNotNull(userMap.get(judgeFrequency)) ?
-                        userMap.get(judgeFrequency) : new Date();
-
-                //在此时间上加24小时+30分钟
-                Date expireDate = DateUtils.addDateMinutes(time, (24 * 60) + 30);
-
-                Long expireMinutes = DateUtils.betweenMinutes(new Date(), expireDate);
-
-                redisTemplate.opsForValue().set(RedisKeys.RedisKeys12.getValue(phone), String.valueOf(registerCount), expireMinutes, TimeUnit.MINUTES);
-            }
-            return registerCount;
-        } catch (Exception e) {
-            log.error("更新手机号注册次数异常 {}, {}", cdLineRegisterEntity, e);
-        }
-        return 0;
     }
 
 

@@ -215,8 +215,13 @@
       <el-table-column
         prop="createTime"
         header-align="center"
-        align="center"
+        align="center" width="200px"
         label="创建时间">
+        <template slot-scope="scope">
+          创建:<div style="color: #17B3A3;display: inline;">{{ scope.row.createTime}}</div>
+          注册:<div style="color: #17B3A3;display: inline;">{{ scope.row.registerTime}}</div>
+          打开:<div style="color: #17B3A3;display: inline;">{{ scope.row.tokenOpenTime}}</div>
+        </template>
       </el-table-column>
       <el-table-column
         prop="tokenOpenStatus"
@@ -228,13 +233,6 @@
             {{ item.value }}
           </el-tag>
         </template>
-      </el-table-column>
-      <el-table-column
-        prop="tokenOpenTime"
-        header-align="center"
-        align="center"
-        sortable
-        label="打开时间">
       </el-table-column>
       <el-table-column
         prop="status"

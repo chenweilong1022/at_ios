@@ -303,7 +303,7 @@ public class CdGetPhoneServiceImpl extends ServiceImpl<CdGetPhoneDao, CdGetPhone
                         userMap.get(judgeFrequency) : new Date();
 
                 //在此时间上加24小时+30分钟
-                Date expireDate = DateUtils.addDateMinutes(time, (24 * 60) + 30);
+                Date expireDate = DateUtils.addDateMinutes(time, 24 * 60);
 
                 Long expireMinutes = DateUtils.betweenMinutes(new Date(), expireDate);
 
