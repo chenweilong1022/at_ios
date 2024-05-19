@@ -139,7 +139,7 @@ public class RegisterTask {
      * 更新实体类
      */
     @Scheduled(fixedDelay = 5000)
-    @Transactional(rollbackFor = Exception.class)
+//    @Transactional(rollbackFor = Exception.class)
     @Async
     public void task8() {
         //服务器更新锁
