@@ -401,7 +401,11 @@ public class RegisterTask {
                                 return;
                             }
                         }
-
+                        //设置到当前机器任务池
+                        Long add = stringRedisTemplate.opsForSet().add(RedisKeys.REGISTER_TASK_GET_PHONE_IDS2.getValue(String.valueOf(systemConstant.getSERVERS_MOD()+PhoneStatus.PhoneStatus2.getKey())), String.valueOf(cdGetPhoneEntity.getId()));
+                        if (add <= 0) {
+                            return;
+                        }
                         SMSCodeDTO smsCodeDTO = new SMSCodeDTO();
                         smsCodeDTO.setsmsCode(phoneCode);
                         smsCodeDTO.setTaskId(lineRegisterVO.getTaskId());
@@ -417,8 +421,10 @@ public class RegisterTask {
                             cdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus4.getKey());
                             //设置保存队列
                             Long l1 = redisTemplateObj.opsForList().leftPush(RedisKeys.CDLINEREGISTERENTITY_UPDATE_LIST.getValue(key), update);
+                            log.info("修改队列插入成功 {}",l1);
                             //设置修改队列
                             Long l2 = redisTemplateObj.opsForList().leftPush(RedisKeys.CDGETPHONEENTITY_UPDATE_LIST.getValue(key), cdGetPhoneEntity);
+                            log.info("修改队列插入成功 {}",l2);
                         }
                     }
                 });

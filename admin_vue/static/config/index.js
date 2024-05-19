@@ -6,8 +6,8 @@
 
   // api接口请求地址
   // window.SITE_CONFIG['baseUrl'] = 'http://localhost:8880';
-  // window.SITE_CONFIG['baseUrl'] = 'https://api.lineabc.io/'
-s
+  window.SITE_CONFIG['baseUrl'] = 'https://api.lineabc.io/'
+
   // cdn地址 = 域名 + 版本号
   window.SITE_CONFIG['domain']  = './'; // 域名
   window.SITE_CONFIG['version'] = '';   // 版本号(年月日时分)
