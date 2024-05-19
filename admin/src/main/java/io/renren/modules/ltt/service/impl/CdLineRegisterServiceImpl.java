@@ -190,22 +190,25 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
         List<CdGetPhoneEntity> cdGetPhoneList = getPhoneService.getByIds(Arrays.asList(ids));
         Assert.isTrue(CollectionUtils.isEmpty(cdGetPhoneList), "数据为空");
 
+        Map<Integer, Integer> lineRegisterMap = baseMapper.selectList(new QueryWrapper<CdLineRegisterEntity>().lambda()
+                        .in(CdLineRegisterEntity::getGetPhoneId, Arrays.asList(ids))).stream()
+                .collect(Collectors.toMap(CdLineRegisterEntity::getGetPhoneId, CdLineRegisterEntity::getId,(a,b)->b));
+
         List<CdGetPhoneEntity> updateCdGetPhoneList = new ArrayList<>();
         List<Integer> lineRegisterIds = new ArrayList<>();
         Integer retryNum;
         for (CdGetPhoneEntity cdGetPhone : cdGetPhoneList) {
-            CdLineRegisterEntity cdLineRegisterEntity = baseMapper.selectList(new QueryWrapper<CdLineRegisterEntity>().lambda()
-                    .eq(CdLineRegisterEntity::getGetPhoneId, cdGetPhone.getId())).stream().findFirst().orElse(null);
-            if (cdLineRegisterEntity != null) {
+            Integer lineRegisterId = lineRegisterMap.get(cdGetPhone.getId());
+            if (lineRegisterId != null) {
                 //删除line注册此条记录
-                lineRegisterIds.add(cdLineRegisterEntity.getId());
+                lineRegisterIds.add(lineRegisterId);
                 if (Boolean.TRUE.equals(ipClearFlag)) {
                     //ip暂时拉黑
                     this.clearTokenPhone(cdGetPhone);
                 }
                 //清除注册任务表
                 stringRedisTemplate.opsForSet().remove(RedisKeys.REGISTER_TASK_GET_PHONE_IDS.getValue(String.valueOf(systemConstant.getSERVERS_MOD()+PhoneStatus.PhoneStatus2.getKey())), String.valueOf(cdGetPhone.getId()));
-                stringRedisTemplate.opsForSet().remove(RedisKeys.REGISTER_TASK_GET_PHONE_IDS.getValue(String.valueOf(systemConstant.getSERVERS_MOD()+RegisterStatus.RegisterStatus4.getKey())), String.valueOf(cdLineRegisterEntity.getId()));
+                stringRedisTemplate.opsForSet().remove(RedisKeys.REGISTER_TASK_GET_PHONE_IDS.getValue(String.valueOf(systemConstant.getSERVERS_MOD()+RegisterStatus.RegisterStatus4.getKey())), String.valueOf(lineRegisterId));
             }else {
                 stringRedisTemplate.opsForSet().remove(RedisKeys.REGISTER_TASK_GET_PHONE_IDS.getValue(String.valueOf(systemConstant.getSERVERS_MOD()+PhoneStatus.PhoneStatus2.getKey())), String.valueOf(cdGetPhone.getId()));
             }
@@ -327,6 +330,9 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
         if (ObjectUtil.isNull(ids) || ids.length == 0) {
             return false;
         }
+        List<CdGetPhoneEntity> cdGetPhoneList = getPhoneService.getByIds(Arrays.asList(ids));
+        Assert.isTrue(CollectionUtils.isEmpty(cdGetPhoneList), "数据为空");
+
         List<CdGetPhoneEntity> phoneEntityList = new ArrayList<>();
         for (Integer id : ids) {
             CdGetPhoneEntity getPhoneEntity = new CdGetPhoneEntity();
@@ -334,7 +340,22 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
             getPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus7.getKey());
             phoneEntityList.add(getPhoneEntity);
         }
-        return getPhoneService.updateBatchById(phoneEntityList);
+        getPhoneService.updateBatchById(phoneEntityList);
+
+        List<CdLineRegisterEntity> lineRegisterList = baseMapper.selectList(new QueryWrapper<CdLineRegisterEntity>().lambda()
+                .in(CdLineRegisterEntity::getGetPhoneId, Arrays.asList(ids))).stream().collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(lineRegisterList)) {
+            List<CdLineRegisterEntity> updateLineRegisterList = new ArrayList<>();
+            for (CdLineRegisterEntity registerEntity : lineRegisterList) {
+                CdLineRegisterEntity updateLineRegister = new CdLineRegisterEntity();
+                updateLineRegister.setId(registerEntity.getId());
+                updateLineRegister.setRegisterStatus(RegisterStatus.RegisterStatus11.getKey());
+                updateLineRegisterList.add(updateLineRegister);
+            }
+            this.updateBatchById(updateLineRegisterList);
+        }
+
+        return true;
     }
 
 }
