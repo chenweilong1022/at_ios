@@ -441,6 +441,13 @@
             label="日志">
           </el-table-column>
           <el-table-column
+            prop="tIdBy"
+            header-align="center"
+            align="center"
+            width="100"
+            label="服务器">
+          </el-table-column>
+          <el-table-column
             fixed="right"
             header-align="center"
             align="center"
