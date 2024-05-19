@@ -101,6 +101,7 @@ public enum RedisKeys implements BaseEnum {
      * 已经注册过的IDS
      */
     REGISTER_TASK_GET_PHONE_IDS(25,"REGISTER_TASK_GET_PHONE_IDS"),
+    REGISTER_TASK_GET_PHONE_IDS2(25,"REGISTER_TASK_GET_PHONE_IDS2"),
     /**
      * 注册表保存队列
      */

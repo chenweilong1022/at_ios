@@ -61,6 +61,13 @@ public interface CdLineRegisterService extends IService<CdLineRegisterEntity> {
      * @return
      */
     boolean save(CdLineRegisterDTO cdLineRegister);
+    /**
+     * 保存
+     *
+     * @param cdLineRegisterEntities
+     * @return
+     */
+    boolean insertBatch(List<CdLineRegisterEntity> cdLineRegisterEntities);
 
     /**
      * 根据id修改

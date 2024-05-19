@@ -100,6 +100,12 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
     }
 
     @Override
+    public boolean insertBatch(List<CdLineRegisterEntity> cdLineRegisterEntities) {
+        int count = baseMapper.insertBatch(cdLineRegisterEntities);
+        return count > 0;
+    }
+
+    @Override
     public boolean updateById(CdLineRegisterDTO cdLineRegister) {
         CdLineRegisterEntity cdLineRegisterEntity = CdLineRegisterConver.MAPPER.converDTO(cdLineRegister);
         return this.updateById(cdLineRegisterEntity);

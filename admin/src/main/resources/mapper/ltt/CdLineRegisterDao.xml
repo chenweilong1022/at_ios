@@ -146,5 +146,12 @@
             country_code;
     </select>
 
-
+    <insert id="insertBatch">
+        INSERT INTO cd_line_register
+        (ab, app_version, country_code, phone, proxy, proxy_status, txt_token, task_id, sms_code, register_status, delete_flag, create_time, open_time, token, get_phone_id, pkey, subtasks_id, group_task_id, open_status, account_status, group_count, account_exist_status, err_msg, export_status)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.ab}, #{item.appVersion}, #{item.countryCode}, #{item.phone}, #{item.proxy}, #{item.proxyStatus}, #{item.txtToken}, #{item.taskId}, #{item.smsCode}, #{item.registerStatus}, #{item.deleteFlag}, #{item.createTime}, #{item.openTime}, #{item.token}, #{item.getPhoneId}, #{item.pkey}, #{item.subtasksId}, #{item.groupTaskId}, #{item.openStatus}, #{item.accountStatus}, #{item.groupCount}, #{item.accountExistStatus}, #{item.errMsg}, #{item.exportStatus})
+        </foreach>
+    </insert>
 </mapper>

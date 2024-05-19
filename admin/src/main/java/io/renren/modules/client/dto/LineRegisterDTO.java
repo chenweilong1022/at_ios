@@ -52,5 +52,10 @@ public class LineRegisterDTO implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="")
 	private String txtToken;
+	/**
+	 *
+	 */
+	@ApiModelProperty(required=false,value="")
+	private int waitTime;
 
 }
