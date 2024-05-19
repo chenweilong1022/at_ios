@@ -146,7 +146,7 @@
             at_user u
                 INNER JOIN at_group g ON u.id = g.user_id
         WHERE
-            DATE ( g.create_time )= #{searchTime}
+            g.create_time >= #{searchStartTime} AND g.create_time &lt; #{searchEndTime}
         GROUP BY
             u.nation;
     </select>

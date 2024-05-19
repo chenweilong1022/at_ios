@@ -53,6 +53,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -501,8 +503,13 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
 
     @Override
     public Map<String, Integer> queryUsedUserSummary(LocalDate searchTime) {
+
+        LocalTime localTime = LocalTime.of(8, 0, 0);
+
+        LocalDateTime searchStartTime = searchTime.atTime(localTime);
+        LocalDateTime searchEndTime = searchTime.plusDays(1).atTime(localTime);
         //今日已使用数量
-        Map<String, Integer> usedUserMap = baseMapper.queryUsedUserSummary(searchTime).stream()
+        Map<String, Integer> usedUserMap = baseMapper.queryUsedUserSummary(searchStartTime, searchEndTime).stream()
                 .collect(Collectors.toMap(UserSummaryResultDto::getCountryCode, UserSummaryResultDto::getUsedUserStock));
         return usedUserMap;
     }

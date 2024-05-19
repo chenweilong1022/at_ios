@@ -18,6 +18,7 @@ import io.renren.modules.ltt.vo.GetCountBySubTaskIdVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -37,6 +38,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -305,7 +308,11 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
 
     @Override
     public List<LineRegisterSummaryResultDto> queryLineRegisterSummary(LocalDate searchTime) {
-        List<LineRegisterSummaryResultDto> summaryResultDtos = baseMapper.queryLineRegisterSummary(searchTime);
+        LocalTime localTime = LocalTime.of(8, 0, 0);
+
+        LocalDateTime searchStartTime = searchTime.atTime(localTime);
+        LocalDateTime searchEndTime = searchTime.plusDays(1).atTime(localTime);
+        List<LineRegisterSummaryResultDto> summaryResultDtos = baseMapper.queryLineRegisterSummary(searchStartTime, searchEndTime);
         return summaryResultDtos;
     }
 

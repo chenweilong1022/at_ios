@@ -137,7 +137,7 @@
         SELECT
             country_code as countryCode,
             SUM( CASE WHEN register_status = 4 THEN 1 ELSE 0 END ) AS registerStock,
-            SUM( CASE WHEN register_status in(4,11) AND DATE ( create_time ) = #{searchTime} THEN 1 ELSE 0 END ) AS registerNum
+            SUM( CASE WHEN register_status in(4,11) AND create_time >= #{searchStartTime} AND create_time &lt; #{searchEndTime} THEN 1 ELSE 0 END ) AS registerNum
         FROM
             cd_line_register
         WHERE

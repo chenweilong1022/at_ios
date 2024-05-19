@@ -13,6 +13,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -37,5 +38,6 @@ public interface CdLineRegisterDao extends BaseMapper<CdLineRegisterEntity> {
     IPage<CdLineRegisterVO> listPage(Page<CdLineRegisterEntity> page,@Param("dto")  CdLineRegisterDTO cdLineRegister);
 
 
-    List<LineRegisterSummaryResultDto> queryLineRegisterSummary(@Param("searchTime") LocalDate searchTime);
+    List<LineRegisterSummaryResultDto> queryLineRegisterSummary(@Param("searchStartTime") LocalDateTime searchStartTime,
+                                                                @Param("searchEndTime") LocalDateTime searchEndTime);
 }
