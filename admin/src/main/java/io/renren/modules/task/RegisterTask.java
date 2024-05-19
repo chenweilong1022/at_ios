@@ -153,27 +153,30 @@ public class RegisterTask {
         redisTemplate.expire(MOD_REGISTER_NX_KEY, 2, TimeUnit.MINUTES);
         try {
             //加粉任务保存
-            List<CdLineRegisterEntity> elements = new ArrayList<>();
+//            List<CdLineRegisterEntity> elements = new ArrayList<>();
             CdLineRegisterEntity element = null;
             while ((element = (CdLineRegisterEntity) redisTemplateObj.opsForList().rightPop(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST.getValue(key))) != null) {
-                elements.add(element);
-            }
-            if (CollUtil.isNotEmpty(elements)) {
+//                elements.add(element);
                 try{
-                    boolean b1 = cdLineRegisterService.insertBatch(elements);
+                    boolean b1 = cdLineRegisterService.save(element);
                     //如果保存失败，把数据退回redis
                     if (!b1) {
-                        for (CdLineRegisterEntity cdLineRegisterEntity : elements) {
-                            Long l = redisTemplateObj.opsForList().leftPush(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST.getValue(key), cdLineRegisterEntity);
-                        }
+                        Long l = redisTemplateObj.opsForList().leftPush(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST.getValue(key), element);
+//                        for (CdLineRegisterEntity cdLineRegisterEntity : elements) {
+//                            Long l = redisTemplateObj.opsForList().leftPush(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST.getValue(key), cdLineRegisterEntity);
+//                        }
                     }
                     //如果保存失败，把数据退回redis
                 }catch (Exception e) {
-                    for (CdLineRegisterEntity cdLineRegisterEntity : elements) {
-                        Long l = redisTemplateObj.opsForList().leftPush(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST.getValue(key), cdLineRegisterEntity);
-                    }
+                    Long l = redisTemplateObj.opsForList().leftPush(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST.getValue(key), element);
+//                    for (CdLineRegisterEntity cdLineRegisterEntity : elements) {
+//                        Long l = redisTemplateObj.opsForList().leftPush(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST.getValue(key), cdLineRegisterEntity);
+//                    }
                 }
             }
+//            if (CollUtil.isNotEmpty(elements)) {
+//
+//            }
 
             //注册保存
             List<CdLineRegisterEntity> elementsLineRegister = new ArrayList<>();
