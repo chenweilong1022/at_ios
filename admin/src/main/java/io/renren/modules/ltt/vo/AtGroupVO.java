@@ -11,6 +11,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -27,6 +29,7 @@ import java.util.List;
 @TableName("at_group")
 @ApiModel("")
 @Accessors(chain = true)
+@Slf4j
 public class AtGroupVO implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -281,8 +284,7 @@ public class AtGroupVO implements Serializable {
 		list.add("核武器:*160");
 		int len = tId % totalMod;
 
-
-
+		log.info("len = {}",len);
 
 		return list.get(len);
 	}
