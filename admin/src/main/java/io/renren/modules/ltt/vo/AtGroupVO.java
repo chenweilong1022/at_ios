@@ -11,8 +11,12 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  *
@@ -25,6 +29,7 @@ import java.util.Date;
 @TableName("at_group")
 @ApiModel("")
 @Accessors(chain = true)
+@Slf4j
 public class AtGroupVO implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -34,6 +39,11 @@ public class AtGroupVO implements Serializable {
 	@TableId(type = IdType.AUTO)
 	@ApiModelProperty(required=false,value="")
 	private Integer id;
+	/**
+	 *
+	 */
+	@ApiModelProperty(required=false,value="")
+	private Integer tId;
 	/**
 	 *
 	 */
@@ -262,6 +272,22 @@ public class AtGroupVO implements Serializable {
 		return String.format("%.2f", v);
 	}
 
+	private Integer totalMod;
+
+	public String gettIdBy() {
+		List<String> list = new ArrayList<>();
+		list.add("服务器1:*102");
+		list.add("服务器2:*163");
+		list.add("服务器3:*219");
+		list.add("服务器4:*22");
+		list.add("服务器5:*18");
+		list.add("核武器:*160");
+		int len = tId % totalMod;
+
+		log.info("len = {}",len);
+
+		return list.get(len);
+	}
 
 	public String getGroupTypeStr() {
 		return EnumUtil.queryValueByKey(this.groupType, GroupType.values());

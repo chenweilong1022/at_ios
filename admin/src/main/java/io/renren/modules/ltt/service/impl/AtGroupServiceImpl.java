@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.benmanes.caffeine.cache.Cache;
+import io.renren.common.constant.SystemConstant;
 import io.renren.common.utils.EnumUtil;
 import io.renren.common.utils.PageUtils;
 import io.renren.common.utils.Query;
@@ -96,6 +97,8 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
 
     @Resource
     private CdGetPhoneService cdGetPhoneService;
+    @Autowired
+    private SystemConstant systemConstant;
 
     @Override
     public PageUtils<AtGroupVO> queryPage(AtGroupDTO atGroup) {
@@ -105,6 +108,7 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
         );
 
         List<AtGroupVO> resultList = page.getRecords();
+        resultList.forEach(item -> item.setTotalMod(systemConstant.getSERVERS_TOTAL_MOD()));
         if (CollUtil.isNotEmpty(resultList)) {
             //拉群手机号
             Set<Integer> userIdList = new HashSet<>();

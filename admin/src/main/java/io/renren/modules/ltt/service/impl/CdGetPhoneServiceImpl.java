@@ -124,12 +124,7 @@ public class CdGetPhoneServiceImpl extends ServiceImpl<CdGetPhoneDao, CdGetPhone
         Integer count = cdGetPhone.getCount();
         List<CdGetPhoneEntity> cdGetPhoneEntities = new ArrayList<>();
         for (int i = 0; i < count; i++) {
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException e) {
-                log.error("err = {}", e);
-                continue;
-            }
+
 
             GetPhoneVO phone = null;
             if (CountryCode.CountryCode3.getKey().equals(cdGetPhone.getCountrycodeKey()) && CountryCode.CountryCode3.getValue().equals(cdGetPhone.getCountrycode())) {

@@ -40,4 +40,7 @@ public interface CdLineRegisterDao extends BaseMapper<CdLineRegisterEntity> {
 
     List<LineRegisterSummaryResultDto> queryLineRegisterSummary(@Param("searchStartTime") LocalDateTime searchStartTime,
                                                                 @Param("searchEndTime") LocalDateTime searchEndTime);
+
+    int insertBatch(@Param("list") List<CdLineRegisterEntity> cdLineRegisterEntities);
+
 }

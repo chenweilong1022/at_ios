@@ -52,6 +52,8 @@ public class LineServiceImpl implements LineService {
     @Override
     public LineRegisterVO lineRegister(LineRegisterDTO lineRegisterDTO) {
         try {
+            //注册失败时间
+            lineRegisterDTO.setWaitTime(240);
             ProjectWorkEntity projectWorkEntity = caffeineCacheProjectWorkEntity.getIfPresent(ConfigConstant.PROJECT_WORK_KEY);
             String getPhoneHttp = String.format("%s/api/v1/account/lineRegister",projectWorkEntity.getLineBaseHttp(systemConstant.getSERVERS_MOD()));
             String jsonStr = JSONUtil.toJsonStr(lineRegisterDTO);

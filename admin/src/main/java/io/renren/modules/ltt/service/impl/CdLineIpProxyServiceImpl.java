@@ -185,22 +185,25 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
             } else {
 
                 Set<CurlVO> ips = ConcurrentHashMap.newKeySet();
-
-                for (int i = 0; i < 3; i++) {
-                    executorService.submit(() -> {
-                        String ip = getDyIp(regions,phoneNumberInfo);
-                        CurlVO proxyUse = getProxyUse(ip, regions);
-                        proxyUse.setS5Ip(ip);
-                        ips.add(proxyUse);
-                    });
-                }
+                String ipOld = getDyIp(regions,phoneNumberInfo);
+                CurlVO proxyUseOld = getProxyUse(ipOld, regions);
+                proxyUseOld.setS5Ip(ipOld);
+                ips.add(proxyUseOld);
+//                for (int i = 0; i < 3; i++) {
+//                    executorService.submit(() -> {
+//                        String ip = getDyIp(regions,phoneNumberInfo);
+//                        CurlVO proxyUse = getProxyUse(ip, regions);
+//                        proxyUse.setS5Ip(ip);
+//                        ips.add(proxyUse);
+//                    });
+//                }
                 // 关闭线程池
-                executorService.shutdown();
-                // 等待所有任务完成
-                if (!executorService.awaitTermination(1, TimeUnit.HOURS)) {
-                    // 如果超时，则强制关闭尚未完成的任务
-                    executorService.shutdownNow();
-                }
+//                executorService.shutdown();
+//                // 等待所有任务完成
+//                if (!executorService.awaitTermination(1, TimeUnit.HOURS)) {
+//                    // 如果超时，则强制关闭尚未完成的任务
+//                    executorService.shutdownNow();
+//                }
 
                 for (CurlVO proxyUse : ips) {
                     String ip = proxyUse.getS5Ip();
