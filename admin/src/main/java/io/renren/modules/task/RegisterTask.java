@@ -139,7 +139,6 @@ public class RegisterTask {
      * 更新实体类
      */
     @Scheduled(fixedDelay = 5000)
-//    @Transactional(rollbackFor = Exception.class)
     @Async
     public void task8() {
         //服务器更新锁
@@ -153,74 +152,48 @@ public class RegisterTask {
         redisTemplate.expire(MOD_REGISTER_NX_KEY, 2, TimeUnit.MINUTES);
         try {
             //加粉任务保存
-//            List<CdLineRegisterEntity> elements = new ArrayList<>();
             CdLineRegisterEntity element = null;
             while ((element = (CdLineRegisterEntity) redisTemplateObj.opsForList().rightPop(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST.getValue(key))) != null) {
-//                elements.add(element);
                 try{
-                    boolean b1 = cdLineRegisterService.save(element);
+                    boolean b1 = cdLineRegisterService.insertBatch(CollUtil.newArrayList(element));
                     //如果保存失败，把数据退回redis
                     if (!b1) {
-                        Long l = redisTemplateObj.opsForList().leftPush(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST.getValue(key), element);
-//                        for (CdLineRegisterEntity cdLineRegisterEntity : elements) {
-//                            Long l = redisTemplateObj.opsForList().leftPush(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST.getValue(key), cdLineRegisterEntity);
-//                        }
+//                        Long l = redisTemplateObj.opsForList().leftPush(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST.getValue(key), element);
                     }
                     //如果保存失败，把数据退回redis
                 }catch (Exception e) {
-                    Long l = redisTemplateObj.opsForList().leftPush(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST.getValue(key), element);
-//                    for (CdLineRegisterEntity cdLineRegisterEntity : elements) {
-//                        Long l = redisTemplateObj.opsForList().leftPush(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST.getValue(key), cdLineRegisterEntity);
-//                    }
+//                    Long l = redisTemplateObj.opsForList().leftPush(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST.getValue(key), element);
                 }
             }
-//            if (CollUtil.isNotEmpty(elements)) {
-//
-//            }
 
             //注册保存
-            List<CdLineRegisterEntity> elementsLineRegister = new ArrayList<>();
             CdLineRegisterEntity lineRegister = null;
             while ((lineRegister = (CdLineRegisterEntity) redisTemplateObj.opsForList().rightPop(RedisKeys.CDLINEREGISTERENTITY_UPDATE_LIST.getValue(key))) != null) {
-                elementsLineRegister.add(lineRegister);
-            }
-            if (CollUtil.isNotEmpty(elementsLineRegister)) {
                 try{
-                    boolean b1 = cdLineRegisterService.updateBatchById(elementsLineRegister);
+                    boolean b1 = cdLineRegisterService.updateById(lineRegister);
                     //如果保存失败，把数据重新保存
                     if (!b1) {
-                        for (CdLineRegisterEntity elementLineRegister : elementsLineRegister) {
-                            Long l = redisTemplateObj.opsForList().leftPush(RedisKeys.CDLINEREGISTERENTITY_UPDATE_LIST.getValue(key), elementLineRegister);
-                        }
+                        Long l = redisTemplateObj.opsForList().leftPush(RedisKeys.CDLINEREGISTERENTITY_UPDATE_LIST.getValue(key), lineRegister);
                     }
                     //如果保存失败，把数据重新保存
                 }catch (Exception e) {
-                    for (CdLineRegisterEntity elementLineRegister : elementsLineRegister) {
-                        Long l = redisTemplateObj.opsForList().leftPush(RedisKeys.CDLINEREGISTERENTITY_UPDATE_LIST.getValue(key), elementLineRegister);
-                    }
+                    Long l = redisTemplateObj.opsForList().leftPush(RedisKeys.CDLINEREGISTERENTITY_UPDATE_LIST.getValue(key), lineRegister);
                 }
             }
 
+
             //用户任务队列保存
-            List<CdGetPhoneEntity> elementsGetPhone = new ArrayList<>();
             CdGetPhoneEntity cdGetPhoneEntity = null;
             while ((cdGetPhoneEntity = (CdGetPhoneEntity) redisTemplateObj.opsForList().rightPop(RedisKeys.CDGETPHONEENTITY_UPDATE_LIST.getValue(key))) != null) {
-                elementsGetPhone.add(cdGetPhoneEntity);
-            }
-            if (CollUtil.isNotEmpty(elementsGetPhone)) {
                 try{
-                    boolean b1 = cdGetPhoneService.updateBatchById(elementsGetPhone);
+                    boolean b1 = cdGetPhoneService.updateById(cdGetPhoneEntity);
                     //如果保存失败，把数据重新保存
                     if (!b1) {
-                        for (CdGetPhoneEntity elementscdGetPhoneEntity : elementsGetPhone) {
-                            Long l = redisTemplateObj.opsForList().leftPush(RedisKeys.CDGETPHONEENTITY_UPDATE_LIST.getValue(key), elementscdGetPhoneEntity);
-                        }
+                        Long l = redisTemplateObj.opsForList().leftPush(RedisKeys.CDGETPHONEENTITY_UPDATE_LIST.getValue(key), cdGetPhoneEntity);
                     }
                     //如果保存失败，把数据重新保存
                 }catch (Exception e) {
-                    for (CdGetPhoneEntity elementscdGetPhoneEntity : elementsGetPhone) {
-                        Long l = redisTemplateObj.opsForList().leftPush(RedisKeys.CDGETPHONEENTITY_UPDATE_LIST.getValue(key), elementscdGetPhoneEntity);
-                    }
+                    Long l = redisTemplateObj.opsForList().leftPush(RedisKeys.CDGETPHONEENTITY_UPDATE_LIST.getValue(key), cdGetPhoneEntity);
                 }
             }
         }catch (Exception e){
@@ -366,7 +339,7 @@ public class RegisterTask {
                         return;
                     }
                     long between = DateUtil.between(cdGetPhoneEntity.getCreateTime(), DateUtil.date(), DateUnit.MINUTE);
-                    if (between > 10) {
+                    if (between > 20) {
                         cdGetPhoneEntity.setCode("验证码超时");
                         cdGetPhoneEntity.setPhoneStatus(PhoneStatus5.getKey());
                         Long l2 = redisTemplateObj.opsForList().leftPush(RedisKeys.CDGETPHONEENTITY_UPDATE_LIST.getValue(key), cdGetPhoneEntity);
