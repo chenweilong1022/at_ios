@@ -232,7 +232,7 @@ public class CdGetPhoneServiceImpl extends ServiceImpl<CdGetPhoneDao, CdGetPhone
             cdGetPhoneRedisDto.setPhoneEntity(cdGetPhoneEntity);
             cdGetPhoneRedisDto.setLineRegister(null);
             //存redis
-            redisTemplate.opsForHash().put(RedisKeys.REGISTER_TASK.getValue(),
+            stringRedisTemplate.opsForHash().put(RedisKeys.REGISTER_TASK.getValue(),
                     cdGetPhoneRedisDto.getTelPhone(), cdGetPhoneRedisDto);
         }
     }
@@ -288,7 +288,7 @@ public class CdGetPhoneServiceImpl extends ServiceImpl<CdGetPhoneDao, CdGetPhone
             Integer registerCount = this.getPhoneRegisterCount(phone) + 1;
 
             log.error("更新手机号注册次数 {}, 次数：{}", phone, registerCount);
-            redisTemplate.opsForHash().put(RedisKeys.RedisKeys10.getValue(), phone, String.valueOf(registerCount));
+            stringRedisTemplate.opsForHash().put(RedisKeys.RedisKeys10.getValue(), phone, String.valueOf(registerCount));
 
             //大于等于3次的卡，与前两次的做对比，超过24小时，才为可用状态
             if (registerCount >= 3) {
