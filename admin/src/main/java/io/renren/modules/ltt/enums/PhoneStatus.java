@@ -11,6 +11,7 @@ public enum PhoneStatus {
     PhoneStatus6(6,"注册出现问题"),
     PhoneStatus7(7,"作废"),
     PhoneStatus8(8,"注册完成"),
+    PhoneStatus9(9,"已购买"),
     ;
 
     PhoneStatus(int key, String value) {

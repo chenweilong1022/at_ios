@@ -1,6 +1,5 @@
 package io.renren.modules.ltt.service.impl;
 
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import io.renren.common.constant.SystemConstant;
 import io.renren.common.utils.*;
@@ -19,10 +18,10 @@ import io.renren.modules.ltt.vo.GetCountBySubTaskIdVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -374,20 +373,23 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
         return true;
     }
 
-    private void handleRegisterData(CdLineRegisterEntity cdLineRegisterEntity) {
-        if (!RegisterStatus.RegisterStatus4.getKey().equals(cdLineRegisterEntity.getRegisterStatus())
-        || StringUtils.isEmpty(cdLineRegisterEntity.getToken())) {
+    @Override
+    @Async
+    public void saveAtUserToken(CdGetPhoneEntity cdGetPhoneEntityUpdate,
+                                String token) {
+        if (!PhoneStatus.PhoneStatus8.getKey().equals(cdGetPhoneEntityUpdate.getPhoneStatus())
+                || StringUtils.isEmpty(token)) {
             return;
         }
         //修改
-        CdLineRegisterEntity updateLineRegisterDto = new CdLineRegisterEntity();
-        updateLineRegisterDto.setId(cdLineRegisterEntity.getId());
-        updateLineRegisterDto.setRegisterStatus(RegisterStatus.RegisterStatus11.getKey());
-        boolean b = this.updateById(updateLineRegisterDto);
+        CdGetPhoneEntity updateCdGetPhoneEntity = new CdGetPhoneEntity();
+        updateCdGetPhoneEntity.setId(cdGetPhoneEntityUpdate.getId());
+        updateCdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus9.getKey());
+        boolean b = cdGetPhoneService.updateById(updateCdGetPhoneEntity);
         if (Boolean.TRUE.equals(b)) {
             //生成token
             AtUserTokenEntity userTokenEntity = new AtUserTokenEntity();
-            userTokenEntity.setToken(cdLineRegisterEntity.getToken());
+            userTokenEntity.setToken(token);
             userTokenEntity.setUserGroupId(null);
             atUserTokenService.save(userTokenEntity);
         }

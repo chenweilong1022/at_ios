@@ -259,6 +259,8 @@ public class RegisterTask {
                                         cdGetPhoneEntityUpdate.setPhoneStatus(PhoneStatus8.getKey());
                                         //设置修改队列
                                         Long l2 = redisTemplateObj.opsForList().leftPush(RedisKeys.CDGETPHONEENTITY_UPDATE_LIST.getValue(key), cdGetPhoneEntityUpdate);
+                                        //直接插入user_token表
+                                        cdLineRegisterService.saveAtUserToken(cdGetPhoneEntityUpdate, token);
                                     }
                                 }
                                 redisTemplateObj.opsForHash().put(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST.getValue(key), String.valueOf(cdGetPhoneEntity.getId()),lineRegisterVO);

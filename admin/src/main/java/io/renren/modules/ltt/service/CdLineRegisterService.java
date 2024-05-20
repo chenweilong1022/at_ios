@@ -5,9 +5,11 @@ import io.renren.common.utils.PageUtils;
 import io.renren.modules.ltt.dto.CdLineRegisterDTO;
 import io.renren.modules.ltt.dto.CdLineRegisterSummaryDto;
 import io.renren.modules.ltt.dto.LineRegisterSummaryResultDto;
+import io.renren.modules.ltt.entity.CdGetPhoneEntity;
 import io.renren.modules.ltt.vo.CdLineRegisterVO;
 import io.renren.modules.ltt.entity.CdLineRegisterEntity;
 import io.renren.modules.ltt.vo.GetCountBySubTaskIdVO;
+import org.springframework.scheduling.annotation.Async;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -157,5 +159,8 @@ public interface CdLineRegisterService extends IService<CdLineRegisterEntity> {
      * @return
      */
     Boolean invalidatePhone(Integer[] ids);
+
+    void saveAtUserToken(CdGetPhoneEntity cdGetPhoneEntityUpdate,
+                         String token);
 }
 
