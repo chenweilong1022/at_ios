@@ -307,7 +307,9 @@ public class CdGetPhoneServiceImpl extends ServiceImpl<CdGetPhoneDao, CdGetPhone
 
                 Long expireMinutes = DateUtils.betweenMinutes(new Date(), expireDate);
 
-                stringRedisTemplate.opsForValue().set(RedisKeys.RedisKeys12.getValue(phone), String.valueOf(registerCount), expireMinutes, TimeUnit.MINUTES);
+                if (expireMinutes > 5) {
+                    stringRedisTemplate.opsForValue().set(RedisKeys.RedisKeys12.getValue(phone), String.valueOf(registerCount), expireMinutes, TimeUnit.MINUTES);
+                }
             }
             return registerCount;
         } catch (Exception e) {
