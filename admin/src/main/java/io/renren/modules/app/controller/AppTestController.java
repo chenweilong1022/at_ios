@@ -113,7 +113,7 @@ public class AppTestController {
 
     @GetMapping("enums/getRegisterStatus")
     public R getRegisterStatus() {
-        List<EnumVo> enumVos = EnumUtil.enumToVo(RegisterStatus.values());
+        List<EnumVo> enumVos = EnumUtil.enumToVo(PhoneStatus.values());
         return R.data(enumVos);
     }
 

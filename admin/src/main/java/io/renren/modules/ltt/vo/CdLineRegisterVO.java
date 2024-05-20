@@ -4,7 +4,9 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.renren.common.utils.EnumUtil;
+import io.renren.modules.ltt.entity.CdLineRegisterEntity;
 import io.renren.modules.ltt.enums.CountryCode;
+import io.renren.modules.ltt.enums.PhoneStatus;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -176,6 +178,13 @@ public class CdLineRegisterVO implements Serializable {
 
 	@ApiModelProperty(value = "重试次数")
 	private Integer retryNum;
+
+	private CdLineRegisterEntity cdLineRegisterEntity;
+
+	public String getPhoneStatusStr() {
+		return EnumUtil.queryValueByKey(this.phoneStatus, PhoneStatus.values());
+	}
+
 	public String getCountryCode() {
 		if (StringUtils.isNotEmpty(this.countryCode)) {
 			return this.countryCode;

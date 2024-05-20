@@ -158,5 +158,10 @@ public class CdLineRegisterDTO extends PageParam implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="")
 	private Integer exportStatus;
+	/**
+	 *
+	 */
+	@ApiModelProperty(required=false,value="")
+	private Integer phoneStatus;
 
 }

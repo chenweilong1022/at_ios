@@ -1,10 +1,14 @@
 package io.renren.modules.ltt.enums;
 
 
-public enum PhoneStatus {
+import io.renren.common.base.interfaces.BaseEnum;
+import lombok.Getter;
 
-    PhoneStatus1(1,"未使用"),
-    PhoneStatus2(2,"line使用"),
+@Getter
+public enum PhoneStatus implements BaseEnum {
+
+    PhoneStatus1(1,"待处理"),
+    PhoneStatus2(2,"发起注册"),
     PhoneStatus3(3,"收到验证码"),
     PhoneStatus4(4,"提交验证码"),
     PhoneStatus5(5,"需要释放手机号"),

@@ -51,7 +51,8 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
     @Resource
     private CdGetPhoneService getPhoneService;
 
-
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplateObj;
     @Autowired
     private StringRedisTemplate redisTemplate;
     @Autowired
@@ -78,7 +79,15 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
                 new Query<CdLineRegisterEntity>(cdLineRegister).getPage(),
                 cdLineRegister
         );
+
+        //服务器更新锁先锁住方法
+        Integer mod = systemConstant.getSERVERS_MOD();
+        String key = String.valueOf(mod);
         for (CdLineRegisterVO record : page.getRecords()) {
+            CdLineRegisterEntity cdLineRegisterEntity = (CdLineRegisterEntity) redisTemplateObj.opsForHash().get(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST.getValue(key), String.valueOf(record.getId()));
+            if (ObjectUtil.isNotNull(cdLineRegisterEntity)) {
+                record.setCdLineRegisterEntity(cdLineRegisterEntity);
+            }
             record.setRegisterCount(cdGetPhoneService.getPhoneRegisterCount(record.getPhone()));
             record.setPhoneState(cdGetPhoneService.getPhoneUseState(record.getPhone()));
         }

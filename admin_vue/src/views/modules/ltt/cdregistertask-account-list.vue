@@ -95,6 +95,9 @@
           header-align="center"
           align="center" width="250px"
           label="注册代理">
+          <template slot-scope="scope">
+            {{scope.row.cdLineRegisterEntity.proxy}}
+          </template>
         </el-table-column>
         <el-table-column
           prop="smsCode"
@@ -103,17 +106,13 @@
           label="验证码">
         </el-table-column>
         <el-table-column
-          prop="registerStatus"
+          prop="phoneStatusStr"
           header-align="center" width="110px"
           align="center"
           label="注册状态">
           <template slot-scope="scope">
-            <el-tag v-if="scope.row.phoneStatus === 7" type="danger">
-              作废
-            </el-tag>
-            <el-tag v-for="item in registerStatusCodes" :key="item.value"
-                    v-if="scope.row.registerStatus === item.key && scope.row.phoneStatus !== 7">
-              {{ item.value }}
+            <el-tag>
+              {{scope.row.phoneStatusStr}}
             </el-tag>
           </template>
         </el-table-column>
@@ -122,6 +121,9 @@
           header-align="center"
           align="center" width="150px"
           label="失败原因">
+          <template slot-scope="scope">
+            {{scope.row.cdLineRegisterEntity.errMsg}}
+          </template>
         </el-table-column>
         <el-table-column
           prop="createTime"
@@ -486,7 +488,7 @@
           method: 'get'
         }).then(({data}) => {
           if (data && data.code === 0) {
-            this.registerStatusCodes = [{key: 0, value: '待处理'},...data.data]
+            this.registerStatusCodes = data.data
           } else {
             this.$message.error(data.msg)
           }
