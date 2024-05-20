@@ -576,7 +576,7 @@ public class RegisterTask {
                 Date expireDate = DateUtils.addDateMinutes(time, (24 * 60) + 30);
 
                 Long expireMinutes = DateUtils.betweenMinutes(new Date(), expireDate);
-                if (expireMinutes > 60) {
+                if (expireMinutes > 5) {
                     redisTemplate.opsForValue().set(RedisKeys.RedisKeys12.getValue(phone), String.valueOf(registerCount), expireMinutes, TimeUnit.MINUTES);
                 }
             }
