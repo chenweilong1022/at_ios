@@ -27,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -83,9 +84,13 @@ public class GroupTask {
     @Autowired
     private CdLineRegisterService cdLineRegisterService;
     @Resource
+    private CdGetPhoneService cdGetPhoneService;
+    @Resource
     private SystemConstant systemConstant;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplateObj;
 
 //    @Scheduled(fixedDelay = 5000)
 //    @Transactional(rollbackFor = Exception.class)
@@ -129,24 +134,25 @@ public class GroupTask {
             log.info("GroupTask task4 list isEmpty");
             return;
         }
-
+        Integer mod = systemConstant.getSERVERS_MOD();
+        String key = String.valueOf(mod);
 
         //获取用户MAP
         List<Integer> userIds = cdGroupTasksEntities.stream().map(AtGroupEntity::getUserId).collect(Collectors.toList());
         List<AtUserEntity> atUserEntities = atUserService.listByIds(userIds);
         Map<Integer, AtUserEntity> atUserMap = atUserEntities.stream().collect(Collectors.toMap(AtUserEntity::getId, i -> i));
 
-        Map<String, List<CdLineRegisterEntity>> lineRegister = null;
+        Map<String, CdGetPhoneEntity> phoneEntity = null;
         List<String> telephoneList = atUserEntities.stream().map(AtUserEntity::getTelephone).collect(Collectors.toList());
         if (CollUtil.isNotEmpty(telephoneList)) {
-            lineRegister = cdLineRegisterService.list(new QueryWrapper<CdLineRegisterEntity>().lambda()
-                    .in(CdLineRegisterEntity::getPhone, telephoneList)).stream().collect(Collectors
-                    .groupingBy(CdLineRegisterEntity::getPhone));
+            phoneEntity = cdGetPhoneService.list(new QueryWrapper<CdGetPhoneEntity>().lambda()
+                    .in(CdGetPhoneEntity::getPhone, telephoneList)).stream().collect(Collectors
+                    .toMap(CdGetPhoneEntity::getPhone, i -> i, (a1, b1) -> b1));
         } else {
-            lineRegister = new HashMap<>();
+            phoneEntity = new HashMap<>();
         }
 
-        Map<String, List<CdLineRegisterEntity>> lineRegisterMap = lineRegister;
+        Map<String, CdGetPhoneEntity> phoneEntityMap = phoneEntity;
 
         for (AtGroupEntity cdGroupTasksEntity : cdGroupTasksEntities) {
             threadPoolTaskExecutor.execute(() -> {
@@ -159,23 +165,25 @@ public class GroupTask {
                     try {
                         AtUserEntity atUserEntity = atUserMap.get(cdGroupTasksEntity.getUserId());
                         if (atUserEntity != null) {
-                            List<CdLineRegisterEntity> lineRegisterEntityList = lineRegisterMap.get(atUserEntity.getTelephone());
-                            if (CollUtil.isNotEmpty(lineRegisterEntityList)) {
-                                CdLineRegisterEntity registerEntity = lineRegisterEntityList.stream()
-                                        .filter(i -> i.getCreateTime() != null
-                                                && i.getCreateTime().after(cdGroupTasksEntity.getCreateTime())
-                                                && (RegisterStatus.RegisterStatus4.getKey().equals(i.getRegisterStatus())
-                                                || RegisterStatus.RegisterStatus11.getKey().equals(i.getRegisterStatus())
-                                                || (RegisterStatus.RegisterStatus5.getKey().equals(i.getRegisterStatus())
-                                                    && StringUtils.isNotEmpty(i.getErrMsg())
-                                                    && !i.getErrMsg().contains("セッションがタイムアウトしました。 もう一度お試しください")
-                                                    && i.getErrMsg().contains("Code:100"))
-                                        ))
-                                        .findFirst().orElse(null);
-                                if (registerEntity != null) {
-                                    //代表已重新注册成功
-                                    //判断手机号是否已经重新注册成功
+                            CdGetPhoneEntity getPhoneEntity = phoneEntityMap.get(atUserEntity.getTelephone());
+                            if (ObjectUtil.isNotNull(getPhoneEntity)
+                                    && getPhoneEntity.getCreateTime().after(cdGroupTasksEntity.getCreateTime())) {
+                                if (PhoneStatus.PhoneStatus8.getKey().equals(getPhoneEntity.getPhoneStatus())
+                                        || PhoneStatus.PhoneStatus9.getKey().equals(getPhoneEntity.getPhoneStatus())) {
+                                    //注册成功、已购买
                                     atGroupService.updateGroupName(new AtGroupDTO().setIds(Arrays.asList(cdGroupTasksEntity.getId())));
+                                } else if (PhoneStatus.PhoneStatus6.getKey().equals(getPhoneEntity.getPhoneStatus())) {
+                                    //注册出现问题，判断为封号，则直接注册
+                                    CdLineRegisterEntity cdLineRegisterEntity = (CdLineRegisterEntity) redisTemplateObj.opsForHash()
+                                            .get(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST.getValue(key),
+                                                    String.valueOf(getPhoneEntity.getId()));
+                                    if (ObjectUtil.isNotNull(cdLineRegisterEntity)
+                                            && StringUtils.isNotEmpty(cdLineRegisterEntity.getErrMsg())
+                                            && !cdLineRegisterEntity.getErrMsg().contains("セッションがタイムアウトしました。 もう一度お試しください")
+                                            && cdLineRegisterEntity.getErrMsg().contains("Code:100")) {
+                                        //发起重新注册
+                                        atGroupService.updateGroupName(new AtGroupDTO().setIds(Arrays.asList(cdGroupTasksEntity.getId())));
+                                    }
                                 }
                             }
                         }
