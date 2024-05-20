@@ -784,7 +784,7 @@ public class DataTask {
                 boolean b1 = atDataSubtaskService.updateBatchById(updates);
                 if(b1) {
                     //用户任务池子 暂时过滤只要mid加粉的
-                    Map<Integer, List<AtDataSubtaskEntity>> userIdTaskSubEntitys = atDataSubtaskEntities.stream().filter(item -> GroupType.GroupType2.getKey().equals(item.getGroupType())).collect(Collectors.groupingBy(AtDataSubtaskEntity::getUserId));
+                    Map<Integer, List<AtDataSubtaskEntity>> userIdTaskSubEntitys = atDataSubtaskEntities.stream().filter(item -> GroupType.GroupType2.getKey().equals(item.getGroupType()) || GroupType.GroupType4.getKey().equals(item.getGroupType())).collect(Collectors.groupingBy(AtDataSubtaskEntity::getUserId));
                     for (Integer userId : userIdTaskSubEntitys.keySet()) {
                         String USER_TASKS_WORKING_NX_KEY = RedisKeys.USER_TASKS_WORKING_NX.getValue(String.valueOf(userId));
                         Boolean flag = stringRedisTemplate.opsForValue().setIfAbsent(USER_TASKS_WORKING_NX_KEY, String.valueOf(userId));

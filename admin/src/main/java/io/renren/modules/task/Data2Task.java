@@ -221,7 +221,11 @@ public class Data2Task {
                         addFriendsByHomeRecommendDTO.setProxy(proxyIp);
                         addFriendsByHomeRecommendDTO.setMid(atDataSubtaskEntity.getMid());
                         addFriendsByHomeRecommendDTO.setToken(atUserTokenEntity.getToken());
-                        searchPhoneVO = lineService.addFriendsByHomeRecommend(addFriendsByHomeRecommendDTO);
+                        if (GroupType.GroupType2.getKey().equals(atDataSubtaskEntity.getGroupType())) {
+                            searchPhoneVO = lineService.addFriendsByHomeRecommend(addFriendsByHomeRecommendDTO);
+                        }else if (GroupType.GroupType4.getKey().equals(atDataSubtaskEntity.getGroupType())) {
+                            searchPhoneVO = lineService.addFriendsByFriendRecommend(addFriendsByHomeRecommendDTO);
+                        }
                     }
                     if (ObjectUtil.isNull(searchPhoneVO)) {
                         return;
