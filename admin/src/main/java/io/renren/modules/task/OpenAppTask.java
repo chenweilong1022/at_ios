@@ -117,6 +117,7 @@ public class OpenAppTask {
                         CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
                         cdLineIpProxyDTO.setTokenPhone(lineTokenJson.getPhone());
                         cdLineIpProxyDTO.setLzPhone(lineTokenJson.getPhone());
+                        cdLineIpProxyDTO.setCountryCode(CountryCode.CountryCode7.getKey().longValue());
                         String proxyIp = cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO);
                         if (StrUtil.isEmpty(proxyIp)) {
                             return;
