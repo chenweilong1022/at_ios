@@ -273,7 +273,7 @@ public class RegisterTask {
                             //设置修改队列
                             Long l2 = redisTemplateObj.opsForList().leftPush(RedisKeys.CDGETPHONEENTITY_UPDATE_LIST.getValue(key), cdGetPhoneEntityUpdate);
 
-                            redisTemplateObj.opsForHash().put(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST.getValue(key), cdGetPhoneEntity.getId(),lineRegisterVO);
+                            redisTemplateObj.opsForHash().put(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST.getValue(key), String.valueOf(cdGetPhoneEntity.getId()),lineRegisterVO);
                         }
                     }finally {
                         lock.unlock();
