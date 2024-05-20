@@ -22,10 +22,7 @@ import io.renren.modules.client.vo.RefreshAccessTokenVO;
 import io.renren.modules.ltt.dto.CdLineIpProxyDTO;
 import io.renren.modules.ltt.entity.AtDataSubtaskEntity;
 import io.renren.modules.ltt.entity.AtUserTokenEntity;
-import io.renren.modules.ltt.enums.AtUserTokenTypeEnum;
-import io.renren.modules.ltt.enums.LockMapKeyResource;
-import io.renren.modules.ltt.enums.OpenStatus;
-import io.renren.modules.ltt.enums.UseFlag;
+import io.renren.modules.ltt.enums.*;
 import io.renren.modules.ltt.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -305,6 +302,7 @@ public class OpenAppTask {
                         CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
                         cdLineIpProxyDTO.setTokenPhone(lineTokenJson.getPhone());
                         cdLineIpProxyDTO.setLzPhone(lineTokenJson.getPhone());
+                        cdLineIpProxyDTO.setCountryCode(CountryCode.CountryCode7.getKey().longValue());
                         String proxyIp = cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO);
                         if (StrUtil.isEmpty(proxyIp)) {
                             return;
