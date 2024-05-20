@@ -100,5 +100,5 @@ ipConfig:
   maxUsedCount: 3
 
 servers:
-  mod: ${SERVERS_MOD:0}
+  mod: ${SERVERS_MOD:5}
   totalMod: ${SERVERS_TOTALMOD:6}

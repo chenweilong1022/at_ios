@@ -307,7 +307,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         return resp;
     }
 
-//
+////
 //    @EventListener
 //    @Order(value = 9999)//t35323ha-1027-61697		tha-1027-44108
 //    public void handlerApplicationReadyEvent(ApplicationReadyEvent event) throws InterruptedException {
@@ -372,6 +372,40 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 //    }
 
 
+    public static void main(String[] args) throws InterruptedException {
+        ExecutorService executorService = Executors.newFixedThreadPool(50);
+        Set<String> ips = ConcurrentHashMap.newKeySet();
+        for (int i = 0; i < 100000; i++) {
+            CdLineIpProxyServiceImpl cdLineIpProxyService = new CdLineIpProxyServiceImpl();
+            int finalI = i;
+            String jp = cdLineIpProxyService.getSuperProxyIp("jp");
+            CurlVO jp1 = cdLineIpProxyService.isProxyUseSuperProxyIp(jp, "jp");
+            if (jp1.isProxyUse()) {
+                ips.add(jp1.getIp());
+                log.info("i = {} set size = {}",finalI,ips.size());
+            }
+//            executorService.submit(() -> {
+//                String jp = cdLineIpProxyService.getSuperProxyIp("jp");
+//                CurlVO jp1 = cdLineIpProxyService.isProxyUseSuperProxyIp(jp, "jp");
+//                if (jp1.isProxyUse()) {
+//                    ips.add(jp1.getIp());
+//                    log.info("i = {} set size = {}",finalI,ips.size());
+//                }
+//            });
+        }
+
+        // 关闭线程池
+        executorService.shutdown();
+
+        // 等待所有任务完成
+        if (!executorService.awaitTermination(1, TimeUnit.HOURS)) {
+            // 如果超时，则强制关闭尚未完成的任务
+            executorService.shutdownNow();
+        }
+        System.out.println(ips);
+        System.out.println(ips.size());
+        System.out.println("All tasks are finished.");
+    }
 
 
     private static String socks5Pre(String ip) {
@@ -458,6 +492,74 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
             proxyUse = isProxyUseMe(ip, regions);
         }
         return proxyUse;
+    }
+//curl -x brd-customer-hl_7d808016-zone-residential_proxy1-country-jp:2a1ffaiiww1h@brd.superproxy.io:22225 http://lumtest.com/myip.json
+// "http://lumtest.com/myip.json"
+
+    private String getSuperProxyIp(String regions) {
+        //curl -x  ipinfo.io
+        String format = String.format("brd-customer-hl_7d808016-zone-residential_proxy1-country-jp:2a1ffaiiww1h@brd.superproxy.io:22225", RandomUtil.randomString(20));
+        System.out.println(format);
+        return format;
+    }
+
+
+    private CurlVO isProxyUseSuperProxyIp(String ip,String country) {
+        CurlVO falseCurlVO = new CurlVO().setProxyUse(false);
+        try {
+            String format1 = String.format("curl -x %s http://lumtest.com/myip.json",ip);
+            List<String> strings = RuntimeUtil.execForLines(format1);
+            boolean flag = false;
+
+            List<String> newStr = new ArrayList<>();
+            for (String string : strings) {
+                if (string.contains("{") || flag) {
+                    flag = true;
+                    newStr.add(string);
+                }
+            }
+            String resp = CollUtil.join(newStr, "");
+            IPWorldRespCurl curlVO = JSONUtil.toBean(resp, IPWorldRespCurl.class);
+            if (curlVO.getCountry().toLowerCase().equals(country.toLowerCase())) {
+                return falseCurlVO.setProxyUse(true).setIp(curlVO.getIp()).setCountry(curlVO.getCountry());
+            }
+        }catch (Exception e) {
+
+        }
+        return falseCurlVO;
+    }
+
+    private String getIpmoyuIp(String regions) {
+        //curl -x  ipinfo.io
+        String format = String.format("chen_103_0_0_10_%s_5_1:wei@zm.ipmoyu.com:3000", RandomUtil.randomString(20));
+        System.out.println(format);
+        return format;
+    }
+
+
+    private CurlVO isProxyUseIpmoyuIp(String ip,String country) {
+        CurlVO falseCurlVO = new CurlVO().setProxyUse(false);
+        try {
+            String format1 = String.format("curl -x %s ipinfo.pyproxy.io",ip);
+            List<String> strings = RuntimeUtil.execForLines(format1);
+            boolean flag = false;
+
+            List<String> newStr = new ArrayList<>();
+            for (String string : strings) {
+                if (string.contains("{") || flag) {
+                    flag = true;
+                    newStr.add(string);
+                }
+            }
+            String resp = CollUtil.join(newStr, "");
+            IPWorldRespCurl curlVO = JSONUtil.toBean(resp, IPWorldRespCurl.class);
+            if (curlVO.getCountry_code().toLowerCase().equals(country.toLowerCase())) {
+                return falseCurlVO.setProxyUse(true).setIp(curlVO.getIp()).setCountry(curlVO.getCountry_code());
+            }
+        }catch (Exception e) {
+
+        }
+        return falseCurlVO;
     }
 
     private String getProxyUpIp(String regions) {
