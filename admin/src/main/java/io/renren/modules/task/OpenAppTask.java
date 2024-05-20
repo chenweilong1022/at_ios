@@ -239,7 +239,11 @@ public class OpenAppTask {
                                 AtUserTokenEntity update = new AtUserTokenEntity();
                                 update.setId(atUserTokenEntity.getId());
                                 OpenAppResult.Data data = openAppResult.getData();
-                                String concat = StrUtil.concat(true, data.getRemark(), openAppResult.getMsg());
+                                String remake = "";
+                                if (ObjectUtil.isNotNull(data) && StrUtil.isNotEmpty(data.getRemark())) {
+                                    remake = data.getRemark();
+                                }
+                                String concat = StrUtil.concat(true, remake, openAppResult.getMsg());
                                 update.setErrMsg(concat);
                                 update.setOpenStatus(OpenStatus.OpenStatus1.getKey());
                                 update.setOpenTime(DateUtil.date());
