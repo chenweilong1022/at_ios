@@ -421,21 +421,21 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         int i = lastDigit % 6;
         String s5Ip = null;
         if (i == 0) {
-            s5Ip = getProxyUpIp(regions);
+            s5Ip = getLunaIp(regions);
         }else if (i == 1) {
-            s5Ip = getProxyUpIp(regions);
+            s5Ip = getIp2WorldIp(regions);
         }else if (i == 2) {
-            s5Ip = getProxyUpIp(regions);
+            s5Ip = getAbcIp(regions);
         }else if (i == 3) {
-            s5Ip = getProxyUpIp(regions);
+            s5Ip = getIpmarsIp(regions);
         }else if (i == 4) {
-            s5Ip = getProxyUpIp(regions);
+            s5Ip = getRolaIp(regions);
         }else if (i == 5) {
-            s5Ip = getProxyUpIp(regions);
+            s5Ip = getRolaIp(regions);
         }
         return s5Ip;
     }
-
+//
     private CurlVO getProxyUse(String ip,String regions) {
         CurlVO proxyUse = new CurlVO().setProxyUse(false);
         if (ip.contains("lunaproxy")) {

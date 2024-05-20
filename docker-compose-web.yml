@@ -1,12 +1,11 @@
 version: '3'
 services:
-  nginx:
-    image: nginx
-    container_name: nginx
-    ports:
-      - "80:80"
-      - "443:443"
-    restart: always
+  redis:
+    image: redis
+    container_name: s_redis
+    privileged: true
+    command: redis-server --requirepass Jz123456
     volumes:
-      - /etc/localtime:/etc/localtime
-      - /home/web/nginx:/etc/nginx
+      - /Users/chenweilong/redis/home/redis:/data
+    ports:
+      - "6379:6379"

@@ -226,9 +226,9 @@ public class CdGetPhoneServiceImpl extends ServiceImpl<CdGetPhoneDao, CdGetPhone
             cdGetPhoneRedisDto.setTelPhone(cdGetPhoneEntity.getPhone());
             cdGetPhoneRedisDto.setPhoneEntity(cdGetPhoneEntity);
             cdGetPhoneRedisDto.setLineRegister(null);
-            //存redis
-            stringRedisTemplate.opsForHash().put(RedisKeys.REGISTER_TASK.getValue(),
-                    cdGetPhoneRedisDto.getTelPhone(), cdGetPhoneRedisDto);
+//            //存redis
+//            stringRedisTemplate.opsForHash().put(RedisKeys.REGISTER_TASK.getValue(),
+//                    cdGetPhoneRedisDto.getTelPhone(), cdGetPhoneRedisDto);
         }
     }
 
