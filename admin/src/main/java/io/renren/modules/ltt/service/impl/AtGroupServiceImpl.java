@@ -314,7 +314,7 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
         String regions = EnumUtil.queryValueByKey(atGroup.getCountryCode(), CountryCode.values());
         atUserDTO.setNation(regions.toUpperCase());
         atUserDTO.setUserGroupId(atGroup.getUserGroupId());
-        atUserDTO.setLimit(atGroup.getIds().size() * atGroup.getPullGroupNumber());
+        atUserDTO.setLimit(atGroup.getIds().size() * atGroup.getPullGroupNumber() + 10);
         atUserDTO.setStatus(UserStatus.UserStatus4.getKey());
         atUserDTO.setUserSource(AtUserSourceEnum.AtUserSource1.getKey());
         //获取符合账号的号码
@@ -373,6 +373,10 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
                 List<AtDataSubtaskEntity> atDataSubtaskEntities1 = integerListMap1.get(key);
 
                 AtUserVO poll = atUserVOQueue.poll();
+                if (ObjectUtil.isNull(poll)) {
+                    log.info("pool = {}",poll);
+                    continue;
+                }
                 AtUserEntity atUserEntity = new AtUserEntity();
                 atUserEntity.setId(poll.getId());
                 atUserEntity.setStatus(UserStatus.UserStatus6.getKey());
