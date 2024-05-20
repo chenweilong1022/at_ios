@@ -52,7 +52,7 @@
 
     <select id="listSummary" resultType="io.renren.modules.ltt.dto.CdLineRegisterSummaryDto">
         SELECT
-        SUM( CASE WHEN r.register_status = null THEN 1 ELSE 0 END ) AS waitCount,
+        SUM( CASE WHEN COALESCE ( r.register_status, 0 ) = 0 THEN 1 ELSE 0 END ) AS waitCount,
         SUM( CASE WHEN COALESCE ( r.register_status, 0 ) = 1 THEN 1 ELSE 0 END ) AS startRegisterCount,
         SUM( CASE WHEN COALESCE ( r.register_status, 0 ) IN (2, 3 ) THEN 1 ELSE 0 END ) AS submitRegisterCount,
         SUM( CASE WHEN COALESCE ( r.register_status, 0 ) = 4 THEN 1 ELSE 0 END ) AS successRegisterCount,
