@@ -215,7 +215,7 @@ public class UserTask {
     /**
      * 同步token信息到用户表
      */
-    @Scheduled(fixedDelay = 5000)
+    @Scheduled(fixedDelay = 10 * 1000)
     @Transactional(rollbackFor = Exception.class)
     @Async
     public void task1() {

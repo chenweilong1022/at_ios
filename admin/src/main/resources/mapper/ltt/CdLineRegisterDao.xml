@@ -52,14 +52,13 @@
 
     <select id="listSummary" resultType="io.renren.modules.ltt.dto.CdLineRegisterSummaryDto">
         SELECT
-        SUM( CASE WHEN COALESCE ( r.register_status, 0 ) = 0 THEN 1 ELSE 0 END ) AS waitCount,
-        SUM( CASE WHEN COALESCE ( r.register_status, 0 ) = 1 THEN 1 ELSE 0 END ) AS startRegisterCount,
-        SUM( CASE WHEN COALESCE ( r.register_status, 0 ) IN (2, 3 ) THEN 1 ELSE 0 END ) AS submitRegisterCount,
-        SUM( CASE WHEN COALESCE ( r.register_status, 0 ) = 4 THEN 1 ELSE 0 END ) AS successRegisterCount,
-        SUM( CASE WHEN COALESCE ( r.register_status, 0 ) = 5 THEN 1 ELSE 0 END ) AS errorRegisterCount
+        SUM( CASE WHEN phone_status = 1 THEN 1 ELSE 0 END ) AS waitCount,
+        SUM( CASE WHEN phone_status = 2 THEN 1 ELSE 0 END ) AS startRegisterCount,
+        SUM( CASE WHEN phone_status IN (3, 4 ) THEN 1 ELSE 0 END ) AS submitRegisterCount,
+        SUM( CASE WHEN phone_status = 8 THEN 1 ELSE 0 END ) AS successRegisterCount,
+        SUM( CASE WHEN phone_status = 6 THEN 1 ELSE 0 END ) AS errorRegisterCount
         FROM
         cd_get_phone p
-        LEFT JOIN cd_line_register r ON r.get_phone_id = p.id
         LEFT JOIN cd_register_subtasks s ON p.subtasks_id = s.id
         <where>
             <if test="dto.tasksId != null">
@@ -80,25 +79,15 @@
         SELECT
         p.country,
         p.id as id,
-        r.ab as ab,
-        r.app_version as appVersion,
-        r.country_code as countryCode,
         p.phone as phone,
         p.retry_num as retryNum,
         p.phone_status as phoneStatus,
         p.first_enter_time as firstEnterTime,
-        r.token as token,
-        r.proxy as proxy,
-        r.txt_token as txtToken,
-        r.task_id as taskId,
-        COALESCE(r.sms_code, p.code) as smsCode,
-        r.err_msg as errMsg,
-        COALESCE(r.register_status, 0) as registerStatus,
-        r.delete_flag as deleteFlag,
-        p.create_time as createTime,
-        r.get_phone_id as getPhoneId
+        p.code as smsCode,
+        p.country_code as countryCode
+        p.phone_status as phoneStatus,
+        p.create_time as createTime
         FROM cd_get_phone p
-        LEFT JOIN cd_line_register r on r.get_phone_id = p.id
         LEFT JOIN cd_register_subtasks s ON p.subtasks_id = s.id
         <where>
             <include refid="where_if"/>
@@ -113,11 +102,8 @@
         <if test="dto.countryCode != null">
             AND p.country = #{dto.countryCode}
         </if>
-        <if test="dto.registerStatus != null and dto.registerStatus != 0">
-            AND r.register_status = #{dto.registerStatus}
-        </if>
-        <if test="dto.registerStatus != null and dto.registerStatus == 0">
-            AND r.register_status is null
+        <if test="dto.phoneStatus != null and dto.phoneStatus != 0">
+            AND p.phone_status = #{dto.phoneStatus}
         </if>
         <if test="dto.phone != null and dto.phone != ''">
             AND p.phone = #{dto.phone}

@@ -1,5 +1,6 @@
 package io.renren.modules.ltt.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import io.renren.common.constant.SystemConstant;
 import io.renren.common.utils.*;
@@ -7,13 +8,13 @@ import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
 import io.renren.modules.ltt.dto.CdLineRegisterSummaryDto;
 import io.renren.modules.ltt.dto.LineRegisterSummaryResultDto;
+import io.renren.modules.ltt.entity.AtUserTokenEntity;
 import io.renren.modules.ltt.entity.CdGetPhoneEntity;
 import io.renren.modules.ltt.enums.CountryCode;
 import io.renren.modules.ltt.enums.PhoneStatus;
 import io.renren.modules.ltt.enums.RedisKeys;
 import io.renren.modules.ltt.enums.RegisterStatus;
-import io.renren.modules.ltt.service.CdGetPhoneService;
-import io.renren.modules.ltt.service.CdLineIpProxyService;
+import io.renren.modules.ltt.service.*;
 import io.renren.modules.ltt.vo.GetCountBySubTaskIdVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -31,7 +32,6 @@ import io.renren.modules.ltt.dao.CdLineRegisterDao;
 import io.renren.modules.ltt.entity.CdLineRegisterEntity;
 import io.renren.modules.ltt.dto.CdLineRegisterDTO;
 import io.renren.modules.ltt.vo.CdLineRegisterVO;
-import io.renren.modules.ltt.service.CdLineRegisterService;
 import io.renren.modules.ltt.conver.CdLineRegisterConver;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,6 +59,9 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
     private RedisTemplate<String, Object> redisObjectTemplate;
     @Resource
     private CdGetPhoneService cdGetPhoneService;
+
+    @Resource
+    private AtUserTokenService atUserTokenService;
 
     @Override
     public PageUtils<CdLineRegisterVO> queryPage(CdLineRegisterDTO cdLineRegister) {
@@ -369,6 +372,25 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
         }
 
         return true;
+    }
+
+    private void handleRegisterData(CdLineRegisterEntity cdLineRegisterEntity) {
+        if (!RegisterStatus.RegisterStatus4.getKey().equals(cdLineRegisterEntity.getRegisterStatus())
+        || StringUtils.isEmpty(cdLineRegisterEntity.getToken())) {
+            return;
+        }
+        //修改
+        CdLineRegisterEntity updateLineRegisterDto = new CdLineRegisterEntity();
+        updateLineRegisterDto.setId(cdLineRegisterEntity.getId());
+        updateLineRegisterDto.setRegisterStatus(RegisterStatus.RegisterStatus11.getKey());
+        boolean b = this.updateById(updateLineRegisterDto);
+        if (Boolean.TRUE.equals(b)) {
+            //生成token
+            AtUserTokenEntity userTokenEntity = new AtUserTokenEntity();
+            userTokenEntity.setToken(cdLineRegisterEntity.getToken());
+            userTokenEntity.setUserGroupId(null);
+            atUserTokenService.save(userTokenEntity);
+        }
     }
 
 }
