@@ -5,6 +5,7 @@ import io.renren.common.utils.PageUtils;
 import io.renren.modules.ltt.dto.CdLineRegisterDTO;
 import io.renren.modules.ltt.dto.CdLineRegisterSummaryDto;
 import io.renren.modules.ltt.dto.LineRegisterSummaryResultDto;
+import io.renren.modules.ltt.dto.RegisterNicknameDTO;
 import io.renren.modules.ltt.entity.CdGetPhoneEntity;
 import io.renren.modules.ltt.vo.CdLineRegisterVO;
 import io.renren.modules.ltt.entity.CdLineRegisterEntity;
@@ -154,5 +155,26 @@ public interface CdLineRegisterService extends IService<CdLineRegisterEntity> {
      * @return
      */
     Boolean invalidatePhone(Integer[] ids);
+
+    /**
+     * 保存昵称
+     * @param registerNicknameDTO
+     * @return
+     */
+    boolean saveRegisterNickname(RegisterNicknameDTO registerNicknameDTO);
+
+    /**
+     * 删除昵称集合
+     * @param countryCode
+     * @return
+     */
+    boolean deleteRegisterNickname(Integer countryCode);
+
+    /**
+     * 昵称集合列表
+      * @param countryCode
+     * @return
+     */
+    PageUtils<String> listRegisterNickname(Integer countryCode);
 }
 

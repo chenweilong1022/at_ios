@@ -20,8 +20,8 @@
         <el-button type="danger" @click="cleanIpByCountryCode()">清理ip</el-button>
       </el-form-item>
 
-      <el-form-item label="清理黑名单ip剩余小时" prop="expireHours">
-        <el-input v-model="dataForm.expireHours" placeholder="清理黑名单ip剩余小时"></el-input>
+      <el-form-item label="清理黑名单n分钟前" prop="beforeMinute">
+        <el-input v-model="dataForm.beforeMinute" placeholder="清理黑名单n分钟前"></el-input>
       </el-form-item>
       <el-form-item>
         <el-button type="danger" @click="cleanInvalidIp()">清理黑名单ip</el-button>
@@ -41,7 +41,7 @@ export default {
       countryCodes: [],
       dataForm: {
         countryCode: null,
-        expireHours: null
+        beforeMinute: null
       },
       dataRule: {
       }
@@ -100,8 +100,8 @@ export default {
     },
     // 清理ip
     cleanInvalidIp () {
-      if (this.dataForm.expireHours === null) {
-        this.$message.error('请输入剩余小时')
+      if (this.dataForm.beforeMinute === null) {
+        this.$message.error('请输入删除多少分钟前')
         return
       }
       this.$refs['dataForm'].validate((valid) => {
@@ -110,7 +110,7 @@ export default {
             url: this.$http.adornUrl(`/ltt/cdlineregister/cleanInvalidIp`),
             method: 'get',
             params: this.$http.adornParams({
-              'expireHours': this.dataForm.expireHours
+              'beforeMinute': this.dataForm.beforeMinute
             })
           }).then(({data}) => {
             if (data && data.code === 0) {

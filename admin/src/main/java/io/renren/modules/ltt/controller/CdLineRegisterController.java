@@ -5,6 +5,7 @@ import java.util.List;
 
 import io.renren.modules.ltt.dto.CdLineRegisterSummaryDto;
 import io.renren.modules.ltt.dto.LineRegisterSummaryResultDto;
+import io.renren.modules.ltt.dto.RegisterNicknameDTO;
 import io.renren.modules.ltt.service.CdLineIpProxyService;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -184,9 +185,46 @@ public class CdLineRegisterController {
      */
     @RequestMapping("/cleanInvalidIp")
 
-    public R cleanInvalidIp(@RequestParam("expireHours") Long expireHours){
-        cdLineIpProxyService.cleanInvalidIp(expireHours);
+    public R cleanInvalidIp(@RequestParam("beforeMinute") Long beforeMinute){
+        cdLineIpProxyService.cleanInvalidIp(beforeMinute);
 
         return R.ok();
+    }
+
+
+    /**
+     * 保存昵称
+     * @return
+     */
+    @RequestMapping("/saveRegisterNickname")
+
+    public R saveRegisterNickname(@RequestBody RegisterNicknameDTO dto){
+        boolean b = cdLineRegisterService.saveRegisterNickname(dto);
+        return R.ok().put("flag", b);
+    }
+
+
+    /**
+     * 删除昵称集合
+     * @param
+     * @return
+     */
+    @RequestMapping("/deleteRegisterNickname")
+
+    public R deleteRegisterNickname(@RequestParam("countryCode") Integer countryCode){
+        boolean b = cdLineRegisterService.deleteRegisterNickname(countryCode);
+        return R.ok().put("flag", b);
+    }
+
+    /**
+     * 昵称集合列表
+     * @return
+     */
+    @RequestMapping("/listRegisterNickname")
+
+    public R listRegisterNickname(@RequestParam("countryCode") Integer countryCode){
+        PageUtils<String> page = cdLineRegisterService.listRegisterNickname(countryCode);
+
+        return R.ok().put("page", page);
     }
 }

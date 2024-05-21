@@ -33,6 +33,7 @@
         <el-button v-if="isAuth('ltt:cdregistertask:save')" type="danger" @click="cleanIpHandle()">清理ip</el-button>
         <el-button v-if="isAuth('ltt:cdregistertask:save')" type="success" @click="cdregistertaskAccountListHandle(null, '山谷', 81)">山谷</el-button>
         <el-button v-if="isAuth('ltt:cdregistertask:save')" type="success" @click="cdregistertaskAccountListHandle(null, '子弹', 8101)">子弹</el-button>
+        <el-button v-if="isAuth('ltt:cdregistertask:save')" type="primary" @click="addRegisterNameHandle()">增加注册名称</el-button>
       </el-form-item>
     </el-form>
     <el-table
@@ -148,6 +149,7 @@
     <!-- 弹窗, 新增 / 修改 -->
     <add-or-update v-if="addOrUpdateVisible" ref="addOrUpdate" @refreshDataList="getDataList"></add-or-update>
     <clean-ip v-if="cleanIpVisible" ref="CleanIp" @refreshDataList="getDataList"></clean-ip>
+    <add-username v-if="addRegisterNameVisible" ref="AddUsername" @refreshDataList="getDataList"></add-username>
     <set-proxy v-if="setProxyVisible" ref="setProxy" @refreshDataList="getDataList"></set-proxy>
     <cdregistertask-account-list v-if="cdregistertaskAccountListVisible" ref="cdregistertaskAccountList" @refreshDataList="getDataList"></cdregistertask-account-list>
   </div>
@@ -157,6 +159,7 @@
 import AddOrUpdate from './cdregistertask-add-or-update'
 import SetProxy from './cdregistertask-set-proxy'
 import CleanIp from './cdregister-ip'
+import AddUsername from './cdregistertask-username'
 import CdregistertaskAccountList from './cdregistertask-account-list'
 export default {
   data () {
@@ -176,6 +179,7 @@ export default {
       registrationStatusCodes: [{key: 1, value: '新注册'}, {key: 2, value: '注册中'}, {key: 3, value: '暂停注册'}, {key: 7, value: '注册完成'}, {key: 9, value: '真机注册任务'}],
       addOrUpdateVisible: false,
       cleanIpVisible: false,
+      addRegisterNameVisible: false,
       setProxyVisible: false,
       cdregistertaskAccountListVisible: false
     }
@@ -183,6 +187,7 @@ export default {
   components: {
     AddOrUpdate,
     CleanIp,
+    AddUsername,
     SetProxy,
     CdregistertaskAccountList
   },
@@ -260,6 +265,12 @@ export default {
       this.cleanIpVisible = true
       this.$nextTick(() => {
         this.$refs.CleanIp.init()
+      })
+    },
+    addRegisterNameHandle () {
+      this.addRegisterNameVisible = true
+      this.$nextTick(() => {
+        this.$refs.AddUsername.init()
       })
     },
     // 新增 / 修改

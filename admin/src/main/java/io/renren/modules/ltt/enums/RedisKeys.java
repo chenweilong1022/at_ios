@@ -106,6 +106,10 @@ public enum RedisKeys implements BaseEnum {
      * 任务服务器锁注册
      */
     MOD_REGISTER_NX(29,"MOD_REGISTER_NX"),
+    /**
+     * 昵称集合
+     */
+    REGISTER_NICKNAME_LIST(30,"REGISTER_NICKNAME_LIST"),
     ;
 
     public String getValue(String country) {

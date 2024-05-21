@@ -662,7 +662,7 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
             Long expireMinutes = DateUtils.betweenMinutes(new Date(), expireDate);
 
             log.info("同步红灯时间 {}, {}", phoneKey, expireMinutes);
-            if (expireMinutes <= 0) {
+            if (expireMinutes <= 5) {
                 log.info("删除红绿灯时间 {}, {}", phoneKey, expireMinutes);
                 redisTemplate.delete(RedisKeys.RedisKeys12.getValue(phoneKey));
                 continue;

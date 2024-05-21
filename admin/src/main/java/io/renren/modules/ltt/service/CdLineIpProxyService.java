@@ -78,6 +78,6 @@ public interface CdLineIpProxyService extends IService<CdLineIpProxyEntity> {
 
     void cleanIpByCountryCode(Integer countryCode);
 
-    void cleanInvalidIp(Long expireHours);
+    void cleanInvalidIp(Long beforeMinute);
 }
 

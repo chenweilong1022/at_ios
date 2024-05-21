@@ -843,20 +843,22 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 
     @Override
     @Async
-    public void cleanInvalidIp(Long expireHours) {
+    public void cleanInvalidIp(Long beforeMinute) {
         Set<String> keys = redisTemplate.keys(RedisKeys.RedisKeys4.getValue("*"));
-        log.info("清理ip黑名单开始，剩余过期时间:{}，共:{}条", expireHours, keys.size());
+        log.info("清理ip黑名单开始，剩余过期时间:{}，共:{}条", beforeMinute, keys.size());
         for (String key : keys) {
             threadPoolTaskExecutor.execute(() -> {
-                Long expire = redisTemplate.getExpire(key, TimeUnit.HOURS);
-                //删除这个范围的数据
-                System.out.println(key + "---" + expire);
-                if (expireHours >= expire) {
-                    redisTemplate.delete(key);
+                Long expire = redisTemplate.getExpire(key, TimeUnit.MINUTES);
+                if (expire != null) {
+                    expire = (24* 60) - expire;
+                    log.info("cleanInvalidIp key:{}, expire: {}", key, expire);
+                    if (expire > beforeMinute ) {
+                        redisTemplate.delete(key);
+                    }
                 }
             });
         }
-        log.info("清理ip黑名单结束，剩余过期时间:{}，共:{}条", expireHours, keys.size());
+        log.info("清理ip黑名单结束，剩余过期时间:{}，共:{}条", beforeMinute, keys.size());
     }
 
 }

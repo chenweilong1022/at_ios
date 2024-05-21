@@ -1,21 +1,19 @@
 package io.renren.modules.ltt.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import io.renren.common.constant.SystemConstant;
 import io.renren.common.utils.*;
 import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
-import io.renren.modules.ltt.dto.CdLineRegisterSummaryDto;
-import io.renren.modules.ltt.dto.LineRegisterSummaryResultDto;
-import io.renren.modules.ltt.entity.AtUserTokenEntity;
+import io.renren.modules.ltt.dto.*;
 import io.renren.modules.ltt.entity.CdGetPhoneEntity;
 import io.renren.modules.ltt.enums.CountryCode;
 import io.renren.modules.ltt.enums.PhoneStatus;
 import io.renren.modules.ltt.enums.RedisKeys;
 import io.renren.modules.ltt.enums.RegisterStatus;
 import io.renren.modules.ltt.service.*;
-import io.renren.modules.ltt.vo.CdGetPhoneVO;
-import io.renren.modules.ltt.vo.GetCountBySubTaskIdVO;
+import io.renren.modules.ltt.vo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -25,7 +23,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -33,16 +30,11 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import io.renren.modules.ltt.dao.CdLineRegisterDao;
 import io.renren.modules.ltt.entity.CdLineRegisterEntity;
-import io.renren.modules.ltt.dto.CdLineRegisterDTO;
-import io.renren.modules.ltt.vo.CdLineRegisterVO;
 import io.renren.modules.ltt.conver.CdLineRegisterConver;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.io.Serializable;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -256,6 +248,10 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
             Integer[] ids = {cdGetPhone.getId()};
             this.registerRetry(ids,true);
         }
+        CdGetPhoneEntity updateCdGetPhoneEntity = new CdGetPhoneEntity();
+        updateCdGetPhoneEntity.setRetryNum(0);
+        updateCdGetPhoneEntity.setId(cdGetPhone.getId());
+        cdGetPhoneService.updateById(updateCdGetPhoneEntity);
         return false;
     }
 
@@ -343,4 +339,41 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
         return getPhoneService.updateBatchById(phoneEntityList);
     }
 
+    @Override
+    public boolean saveRegisterNickname(RegisterNicknameDTO registerNicknameDTO) {
+        Assert.isTrue(ObjectUtil.isNull(registerNicknameDTO.getCountryCode()), "请选择国家");
+        Assert.isTrue(StringUtils.isEmpty(registerNicknameDTO.getNickname()), "请输入昵称");
+        List<String> nickNameList = new ArrayList<>();
+        String[] split = registerNicknameDTO.getNickname().trim().split("\n");
+        for (String s : split) {
+            if (StrUtil.isEmpty(s)) {
+                continue;
+            }
+            nickNameList.add(s);
+        }
+        String regions = EnumUtil.queryValueByKey(registerNicknameDTO.getCountryCode(), CountryCode.values());
+        Long l = redisTemplate.opsForList().rightPushAll(RedisKeys.REGISTER_NICKNAME_LIST.getValue(regions), nickNameList);
+        return l > 0;
+    }
+
+    @Override
+    public boolean deleteRegisterNickname(Integer countryCode) {
+        Assert.isTrue(ObjectUtil.isNull(countryCode), "请选择国家");
+        String regions = EnumUtil.queryValueByKey(countryCode, CountryCode.values());
+        return redisTemplate.delete(RedisKeys.REGISTER_NICKNAME_LIST.getValue(regions));
+    }
+
+    @Override
+    public PageUtils<String> listRegisterNickname(Integer countryCode) {
+        String regions = EnumUtil.queryValueByKey(countryCode, CountryCode.values());
+        String key = RedisKeys.REGISTER_NICKNAME_LIST.getValue(regions);
+        Long size = redisTemplate.opsForList().size(key);
+        if (size == 0) {
+            return new PageUtils<>(Collections.emptyList(), Integer.valueOf(Math.toIntExact(size)), 1000, 1);
+        }
+
+        List<String> nicknameList = redisTemplate.opsForList()
+                .range(RedisKeys.REGISTER_NICKNAME_LIST.getValue(regions), 0, size > 1000 ? 1000 : size);
+        return new PageUtils<>(nicknameList, Integer.valueOf(Math.toIntExact(size)), 1000, 1);
+    }
 }
