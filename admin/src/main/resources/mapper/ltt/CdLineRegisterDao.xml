@@ -110,7 +110,7 @@
             AND p.phone = #{dto.phone}
         </if>
         <if test="dto.phoneStatus != null">
-            AND p.phone_stataus = #{dto.phoneStatus}
+            AND p.phone_status = #{dto.phoneStatus}
         </if>
         <if test="dto.phones != null and dto.phones.size() > 0">
             AND p.phone in

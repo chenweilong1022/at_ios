@@ -345,22 +345,7 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
             getPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus7.getKey());
             phoneEntityList.add(getPhoneEntity);
         }
-        getPhoneService.updateBatchById(phoneEntityList);
-
-        List<CdLineRegisterEntity> lineRegisterList = baseMapper.selectList(new QueryWrapper<CdLineRegisterEntity>().lambda()
-                .in(CdLineRegisterEntity::getGetPhoneId, Arrays.asList(ids))).stream().collect(Collectors.toList());
-        if (CollectionUtils.isNotEmpty(lineRegisterList)) {
-            List<CdLineRegisterEntity> updateLineRegisterList = new ArrayList<>();
-            for (CdLineRegisterEntity registerEntity : lineRegisterList) {
-                CdLineRegisterEntity updateLineRegister = new CdLineRegisterEntity();
-                updateLineRegister.setId(registerEntity.getId());
-                updateLineRegister.setRegisterStatus(RegisterStatus.RegisterStatus11.getKey());
-                updateLineRegisterList.add(updateLineRegister);
-            }
-            this.updateBatchById(updateLineRegisterList);
-        }
-
-        return true;
+        return getPhoneService.updateBatchById(phoneEntityList);
     }
 
     @Override

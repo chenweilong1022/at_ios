@@ -7,7 +7,7 @@
     <div class="mod-config">
       <el-form :inline="true" :model="dataForm" @keyup.enter.native="getDataList(), listSummary()">
         <el-form-item>
-          <el-select v-model="registerStatus" placeholder="注册状态" clearable>
+          <el-select v-model="phoneStatus" placeholder="注册状态" clearable>
             <el-option
               v-for="item in registerStatusCodes"
               :key="item.key"
@@ -58,8 +58,10 @@
       <el-table
         :data="dataList"
         border
+        ref="multipleTable"
         v-loading="dataListLoading"
         @selection-change="selectionChangeHandle"
+        row-key="id"
         style="width: 100%;">
         <el-table-column
           type="selection"
@@ -184,7 +186,7 @@
   export default {
     data () {
       return {
-        registerStatus: null,
+        phoneStatus: null,
         registerStatusCodes: [],
         dataList: [],
         pageIndex: 1,
@@ -253,7 +255,7 @@
         var param = this.$http.adornParams({
           'page': this.pageIndex,
           'limit': this.pageSize,
-          'registerStatus': this.registerStatus,
+          'phoneStatus': this.phoneStatus,
           'tasksId': this.dataForm.id,
           'phone': this.dataForm.phone,
           'countryCode': this.countryCode,
