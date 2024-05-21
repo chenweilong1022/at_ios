@@ -223,7 +223,7 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
             //如果需要拉黑，去拉黑ip
             if (ipClearFlag) {
                 //ip暂时拉黑
-                this.clearTokenPhone(cdGetPhone);
+                cdLineIpProxyService.clearTokenPhone(cdGetPhone.getPhone(), CountryCode.getKeyByValue(cdGetPhone.getCountrycode()));
             }
             //删除redis的数据
             redisTemplateObj.opsForHash().delete(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST.getValue(key), String.valueOf(cdGetPhone.getId()));
@@ -257,14 +257,6 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
             this.registerRetry(ids,true);
         }
         return false;
-    }
-
-    private void clearTokenPhone(CdGetPhoneEntity cdGetPhone) {
-        //ip暂时拉黑
-        if (StringUtils.isEmpty(cdGetPhone.getCode())
-                || Boolean.FALSE.equals(StrTextUtil.verificationCodeFlag(cdGetPhone.getCode()))) {
-            cdLineIpProxyService.clearTokenPhone(cdGetPhone.getPhone(), CountryCode.getKeyByValue(cdGetPhone.getCountrycode()));
-        }
     }
 
     @Override
