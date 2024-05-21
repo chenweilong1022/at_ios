@@ -244,30 +244,14 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
 
     @Override
     public boolean registerAgain(String telephone) {
-        CdLineRegisterEntity cdLineRegisterEntity = this.getOne(new QueryWrapper<CdLineRegisterEntity>().lambda()
-                .eq(CdLineRegisterEntity::getPhone,telephone)
-                .orderByDesc(CdLineRegisterEntity::getId)
-                .last("limit 1")
+        //重新注册line
+        CdGetPhoneEntity cdGetPhone = getPhoneService.getOne(new QueryWrapper<CdGetPhoneEntity>().lambda()
+                .eq(CdGetPhoneEntity::getPhone,telephone).last("limit 1")
         );
-        if (ObjectUtil.isNotNull(cdLineRegisterEntity)) {
-            CdGetPhoneEntity cdGetPhone = getPhoneService.queryById(cdLineRegisterEntity.getGetPhoneId());
-            if (ObjectUtil.isNotNull(cdGetPhone)) {
-                //ip暂时拉黑
-                this.clearTokenPhone(cdGetPhone);
-
-                //更新此条数据，发起重新注册
-                CdGetPhoneEntity updateCdGetPhoneEntity = new CdGetPhoneEntity();
-                updateCdGetPhoneEntity.setId(cdGetPhone.getId());
-                updateCdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus1.getKey());
-                updateCdGetPhoneEntity.setCode("");
-                updateCdGetPhoneEntity.setCreateTime(new Date());
-                //重试次数，更新为0，从头计数
-                updateCdGetPhoneEntity.setRetryNum(0);
-                getPhoneService.updateById(updateCdGetPhoneEntity);
-            }
-            baseMapper.deleteById(cdLineRegisterEntity.getId());
+        if (ObjectUtil.isNotNull(cdGetPhone)) {
+            Integer[] ids = {cdGetPhone.getId()};
+            this.registerRetry(ids,true);
         }
-
         return false;
     }
 
