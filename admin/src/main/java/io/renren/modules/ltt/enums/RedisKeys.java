@@ -86,19 +86,6 @@ public enum RedisKeys implements BaseEnum {
      */
     USER_TASKS_WORKING_CLEAN_NX(22,"USER_TASKS_WORKING_CLEAN_NX"),
     /**
-     * 注册流程缓存
-     */
-    REGISTER_TASK(23,"REGISTER_TASK"),
-    /**
-     * 山谷短信验证码
-     */
-    JP_SMS_SG(24,"JP_SMS_SG"),
-    /**
-     * 已经注册过的IDS
-     */
-    REGISTER_TASK_GET_PHONE_IDS(25,"REGISTER_TASK_GET_PHONE_IDS"),
-    REGISTER_TASK_GET_PHONE_IDS2(25,"REGISTER_TASK_GET_PHONE_IDS2"),
-    /**
      * 注册表保存队列
      */
     CDLINEREGISTERENTITY_SAVE_LIST(26,"CDLINEREGISTERENTITY_SAVE_LIST"),
@@ -121,6 +108,15 @@ public enum RedisKeys implements BaseEnum {
     MOD_REGISTER_NX(29,"MOD_REGISTER_NX"),
     ;
 
+    public String getValue(String country) {
+        if (value.equals(CDLINEREGISTERENTITY_SAVE_LIST.getValue()) || value.equals(CDLINEREGISTERENTITY_SAVE_LIST_STATUS2.getValue())
+                || value.equals(CDLINEREGISTERENTITY_SAVE_LIST_STATUS8.getValue()) || value.equals(CDLINEREGISTERENTITY_UPDATE_LIST.getValue())
+        ) {
+            country = "0";
+        }
+        return value + country;
+    }
+
     RedisKeys(int key, String value) {
         this.key = key;
         this.value = value;
@@ -136,9 +132,5 @@ public enum RedisKeys implements BaseEnum {
 
     public String getValue() {
         return value;
-    }
-
-    public String getValue(String country) {
-        return value + country;
     }
 }
