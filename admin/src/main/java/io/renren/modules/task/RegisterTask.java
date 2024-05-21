@@ -134,7 +134,6 @@ public class RegisterTask {
     @Autowired
     private RedisTemplate<String, Object> redisTemplateObj;
 
-
     /**
      * 更新实体类
      */
