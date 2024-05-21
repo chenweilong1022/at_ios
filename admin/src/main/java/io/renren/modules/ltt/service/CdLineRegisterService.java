@@ -143,11 +143,6 @@ public interface CdLineRegisterService extends IService<CdLineRegisterEntity> {
      */
     Integer queryLineRegisterCount(String countryCode);
 
-    /**
-     * 注册数据汇总
-     * @return
-     */
-    List<LineRegisterSummaryResultDto> queryLineRegisterSummary(LocalDate searchTime);
 
     CdLineRegisterEntity queryLineRegisterByPhone(String phone);
 

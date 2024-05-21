@@ -4,10 +4,12 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import io.renren.common.utils.PageUtils;
 import io.renren.modules.ltt.dto.CdGetPhoneDTO;
 import io.renren.modules.ltt.dto.CdRegisterRedisDto;
+import io.renren.modules.ltt.dto.LineRegisterSummaryResultDto;
 import io.renren.modules.ltt.vo.CdGetPhoneVO;
 import io.renren.modules.ltt.entity.CdGetPhoneEntity;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
@@ -80,5 +82,12 @@ public interface CdGetPhoneService extends IService<CdGetPhoneEntity> {
     Boolean getPhoneUseState(String phone);
 
     Integer savePhoneRegisterCount(String phone);
+
+    /**
+     * 注册数据汇总
+     * @return
+     */
+    List<LineRegisterSummaryResultDto> queryLineRegisterSummary(LocalDate searchTime);
+
 }
 

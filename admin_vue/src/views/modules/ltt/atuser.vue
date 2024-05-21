@@ -106,9 +106,9 @@
         <el-button v-if="isAuth('ltt:atuser:save')" type="primary"
                    @click="userImportHandle()">账户导入
         </el-button>
-        <el-button v-if="isAuth('ltt:atuser:save')" type="primary"
-                   @click="userTokenOrderHandle()">账户购买
-        </el-button>
+<!--        <el-button v-if="isAuth('ltt:atuser:save')" type="primary"-->
+<!--                   @click="userTokenOrderHandle()">账户购买-->
+<!--        </el-button>-->
         <el-button v-if="isAuth('ltt:atuser:save')" type="primary" @click="userTransferGroupHandle()"
                    :disabled="dataListSelections.length <= 0">转移分组
         </el-button>

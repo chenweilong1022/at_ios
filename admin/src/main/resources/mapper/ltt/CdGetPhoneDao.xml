@@ -21,5 +21,16 @@
         <result property="subtasksId" column="subtasks_id"/>
     </resultMap>
 
-
+    <select id="queryLineRegisterSummary" resultType="io.renren.modules.ltt.dto.LineRegisterSummaryResultDto">
+        SELECT
+            countryCode as countryCode,
+            SUM( CASE WHEN phone_status = 8 THEN 1 ELSE 0 END ) AS registerStock,
+            SUM( CASE WHEN phone_status in(8,9) AND create_time >= #{searchStartTime} AND create_time &lt; #{searchEndTime} THEN 1 ELSE 0 END ) AS registerNum
+        FROM
+            cd_get_phone
+        WHERE
+            phone_status IN ( 8, 9 )
+        GROUP BY
+            countryCode;
+    </select>
 </mapper>

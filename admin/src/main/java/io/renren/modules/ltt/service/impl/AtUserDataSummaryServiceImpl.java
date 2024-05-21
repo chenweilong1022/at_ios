@@ -6,6 +6,7 @@ import io.renren.modules.ltt.dto.LineRegisterSummaryResultDto;
 import io.renren.modules.ltt.dto.UserSummaryResultDto;
 import io.renren.modules.ltt.enums.CountryCode;
 import io.renren.modules.ltt.service.AtUserService;
+import io.renren.modules.ltt.service.CdGetPhoneService;
 import io.renren.modules.ltt.service.CdLineRegisterService;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
@@ -34,7 +35,7 @@ import java.util.stream.Collectors;
 public class AtUserDataSummaryServiceImpl extends ServiceImpl<AtUserDataSummaryDao, AtUserDataSummaryEntity> implements AtUserDataSummaryService {
 
     @Resource
-    private CdLineRegisterService cdLineRegisterService;
+    private CdGetPhoneService cdGetPhoneService;
 
     @Resource
     private AtUserService atUserService;
@@ -93,7 +94,7 @@ public class AtUserDataSummaryServiceImpl extends ServiceImpl<AtUserDataSummaryD
      */
     public Map<String, AtUserDataSummaryVO> queryDataSummary(LocalDate searchTime) {
         //Line信息查询
-        Map<String, LineRegisterSummaryResultDto> lineSummary = cdLineRegisterService.queryLineRegisterSummary(searchTime)
+        Map<String, LineRegisterSummaryResultDto> lineSummary = cdGetPhoneService.queryLineRegisterSummary(searchTime)
                 .stream().collect(Collectors.toMap(LineRegisterSummaryResultDto::getCountryCode, i -> i));
 
         //今日已使用数量

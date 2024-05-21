@@ -233,29 +233,7 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
         }
 
         getPhoneService.updateBatchById(updateCdGetPhoneList);
-        //redis注册流程改为：待处理
-        this.registerRetryRedis(cdGetPhoneList);
         return true;
-    }
-
-    /**
-     * 错误重试
-     * @param phoneEntityList 必须是实体类全部的值
-     */
-    private void registerRetryRedis(List<CdGetPhoneEntity> phoneEntityList) {
-        phoneEntityList.stream().forEach(i -> {
-            i.setPhoneStatus(PhoneStatus.PhoneStatus1.getKey());
-            i.setCode("");
-            i.setCreateTime(new Date());
-        });
-        //删除注册流程，回到待处理
-        List<String> phoneList = phoneEntityList.stream().map(CdGetPhoneEntity::getPhone).distinct().collect(Collectors.toList());
-        for (String phone : phoneList) {
-            redisObjectTemplate.opsForHash().delete(RedisKeys.REGISTER_TASK.getValue(), phone);
-        }
-
-        //保存redis
-        cdGetPhoneService.saveWaitRegisterPhone(phoneEntityList);
     }
 
     @Override
@@ -280,8 +258,6 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
                 //重试次数，更新为0，从头计数
                 updateCdGetPhoneEntity.setRetryNum(0);
                 getPhoneService.updateById(updateCdGetPhoneEntity);
-                //redis注册流程改为：待处理
-                this.registerRetryRedis(Arrays.asList(cdGetPhone));
             }
             baseMapper.deleteById(cdLineRegisterEntity.getId());
         }
@@ -303,17 +279,6 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
                 .eq(CdLineRegisterEntity::getRegisterStatus, RegisterStatus.RegisterStatus4.getKey())
                 .eq(CdLineRegisterEntity::getCountryCode, countryCode));
     }
-
-    @Override
-    public List<LineRegisterSummaryResultDto> queryLineRegisterSummary(LocalDate searchTime) {
-        LocalTime localTime = LocalTime.of(8, 0, 0);
-
-        LocalDateTime searchStartTime = searchTime.atTime(localTime);
-        LocalDateTime searchEndTime = searchTime.plusDays(1).atTime(localTime);
-        List<LineRegisterSummaryResultDto> summaryResultDtos = baseMapper.queryLineRegisterSummary(searchStartTime, searchEndTime);
-        return summaryResultDtos;
-    }
-
 
     @Override
     public CdLineRegisterEntity queryLineRegisterByPhone(String phone) {

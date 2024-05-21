@@ -10,6 +10,7 @@ import io.renren.modules.client.FirefoxService;
 import io.renren.modules.client.vo.GetPhoneVO;
 import io.renren.modules.ltt.dao.AtUserDao;
 import io.renren.modules.ltt.dto.CdRegisterRedisDto;
+import io.renren.modules.ltt.dto.LineRegisterSummaryResultDto;
 import io.renren.modules.ltt.entity.AtUserEntity;
 import io.renren.modules.ltt.enums.CountryCode;
 import io.renren.modules.ltt.enums.DeleteFlag;
@@ -38,6 +39,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.io.Serializable;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -312,5 +316,18 @@ public class CdGetPhoneServiceImpl extends ServiceImpl<CdGetPhoneDao, CdGetPhone
         }
         return 0;
     }
+
+
+
+    @Override
+    public List<LineRegisterSummaryResultDto> queryLineRegisterSummary(LocalDate searchTime) {
+        LocalTime localTime = LocalTime.of(8, 0, 0);
+
+        LocalDateTime searchStartTime = searchTime.atTime(localTime);
+        LocalDateTime searchEndTime = searchTime.plusDays(1).atTime(localTime);
+        List<LineRegisterSummaryResultDto> summaryResultDtos = baseMapper.queryLineRegisterSummary(searchStartTime, searchEndTime);
+        return summaryResultDtos;
+    }
+
 
 }

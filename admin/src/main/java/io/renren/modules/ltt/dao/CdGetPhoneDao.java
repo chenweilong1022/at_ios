@@ -1,8 +1,13 @@
 package io.renren.modules.ltt.dao;
 
+import io.renren.modules.ltt.dto.LineRegisterSummaryResultDto;
 import io.renren.modules.ltt.entity.CdGetPhoneEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 
@@ -13,5 +18,9 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface CdGetPhoneDao extends BaseMapper<CdGetPhoneEntity> {
-	
+
+    List<LineRegisterSummaryResultDto> queryLineRegisterSummary(@Param("searchStartTime") LocalDateTime searchStartTime,
+                                                                @Param("searchEndTime") LocalDateTime searchEndTime);
+
+
 }
