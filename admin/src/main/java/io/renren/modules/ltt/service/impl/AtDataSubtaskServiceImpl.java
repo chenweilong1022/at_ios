@@ -104,4 +104,10 @@ public class AtDataSubtaskServiceImpl extends ServiceImpl<AtDataSubtaskDao, AtDa
         baseMapper.saveBatchOnMe(atDataSubtaskEntityList);
     }
 
+    @Override
+    public List<AtDataSubtaskEntity> queryByGroupId(List<Integer> groupIdList, Integer taskStatus) {
+        return baseMapper.selectList(new QueryWrapper<AtDataSubtaskEntity>().lambda()
+                .in(AtDataSubtaskEntity::getGroupId, groupIdList)
+                .eq(AtDataSubtaskEntity::getTaskStatus, taskStatus));
+    }
 }

@@ -78,5 +78,7 @@ public interface AtDataSubtaskService extends IService<AtDataSubtaskEntity> {
      * @param atDataSubtaskEntityList
      */
     void saveBatchOnMe(List<AtDataSubtaskEntity> atDataSubtaskEntityList);
+
+    List<AtDataSubtaskEntity> queryByGroupId(List<Integer> groupIdList, Integer taskStatus);
 }
 

@@ -112,5 +112,11 @@ public interface AtGroupService extends IService<AtGroupEntity> {
      */
     void getRealGroupName(AtGroupDTO atGroup);
 
+    /**
+     * 推动一下拉群加粉数据
+     * @param groupIdList
+     * @return
+     */
+    Boolean pushGroupSubtask(List<Integer> groupIdList);
 }
 
