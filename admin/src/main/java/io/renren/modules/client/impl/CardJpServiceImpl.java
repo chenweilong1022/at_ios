@@ -224,8 +224,6 @@ public class CardJpServiceImpl implements FirefoxService {
                 CardJpGetPhoneSmsVO.Data.Ret.Sm max = Collections.max(sms, Comparator.comparingLong(CardJpGetPhoneSmsVO.Data.Ret.Sm::getTime));
                 if (ObjectUtil.isNotNull(max)) {
                     map.put(ret1.getTakeid(),max);
-                    redisObjectTemplate.opsForValue()
-                            .set(RedisKeys.JP_SMS_SG.getValue(String.valueOf(ret1.getTakeid())), max, 200, TimeUnit.MINUTES);
                 }
             }
         }catch (Exception e) {

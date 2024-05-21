@@ -210,28 +210,16 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
         List<CdGetPhoneEntity> cdGetPhoneList = getPhoneService.getByIds(Arrays.asList(ids));
         Assert.isTrue(CollectionUtils.isEmpty(cdGetPhoneList), "数据为空");
 
-        Map<Integer, Integer> lineRegisterMap = baseMapper.selectList(new QueryWrapper<CdLineRegisterEntity>().lambda()
-                        .in(CdLineRegisterEntity::getGetPhoneId, Arrays.asList(ids))).stream()
-                .collect(Collectors.toMap(CdLineRegisterEntity::getGetPhoneId, CdLineRegisterEntity::getId,(a,b)->b));
+        Integer mod = systemConstant.getSERVERS_MOD();
+        String key = String.valueOf(mod);
 
         List<CdGetPhoneEntity> updateCdGetPhoneList = new ArrayList<>();
-        List<Integer> lineRegisterIds = new ArrayList<>();
-        Integer retryNum;
+        Integer retryNum;//{"@class":"io.renren.modules.ltt.entity.CdLineRegisterEntity","id":null,"ab":"2024.307.2034","appVersion":"14.3.1","countryCode":"th","phone":"66858523701","proxy":"socks5://chenweilong122-zone-resi-region-th-session-110w8x2h9abj-sessTime-5:ch1433471850@4a6974acaeab2113.us.ip2world.vip:6001","proxyStatus":1,"txtToken":"81f9933e3a434a1aaf7af09893937fd0","taskId":"4a959394-3617-4c1f-ba0f-9942e23f1c0f","smsCode":null,"registerStatus":1,"deleteFlag":1,"createTime":["cn.hutool.core.date.DateTime",1716286708812],"openTime":null,"token":null,"getPhoneId":413332,"pkey":"C4AAE53ACE3A55E4910E9E93B1678E17E2B7AFA9DA17C060","subtasksId":2160,"groupTaskId":null,"openStatus":null,"accountStatus":null,"groupCount":null,"accountExistStatus":null,"errMsg":null,"exportStatus":null}
         for (CdGetPhoneEntity cdGetPhone : cdGetPhoneList) {
-            Integer lineRegisterId = lineRegisterMap.get(cdGetPhone.getId());
-            if (lineRegisterId != null) {
-                //删除line注册此条记录
-                lineRegisterIds.add(lineRegisterId);
-                if (Boolean.TRUE.equals(ipClearFlag)) {
-                    //ip暂时拉黑
-                    this.clearTokenPhone(cdGetPhone);
-                }
-                //清除注册任务表
-                stringRedisTemplate.opsForSet().remove(RedisKeys.REGISTER_TASK_GET_PHONE_IDS.getValue(String.valueOf(systemConstant.getSERVERS_MOD()+PhoneStatus.PhoneStatus2.getKey())), String.valueOf(cdGetPhone.getId()));
-                stringRedisTemplate.opsForSet().remove(RedisKeys.REGISTER_TASK_GET_PHONE_IDS.getValue(String.valueOf(systemConstant.getSERVERS_MOD()+RegisterStatus.RegisterStatus4.getKey())), String.valueOf(lineRegisterId));
-            }else {
-                stringRedisTemplate.opsForSet().remove(RedisKeys.REGISTER_TASK_GET_PHONE_IDS.getValue(String.valueOf(systemConstant.getSERVERS_MOD()+PhoneStatus.PhoneStatus2.getKey())), String.valueOf(cdGetPhone.getId()));
-            }
+            //删除redis的数据
+            redisTemplateObj.opsForHash().delete(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST.getValue(key), String.valueOf(cdGetPhone.getId()));
+            //删除redis中的验证码提交一次的数据
+            redisTemplateObj.opsForHash().delete(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST_STATUS2.getValue(key), String.valueOf(cdGetPhone.getId()));
             //更新此条数据，发起重新注册
             CdGetPhoneEntity updateCdGetPhoneEntity = new CdGetPhoneEntity();
             updateCdGetPhoneEntity.setId(cdGetPhone.getId());
@@ -245,15 +233,8 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
         }
 
         getPhoneService.updateBatchById(updateCdGetPhoneList);
-
-        //删除line注册此条记录
-        if (CollectionUtils.isNotEmpty(lineRegisterIds)) {
-            baseMapper.deleteBatchIds(lineRegisterIds);
-        }
-
         //redis注册流程改为：待处理
         this.registerRetryRedis(cdGetPhoneList);
-
         return true;
     }
 
