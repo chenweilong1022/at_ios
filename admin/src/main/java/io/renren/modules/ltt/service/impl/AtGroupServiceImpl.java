@@ -43,6 +43,7 @@ import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
@@ -55,6 +56,7 @@ import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -94,6 +96,9 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
 
     @Autowired
     private StringRedisTemplate redisTemplate;
+
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplateObject;
 
     @Resource
     private CdGetPhoneService cdGetPhoneService;
@@ -706,6 +711,58 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
                 }
             });
         }
+    }
+
+    @Override
+    public Boolean pushGroupSubtask(List<Integer> groupIdList) {
+        if (CollUtil.isEmpty(groupIdList)) {
+            return false;
+        }
+        List<AtDataSubtaskEntity> atDataSubtaskEntities = atDataSubtaskService
+                .queryByGroupId(groupIdList, TaskStatus.TaskStatus2.getKey());
+        if (CollUtil.isEmpty(atDataSubtaskEntities)) {
+            return false;
+        }
+
+        Map<Integer, List<AtDataSubtaskEntity>> userIdTaskSubEntitys = atDataSubtaskEntities.stream()
+                .collect(Collectors.groupingBy(AtDataSubtaskEntity::getUserId));
+
+
+        for (Integer userId : userIdTaskSubEntitys.keySet()) {
+            List<AtDataSubtaskEntity> subtaskEntityList =  userIdTaskSubEntitys.get(userId);
+
+            //设置用户id任务队列
+            String USER_TASKS_WORKING_NX_KEY = RedisKeys.USER_TASKS_WORKING_NX.getValue(String.valueOf(userId));
+            Boolean flag = redisTemplate.opsForValue().setIfAbsent(USER_TASKS_WORKING_NX_KEY, String.valueOf(userId));
+            if (!flag) {
+                continue;
+            }
+
+            try {
+                redisTemplate.expire(USER_TASKS_WORKING_NX_KEY, 2, TimeUnit.MINUTES);
+                //判断是否还有任务未执行完成
+                Long workingSize = redisTemplateObject.opsForList().size(RedisKeys.USER_TASKS_WORKING.getValue(String.valueOf(userId)));
+                Long workingFinishSize = redisTemplateObject.opsForList().size(RedisKeys.USER_TASKS_WORK_FINISH.getValue(String.valueOf(userId)));
+                if (workingSize != null && workingSize > 0) {
+                    continue;
+                }
+                if (workingFinishSize != null && workingFinishSize > 0) {
+                    continue;
+                }
+
+                for (AtDataSubtaskEntity atDataSubtaskEntity : subtaskEntityList) {
+                    Long l = redisTemplateObject.opsForList()
+                            .leftPush(RedisKeys.USER_TASKS_WORKING.getValue(String.valueOf(userId)), atDataSubtaskEntity);
+                }
+            } catch (Exception e) {
+                log.error("踢一脚操作异常 {},{}", userId, e);
+            }finally {
+                if (flag) {
+                    redisTemplate.delete(USER_TASKS_WORKING_NX_KEY);
+                }
+            }
+        }
+        return true;
     }
 
 

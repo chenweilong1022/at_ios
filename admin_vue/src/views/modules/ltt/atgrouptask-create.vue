@@ -197,8 +197,8 @@
           <el-form-item v-if="groupType === 1" label="搜索间隔秒数" prop="searchIntervalSecond">
             <el-input v-model="dataForm.searchIntervalSecond" placeholder="搜索间隔秒数" style="width: 70%;"></el-input>
           </el-form-item>
-          <el-form-item label="代理ip">
-            <el-select v-model="dataForm.ipCountryCode" placeholder="代理ip" clearable>
+          <el-form-item label="代理ip" class="red-form-item" >
+            <el-select v-model="dataForm.ipCountryCode" placeholder="代理ip" clearable class="red-select">
               <el-option
                 v-for="item in countryCodes"
                 :key="item.key"
@@ -290,6 +290,7 @@
           <el-button type="primary" @click="updateGroupHandle()" :disabled="dataListSelections.length <= 0">修改群名</el-button>
           <el-button type="info" @click="getRealGroupNameHandle()" :disabled="dataListSelections.length <= 0">获取真实群名称</el-button>
           <el-button type="success" @click="startTaskHandle()" :disabled="dataListSelections.length <= 0">启动任务</el-button>
+          <el-button type="primary" @click="pushGroupSubtaskHandle()" :disabled="dataListSelections.length <= 0">推动拉群</el-button>
           <el-button type="primary" @click="copyPhoneHandle()"
                      :disabled="dataListSelections.length <= 0">复制手机号
           </el-button>
@@ -459,6 +460,7 @@
                          v-if="(scope.row.msg != null && scope.row.msg.indexOf('网络异常') !== -1) ||
                          (scope.row.roomId != null && scope.row.successfullyAttractGroupsNumber == 0)"
                          @click="errRetryHandle(scope.row.id)">错误重试</el-button>
+              <el-button type="primary" @click="pushGroupSubtaskHandle(scope.row.id)">推动拉群</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -542,7 +544,7 @@ import ErrLogs from "./atdatatask-err-logs.vue";
           groupCountStart: 0,
           intervalSecond: 7,
           searchIntervalSecond: null,
-          ipCountryCode: null,
+          ipCountryCode: 81,
           autoPullGroup: 2,
           randomGroupName: 1,
           accountGroupDistributed: 1,
@@ -912,6 +914,35 @@ import ErrLogs from "./atdatatask-err-logs.vue";
           })
         })
       },
+      pushGroupSubtaskHandle (id) {
+        var ids = id ? [id] : this.dataListSelections.map(item => {
+          return item.id
+        })
+        this.$confirm(`确定推动操作?`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$http({
+            url: this.$http.adornUrl('/ltt/atgroup/pushGroupSubtask'),
+            method: 'post',
+            data: this.$http.adornData(ids, false)
+          }).then(({data}) => {
+            if (data && data.code === 0) {
+              this.$message({
+                message: '操作成功',
+                type: 'success',
+                duration: 1500,
+                onClose: () => {
+                  this.getDataList()
+                }
+              })
+            } else {
+              this.$message.error(data.msg)
+            }
+          })
+        })
+      },
       startGroupHandler () {
         this.isLoading = true
         this.$http({
@@ -1121,5 +1152,13 @@ import ErrLogs from "./atdatatask-err-logs.vue";
 /deep/ .red-badge .el-badge__content {
   background-color: red;
   color: white;
+}
+.red-form-item /deep/ .el-form-item__label {
+  color: red !important;
+}
+
+.red-select /deep/ .el-input__inner {
+  border-color: red !important;
+  color: red !important;
 }
 </style>

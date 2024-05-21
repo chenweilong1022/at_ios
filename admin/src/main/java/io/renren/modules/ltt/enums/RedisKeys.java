@@ -40,10 +40,6 @@ public enum RedisKeys implements BaseEnum {
      * 卡次数
      */
     RedisKeys10(10,"PHONE_REGISTER"),
-    /**
-     * 水军
-     */
-    RedisKeys11(11,"PHONE_REGISTER"),
 
     /**
      * 暂时不可用手机号池

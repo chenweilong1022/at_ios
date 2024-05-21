@@ -2,6 +2,7 @@ package io.renren.modules.ltt.controller;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 
 import io.renren.modules.client.dto.ImportZipDTO;
 import io.renren.modules.sys.controller.AbstractController;
@@ -78,6 +79,16 @@ public class AtGroupController extends AbstractController {
     @RequiresPermissions("ltt:atgrouptask:update")
     public R startGroup(@RequestBody Integer[] ids){
         Boolean flag = atGroupService.startGroup(Arrays.asList(ids));
+        return R.data(flag);
+    }
+
+    /**
+     * 推动一下拉群加粉数据
+     */
+    @RequestMapping("/pushGroupSubtask")
+    @RequiresPermissions("ltt:atgrouptask:update")
+    public R pushGroupSubtask(@RequestBody Integer[] ids){
+        Boolean flag = atGroupService.pushGroupSubtask(Arrays.asList(ids));
         return R.data(flag);
     }
 
