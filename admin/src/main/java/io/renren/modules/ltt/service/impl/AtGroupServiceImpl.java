@@ -755,7 +755,7 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
                             .leftPush(RedisKeys.USER_TASKS_WORKING.getValue(String.valueOf(userId)), atDataSubtaskEntity);
                 }
             } catch (Exception e) {
-                log.error("踢一脚操作异常 {},{}", userId, e);
+                log.error("踢一脚操作异常 {}", userId, e);
             }finally {
                 if (flag) {
                     redisTemplate.delete(USER_TASKS_WORKING_NX_KEY);

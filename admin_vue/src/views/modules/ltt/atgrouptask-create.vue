@@ -284,16 +284,14 @@
         <el-form-item>
           <el-button @click="getDataList()">查询</el-button>
           <el-button type="primary" @click="nextGroup()">继续拉群</el-button>
+          <el-button type="success" @click="startTaskHandle()" :disabled="dataListSelections.length <= 0">启动任务</el-button>
           <el-button type="info" @click="exportHandle()">导出报表</el-button>
           <el-button type="success" @click="startGroup14Handler()" :disabled="dataListSelections.length <= 0">开始拉群</el-button>
           <el-button type="danger" @click="reallocateTokenHandle()" :disabled="dataListSelections.length <= 0">重新分配账号拉群</el-button>
           <el-button type="primary" @click="updateGroupHandle()" :disabled="dataListSelections.length <= 0">修改群名</el-button>
           <el-button type="info" @click="getRealGroupNameHandle()" :disabled="dataListSelections.length <= 0">获取真实群名称</el-button>
-          <el-button type="success" @click="startTaskHandle()" :disabled="dataListSelections.length <= 0">启动任务</el-button>
+          <el-button type="primary" @click="copyPhoneHandle()" :disabled="dataListSelections.length <= 0">复制手机号</el-button>
           <el-button type="primary" @click="pushGroupSubtaskHandle()" :disabled="dataListSelections.length <= 0">推动拉群</el-button>
-          <el-button type="primary" @click="copyPhoneHandle()"
-                     :disabled="dataListSelections.length <= 0">复制手机号
-          </el-button>
         </el-form-item>
         </el-form>
         <el-table
@@ -307,6 +305,12 @@
             header-align="center"
             align="center"
             width="50">
+          </el-table-column>
+          <el-table-column
+            prop="id"
+            header-align="center"
+            align="center"
+            label="id">
           </el-table-column>
           <el-table-column
             prop="groupName"
