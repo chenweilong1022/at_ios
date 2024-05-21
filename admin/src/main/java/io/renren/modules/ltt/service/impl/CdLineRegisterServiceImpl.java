@@ -214,12 +214,18 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
         String key = String.valueOf(mod);
 
         List<CdGetPhoneEntity> updateCdGetPhoneList = new ArrayList<>();
-        Integer retryNum;//{"@class":"io.renren.modules.ltt.entity.CdLineRegisterEntity","id":null,"ab":"2024.307.2034","appVersion":"14.3.1","countryCode":"th","phone":"66858523701","proxy":"socks5://chenweilong122-zone-resi-region-th-session-110w8x2h9abj-sessTime-5:ch1433471850@4a6974acaeab2113.us.ip2world.vip:6001","proxyStatus":1,"txtToken":"81f9933e3a434a1aaf7af09893937fd0","taskId":"4a959394-3617-4c1f-ba0f-9942e23f1c0f","smsCode":null,"registerStatus":1,"deleteFlag":1,"createTime":["cn.hutool.core.date.DateTime",1716286708812],"openTime":null,"token":null,"getPhoneId":413332,"pkey":"C4AAE53ACE3A55E4910E9E93B1678E17E2B7AFA9DA17C060","subtasksId":2160,"groupTaskId":null,"openStatus":null,"accountStatus":null,"groupCount":null,"accountExistStatus":null,"errMsg":null,"exportStatus":null}
+        Integer retryNum;
         for (CdGetPhoneEntity cdGetPhone : cdGetPhoneList) {
+            //如果需要拉黑，去拉黑ip
+            if (ipClearFlag) {
+                //ip暂时拉黑
+                this.clearTokenPhone(cdGetPhone);
+            }
             //删除redis的数据
             redisTemplateObj.opsForHash().delete(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST.getValue(key), String.valueOf(cdGetPhone.getId()));
             //删除redis中的验证码提交一次的数据
             redisTemplateObj.opsForHash().delete(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST_STATUS2.getValue(key), String.valueOf(cdGetPhone.getId()));
+            redisTemplateObj.opsForHash().delete(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST_STATUS8.getValue(key), String.valueOf(cdGetPhone.getId()));
             //更新此条数据，发起重新注册
             CdGetPhoneEntity updateCdGetPhoneEntity = new CdGetPhoneEntity();
             updateCdGetPhoneEntity.setId(cdGetPhone.getId());

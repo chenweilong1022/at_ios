@@ -810,11 +810,6 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         if (StringUtils.isEmpty(outIpv4)) {
             return true;
         }
-
-        if (outIpv4.contains("@")) {
-            return true;
-        }
-
         redisTemplate.opsForValue().set(RedisKeys.RedisKeys4.getValue(outIpv4), tokenPhone, 1, TimeUnit.DAYS);
         return true;
     }

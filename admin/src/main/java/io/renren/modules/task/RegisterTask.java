@@ -165,7 +165,10 @@ public class RegisterTask {
                         if (ObjectUtil.isNull(lineRegisterVO)) {
                             return;
                         }
-                        redisTemplateObj.opsForHash().putIfAbsent(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST_STATUS8.getValue(key), String.valueOf(cdGetPhoneEntity.getId()),cdGetPhoneEntity.getId());
+                        Boolean b1 = redisTemplateObj.opsForHash().putIfAbsent(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST_STATUS8.getValue(key), String.valueOf(cdGetPhoneEntity.getId()), cdGetPhoneEntity.getId());
+                        if (!b1) {
+                            return;
+                        }
                         cdGetPhoneEntity.setPhoneStatus(PhoneStatus9.getKey());
                         //生成token
                         AtUserTokenEntity userTokenEntity = new AtUserTokenEntity();
@@ -371,7 +374,10 @@ public class RegisterTask {
                     if (ObjectUtil.isNull(cdGetPhoneEntity)) {
                         return;
                     }
-                    redisTemplateObj.opsForHash().putIfAbsent(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST_STATUS2.getValue(key), String.valueOf(cdGetPhoneEntity.getId()),cdGetPhoneEntity.getId());
+                    Boolean b1 = redisTemplateObj.opsForHash().putIfAbsent(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST_STATUS2.getValue(key), String.valueOf(cdGetPhoneEntity.getId()), cdGetPhoneEntity.getId());
+                    if (!b1) {
+                        return;
+                    }
                     long between = DateUtil.between(cdGetPhoneEntity.getCreateTime(), DateUtil.date(), DateUnit.MINUTE);
                     if (between > 20) {
                         cdGetPhoneEntity.setCode("验证码超时");
@@ -459,7 +465,10 @@ public class RegisterTask {
                     log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
                     if(triedLock) {
                         try{
-                            redisTemplateObj.opsForHash().putIfAbsent(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST_STATUS2.getValue(key), String.valueOf(cdGetPhoneEntity.getId()),String.valueOf(cdGetPhoneEntity.getId()));
+                            Boolean b1 = redisTemplateObj.opsForHash().putIfAbsent(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST_STATUS2.getValue(key), String.valueOf(cdGetPhoneEntity.getId()), String.valueOf(cdGetPhoneEntity.getId()));
+                            if (!b1) {
+                                return;
+                            }
                             String phoneCode = cdGetPhoneEntity.getCode();
                             long between = DateUtil.between(cdGetPhoneEntity.getCreateTime(), DateUtil.date(), DateUnit.MINUTE);
                             if (between > 20) {

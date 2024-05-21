@@ -398,7 +398,7 @@
         })
         let url
         if (ipClearFlag === true) {
-          url = '/ltt/cdlineregister/registerRetr2'
+          url = '/ltt/cdlineregister/registerRetry2'
         } else {
           url = '/ltt/cdlineregister/registerRetry'
         }
