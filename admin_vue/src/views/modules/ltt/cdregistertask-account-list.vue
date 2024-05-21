@@ -58,8 +58,10 @@
       <el-table
         :data="dataList"
         border
+        ref="multipleTable"
         v-loading="dataListLoading"
         @selection-change="selectionChangeHandle"
+        row-key="id"
         style="width: 100%;">
         <el-table-column
           type="selection"
