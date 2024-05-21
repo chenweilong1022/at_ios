@@ -159,8 +159,5 @@ public interface CdLineRegisterService extends IService<CdLineRegisterEntity> {
      * @return
      */
     Boolean invalidatePhone(Integer[] ids);
-
-    void saveAtUserToken(CdGetPhoneEntity cdGetPhoneEntityUpdate,
-                         String token);
 }
 

@@ -348,26 +348,4 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
         return getPhoneService.updateBatchById(phoneEntityList);
     }
 
-    @Override
-    @Async
-    public void saveAtUserToken(CdGetPhoneEntity cdGetPhoneEntityUpdate,
-                                String token) {
-        if (!PhoneStatus.PhoneStatus8.getKey().equals(cdGetPhoneEntityUpdate.getPhoneStatus())
-                || StringUtils.isEmpty(token)) {
-            return;
-        }
-        //修改
-        CdGetPhoneEntity updateCdGetPhoneEntity = new CdGetPhoneEntity();
-        updateCdGetPhoneEntity.setId(cdGetPhoneEntityUpdate.getId());
-        updateCdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus9.getKey());
-        boolean b = cdGetPhoneService.updateById(updateCdGetPhoneEntity);
-        if (Boolean.TRUE.equals(b)) {
-            //生成token
-            AtUserTokenEntity userTokenEntity = new AtUserTokenEntity();
-            userTokenEntity.setToken(token);
-            userTokenEntity.setUserGroupId(null);
-            atUserTokenService.save(userTokenEntity);
-        }
-    }
-
 }
