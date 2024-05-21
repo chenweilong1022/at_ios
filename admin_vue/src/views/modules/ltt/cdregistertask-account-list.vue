@@ -7,9 +7,9 @@
     <div class="mod-config">
       <el-form :inline="true" :model="dataForm" @keyup.enter.native="getDataList(), listSummary()">
         <el-form-item>
-          <el-select v-model="registerStatus" placeholder="注册状态" clearable>
+          <el-select v-model="phoneStatus" placeholder="注册状态" clearable>
             <el-option
-              v-for="item in registerStatusCodes"
+              v-for="item in phoneStatusCodes"
               :key="item.key"
               :label="item.value"
               :value="item.key">
@@ -153,9 +153,6 @@
           align="center"
           label="操作">
           <template slot-scope="scope">
-<!--            <el-button type="text" size="small" @click="addOrUpdateHandle(scope.row.id)">修改</el-button>-->
-<!--            <el-button type="text" size="small" @click="deleteHandle(scope.row.id)">删除</el-button>-->
-<!--            v-if="scope.row.registerStatus === 5 && scope.row.countryCode === 'jp'"-->
             <el-button type="primary" size="small" v-if="scope.row.phoneStatus !== 7"
                        @click="registerRetryHandle(scope.row.id)">错误重试</el-button>
             <el-button type="danger" size="small" v-if="scope.row.phoneStatus !== 7"
@@ -184,8 +181,8 @@
   export default {
     data () {
       return {
-        registerStatus: null,
-        registerStatusCodes: [],
+        phoneStatus: null,
+        phoneStatusCodes: [],
         dataList: [],
         pageIndex: 1,
         pageSize: 10,
@@ -253,7 +250,7 @@
         var param = this.$http.adornParams({
           'page': this.pageIndex,
           'limit': this.pageSize,
-          'registerStatus': this.registerStatus,
+          'phoneStatus': this.phoneStatus,
           'tasksId': this.dataForm.id,
           'phone': this.dataForm.phone,
           'countryCode': this.countryCode,
@@ -324,7 +321,7 @@
         this.countryCode = countryCode
         this.visible = true
         this.getDefaultData()
-        this.getRegisterStatus()
+        this.getPhoneStatus()
         this.getDataList()
         this.listSummary()
       },
@@ -482,13 +479,13 @@
           return !(item.errMsg != null && item.errMsg !== '' && item.errMsg.includes('Code:100') && item.errMsg !== 'セッションがタイムアウトしました。 もう一度お試しください' && item.phoneStatus !== 7)
         })
       },
-      getRegisterStatus () {
+      getPhoneStatus () {
         this.$http({
           url: this.$http.adornUrl(`/app/enums/getRegisterStatus`),
           method: 'get'
         }).then(({data}) => {
           if (data && data.code === 0) {
-            this.registerStatusCodes = data.data
+            this.phoneStatusCodes = data.data
           } else {
             this.$message.error(data.msg)
           }
