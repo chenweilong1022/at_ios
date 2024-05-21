@@ -425,9 +425,9 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         }else if (i == 1) {
             s5Ip = getIp2WorldIp(regions);
         }else if (i == 2) {
-            s5Ip = getAbcIp(regions);
+            s5Ip = getRolaIp(regions);
         }else if (i == 3) {
-            s5Ip = getIpmarsIp(regions);
+            s5Ip = getIp2WorldIp(regions);
         }else if (i == 4) {
             s5Ip = getRolaIp(regions);
         }else if (i == 5) {
