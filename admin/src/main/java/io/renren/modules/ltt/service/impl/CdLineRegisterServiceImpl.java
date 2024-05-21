@@ -284,41 +284,41 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
 
 
 
-//    @EventListener
-//    @Order(value = 9999)//t35323ha-1027-61697		tha-1027-44108
-//    public void handlerApplicationReadyEvent(ApplicationReadyEvent event) throws InterruptedException {
-//        List<CdLineRegisterEntity> list = this.list();
-//        //服务器更新锁先锁住方法
-//        Integer mod = systemConstant.getSERVERS_MOD();
-//        String key = String.valueOf(mod);
-//        for (CdLineRegisterEntity cdLineRegisterEntity : list) {
-//            CdLineRegisterEntity lineRegisterVO = (CdLineRegisterEntity) redisTemplateObj.opsForHash().get(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST.getValue(key), String.valueOf(cdLineRegisterEntity.getGetPhoneId()));
-//            if (ObjectUtil.isNotNull(lineRegisterVO)) {
-//                continue;
-//            }
-//            Boolean b1 = redisTemplateObj.opsForHash().putIfAbsent(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST.getValue(key), String.valueOf(cdLineRegisterEntity.getGetPhoneId()), cdLineRegisterEntity);
-//            if (b1) {
-//                CdGetPhoneVO cdGetPhoneVO = cdGetPhoneService.getById(cdLineRegisterEntity.getGetPhoneId());
-//                if (ObjectUtil.isNotNull(cdGetPhoneVO)) {
-//
-//                    CdGetPhoneEntity cdGetPhoneEntity = new CdGetPhoneEntity();
-//                    cdGetPhoneEntity.setId(cdGetPhoneVO.getId());
-//                    cdGetPhoneEntity.setPhoneStatus(cdGetPhoneVO.getPhoneStatus());
-//                    if (RegisterStatus.RegisterStatus11.getKey().equals(cdLineRegisterEntity.getRegisterStatus())) {
-//                        cdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus9.getKey());
-//                    }
-//                    if (RegisterStatus.RegisterStatus4.getKey().equals(cdLineRegisterEntity.getRegisterStatus())) {
-//                        cdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus8.getKey());
-//                    }
-//
-//                    if (RegisterStatus.RegisterStatus5.getKey().equals(cdLineRegisterEntity.getRegisterStatus())) {
-//                        cdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus6.getKey());
-//                    }
-//                    cdGetPhoneService.updateById(cdGetPhoneEntity);
-//                }
-//            }
-//        }
-//    }
+    @EventListener
+    @Order(value = 9999)//t35323ha-1027-61697		tha-1027-44108
+    public void handlerApplicationReadyEvent(ApplicationReadyEvent event) throws InterruptedException {
+        List<CdLineRegisterEntity> list = this.list();
+        //服务器更新锁先锁住方法
+        Integer mod = systemConstant.getSERVERS_MOD();
+        String key = String.valueOf(mod);
+        for (CdLineRegisterEntity cdLineRegisterEntity : list) {
+            CdLineRegisterEntity lineRegisterVO = (CdLineRegisterEntity) redisTemplateObj.opsForHash().get(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST.getValue(key), String.valueOf(cdLineRegisterEntity.getGetPhoneId()));
+            if (ObjectUtil.isNotNull(lineRegisterVO)) {
+                continue;
+            }
+            Boolean b1 = redisTemplateObj.opsForHash().putIfAbsent(RedisKeys.CDLINEREGISTERENTITY_SAVE_LIST.getValue(key), String.valueOf(cdLineRegisterEntity.getGetPhoneId()), cdLineRegisterEntity);
+            if (b1) {
+                CdGetPhoneVO cdGetPhoneVO = cdGetPhoneService.getById(cdLineRegisterEntity.getGetPhoneId());
+                if (ObjectUtil.isNotNull(cdGetPhoneVO)) {
+
+                    CdGetPhoneEntity cdGetPhoneEntity = new CdGetPhoneEntity();
+                    cdGetPhoneEntity.setId(cdGetPhoneVO.getId());
+                    cdGetPhoneEntity.setPhoneStatus(cdGetPhoneVO.getPhoneStatus());
+                    if (RegisterStatus.RegisterStatus11.getKey().equals(cdLineRegisterEntity.getRegisterStatus())) {
+                        cdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus9.getKey());
+                    }
+                    if (RegisterStatus.RegisterStatus4.getKey().equals(cdLineRegisterEntity.getRegisterStatus())) {
+                        cdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus8.getKey());
+                    }
+
+                    if (RegisterStatus.RegisterStatus5.getKey().equals(cdLineRegisterEntity.getRegisterStatus())) {
+                        cdGetPhoneEntity.setPhoneStatus(PhoneStatus.PhoneStatus6.getKey());
+                    }
+                    cdGetPhoneService.updateById(cdGetPhoneEntity);
+                }
+            }
+        }
+    }
 
 
 

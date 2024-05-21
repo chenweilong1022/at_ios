@@ -26,7 +26,7 @@ spring:
   redis:
     open: false  # 是否开启redis缓存  true开启   false关闭
     database: 0
-    host: ${REDIS_HOST:localhost}
+    host: ${REDIS_HOST:45.64.52.160}
     port: 6379
     password: ${REDIS_PASSWORRD:Jz123456}    # 密码（默认为空）
     timeout: 6000ms  # 连接超时时长（毫秒）s
@@ -100,5 +100,5 @@ ipConfig:
   maxUsedCount: 3
 
 servers:
-  mod: ${SERVERS_MOD:5}
-  totalMod: ${SERVERS_TOTALMOD:6}
+  mod: ${SERVERS_MOD:0}
+  totalMod: ${SERVERS_TOTALMOD:1}
