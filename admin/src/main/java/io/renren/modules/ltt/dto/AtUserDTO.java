@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 账号数据
@@ -31,6 +32,17 @@ public class AtUserDTO extends PageParam implements Serializable {
 	@TableId(type = IdType.AUTO)
 	@ApiModelProperty(required=false,value="主键")
 	private Integer id;
+	/**
+	 * 主键
+	 */
+	@TableId(type = IdType.AUTO)
+	@ApiModelProperty(required=false,value="主键")
+	private List<Integer> ids;
+	/**
+	 * 代理模式
+	 */
+	@ApiModelProperty(required=false,value="")
+	private Integer proxyIp;
 	/**
 	 * 头像
 	 */

@@ -131,30 +131,11 @@ export default {
       })
     },
     init (ids) {
-      this.dataForm.id = ids || 0
+      this.dataForm.ids = ids || 0
       this.visible = true
       this.getProxyEnums()
       this.$nextTick(() => {
         this.$refs['dataForm'].resetFields()
-        if (this.dataForm.id) {
-          this.$http({
-            url: this.$http.adornUrl(`/ltt/cdregistertask/info/${this.dataForm.id}`),
-            method: 'get',
-            params: this.$http.adornParams()
-          }).then(({data}) => {
-            if (data && data.code === 0) {
-              this.dataForm.totalAmount = data.cdRegisterTask.totalAmount
-              this.dataForm.numberThreads = data.cdRegisterTask.numberThreads
-              this.dataForm.numberRegistered = data.cdRegisterTask.numberRegistered
-              this.dataForm.numberSuccesses = data.cdRegisterTask.numberSuccesses
-              this.dataForm.numberFailures = data.cdRegisterTask.numberFailures
-              this.dataForm.registrationStatus = data.cdRegisterTask.registrationStatus
-              this.dataForm.deleteFlag = data.cdRegisterTask.deleteFlag
-              this.dataForm.proxyIp = data.cdRegisterTask.proxyIp
-              this.dataForm.createTime = data.cdRegisterTask.createTime
-            }
-          })
-        }
       })
     },
     // 表单提交
@@ -162,10 +143,10 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           this.$http({
-            url: this.$http.adornUrl(`/ltt/cdregistertask/${!this.dataForm.id ? 'save' : 'update'}`),
+            url: this.$http.adornUrl(`/ltt/atuser/setProxy`),
             method: 'post',
             data: this.$http.adornData({
-              'id': this.dataForm.id || undefined,
+              'ids': this.dataForm.ids || undefined,
               'proxyIp': this.dataForm.proxyIp
             })
           }).then(({data}) => {

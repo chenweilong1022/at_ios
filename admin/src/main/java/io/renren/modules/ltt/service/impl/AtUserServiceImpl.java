@@ -678,4 +678,14 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
         }
 
     }
+
+    @Override
+    public void setProxy(AtUserDTO atUser) {
+        List<Integer> ids = atUser.getIds();
+        List<AtUserEntity> atUserEntities = this.listByIds(ids);
+        //给用户设置代理类型
+        for (AtUserEntity atUserEntity : atUserEntities) {
+            redisTemplate.opsForHash().put(RedisKeys.RedisKeys5.getValue(), String.valueOf(atUserEntity.getTelephone()), String.valueOf(atUser.getProxyIp()));
+        }
+    }
 }
