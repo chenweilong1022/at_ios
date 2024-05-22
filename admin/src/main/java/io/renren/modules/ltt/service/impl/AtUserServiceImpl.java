@@ -111,6 +111,12 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
                         .getExpire(RedisKeys.RedisKeys12.getValue(atUserVO.getTelephone()), TimeUnit.MINUTES));
             }
             atUserVO.setPhoneState(phoneRegisterState);
+            //代理类型
+            Object proxyId = redisTemplate.opsForHash().get(RedisKeys.RedisKeys5.getValue(),
+                    String.valueOf(atUserVO.getTelephone()));
+            if (ObjectUtil.isNotNull(proxyId)) {
+                atUserVO.setProxyId(Integer.valueOf(String.valueOf(proxyId)));
+            }
         }
         return new PageUtils(resultList, count, atUser.getLimit(), atUser.getPage());
     }

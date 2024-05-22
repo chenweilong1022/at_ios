@@ -29,6 +29,17 @@
         label="分组名称">
       </el-table-column>
       <el-table-column
+        prop="userSource"
+        header-align="center"
+        align="center"
+        label="分组类型">
+        <template slot-scope="scope">
+          <el-tag v-for="item in atUserGroupTypeCodes" :key="item.key" v-if="scope.row.userGroupType === item.key">
+            {{ item.value }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column
         prop="createTime"
         header-align="center"
         align="center"
@@ -69,6 +80,7 @@
           key: ''
         },
         dataList: [],
+        atUserGroupTypeCodes: [],
         pageIndex: 1,
         pageSize: 10,
         totalPage: 0,
@@ -82,6 +94,7 @@
     },
     activated () {
       this.getDataList()
+      this.getAtUserGroupType()
     },
     methods: {
       // 获取数据列表
@@ -156,6 +169,18 @@
               this.$message.error(data.msg)
             }
           })
+        })
+      },
+      getAtUserGroupType () {
+        this.$http({
+          url: this.$http.adornUrl(`/app/enums/getAtUserGroupType`),
+          method: 'get'
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.atUserGroupTypeCodes = data.data
+          } else {
+            this.$message.error(data.msg)
+          }
         })
       }
     }

@@ -140,6 +140,9 @@ public class AtUserVO implements Serializable {
 	@ApiModelProperty(required=false,value="卡次数")
 	private Integer registerCount;
 
+	@ApiModelProperty(required=false,value="代理类型")
+	private Integer proxyId;
+
 	@ApiModelProperty(required=false,value="手机号是否红灯（第2次之后，手机号24小时可用） true：绿灯")
 	private Boolean phoneState;
 

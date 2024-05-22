@@ -4,9 +4,23 @@
     :close-on-click-modal="false"
     :visible.sync="visible">
     <el-form :model="dataForm" :rules="dataRule" ref="dataForm" @keyup.enter.native="dataFormSubmit()" label-width="80px">
-    <el-form-item label="分组名称" prop="name">
-      <el-input v-model="dataForm.name" placeholder="分组名称"></el-input>
-    </el-form-item>
+      <el-form-item label="分组名称" prop="name">
+        <el-input v-model="dataForm.name" placeholder="分组名称"></el-input>
+      </el-form-item>
+      <el-form-item label="分组类型" prop="name">
+        <el-select
+          v-model="dataForm.userGroupType"
+          class="m-2" clearable
+          placeholder="账户状态"
+          style="width: 240px">
+          <el-option
+            v-for="item in atUserGroupTypeCodes"
+            :key="item.key"
+            :label="item.value"
+            :value="item.key"
+          />
+        </el-select>
+      </el-form-item>
     </el-form>
     <span slot="footer" class="dialog-footer">
       <el-button @click="visible = false">取消</el-button>
@@ -20,9 +34,11 @@
     data () {
       return {
         visible: false,
+        atUserGroupTypeCodes: [],
         dataForm: {
           id: 0,
           name: '',
+          userGroupType: null,
           deleteFlag: '',
           createTime: ''
         },
@@ -43,6 +59,8 @@
       init (id) {
         this.dataForm.id = id || 0
         this.visible = true
+        this.dataForm.userGroupType = 1
+        this.getAtUserGroupType()
         this.$nextTick(() => {
           this.$refs['dataForm'].resetFields()
           if (this.dataForm.id) {
@@ -70,6 +88,7 @@
               data: this.$http.adornData({
                 'id': this.dataForm.id || undefined,
                 'name': this.dataForm.name,
+                'userGroupType': this.dataForm.userGroupType,
                 'deleteFlag': this.dataForm.deleteFlag,
                 'createTime': this.dataForm.createTime
               })
@@ -88,6 +107,18 @@
                 this.$message.error(data.msg)
               }
             })
+          }
+        })
+      },
+      getAtUserGroupType () {
+        this.$http({
+          url: this.$http.adornUrl(`/app/enums/getAtUserGroupType`),
+          method: 'get'
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.atUserGroupTypeCodes = data.data
+          } else {
+            this.$message.error(data.msg)
           }
         })
       }
