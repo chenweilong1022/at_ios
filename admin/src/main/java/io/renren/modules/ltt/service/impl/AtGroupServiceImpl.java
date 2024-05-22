@@ -276,14 +276,14 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
 
 
             List<AtGroupEntity> atGroupEntities = this.list(new QueryWrapper<AtGroupEntity>().lambda()
-                    .in(AtGroupEntity::getId, importZipDTO.getIds())
+                    .in(AtGroupEntity::getId, groupIds)
                     .isNull(AtGroupEntity::getRoomId)
             );
 
             List<Integer> integers = atGroupEntities.stream().map(AtGroupEntity::getId).collect(Collectors.toList());
 
             List<AtDataSubtaskEntity> atDataSubtaskEntityList = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
-                    .in(AtDataSubtaskEntity::getGroupId, groupIds)
+                    .in(AtDataSubtaskEntity::getGroupId, integers)
                     .eq(AtDataSubtaskEntity::getDataType,DataType.DataType1.getKey())
             );
 
