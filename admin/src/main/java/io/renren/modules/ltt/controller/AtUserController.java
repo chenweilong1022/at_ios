@@ -75,6 +75,17 @@ public class AtUserController extends AbstractController {
     }
 
     /**
+     * 保存
+     */
+    @RequestMapping("/setProxy")
+    @RequiresPermissions("ltt:atuser:save")
+    public R setProxy(@RequestBody AtUserDTO atUser){
+        atUser.setSysUserId(getUserId());
+		atUserService.setProxy(atUser);
+        return R.ok();
+    }
+
+    /**
      * 修改
      */
     @RequestMapping("/update")

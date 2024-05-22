@@ -183,12 +183,23 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                     redisTemplate.opsForHash().delete(RedisKeys.RedisKeys1.getValue(), outIpv4);
                 }
             } else {
-
                 Set<CurlVO> ips = ConcurrentHashMap.newKeySet();
-                String ipOld = getDyIp(regions,phoneNumberInfo);
-                CurlVO proxyUseOld = getProxyUse(ipOld, regions);
-                proxyUseOld.setS5Ip(ipOld);
-                ips.add(proxyUseOld);
+                //如果是静态ip
+                if (ProxyStatus.ProxyStatus3.getKey().equals(proxy)) {
+                    String s = redisTemplate.opsForList().rightPop(RedisKeys.RedisKeys9.getValue(regions));
+                    if (s == null) {
+                        return null;
+                    }
+                    CurlVO proxyUseOld = getProxyUse(s, regions);
+                    proxyUseOld.setS5Ip(s);
+                    ips.add(proxyUseOld);
+                }else {
+                    String ipOld = getDyIp(regions,phoneNumberInfo);
+                    CurlVO proxyUseOld = getProxyUse(ipOld, regions);
+                    proxyUseOld.setS5Ip(ipOld);
+                    ips.add(proxyUseOld);
+                }
+
 //                for (int i = 0; i < 3; i++) {
 //                    executorService.submit(() -> {
 //                        String ip = getDyIp(regions,phoneNumberInfo);

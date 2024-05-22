@@ -573,7 +573,7 @@ public class RegisterTask {
             }
             List<CdGetPhoneEntity> list = cdGetPhoneService.list(new QueryWrapper<CdGetPhoneEntity>().lambda()
                     .eq(CdGetPhoneEntity::getPhoneStatus, PhoneStatus.PhoneStatus1.getKey())
-                    .last("limit 20")
+                    .last("limit 500")
                     .orderByDesc(CdGetPhoneEntity::getId)
             );
             if (CollUtil.isEmpty(list)) {
@@ -611,6 +611,12 @@ public class RegisterTask {
                             CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
                             cdLineIpProxyDTO.setTokenPhone(cdGetPhoneEntity.getPhone());
                             cdLineIpProxyDTO.setLzPhone(cdGetPhoneEntity.getPhone());
+                            String proxyId = (String) redisTemplate.opsForHash().get(RedisKeys.RedisKeys5.getValue(), String.valueOf(cdGetPhoneEntity.getPhone()));
+                            if (StrUtil.isNotEmpty(proxyId)) {
+                                Integer i = Integer.valueOf(proxyId);
+                                cdLineIpProxyDTO.setSelectProxyStatus(i);
+                            }
+
                             String proxyIp = cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO);
                             if (StrUtil.isEmpty(proxyIp)) {
                                 //设置保存队列

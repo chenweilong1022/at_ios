@@ -166,5 +166,7 @@ public interface AtUserService extends IService<AtUserEntity> {
      */
     @Async
     void syncPhoneInvalidTest(String phoneParam);
+
+    void setProxy(AtUserDTO atUser);
 }
 
