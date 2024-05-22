@@ -616,7 +616,6 @@ public class RegisterTask {
                                 Integer i = Integer.valueOf(proxyId);
                                 cdLineIpProxyDTO.setSelectProxyStatus(i);
                             }
-
                             String proxyIp = cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO);
                             if (StrUtil.isEmpty(proxyIp)) {
                                 //设置保存队列

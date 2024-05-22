@@ -814,8 +814,6 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
         return true;
     }
 
-    @Autowired
-    private CdLineRegisterService cdLineRegisterService;
 
     @Override
     public void syncNumberPeople(AtGroupDTO atGroup) {
