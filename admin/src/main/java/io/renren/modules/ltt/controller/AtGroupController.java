@@ -140,6 +140,18 @@ public class AtGroupController extends AbstractController {
         return R.ok();
     }
 
+
+    /**
+     * 同步群人数
+     */
+    @RequestMapping("syncNumberPeople")
+    @RequiresPermissions("ltt:atgrouptask:save")
+    public R syncNumberPeople(@RequestBody AtGroupDTO atGroup) {
+        atGroup.setSysUserId(getAuthUserId());
+        atGroupService.syncNumberPeople(atGroup);
+        return R.ok();
+    }
+
     /**
      * 修改群名
      */

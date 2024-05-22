@@ -841,6 +841,42 @@ import ErrLogs from "./atdatatask-err-logs.vue";
           })
         })
       },
+      syncNumberPeopleHandle (id) {
+        var ids = id ? [id] : this.dataListSelections.map(item => {
+          return item.id
+        })
+        this.$confirm(`确定对[id=${ids.join(',')}]进行[${id ? '同步群人数' : '批量同步群人数'}]操作?`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.isLoading = true
+          this.$nextTick(() => {
+            this.$http({
+              url: this.$http.adornUrl('/ltt/atgroup/syncNumberPeople'),
+              method: 'post',
+              data: this.$http.adornData({
+                'ids': ids
+              })
+            }).then(({data}) => {
+              if (data && data.code === 0) {
+                this.$message({
+                  message: '操作成功',
+                  type: 'success',
+                  duration: 1500,
+                  onClose: () => {
+                    this.getDataList()
+                  }
+                })
+              } else {
+                this.$message.error(data.msg)
+              }
+            }).finally(() => {
+              this.isLoading = false
+            })
+          })
+        })
+      },
       startTaskHandle (id) {
         var ids = id ? [id] : this.dataListSelections.map(item => {
           return item.id
@@ -856,7 +892,7 @@ import ErrLogs from "./atdatatask-err-logs.vue";
               url: this.$http.adornUrl('/ltt/atgroup/startTask'),
               method: 'post',
               data: this.$http.adornData({
-                'ids':ids
+                'ids': ids
               })
             }).then(({data}) => {
               if (data && data.code === 0) {
