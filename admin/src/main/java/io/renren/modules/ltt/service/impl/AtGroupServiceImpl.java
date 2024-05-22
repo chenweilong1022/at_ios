@@ -380,59 +380,26 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
 
 
             Map<Integer, List<AtDataSubtaskEntity>> integerListMap1 = dataSubtaskEntities.stream().collect(Collectors.groupingBy(AtDataSubtaskEntity::getUserId));
-
-            List<AtDataSubtaskEntity> atDataSubtaskEntityListSave = new ArrayList<>();
             for (Integer key : integerListMap1.keySet()) {
                 //数据data
                 List<AtDataSubtaskEntity> atDataSubtaskEntities1 = integerListMap1.get(key);
 
                 AtUserVO poll = atUserVOQueue.poll();
-                if (ObjectUtil.isNull(poll)) {
-                    log.info("pool = {}",poll);
-                    continue;
-                }
                 AtUserEntity atUserEntity = new AtUserEntity();
                 atUserEntity.setId(poll.getId());
                 atUserEntity.setStatus(UserStatus.UserStatus6.getKey());
                 atUserEntityUpdates.add(atUserEntity);
-                //如果拉群的用户和当前id一样
-                Integer userId = atDataSubtaskEntities1.get(0).getUserId();
-                if (userId.equals(atGroupEntity.getUserId())) {
-                    atGroupEntity.setGroupStatus(GroupStatus.GroupStatus1.getKey());
-                    atGroupEntity.setUserId(poll.getId());
-                    atGroupEntityListUpdate.add(atGroupEntity);
-                }else {
-                    AtUserVO atUserVO = atUserService.getById(atGroupEntity.getUserId());
-                    AtUserTokenVO atUserTokenVO = atUserTokenService.getById(atUserVO.getUserTokenId());
-                    LineTokenJson lineTokenJson = JSON.parseObject(atUserTokenVO.getToken(), LineTokenJson.class);
-                    AtDataSubtaskEntity save = new AtDataSubtaskEntity();
-                    save.setGroupId(atGroupEntity.getId());
-                    save.setGroupType(atDataTask.getGroupType());
-                    save.setTaskStatus(TaskStatus.TaskStatus1.getKey());
-                    save.setDataTaskId(atDataTask.getId());
-                    save.setSysUserId(atDataTask.getSysUserId());
-                    save.setDataType(DataType.DataType3.getKey());
-                    save.setContactKey(lineTokenJson.getPhone());
-                    save.setMid(lineTokenJson.getMid());
-                    save.setDisplayName(lineTokenJson.getNickName());
-                    save.setUserId(poll.getId());
-                    atDataSubtaskEntityListSave.add(save);
-                }
+
+                atGroupEntity.setGroupStatus(GroupStatus.GroupStatus1.getKey());
+                atGroupEntity.setUserId(poll.getId());
+                atGroupEntityListUpdate.add(atGroupEntity);
                 for (AtDataSubtaskEntity atDataSubtaskEntity : atDataSubtaskEntities1) {
-                    if (DataType.DataType3.getKey().equals(atDataSubtaskEntity.getDataType())) {
-                        atDataSubtaskService.removeById(atDataSubtaskEntity);
-                        continue;
-                    }
                     atDataSubtaskEntity.setTaskStatus(TaskStatus.TaskStatus1.getKey());
                     atDataSubtaskEntity.setUserId(poll.getId());
                     atDataSubtaskEntitiesUpdate.add(atDataSubtaskEntity);
                 }
 //                long count = atDataSubtaskEntities1.stream().filter(item -> item.getTaskStatus().equals(TaskStatus.TaskStatus13.getKey()) || item.getTaskStatus().equals(TaskStatus.TaskStatus8.getKey())  || item.getTaskStatus().equals(TaskStatus.TaskStatus5.getKey())).count();
 //                if (count > 0) {}
-            }
-
-            if (CollUtil.isNotEmpty(atDataSubtaskEntityListSave)) {
-                atDataSubtaskService.saveBatch(atDataSubtaskEntityListSave);
             }
 
         }
