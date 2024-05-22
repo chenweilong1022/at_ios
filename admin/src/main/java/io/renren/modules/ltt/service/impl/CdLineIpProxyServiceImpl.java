@@ -383,35 +383,67 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 //    }
 
 
-    public static void main(String[] args) throws InterruptedException {
-        ExecutorService executorService = Executors.newFixedThreadPool(50);
-        Set<String> ips = ConcurrentHashMap.newKeySet();
-        for (int i = 0; i < 5000; i++) {
-            CdLineIpProxyServiceImpl cdLineIpProxyService = new CdLineIpProxyServiceImpl();
-            int finalI = i;
-
-            executorService.submit(() -> {
-                String jp = cdLineIpProxyService.getLunaIp("jp");
-                CurlVO jp1 = cdLineIpProxyService.isProxyUse(jp, "jp");
-                if (jp1.isProxyUse()) {
-                    ips.add(jp1.getIp());
-                    log.info("i = {} set size = {}",finalI,ips.size());
-                }
-            });
-        }
-
-        // 关闭线程池
-        executorService.shutdown();
-
-        // 等待所有任务完成
-        if (!executorService.awaitTermination(1, TimeUnit.HOURS)) {
-            // 如果超时，则强制关闭尚未完成的任务
-            executorService.shutdownNow();
-        }
-        System.out.println(ips);
-        System.out.println(ips.size());
-        System.out.println("All tasks are finished.");
-    }
+//    public static void main(String[] args) throws InterruptedException {
+//        ExecutorService executorService = Executors.newFixedThreadPool(100);
+//        Set<String> ips = ConcurrentHashMap.newKeySet();
+//        for (int i = 0; i < 5000; i++) {
+//            CdLineIpProxyServiceImpl cdLineIpProxyService = new CdLineIpProxyServiceImpl();
+//            int finalI = i;
+//
+//            executorService.submit(() -> {
+//                String jp = cdLineIpProxyService.getIpmarsIp("jp");
+//                CurlVO jp1 = cdLineIpProxyService.isProxyUseIpmarsIp(jp, "jp");
+//                if (jp1.isProxyUse()) {
+//                    ips.add(jp1.getIp());
+//                    log.info("i = {} set size = {}",finalI,ips.size());
+//                }
+//            });
+//            executorService.submit(() -> {
+//                String jp = cdLineIpProxyService.getLunaIp("jp");
+//                CurlVO jp1 = cdLineIpProxyService.isProxyUse(jp, "jp");
+//                if (jp1.isProxyUse()) {
+//                    ips.add(jp1.getIp());
+//                    log.info("i = {} set size = {}",finalI,ips.size());
+//                }
+//            });
+//            executorService.submit(() -> {
+//                String jp = cdLineIpProxyService.getIp2WorldIp("jp");
+//                CurlVO jp1 = cdLineIpProxyService.isProxyUseIp2World(jp, "jp");
+//                if (jp1.isProxyUse()) {
+//                    ips.add(jp1.getIp());
+//                    log.info("i = {} set size = {}",finalI,ips.size());
+//                }
+//            });
+//            executorService.submit(() -> {
+//                String jp = cdLineIpProxyService.getRolaIp("jp");
+//                CurlVO jp1 = cdLineIpProxyService.isProxyUseRolaIp(jp, "jp");
+//                if (jp1.isProxyUse()) {
+//                    ips.add(jp1.getIp());
+//                    log.info("i = {} set size = {}",finalI,ips.size());
+//                }
+//            });
+//            executorService.submit(() -> {
+//                String jp = cdLineIpProxyService.getProxyUpIp("jp");
+//                CurlVO jp1 = cdLineIpProxyService.isProxyUseProxyUp(jp, "jp");
+//                if (jp1.isProxyUse()) {
+//                    ips.add(jp1.getIp());
+//                    log.info("i = {} set size = {}",finalI,ips.size());
+//                }
+//            });
+//        }
+//
+//        // 关闭线程池
+//        executorService.shutdown();
+//
+//        // 等待所有任务完成
+//        if (!executorService.awaitTermination(1, TimeUnit.HOURS)) {
+//            // 如果超时，则强制关闭尚未完成的任务
+//            executorService.shutdownNow();
+//        }
+//        System.out.println(ips);
+//        System.out.println(ips.size());
+//        System.out.println("All tasks are finished.");
+//    }
 
 
 
@@ -660,7 +692,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
     private CurlVO isProxyUseIpmarsIp(String ip,String country) {
         CurlVO falseCurlVO = new CurlVO().setProxyUse(false);
         try {
-            String format1 = String.format("curl -x %s http://www.ip234.in/ip.json",ip);
+            String format1 = String.format("curl -x %s ipinfo.io",ip);
             System.out.println(format1);
             List<String> strings = RuntimeUtil.execForLines(format1);
 
@@ -699,7 +731,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
     private CurlVO isProxyUseAbcIp(String ip,String country) {
         CurlVO falseCurlVO = new CurlVO().setProxyUse(false);
         try {
-            String format1 = String.format("curl -x %s http://www.ip234.in/ip.json",ip);
+            String format1 = String.format("curl -x %s ipinfo.io",ip);
             System.out.println(format1);
             List<String> strings = RuntimeUtil.execForLines(format1);
 
@@ -713,13 +745,18 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                 }
             }
             String resp = CollUtil.join(newStr, "");
-
+            if (JSONUtil.isJson(resp)) {
+                return falseCurlVO;
+            }
             IPWorldRespCurl curlVO = JSONUtil.toBean(resp, IPWorldRespCurl.class);
+            if (ObjectUtil.isNull(curlVO)) {
+                return falseCurlVO;
+            }
             if (curlVO.getCountry().toLowerCase().equals(country.toLowerCase())) {
                 return falseCurlVO.setProxyUse(true).setIp(curlVO.getIp()).setCountry(curlVO.getCountry());
             }
         }catch (Exception e) {
-
+            log.info("e = {}",e);
         }
         return falseCurlVO;
     }
@@ -735,7 +772,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
     private CurlVO isProxyUseIp2World(String ip,String country) {
         CurlVO falseCurlVO = new CurlVO().setProxyUse(false);
         try {
-            String format1 = String.format("curl -x %s http://www.ip234.in/ip.json",ip);
+            String format1 = String.format("curl -x %s ipinfo.io",ip);
             System.out.println(format1);
             List<String> strings = RuntimeUtil.execForLines(format1);
 

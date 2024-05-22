@@ -328,7 +328,7 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
         String regions = EnumUtil.queryValueByKey(atGroup.getCountryCode(), CountryCode.values());
         atUserDTO.setNation(regions.toUpperCase());
         atUserDTO.setUserGroupId(atGroup.getUserGroupId());
-        atUserDTO.setLimit(atGroup.getIds().size() * atGroup.getPullGroupNumber() + 10);
+        atUserDTO.setLimit(atGroup.getIds().size() * atGroup.getPullGroupNumber());
         atUserDTO.setStatus(UserStatus.UserStatus4.getKey());
         atUserDTO.setUserSource(AtUserSourceEnum.AtUserSource1.getKey());
         //获取符合账号的号码
