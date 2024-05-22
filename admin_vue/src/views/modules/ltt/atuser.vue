@@ -202,6 +202,16 @@
         </template>
       </el-table-column>
       <el-table-column
+        prop="proxyId"
+        header-align="center"
+        align="center"
+        label="代理类型">
+        <template slot-scope="scope">
+          <el-tag v-if="scope.row.proxyId === 1" size="small" type="info">动态住宅</el-tag>
+          <el-tag v-else-if="scope.row.proxyId === 3" size="small" type="warning">静态代理</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column
         prop="status"
         header-align="center"
         align="center"
