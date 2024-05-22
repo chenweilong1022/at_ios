@@ -280,8 +280,6 @@
               :value="item.key"
             />
           </el-select>
-        </el-form-item>
-          <el-form-item>
             <el-select
               v-model="dataForm.taskStatus"
               clearable
@@ -294,8 +292,6 @@
                 :value="item.key"
               />
             </el-select>
-          </el-form-item>
-          <el-form-item>
           <el-button @click="getDataList()">查询</el-button>
           <el-button type="primary" @click="nextGroup()">继续拉群</el-button>
           <el-button type="success" @click="startTaskHandle()" :disabled="dataListSelections.length <= 0">启动任务</el-button>
@@ -304,10 +300,12 @@
           <el-button type="danger" @click="reallocateTokenHandle()" :disabled="dataListSelections.length <= 0">重新分配账号拉群</el-button>
           <el-button type="primary" @click="updateGroupHandle()" :disabled="dataListSelections.length <= 0">修改群名</el-button>
           <el-button type="info" @click="getRealGroupNameHandle()" :disabled="dataListSelections.length <= 0">获取真实群名称</el-button>
+            <div style="margin-top: 20px;">
           <el-button type="primary" @click="copyPhoneHandle()" :disabled="dataListSelections.length <= 0">复制手机号</el-button>
           <el-button type="primary" @click="pushGroupSubtaskHandle()" :disabled="dataListSelections.length <= 0">推动拉群</el-button>
           <el-button type="primary" @click="syncNumberPeopleHandle()" :disabled="dataListSelections.length <= 0">更新群人数</el-button>
           <el-button type="danger" @click="userRegisterRetryHandle()" :disabled="dataListSelections.length <= 0">拉群号重注册</el-button>
+            </div>
         </el-form-item>
         </el-form>
         <el-table
