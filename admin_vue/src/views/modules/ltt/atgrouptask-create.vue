@@ -292,6 +292,7 @@
           <el-button type="info" @click="getRealGroupNameHandle()" :disabled="dataListSelections.length <= 0">获取真实群名称</el-button>
           <el-button type="primary" @click="copyPhoneHandle()" :disabled="dataListSelections.length <= 0">复制手机号</el-button>
           <el-button type="primary" @click="pushGroupSubtaskHandle()" :disabled="dataListSelections.length <= 0">推动拉群</el-button>
+          <el-button type="primary" @click="syncNumberPeopleHandle()" :disabled="dataListSelections.length <= 0">更新群人数</el-button>
         </el-form-item>
         </el-form>
         <el-table
