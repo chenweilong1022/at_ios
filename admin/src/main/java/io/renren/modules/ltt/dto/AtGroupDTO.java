@@ -97,6 +97,11 @@ public class AtGroupDTO extends PageParam implements Serializable {
 	 *
 	 */
 	@ApiModelProperty(required=false,value="")
+	private Integer taskStatus;
+	/**
+	 *
+	 */
+	@ApiModelProperty(required=false,value="")
 	private Integer deleteFlag;
 	/**
 	 *

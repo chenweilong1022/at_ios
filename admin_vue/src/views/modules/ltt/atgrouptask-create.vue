@@ -267,7 +267,7 @@
       </div>
       <div v-else>
         <el-form :inline="true" :model="dataForm" @keyup.enter.native="getDataList()">
-        <el-form-item label="拉群状态" prop="groupStatusList">
+        <el-form-item prop="groupStatusList">
           <el-select
             v-model:group-type-list="groupStatusList"
             multiple
@@ -281,7 +281,21 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item>
+          <el-form-item>
+            <el-select
+              v-model="dataForm.taskStatus"
+              clearable
+              placeholder="加粉"
+              size="large">
+              <el-option
+                v-for="item in taskStatuss"
+                :key="item.key"
+                :label="item.value"
+                :value="item.key"
+              />
+            </el-select>
+          </el-form-item>
+          <el-form-item>
           <el-button @click="getDataList()">查询</el-button>
           <el-button type="primary" @click="nextGroup()">继续拉群</el-button>
           <el-button type="success" @click="startTaskHandle()" :disabled="dataListSelections.length <= 0">启动任务</el-button>
@@ -331,18 +345,6 @@
             align="center"
             label="群号">
           </el-table-column>
-<!--          <el-table-column-->
-<!--            prop="chatRoomUrl"-->
-<!--            header-align="center"-->
-<!--            align="center"-->
-<!--            label="群链接">-->
-<!--          </el-table-column>-->
-<!--          <el-table-column-->
-<!--            prop="roomTicketId"-->
-<!--            header-align="center"-->
-<!--            align="center"-->
-<!--            label="群二维码">-->
-<!--          </el-table-column>-->
           <el-table-column
             prop="successfullyAttractGroupsNumber"
             header-align="center"
@@ -515,6 +517,7 @@ import ErrLogs from "./atdatatask-err-logs.vue";
         fileContentList: [],
         remaining: '',
         countryCodes: [],
+        taskStatuss: [],
         openAppOptions: [],
         judgeOptions: [],
         dataRule: {
@@ -546,6 +549,7 @@ import ErrLogs from "./atdatatask-err-logs.vue";
           groupCountTotal: 94,
           pullGroupNumber: 1,
           groupCount: null,
+          taskStatus: null,
           groupCountStart: 0,
           intervalSecond: 7,
           searchIntervalSecond: null,
@@ -568,6 +572,7 @@ import ErrLogs from "./atdatatask-err-logs.vue";
       this.dataForm.id = groupTaskId
       this.uploadUrl = this.$http.adornUrl(`/app/file/upload`)
       this.getCountryCodeEnums()
+      this.getTaskStatusEnums()
       this.getOpenApps()
       this.getUserGroupDataList()
       this.getGroupType()
@@ -603,6 +608,7 @@ import ErrLogs from "./atdatatask-err-logs.vue";
             'page': this.pageIndex,
             'limit': this.pageSize,
             'groupTaskId': this.dataForm.id,
+            'taskStatus': this.dataForm.taskStatus,
             'groupStatusList': this.groupStatusList
           })
         }).then(({data}) => {
@@ -721,6 +727,19 @@ import ErrLogs from "./atdatatask-err-logs.vue";
             this.dataUserGroupList = data.page.list
           } else {
             this.dataUserGroupList = []
+          }
+        })
+      },
+      // 表单提交
+      getTaskStatusEnums () {
+        this.$http({
+          url: this.$http.adornUrl(`/app/enums/taskStatus`),
+          method: 'get'
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.taskStatuss = data.data
+          } else {
+            this.$message.error(data.msg)
           }
         })
       },
