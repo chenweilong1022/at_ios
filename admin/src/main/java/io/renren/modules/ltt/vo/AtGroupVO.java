@@ -267,6 +267,9 @@ public class AtGroupVO implements Serializable {
 	@ApiModelProperty(required=false,value="修改群名称账号对应的水军id")
 	private String changeUserPhone;
 
+	@ApiModelProperty(required=false,value="是否显示重新注册按钮 true：未点击，且满足拉群失败条件")
+	private Boolean showUserRegisterFlag;
+
 	public String getScheduleFloat() {
 		double v = (double) (successfulQuantity + failuresQuantity) / addTotalQuantity * 100;
 		return String.format("%.2f", v);

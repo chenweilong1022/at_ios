@@ -473,7 +473,8 @@
                          (scope.row.roomId != null && scope.row.successfullyAttractGroupsNumber == 0)"
                          @click="errRetryHandle(scope.row.id)">错误重试</el-button>
               <el-button type="primary" @click="pushGroupSubtaskHandle(scope.row.id)">推动拉群</el-button>
-              <el-button type="danger" @click="userRegisterRetryHandle(scope.row.id)">拉群号重新注册</el-button>
+              <el-button type="danger" v-if="scope.row.showUserRegisterFlag === true"
+                         @click="userRegisterRetryHandle(scope.row.id)">拉群号重新注册</el-button>
             </template>
           </el-table-column>
         </el-table>

@@ -140,6 +140,14 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
                 if (ObjectUtil.isNotNull(atGroupVO.getChangeUserId())) {
                     atGroupVO.setChangeUserPhone(phoneMap.get(atGroupVO.getChangeUserId()));
                 }
+
+                Boolean flag = this.showUserRegisterFlag(atGroupVO);
+                if (Boolean.TRUE.equals(flag)) {
+                    String s = redisTemplate.opsForValue()
+                            .get(RedisKeys.GROUP_ERROR_REGISTER_USER.getValue(String.valueOf(atGroupVO.getUserId())));
+                    atGroupVO.setShowUserRegisterFlag(StringUtils.isEmpty(s));
+                }
+
             }
         }
         page.setRecords(resultList);
@@ -623,38 +631,43 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
         return false;
     }
 
+    private Boolean showUserRegisterFlag(AtGroupVO atGroupVO) {
+        if (GroupStatus.GroupStatus11.getKey().equals(atGroupVO.getGroupStatus())) {
+            //mid失败
+            return true;
+        } else if (GroupStatus.GroupStatus4.getKey().equals(atGroupVO.getGroupStatus())
+                && StringUtils.isEmpty(atGroupVO.getRoomId())) {
+            //拉群失败，且没有群号
+            return true;
+        } else if (GroupStatus.GroupStatus8.getKey().equals(atGroupVO.getGroupStatus())) {
+            //群人数同步失败，且不是网络异常的
+            if (StringUtils.isNotEmpty(atGroupVO.getMsg())
+                    && atGroupVO.getMsg().contains("网络异常")) {
+                return false;
+            }
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public Boolean groupFailRegisterAgains(List<Integer> groupIdList) {
         Assert.isTrue(CollectionUtils.isEmpty(groupIdList), "群id不能为空");
-        List<AtGroupEntity> groupList = this.listByIds(groupIdList);
+
+        List<AtGroupVO> groupList = AtGroupConver.MAPPER.conver(this.listByIds(groupIdList));
         Assert.isTrue(CollectionUtils.isEmpty(groupList), "群信息不存在，请刷新重试");
 
-//        List<String> errorGroupNameList = new ArrayList<>();//不满足重新注册条件的(群名，手机号)
         List<Integer> retryUserIdList = new ArrayList<>();//需要重新注册的用户id
-        for (AtGroupEntity atGroupEntity : groupList) {
-            if (GroupStatus.GroupStatus11.getKey().equals(atGroupEntity.getGroupStatus())) {
-                //mid失败
-                retryUserIdList.add(atGroupEntity.getUserId());
-            } else if (GroupStatus.GroupStatus4.getKey().equals(atGroupEntity.getGroupStatus())
-                    && StringUtils.isEmpty(atGroupEntity.getRoomId())) {
-                //拉群失败，且没有群号
-                retryUserIdList.add(atGroupEntity.getUserId());
-            } else if (GroupStatus.GroupStatus8.getKey().equals(atGroupEntity.getGroupStatus())) {
-                //群人数同步失败，且不是网络异常的
-                if (StringUtils.isNotEmpty(atGroupEntity.getMsg())
-                        && atGroupEntity.getMsg().contains("网络异常")) {
-                    continue;
-                }
-                retryUserIdList.add(atGroupEntity.getUserId());
-            } else {
-//                errorGroupNameList.add(atGroupEntity.getGroupName());
-                Assert.isTrue(true, atGroupEntity.getGroupName() + ",此群拉群状态正常，无法重新注册");
-                continue;
+        for (AtGroupVO atGroupVO : groupList) {
+            if (Boolean.TRUE.equals(this.showUserRegisterFlag(atGroupVO))) {
+                retryUserIdList.add(atGroupVO.getUserId());
+            }else {
+                Assert.isTrue(true, atGroupVO.getGroupName() + ",此群拉群状态正常，无法重新注册");
             }
             //查询redis，不允许重复点击
             String s = redisTemplate.opsForValue()
-                    .get(RedisKeys.GROUP_ERROR_REGISTER_USER.getValue(String.valueOf(atGroupEntity.getUserId())));
-            Assert.isTrue(StringUtils.isNotEmpty(s), atGroupEntity.getGroupName() + ",此群重复点击");
+                    .get(RedisKeys.GROUP_ERROR_REGISTER_USER.getValue(String.valueOf(atGroupVO.getUserId())));
+            Assert.isTrue(StringUtils.isNotEmpty(s), atGroupVO.getGroupName() + ",此群重复点击");
         }
         Assert.isTrue(CollectionUtils.isEmpty(retryUserIdList), "无可重新注册的账号，请检查");
 
@@ -666,7 +679,6 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
             List<AtGroupEntity> repeatList = repeatMap.get(retryUserId);
             if (CollUtil.isNotEmpty(repeatList) && repeatList.size() > 1) {
                 retryUserIdList.remove(retryUserId);
-//                errorGroupNameList.addAll(repeatList.stream().map(AtGroupEntity::getGroupName).collect(Collectors.toList()));
                 Assert.isTrue(true, repeatList.get(0).getGroupName() + ",此群对应的拉群账号重复，请手工检查");
             }
         }
