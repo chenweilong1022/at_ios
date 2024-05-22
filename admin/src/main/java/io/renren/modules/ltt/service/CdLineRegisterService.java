@@ -137,6 +137,8 @@ public interface CdLineRegisterService extends IService<CdLineRegisterEntity> {
      */
     boolean registerAgain(String telephone);
 
+    boolean registerAgains(List<String> telephoneList);
+
     /**
      * 查询line注册数量
      * @param countryCode
