@@ -110,6 +110,10 @@ public enum RedisKeys implements BaseEnum {
      * 昵称集合
      */
     REGISTER_NICKNAME_LIST(30,"REGISTER_NICKNAME_LIST"),
+    /**
+     * 拉群号重新注册记录
+     */
+    GROUP_ERROR_REGISTER_USER(31,"GROUP_ERROR_REGISTER_USER"),
     ;
 
     public String getValue(String country) {

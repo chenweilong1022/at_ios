@@ -323,37 +323,43 @@
           <el-table-column
             prop="id"
             header-align="center"
-            align="center"
+            align="center" width="50"
             label="id">
           </el-table-column>
           <el-table-column
             prop="groupName"
             header-align="center"
-            align="center"
+            align="center"  width="80"
             label="群名称">
           </el-table-column>
           <el-table-column
             prop="realGroupName"
             header-align="center"
-            align="center"
+            align="center"  width="80"
             label="真实群名称">
           </el-table-column>
           <el-table-column
             prop="roomId"
             header-align="center"
-            align="center"
+            align="center"  width="110"
             label="群号">
           </el-table-column>
           <el-table-column
             prop="successfullyAttractGroupsNumber"
-            header-align="center"
+            header-align="center" width="50"
             align="center"
             label="群人数">
           </el-table-column>
           <el-table-column
+            prop="userId"
+            header-align="center"
+            align="center" width="50"
+            label="拉群userId">
+          </el-table-column>
+          <el-table-column
             prop="userTelephone"
             header-align="center"
-            align="center" width="180"
+            align="center" width="130"
             label="拉群手机号">
             <template slot-scope="scope">
               <div>
@@ -386,7 +392,7 @@
             prop="addTotalQuantity"
             header-align="center"
             align="center"
-            width="120"
+            width="110"
             label="加粉数据">
             <template slot-scope="scope">
               <div>加粉总数：{{ scope.row.addTotalQuantity }}</div>
@@ -397,7 +403,7 @@
           <el-table-column
             prop="randomGroupName"
             header-align="center"
-            align="center"
+            align="center" width="50"
             label="群名是否随机">
             <template slot-scope="scope">
               <el-tag v-for="item in openAppOptions" :key="item.key" v-if="scope.row.randomGroupName === item.key">
@@ -409,7 +415,7 @@
             prop="taskStatus"
             header-align="center"
             align="center"
-            width="100"
+            width="90"
             label="加粉状态">
             <template slot-scope="scope">
               <el-button v-if="scope.row.taskStatus === 5" type="success" plain>{{scope.row.taskStatusStr}}</el-button>
@@ -423,7 +429,7 @@
             prop="schedule"
             header-align="center"
             align="center"
-            width="95"
+            width="90"
             label="加粉进度">
             <template slot-scope="scope">
               <el-progress :stroke-width="7" type="circle"  :width="70" :percentage="scope.row.scheduleFloat"></el-progress>
@@ -432,7 +438,7 @@
           <el-table-column
             prop="changeUserPhone"
             header-align="center"
-            align="center" width="180"
+            align="center" width="130"
             label="修改群水军手机号">
             <template slot-scope="scope">
               <div><el-button type="text" @click="atUserHandle(scope.row.changeUserId)">{{scope.row.changeUserPhone}}</el-button></div>
@@ -451,7 +457,7 @@
             prop="tIdBy"
             header-align="center"
             align="center"
-            width="100"
+            width="60"
             label="服务器">
           </el-table-column>
           <el-table-column
@@ -1018,28 +1024,14 @@ import ErrLogs from "./atdatatask-err-logs.vue";
             data: this.$http.adornData(ids, false)
           }).then(({data}) => {
             if (data && data.code === 0) {
-              if (data.errorGroupNameList && data.errorGroupNameList.length > 0) {
-                // 如果 errorGroupNameList 不为空，则展示列表内容
-                this.$message({
-                  message: '未发起重新注册的群名，请检查：' + data.errorGroupNameList.join(', '), // 使用逗号连接列表项
-                  type: 'error', // 这里可以根据你的需求选择合适的类型
-                  duration: 2 * 60 * 1000,
-                  showClose: true, // 显示关闭按钮
-                  onClose: () => {
-                    this.getDataList()
-                  }
-                })
-              } else {
-                // 如果 errorGroupNameList 为空，则展示操作成功的消息
-                this.$message({
-                  message: '操作成功',
-                  type: 'success',
-                  duration: 1500,
-                  onClose: () => {
-                    this.getDataList()
-                  }
-                })
-              }
+              this.$message({
+                message: '操作成功',
+                type: 'success',
+                duration: 1500,
+                onClose: () => {
+                  this.getDataList()
+                }
+              })
             } else {
               this.$message.error(data.msg)
             }

@@ -624,12 +624,12 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
     }
 
     @Override
-    public List<String> groupFailRegisterAgains(List<Integer> groupIdList) {
+    public Boolean groupFailRegisterAgains(List<Integer> groupIdList) {
         Assert.isTrue(CollectionUtils.isEmpty(groupIdList), "群id不能为空");
         List<AtGroupEntity> groupList = this.listByIds(groupIdList);
         Assert.isTrue(CollectionUtils.isEmpty(groupList), "群信息不存在，请刷新重试");
 
-        List<String> errorGroupNameList = new ArrayList<>();//不满足重新注册条件的(群名，手机号)
+//        List<String> errorGroupNameList = new ArrayList<>();//不满足重新注册条件的(群名，手机号)
         List<Integer> retryUserIdList = new ArrayList<>();//需要重新注册的用户id
         for (AtGroupEntity atGroupEntity : groupList) {
             if (GroupStatus.GroupStatus11.getKey().equals(atGroupEntity.getGroupStatus())) {
@@ -647,8 +647,14 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
                 }
                 retryUserIdList.add(atGroupEntity.getUserId());
             } else {
-                errorGroupNameList.add(atGroupEntity.getGroupName());
+//                errorGroupNameList.add(atGroupEntity.getGroupName());
+                Assert.isTrue(true, atGroupEntity.getGroupName() + ",此群拉群状态正常，无法重新注册");
+                continue;
             }
+            //查询redis，不允许重复点击
+            String s = redisTemplate.opsForValue()
+                    .get(RedisKeys.GROUP_ERROR_REGISTER_USER.getValue(String.valueOf(atGroupEntity.getUserId())));
+            Assert.isTrue(StringUtils.isNotEmpty(s), atGroupEntity.getGroupName() + ",此群重复点击");
         }
         Assert.isTrue(CollectionUtils.isEmpty(retryUserIdList), "无可重新注册的账号，请检查");
 
@@ -660,15 +666,23 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
             List<AtGroupEntity> repeatList = repeatMap.get(retryUserId);
             if (CollUtil.isNotEmpty(repeatList) && repeatList.size() > 1) {
                 retryUserIdList.remove(retryUserId);
-                errorGroupNameList.addAll(repeatList.stream().map(AtGroupEntity::getGroupName).collect(Collectors.toList()));
+//                errorGroupNameList.addAll(repeatList.stream().map(AtGroupEntity::getGroupName).collect(Collectors.toList()));
+                Assert.isTrue(true, repeatList.get(0).getGroupName() + ",此群对应的拉群账号重复，请手工检查");
             }
         }
+
         Assert.isTrue(CollectionUtils.isEmpty(retryUserIdList), "无可重新注册的账号，请检查");
+
+
+        //存redis记录，不允许重复点
+        for (Integer retryUserId : retryUserIdList) {
+            redisTemplate.opsForValue().set(RedisKeys.GROUP_ERROR_REGISTER_USER.getValue(String.valueOf(retryUserId)),
+                    String.valueOf(retryUserId), 24, TimeUnit.HOURS);
+        }
 
         //重新发起注册
         Map<Integer, String> telephoneMap = atUserService.queryTelephoneByIds(retryUserIdList);
-        cdLineRegisterService.registerAgains(telephoneMap.values().stream().collect(Collectors.toList()));
-        return errorGroupNameList;
+        return cdLineRegisterService.registerAgains(telephoneMap.values().stream().collect(Collectors.toList()));
     }
 
     @Override

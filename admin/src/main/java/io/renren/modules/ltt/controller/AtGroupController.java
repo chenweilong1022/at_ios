@@ -78,9 +78,9 @@ public class AtGroupController extends AbstractController {
     @RequestMapping("/groupFailRegisterAgains")
     @RequiresPermissions("ltt:atgrouptask:update")
     public R groupFailRegisterAgains(@RequestBody Integer[] ids){
-        List<String> errorGroupNameList = atGroupService.groupFailRegisterAgains(Arrays.asList(ids));
+        Boolean flag = atGroupService.groupFailRegisterAgains(Arrays.asList(ids));
 
-        return R.ok().put("errorGroupNameList", errorGroupNameList);
+        return R.ok().put("flag", flag);
     }
 
     /**
