@@ -267,7 +267,7 @@
       </div>
       <div v-else>
         <el-form :inline="true" :model="dataForm" @keyup.enter.native="getDataList()">
-        <el-form-item label="拉群状态" prop="groupStatusList">
+        <el-form-item prop="groupStatusList">
           <el-select
             v-model:group-type-list="groupStatusList"
             multiple
@@ -281,7 +281,21 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item>
+          <el-form-item>
+            <el-select
+              v-model="dataForm.taskStatus"
+              clearable
+              placeholder="加粉"
+              size="large">
+              <el-option
+                v-for="item in taskStatuss"
+                :key="item.key"
+                :label="item.value"
+                :value="item.key"
+              />
+            </el-select>
+          </el-form-item>
+          <el-form-item>
           <el-button @click="getDataList()">查询</el-button>
           <el-button type="primary" @click="nextGroup()">继续拉群</el-button>
           <el-button type="success" @click="startTaskHandle()" :disabled="dataListSelections.length <= 0">启动任务</el-button>
@@ -292,6 +306,7 @@
           <el-button type="info" @click="getRealGroupNameHandle()" :disabled="dataListSelections.length <= 0">获取真实群名称</el-button>
           <el-button type="primary" @click="copyPhoneHandle()" :disabled="dataListSelections.length <= 0">复制手机号</el-button>
           <el-button type="primary" @click="pushGroupSubtaskHandle()" :disabled="dataListSelections.length <= 0">推动拉群</el-button>
+          <el-button type="primary" @click="syncNumberPeopleHandle()" :disabled="dataListSelections.length <= 0">更新群人数</el-button>
           <el-button type="danger" @click="userRegisterRetryHandle()" :disabled="dataListSelections.length <= 0">拉群号重注册</el-button>
         </el-form-item>
         </el-form>
@@ -331,18 +346,6 @@
             align="center"
             label="群号">
           </el-table-column>
-<!--          <el-table-column-->
-<!--            prop="chatRoomUrl"-->
-<!--            header-align="center"-->
-<!--            align="center"-->
-<!--            label="群链接">-->
-<!--          </el-table-column>-->
-<!--          <el-table-column-->
-<!--            prop="roomTicketId"-->
-<!--            header-align="center"-->
-<!--            align="center"-->
-<!--            label="群二维码">-->
-<!--          </el-table-column>-->
           <el-table-column
             prop="successfullyAttractGroupsNumber"
             header-align="center"
@@ -516,6 +519,7 @@ import ErrLogs from "./atdatatask-err-logs.vue";
         fileContentList: [],
         remaining: '',
         countryCodes: [],
+        taskStatuss: [],
         openAppOptions: [],
         judgeOptions: [],
         dataRule: {
@@ -547,6 +551,7 @@ import ErrLogs from "./atdatatask-err-logs.vue";
           groupCountTotal: 94,
           pullGroupNumber: 1,
           groupCount: null,
+          taskStatus: null,
           groupCountStart: 0,
           intervalSecond: 7,
           searchIntervalSecond: null,
@@ -569,6 +574,7 @@ import ErrLogs from "./atdatatask-err-logs.vue";
       this.dataForm.id = groupTaskId
       this.uploadUrl = this.$http.adornUrl(`/app/file/upload`)
       this.getCountryCodeEnums()
+      this.getTaskStatusEnums()
       this.getOpenApps()
       this.getUserGroupDataList()
       this.getGroupType()
@@ -604,6 +610,7 @@ import ErrLogs from "./atdatatask-err-logs.vue";
             'page': this.pageIndex,
             'limit': this.pageSize,
             'groupTaskId': this.dataForm.id,
+            'taskStatus': this.dataForm.taskStatus,
             'groupStatusList': this.groupStatusList
           })
         }).then(({data}) => {
@@ -726,6 +733,19 @@ import ErrLogs from "./atdatatask-err-logs.vue";
         })
       },
       // 表单提交
+      getTaskStatusEnums () {
+        this.$http({
+          url: this.$http.adornUrl(`/app/enums/taskStatus`),
+          method: 'get'
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.taskStatuss = data.data
+          } else {
+            this.$message.error(data.msg)
+          }
+        })
+      },
+      // 表单提交
       getCountryCodeEnums () {
         this.$http({
           url: this.$http.adornUrl(`/app/enums/countryCodes`),
@@ -843,6 +863,42 @@ import ErrLogs from "./atdatatask-err-logs.vue";
           })
         })
       },
+      syncNumberPeopleHandle (id) {
+        var ids = id ? [id] : this.dataListSelections.map(item => {
+          return item.id
+        })
+        this.$confirm(`确定对[id=${ids.join(',')}]进行[${id ? '同步群人数' : '批量同步群人数'}]操作?`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.isLoading = true
+          this.$nextTick(() => {
+            this.$http({
+              url: this.$http.adornUrl('/ltt/atgroup/syncNumberPeople'),
+              method: 'post',
+              data: this.$http.adornData({
+                'ids': ids
+              })
+            }).then(({data}) => {
+              if (data && data.code === 0) {
+                this.$message({
+                  message: '操作成功',
+                  type: 'success',
+                  duration: 1500,
+                  onClose: () => {
+                    this.getDataList()
+                  }
+                })
+              } else {
+                this.$message.error(data.msg)
+              }
+            }).finally(() => {
+              this.isLoading = false
+            })
+          })
+        })
+      },
       startTaskHandle (id) {
         var ids = id ? [id] : this.dataListSelections.map(item => {
           return item.id
@@ -858,7 +914,7 @@ import ErrLogs from "./atdatatask-err-logs.vue";
               url: this.$http.adornUrl('/ltt/atgroup/startTask'),
               method: 'post',
               data: this.$http.adornData({
-                'ids':ids
+                'ids': ids
               })
             }).then(({data}) => {
               if (data && data.code === 0) {

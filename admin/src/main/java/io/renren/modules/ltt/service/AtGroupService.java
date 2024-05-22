@@ -124,5 +124,11 @@ public interface AtGroupService extends IService<AtGroupEntity> {
      * @return
      */
     Boolean pushGroupSubtask(List<Integer> groupIdList);
+
+    /**
+     * 同步群人数
+     * @param atGroup
+     */
+    void syncNumberPeople(AtGroupDTO atGroup);
 }
 

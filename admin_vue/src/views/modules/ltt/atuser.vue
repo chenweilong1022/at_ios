@@ -135,6 +135,9 @@
         <el-button type="primary" @click="copyPhoneHandle()"
                    :disabled="dataListSelections.length <= 0">复制手机号
         </el-button>
+          <el-button type="primary" @click="setProxyHandler()"
+                     :disabled="dataListSelections.length <= 0">设置代理
+          </el-button>
         </div>
       </el-form-item>
     </el-form>
@@ -270,6 +273,7 @@
     <user-token-order  v-if="userTokenOrderVisible" ref="userTokenOrder" @refreshDataList="getDataList"></user-token-order>
     <user-transfer-group  v-if="userTransferGroupVisible" ref="userTransferGroup" @refreshDataList="getDataList"></user-transfer-group>
     <user-customer-group  v-if="userCustomerVisible" ref="userCustomerGroup" @refreshDataList="getDataList"></user-customer-group>
+    <set-proxy  v-if="setProxyVisible" ref="setProxy" @refreshDataList="getDataList"></set-proxy>
   </div>
 </template>
 
@@ -279,6 +283,7 @@
   import UserTokenOrder from './atusertoken-order'
   import UserTransferGroup from './atuserTransferGroup-add-or-update'
   import UserCustomerGroup from './atuserCustomer-add-or-update'
+  import SetProxy from './cdregistertask-set-proxy.vue'
   export default {
     data () {
       return {
@@ -353,6 +358,7 @@
         dataListSelections: [],
         addOrUpdateVisible: false,
         userImportVisible: false,
+        setProxyVisible: false,
         userTokenOrderVisible: false,
         userTransferGroupVisible: false,
         userCustomerVisible: false,
@@ -364,7 +370,8 @@
       UserTokenOrder,
       UserTransferGroup,
       UserCustomerGroup,
-      AddOrUpdate
+      AddOrUpdate,
+      SetProxy
     },
     activated () {
       this.init()
@@ -377,7 +384,7 @@
       this.queryUserGroupBySearchWord('')
     },
     methods: {
-      init() {
+      init () {
         this.dataForm.id = this.$route.query.userId
       },
       onSortChange ({ column, prop, order }) {
@@ -465,6 +472,19 @@
         })
         navigator.clipboard.writeText(telephones).then(() => {
           this.$message.success('手机号复制成功！')
+        })
+      },
+      setProxyHandler () {
+        var ids = this.dataListSelections.map(item => {return item.id})
+        this.$confirm(`确定要设置代理操作?`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.setProxyVisible = true
+          this.$nextTick(() => {
+            this.$refs.setProxy.init(ids)
+          })
         })
       },
       getBadgeType (registerCount) {
@@ -627,42 +647,7 @@
           type: 'warning'
         }).then(() => {
           window.open(this.$http.adornUrl(`/ltt/atuser/importToken?token=${this.$cookie.get('token')}&ids=${ids}`))
-
-          // this.$http({
-          //   url: this.$http.adornUrl('/ltt/atuser/importToken'),
-          //   method: 'post',
-          //   data: this.$http.adornData(ids, false)
-          // }).then(({data}) => {
-          //   console.log("----------------")
-          //   if (data && data.code === 0) {
-          //     /**
-          //      * 下载的文件的名字
-          //      */
-          //     var fileName = this.getFilename(data.fileUrl)
-          //     console.log(data.fileUrl)
-          //     var link = document.createElement('a')
-          //     // 这里是将url转成blob地址，
-          //     fetch(data.fileUrl).then((res) => res.blob())
-          //       .then((blob) => {
-          //         // 将链接地址字符内容转变成blob地址
-          //         link.href = URL.createObjectURL(blob)
-          //         console.log(link.href)
-          //         /**
-          //          * 下载的文件的名字
-          //          */
-          //         link.download = fileName
-          //         document.body.appendChild(link)
-          //         link.click()
-          //       })
-          //   } else {
-          //     this.$message.error(data.msg)
-          //   }
-          // })
         })
-      },
-      getFilename(url) {
-        // 从图片链接中提取文件名
-        return url.substring(url.lastIndexOf('/')+1);
       },
       // 删除
       deleteHandle (id) {

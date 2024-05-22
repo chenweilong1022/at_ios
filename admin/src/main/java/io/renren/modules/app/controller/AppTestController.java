@@ -57,6 +57,12 @@ public class AppTestController {
         return R.data(enumVos);
     }
 
+    @GetMapping("enums/taskStatus")
+    public R taskStatus() {
+        List<EnumVo> enumVos = EnumUtil.enumToVo(TaskStatus.values());
+        return R.data(enumVos);
+    }
+
     @GetMapping("enums/accountTransactionTypeCodes")
     public R accountTransactionTypeCodes() {
         List<EnumVo> enumVos = EnumUtil.enumToVo(AccountTransactionTypeEnum.values());

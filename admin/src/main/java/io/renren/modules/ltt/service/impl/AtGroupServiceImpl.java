@@ -26,10 +26,7 @@ import io.renren.modules.ltt.dao.AtGroupDao;
 import io.renren.modules.ltt.dto.AtGroupDTO;
 import io.renren.modules.ltt.dto.AtUserDTO;
 import io.renren.modules.ltt.dto.CdLineIpProxyDTO;
-import io.renren.modules.ltt.entity.AtDataSubtaskEntity;
-import io.renren.modules.ltt.entity.AtDataTaskEntity;
-import io.renren.modules.ltt.entity.AtGroupEntity;
-import io.renren.modules.ltt.entity.AtUserEntity;
+import io.renren.modules.ltt.entity.*;
 import io.renren.modules.ltt.enums.*;
 import io.renren.modules.ltt.service.*;
 import io.renren.modules.ltt.vo.AtGroupTaskVO;
@@ -815,6 +812,97 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
             }
         }
         return true;
+    }
+
+    @Autowired
+    private CdLineRegisterService cdLineRegisterService;
+
+    @Override
+    public void syncNumberPeople(AtGroupDTO atGroup) {
+        List<Integer> ids = atGroup.getIds();
+        for (Integer id : ids) {
+            threadPoolTaskExecutor.execute(() -> {
+                AtGroupEntity cdGroupTasksEntity = this.getById((Serializable) id);
+                if (ObjectUtil.isNull(cdGroupTasksEntity)) {
+                    return;
+                }
+                String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource8, cdGroupTasksEntity.getId());
+                Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
+                boolean triedLock = lock.tryLock();
+                log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
+                if(triedLock) {
+                    try{
+                        //获取用户token
+                        AtUserTokenEntity atUserTokenEntity = atUserTokenService.getByUserIdCache(cdGroupTasksEntity.getUserId());
+                        if (ObjectUtil.isNull(atUserTokenEntity)) {
+                            return;
+                        }
+                        List<AtDataSubtaskEntity> atDataSubtaskEntities = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
+                                .eq(AtDataSubtaskEntity::getGroupId,cdGroupTasksEntity.getId())
+                        );
+                        CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
+                        cdLineIpProxyDTO.setTokenPhone(atUserTokenEntity.getTelephone());
+                        cdLineIpProxyDTO.setLzPhone(atUserTokenEntity.getTelephone());
+                        //去设置区号
+                        if (ObjectUtil.isNotNull(cdGroupTasksEntity.getIpCountryCode())) {
+                            cdLineIpProxyDTO.setCountryCode(cdGroupTasksEntity.getIpCountryCode().longValue());
+                        }
+                        String proxyIp = cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO);
+                        if (StrUtil.isEmpty(proxyIp)) {
+                            return;
+                        }
+                        GetChatsDTO getChatsDTO = new GetChatsDTO();
+                        getChatsDTO.setProxy(proxyIp);
+                        getChatsDTO.setChatRoomId(cdGroupTasksEntity.getRoomId());
+                        getChatsDTO.setToken(atUserTokenEntity.getToken());
+                        GetChatsVO chats = lineService.getChats(getChatsDTO);
+                        if (ObjectUtil.isNotNull(chats) && 200 == chats.getCode()) {
+                            GetChatsVO.Data data = chats.getData();
+                            if (ObjectUtil.isNull(data)) return;
+                            List<GetChatsVO.Data.Chat> dataChats = data.getChats();
+                            if (CollUtil.isEmpty(dataChats)) return;
+                            GetChatsVO.Data.Chat chat = dataChats.get(0);
+                            if (ObjectUtil.isNull(chat)) return;
+                            if (StrUtil.isNotEmpty(chat.getChatName())) {
+                                cdGroupTasksEntity.setRealGroupName(chat.getChatName());
+                            }
+                            GetChatsVO.Data.Chat.Extra extra = chat.getExtra();
+                            if (ObjectUtil.isNull(extra)) return;
+                            GetChatsVO.Data.Chat.Extra.GroupExtra groupExtra = extra.getGroupExtra();
+                            if (ObjectUtil.isNull(groupExtra)) return;
+                            Map<String, Long> memberMids = groupExtra.getMemberMids();
+                            Map<String, AtDataSubtaskEntity> midCdMaterialPhoneEntityMap = atDataSubtaskEntities.stream().filter(item -> StrUtil.isNotEmpty(item.getMid())).collect(Collectors.toMap(AtDataSubtaskEntity::getMid, s -> s,(v1,v2) -> v2));
+
+                            List<AtDataSubtaskEntity> atDataSubtaskEntityList = new ArrayList<>();
+                            for (String key : memberMids.keySet()) {
+                                AtDataSubtaskEntity cdMaterialPhoneEntity = midCdMaterialPhoneEntityMap.get(key);
+                                if (ObjectUtil.isNotNull(cdMaterialPhoneEntity)) {
+                                    cdMaterialPhoneEntity.setTaskStatus(TaskStatus.TaskStatus11.getKey());
+                                    atDataSubtaskEntityList.add(cdMaterialPhoneEntity);
+                                }
+                            }
+
+                            cdGroupTasksEntity.setSuccessfullyAttractGroupsNumber(memberMids.keySet().size());
+                            cdGroupTasksEntity.setGroupStatus(GroupStatus.GroupStatus9.getKey());
+                            cdGroupTasksEntity.setMsg(StrUtil.concat(true,cdGroupTasksEntity.getMsg(),chats.getMsg()));
+                            //拉完群重新注册出来
+                            String telephone = atUserTokenEntity.getTelephone();
+                            cdLineRegisterService.registerAgain(telephone);
+                            atDataSubtaskService.updateBatchById(atDataSubtaskEntityList);
+                            this.updateById(cdGroupTasksEntity);
+                        }
+
+                    }finally {
+                        lock.unlock();
+                    }
+                }else {
+                    log.info("keyByResource = {} 在执行",keyByResource);
+                }
+            });
+        }
+
+
+
     }
 
 
