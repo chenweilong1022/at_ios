@@ -186,6 +186,8 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
         init();
 
 
+        List<AtGroupEntity> atGroupEntities1 = this.list(new QueryWrapper<AtGroupEntity>().lambda().in(AtGroupEntity::getGroupTaskId, importZipDTO.getId()));
+        List<Integer> groupIdsAll = atGroupEntities1.stream().map(AtGroupEntity::getId).collect(Collectors.toList());
         List<AtGroupEntity> cdGroupTasksEntities = this.list(new QueryWrapper<AtGroupEntity>().lambda()
                 .in(AtGroupEntity::getGroupTaskId, importZipDTO.getId())
                 .in(AtGroupEntity::getGroupStatus, GroupStatus.GroupStatus9.getKey(),GroupStatus.GroupStatus15.getKey())
@@ -276,7 +278,7 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
 
 
             List<AtGroupEntity> atGroupEntities = this.list(new QueryWrapper<AtGroupEntity>().lambda()
-                    .in(AtGroupEntity::getId, groupIds)
+                    .in(AtGroupEntity::getId, groupIdsAll)
                     .isNull(AtGroupEntity::getRoomId)
             );
 
@@ -303,7 +305,7 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
             IOUtils.closeQuietly(sw7);
             zip.closeEntry();
         }catch (Exception e) {
-
+            log.error("e = {}",e);
         }
 
 
