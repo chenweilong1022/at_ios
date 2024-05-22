@@ -37,6 +37,7 @@ import io.renren.modules.ltt.vo.AtGroupVO;
 import io.renren.modules.ltt.vo.AtUserTokenVO;
 import io.renren.modules.ltt.vo.AtUserVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.velocity.Template;
@@ -104,6 +105,9 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
     private CdGetPhoneService cdGetPhoneService;
     @Autowired
     private SystemConstant systemConstant;
+
+    @Resource
+    private CdLineRegisterService cdLineRegisterService;
 
     @Override
     public PageUtils<AtGroupVO> queryPage(AtGroupDTO atGroup) {
@@ -620,6 +624,54 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
             return count > 0;
         }
         return false;
+    }
+
+    @Override
+    public List<String> groupFailRegisterAgains(List<Integer> groupIdList) {
+        Assert.isTrue(CollectionUtils.isEmpty(groupIdList), "群id不能为空");
+        List<AtGroupEntity> groupList = this.listByIds(groupIdList);
+        Assert.isTrue(CollectionUtils.isEmpty(groupList), "群信息不存在，请刷新重试");
+
+        List<String> errorGroupNameList = new ArrayList<>();//不满足重新注册条件的(群名，手机号)
+        List<Integer> retryUserIdList = new ArrayList<>();//需要重新注册的用户id
+        for (AtGroupEntity atGroupEntity : groupList) {
+            if (GroupStatus.GroupStatus11.getKey().equals(atGroupEntity.getGroupStatus())) {
+                //mid失败
+                retryUserIdList.add(atGroupEntity.getUserId());
+            } else if (GroupStatus.GroupStatus4.getKey().equals(atGroupEntity.getGroupStatus())
+                    && StringUtils.isEmpty(atGroupEntity.getRoomId())) {
+                //拉群失败，且没有群号
+                retryUserIdList.add(atGroupEntity.getUserId());
+            } else if (GroupStatus.GroupStatus8.getKey().equals(atGroupEntity.getGroupStatus())) {
+                //群人数同步失败，且不是网络异常的
+                if (StringUtils.isNotEmpty(atGroupEntity.getMsg())
+                        && atGroupEntity.getMsg().contains("网络异常")) {
+                    continue;
+                }
+                retryUserIdList.add(atGroupEntity.getUserId());
+            } else {
+                errorGroupNameList.add(atGroupEntity.getGroupName());
+            }
+        }
+        Assert.isTrue(CollectionUtils.isEmpty(retryUserIdList), "无可重新注册的账号，请检查");
+
+        //判断此账号，是否正在拉其他群
+        Map<Integer, List<AtGroupEntity>> repeatMap = baseMapper.selectList(new QueryWrapper<AtGroupEntity>()
+                        .lambda().in(AtGroupEntity::getUserId, retryUserIdList))
+                .stream().collect(Collectors.groupingBy(AtGroupEntity::getUserId));
+        for (Integer retryUserId : retryUserIdList) {
+            List<AtGroupEntity> repeatList = repeatMap.get(retryUserId);
+            if (CollUtil.isNotEmpty(repeatList) && repeatList.size() > 1) {
+                retryUserIdList.remove(retryUserId);
+                errorGroupNameList.addAll(repeatList.stream().map(AtGroupEntity::getGroupName).collect(Collectors.toList()));
+            }
+        }
+        Assert.isTrue(CollectionUtils.isEmpty(retryUserIdList), "无可重新注册的账号，请检查");
+
+        //重新发起注册
+        Map<Integer, String> telephoneMap = atUserService.queryTelephoneByIds(retryUserIdList);
+        cdLineRegisterService.registerAgains(telephoneMap.values().stream().collect(Collectors.toList()));
+        return errorGroupNameList;
     }
 
     @Override

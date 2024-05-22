@@ -2,6 +2,7 @@ package io.renren.modules.ltt.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSON;
 import io.renren.common.constant.SystemConstant;
 import io.renren.common.utils.*;
 import io.renren.common.validator.Assert;
@@ -206,12 +207,18 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
         List<CdGetPhoneEntity> cdGetPhoneList = getPhoneService.getByIds(Arrays.asList(ids));
         Assert.isTrue(CollectionUtils.isEmpty(cdGetPhoneList), "数据为空");
 
+        return registerRetry(cdGetPhoneList, ipClearFlag, null);
+    }
+
+    public boolean registerRetry(List<CdGetPhoneEntity> phoneList,
+                                 Boolean ipClearFlag,
+                                 Integer retrySetNum) {
         Integer mod = systemConstant.getSERVERS_MOD();
         String key = String.valueOf(mod);
 
         List<CdGetPhoneEntity> updateCdGetPhoneList = new ArrayList<>();
         Integer retryNum;
-        for (CdGetPhoneEntity cdGetPhone : cdGetPhoneList) {
+        for (CdGetPhoneEntity cdGetPhone : phoneList) {
             //如果需要拉黑，去拉黑ip
             if (ipClearFlag) {
                 //ip暂时拉黑
@@ -230,6 +237,9 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
             updateCdGetPhoneEntity.setCode("");
             updateCdGetPhoneEntity.setCreateTime(new Date());
             retryNum = ObjectUtil.isNull(cdGetPhone.getRetryNum()) ? 1 : cdGetPhone.getRetryNum() + 1;
+            if (retrySetNum != null) {
+                retryNum = retrySetNum;
+            }
             updateCdGetPhoneEntity.setRetryNum(retryNum);
             updateCdGetPhoneList.add(updateCdGetPhoneEntity);
         }
@@ -238,6 +248,8 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
         return true;
     }
 
+
+
     @Override
     public boolean registerAgain(String telephone) {
         //重新注册line
@@ -245,13 +257,19 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
                 .eq(CdGetPhoneEntity::getPhone,telephone).last("limit 1")
         );
         if (ObjectUtil.isNotNull(cdGetPhone)) {
-            Integer[] ids = {cdGetPhone.getId()};
-            this.registerRetry(ids,true);
+            return this.registerRetry(Arrays.asList(cdGetPhone),false, 0);
         }
-        CdGetPhoneEntity updateCdGetPhoneEntity = new CdGetPhoneEntity();
-        updateCdGetPhoneEntity.setRetryNum(0);
-        updateCdGetPhoneEntity.setId(cdGetPhone.getId());
-        cdGetPhoneService.updateById(updateCdGetPhoneEntity);
+        return false;
+    }
+
+    @Override
+    public boolean registerAgains(List<String> telephoneList) {
+        //重新注册line
+        List<CdGetPhoneEntity> cdGetPhoneList = getPhoneService.list(new QueryWrapper<CdGetPhoneEntity>().lambda()
+                .in(CdGetPhoneEntity::getPhone,telephoneList));
+        if (CollectionUtils.isNotEmpty(cdGetPhoneList)) {
+            return this.registerRetry(cdGetPhoneList,false, 0);
+        }
         return false;
     }
 

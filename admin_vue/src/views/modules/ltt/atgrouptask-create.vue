@@ -292,6 +292,7 @@
           <el-button type="info" @click="getRealGroupNameHandle()" :disabled="dataListSelections.length <= 0">获取真实群名称</el-button>
           <el-button type="primary" @click="copyPhoneHandle()" :disabled="dataListSelections.length <= 0">复制手机号</el-button>
           <el-button type="primary" @click="pushGroupSubtaskHandle()" :disabled="dataListSelections.length <= 0">推动拉群</el-button>
+          <el-button type="danger" @click="userRegisterRetryHandle()" :disabled="dataListSelections.length <= 0">拉群号重注册</el-button>
         </el-form-item>
         </el-form>
         <el-table
@@ -460,11 +461,12 @@
             label="操作">
             <template slot-scope="scope">
               <el-button type="text" size="small" @click="errLogsHandle(scope.row.id)">错误日志</el-button>
-              <el-button type="text" size="small"
+              <el-button type="danger" size="small"
                          v-if="(scope.row.msg != null && scope.row.msg.indexOf('网络异常') !== -1) ||
                          (scope.row.roomId != null && scope.row.successfullyAttractGroupsNumber == 0)"
                          @click="errRetryHandle(scope.row.id)">错误重试</el-button>
               <el-button type="primary" @click="pushGroupSubtaskHandle(scope.row.id)">推动拉群</el-button>
+              <el-button type="danger" @click="userRegisterRetryHandle(scope.row.id)">拉群号重新注册</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -941,6 +943,49 @@ import ErrLogs from "./atdatatask-err-logs.vue";
                   this.getDataList()
                 }
               })
+            } else {
+              this.$message.error(data.msg)
+            }
+          })
+        })
+      },
+      userRegisterRetryHandle (id) {
+        var ids = id ? [id] : this.dataListSelections.map(item => {
+          return item.id
+        })
+        this.$confirm(`确定拉群号重新注册操作?`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$http({
+            url: this.$http.adornUrl('/ltt/atgroup/groupFailRegisterAgains'),
+            method: 'post',
+            data: this.$http.adornData(ids, false)
+          }).then(({data}) => {
+            if (data && data.code === 0) {
+              if (data.errorGroupNameList && data.errorGroupNameList.length > 0) {
+                // 如果 errorGroupNameList 不为空，则展示列表内容
+                this.$message({
+                  message: '未发起重新注册的群名，请检查：' + data.errorGroupNameList.join(', '), // 使用逗号连接列表项
+                  type: 'error', // 这里可以根据你的需求选择合适的类型
+                  duration: 2 * 60 * 1000,
+                  showClose: true, // 显示关闭按钮
+                  onClose: () => {
+                    this.getDataList()
+                  }
+                })
+              } else {
+                // 如果 errorGroupNameList 为空，则展示操作成功的消息
+                this.$message({
+                  message: '操作成功',
+                  type: 'success',
+                  duration: 1500,
+                  onClose: () => {
+                    this.getDataList()
+                  }
+                })
+              }
             } else {
               this.$message.error(data.msg)
             }

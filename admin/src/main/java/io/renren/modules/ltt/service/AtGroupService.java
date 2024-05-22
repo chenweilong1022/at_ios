@@ -98,6 +98,12 @@ public interface AtGroupService extends IService<AtGroupEntity> {
     Boolean errRetryGroup(Integer groupId);
 
     /**
+     * 拉群失败的，重新注册拉群账号
+     * @param groupIdList
+     */
+    List<String> groupFailRegisterAgains(List<Integer> groupIdList);
+
+    /**
      * 数据汇总
      * @param groupTaskIdList
      * @return

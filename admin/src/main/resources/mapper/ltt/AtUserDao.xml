@@ -162,4 +162,16 @@
         GROUP BY
             nation;
     </select>
+
+    <select id="queryMaxRegisterCount" resultType="io.renren.modules.ltt.vo.AtUserVO">
+        SELECT
+            telephone,
+            MAX( register_count ) AS registerCount
+        FROM
+            at_user
+        WHERE
+            nation = #{nation}
+        GROUP BY
+            telephone;
+    </select>
 </mapper>

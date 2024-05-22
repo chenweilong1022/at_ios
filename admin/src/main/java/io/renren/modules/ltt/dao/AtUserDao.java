@@ -51,5 +51,7 @@ public interface AtUserDao extends BaseMapper<AtUserEntity> {
      */
     List<UserSummaryResultDto> queryOnlineUserSummary();
 
+    List<AtUserVO> queryMaxRegisterCount(@Param("nation") String nation);
+
 
 }

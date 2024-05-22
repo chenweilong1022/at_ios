@@ -73,6 +73,17 @@ public class AtGroupController extends AbstractController {
     }
 
     /**
+     * 错误重试
+     */
+    @RequestMapping("/groupFailRegisterAgains")
+    @RequiresPermissions("ltt:atgrouptask:update")
+    public R groupFailRegisterAgains(@RequestBody Integer[] ids){
+        List<String> errorGroupNameList = atGroupService.groupFailRegisterAgains(Arrays.asList(ids));
+
+        return R.ok().put("errorGroupNameList", errorGroupNameList);
+    }
+
+    /**
      * 开始拉群
      */
     @RequestMapping("/startGroup")
