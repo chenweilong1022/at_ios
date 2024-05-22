@@ -980,6 +980,11 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
             if (!proxyUse.isProxyUse()) {
                 proxyUse = otherProxyOutIpv4(ip, regions, proxyUse);
             }
+        }else {
+            proxyUse = isProxyUseProxyUp(ip,regions);
+            if (!proxyUse.isProxyUse()) {
+                proxyUse = otherProxyOutIpv4(ip, regions, proxyUse);
+            }
         }
         return proxyUse;
     }
