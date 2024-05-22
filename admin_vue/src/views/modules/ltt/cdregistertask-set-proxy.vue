@@ -60,7 +60,7 @@ export default {
       },
       countryCodes: [],
       dataForm: {
-        id: 0,
+        ids: [],
         totalAmount: '',
         numberThreads: '50',
         numberRegistered: '',
@@ -130,8 +130,8 @@ export default {
         }
       })
     },
-    init (id) {
-      this.dataForm.id = id || 0
+    init (ids) {
+      this.dataForm.id = ids || 0
       this.visible = true
       this.getProxyEnums()
       this.$nextTick(() => {
