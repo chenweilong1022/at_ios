@@ -283,7 +283,7 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
             List<Integer> integers = atGroupEntities.stream().map(AtGroupEntity::getId).collect(Collectors.toList());
 
             List<AtDataSubtaskEntity> atDataSubtaskEntityList = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
-                    .in(AtDataSubtaskEntity::getGroupId, integers)
+                    .in(AtDataSubtaskEntity::getGroupId, groupIds)
                     .eq(AtDataSubtaskEntity::getDataType,DataType.DataType1.getKey())
             );
 
@@ -824,7 +824,7 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
                 if(triedLock) {
                     try{
                         //获取用户token
-                        AtUserTokenEntity atUserTokenEntity = atUserTokenService.getByUserIdCache(cdGroupTasksEntity.getUserId());
+                        AtUserTokenEntity atUserTokenEntity = atUserTokenService.getByUserIdCache(cdGroupTasksEntity.getChangeUserId());
                         if (ObjectUtil.isNull(atUserTokenEntity)) {
                             return;
                         }
