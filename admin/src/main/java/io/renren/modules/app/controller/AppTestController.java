@@ -129,6 +129,12 @@ public class AppTestController {
         return R.data(enumVos);
     }
 
+    @GetMapping("enums/getAtUserGroupType")
+    public R getAtUserGroupType() {
+        List<EnumVo> enumVos = EnumUtil.enumToVo(AtUserGroupTypeEnum.values());
+        return R.data(enumVos);
+    }
+
     @PostMapping("setJpSfPhoneCache")
     public R setJpSfPhoneCache(@RequestBody LinkedList<String> phoneList) {
         jpSfPhoneCacheListString.put("jpSfPhone",phoneList);

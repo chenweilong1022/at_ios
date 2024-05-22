@@ -36,6 +36,9 @@ public class AtUserGroupDTO extends PageParam implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="分组名称")
 	private String name;
+
+	@ApiModelProperty(required=false,value="分组类型 AtUserGroupTypeEnum")
+	private Integer userGroupType;
 	/**
 	 * 删除标志
 	 */
