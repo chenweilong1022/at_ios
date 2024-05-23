@@ -12,14 +12,10 @@ import java.util.List;
  */
 public class App {
     public static void main(String[] args) {
-        List<String> strings = FileUtil.readLines("/Users/chenweilong/Desktop/java代码/at_ios/file/4月16号/泰国洋洋/料子.txt", "UTF-8");
-        int i = strings.size() / 3;
-        List<List<String>> partition = Lists.partition(strings, i);
-        int j = 0;
-        for (List<String> stringList : partition) {
-            j++;
-            FileUtil.writeUtf8Lines(stringList,"/Users/chenweilong/Desktop/java代码/at_ios/file/4月16号/泰国洋洋/" +j + ".txt");
-
-        }
+        List<String> strings1 = FileUtil.readLines("/Users/chenweilong/Desktop/java代码/at_ios/file/0514/泰国/2.txt", "");
+        List<String> strings2 = FileUtil.readLines("/Users/chenweilong/Desktop/java代码/at_ios/file/0514/泰国/4.txt", "");
+        strings1.addAll(strings2);
+        long count = strings1.stream().distinct().count();
+        System.out.println(count);
     }
 }
