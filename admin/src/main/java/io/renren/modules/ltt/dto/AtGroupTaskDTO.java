@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import io.renren.common.base.dto.PageParam;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -40,6 +42,11 @@ public class AtGroupTaskDTO extends PageParam implements Serializable {
 	 */
 	@ApiModelProperty(required=false,value="任务名称")
 	private String taskName;
+	/**
+	 * 账号填充
+	 */
+	@ApiModelProperty(required=false,value="账号填充")
+	private Boolean autoFill;
 	/**
 	 * 群名称
 	 */

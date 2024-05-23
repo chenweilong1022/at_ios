@@ -431,6 +431,7 @@ public class GroupTask {
                             //这里如果群同步成功删除任务队列
                         }else {
                             Long add = stringRedisTemplate.opsForSet().remove(RedisKeys.USER_TASKS_POOL.getValue(String.valueOf(systemConstant.getSERVERS_MOD())), String.valueOf(cdGroupTasksEntity.getUserId()));
+                            log.info("GroupTask add opsForSet remove = {}",add);
                         }
 
                         List<AtDataSubtaskEntity> atDataSubtaskEntities = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()

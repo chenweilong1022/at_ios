@@ -439,6 +439,10 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
         List<AtDataTaskEntity> atDataTaskEntities = atDataTaskService.list(new QueryWrapper<AtDataTaskEntity>().lambda()
                 .in(AtDataTaskEntity::getGroupId,ids)
         );
+        List<AtGroupEntity> atGroupEntities = this.listByIds(ids);
+        for (AtGroupEntity atGroupEntity : atGroupEntities) {
+            Assert.isTrue(ObjectUtil.isNotNull(atGroupEntity.getUserId()) && atGroupEntity.getUserId() <= 0,"还没有分配拉群号，请先分配");
+        }
         List<AtDataTaskEntity> updates = new ArrayList<>();
         for (AtDataTaskEntity atDataTaskEntity : atDataTaskEntities) {
             AtDataTaskEntity update = new AtDataTaskEntity();
