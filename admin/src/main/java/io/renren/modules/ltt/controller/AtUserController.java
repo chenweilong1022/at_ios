@@ -192,16 +192,6 @@ public class AtUserController extends AbstractController {
     }
 
     /**
-     * 内部使用接口，同步注册时间
-     */
-    @RequestMapping("/syncPhoneRegisterTest")
-    public R syncPhoneRegisterTest() {
-        atUserService.syncPhoneRegisterTest();
-
-        return R.ok();
-    }
-
-    /**
      * 内部使用接口，同步红灯时间
      *
      */

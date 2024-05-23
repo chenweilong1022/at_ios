@@ -7,12 +7,11 @@ import io.renren.common.constant.SystemConstant;
 import io.renren.common.utils.*;
 import io.renren.common.validator.Assert;
 import io.renren.datasources.annotation.Game;
+import io.renren.modules.ltt.dao.AtUserDao;
 import io.renren.modules.ltt.dto.*;
 import io.renren.modules.ltt.entity.CdGetPhoneEntity;
-import io.renren.modules.ltt.enums.CountryCode;
-import io.renren.modules.ltt.enums.PhoneStatus;
+import io.renren.modules.ltt.enums.*;
 import io.renren.modules.ltt.enums.RedisKeys;
-import io.renren.modules.ltt.enums.RegisterStatus;
 import io.renren.modules.ltt.service.*;
 import io.renren.modules.ltt.vo.*;
 import lombok.extern.slf4j.Slf4j;
@@ -59,6 +58,9 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
 
     @Resource
     private AtUserTokenService atUserTokenService;
+
+    @Resource
+    private AtUserDao atUserDao;
 
     @Override
     public PageUtils<CdLineRegisterVO> queryPage(CdLineRegisterDTO cdLineRegister) {
@@ -213,6 +215,13 @@ public class CdLineRegisterServiceImpl extends ServiceImpl<CdLineRegisterDao, Cd
     public boolean registerRetry(List<CdGetPhoneEntity> phoneList,
                                  Boolean ipClearFlag,
                                  Integer retrySetNum) {
+        //判断是否为改名组，改名组不允许注册
+        List<String> telphoneList = phoneList.stream().map(CdGetPhoneEntity::getPhone).distinct().collect(Collectors.toList());
+        List<String> changeNamePhone = atUserDao.queryByGroupType(telphoneList, AtUserGroupTypeEnum.AtUserGroupType2.getKey());
+        for (String s : telphoneList) {
+            Assert.isTrue(changeNamePhone.contains(s), "改名号，不允许注册");
+        }
+
         Integer mod = systemConstant.getSERVERS_MOD();
         String key = String.valueOf(mod);
 

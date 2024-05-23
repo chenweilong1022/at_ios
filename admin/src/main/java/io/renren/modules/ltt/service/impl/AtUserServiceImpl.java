@@ -79,9 +79,6 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
     @Resource
     private CdLineIpProxyService lineIpProxyService;
 
-    @Resource
-    private CdLineRegisterService cdLineRegisterService;
-
     @Resource(name = "caffeineCacheListString")
     private Cache<String, Queue<String>> caffeineCacheListString;
 
@@ -530,90 +527,136 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
 
     @Override
     @Async
-    public void syncRegisterCountTest(String phone) {
+    public void syncRegisterCountTest(String phone1) {
+//        List<AtUserVO> atuserList = baseMapper.queryMaxRegisterCount("jp");
+//        for (AtUserVO atUserVO : atuserList) {
+//            threadPoolTaskExecutor.execute(() -> {
+//                redisTemplate.opsForHash().put(RedisKeys.RedisKeys10.getValue(), atUserVO.getTelephone(), atUserVO.getRegisterCount().toString());
+//            });
+//        }
+//        Set<String> keys1 = redisTemplate.keys(RedisKeys.RedisKeys12.getValue("*"));
+//        for (String key : keys1) {
+//            threadPoolTaskExecutor.execute(() -> {
+//                redisTemplate.delete(key);
+//            });
+//        }
+
+        Set<Object> keys = redisTemplate.opsForHash().keys(RedisKeys.RedisKeys10.getValue());
+        for (Object key : keys) {
+            threadPoolTaskExecutor.execute(() -> {
+                String phone = String.valueOf(key);
+                        Integer registerCount = cdGetPhoneService.getPhoneRegisterCount(phone);
+                        //大于等于3次的卡，与前两次的做对比，超过24小时，才为可用状态
+                        if (registerCount >= 3) {
+                            Map<Integer, Date> userMap = baseMapper.selectList(new QueryWrapper<AtUserEntity>().lambda()
+                                            .eq(AtUserEntity::getTelephone, phone)).stream()
+                                    .filter(i -> i.getRegisterCount() != null)
+                                    .collect(Collectors.toMap(AtUserEntity::getRegisterCount,
+                                            i -> i.getRegisterTime() != null ? i.getRegisterTime() : i.getCreateTime(), (a, b) -> b));
+                            Integer judgeFrequency = registerCount - 2;//与前两次的对比
+
+                            Date time = null;
+                            if (ObjectUtil.isNotNull(userMap.get(judgeFrequency))) {
+                                time = userMap.get(judgeFrequency);
+                            } else if (ObjectUtil.isNotNull(userMap.get(registerCount))) {
+                                time = userMap.get(registerCount);
+                            } else {
+                                time = userMap.get(0);
+                                log.error("注册时间异常  {}", phone);
+                            }
+
+                            //在此时间上加24小时
+                            Date expireDate = DateUtils.addDateMinutes(time, 24 * 60);
+
+                            Long expireMinutes = DateUtils.betweenMinutes(new Date(), expireDate);
+
+                            if (expireMinutes > 5) {
+                                redisTemplate.opsForValue().set(RedisKeys.RedisKeys12.getValue(phone), String.valueOf(registerCount), expireMinutes, TimeUnit.MINUTES);
+                            }
+                        }
+                    });
+}
+
+
 //        if (StringUtils.isNotEmpty(phone)) {
 //            redisTemplate.opsForHash().delete(RedisKeys.RedisKeys10.getValue(), phone);
 //
 //        } else {
 //            redisTemplate.delete(RedisKeys.RedisKeys10.getValue());
 //        }
-        AtUserDTO atUser = new AtUserDTO();
-        atUser.setPage(1);
-        atUser.setLimit(500);
-        boolean hasNextPage = true;
-
-        while (hasNextPage) {
-            IPage<AtUserEntity> page = baseMapper.selectPage(new Query<AtUserEntity>(atUser).getPage(),
-                    new QueryWrapper<AtUserEntity>().lambda()
-                            .eq(StringUtils.isNotEmpty(phone), AtUserEntity::getTelephone, phone)
-                            .eq(AtUserEntity::getNation, "TH")
-                            .orderByAsc(AtUserEntity::getCreateTime)
-            );
-            List<AtUserEntity> currentPageData = page.getRecords();
-            hasNextPage = currentPageData.size() >= atUser.getLimit();
-            log.info("同步注册次数，第{}页，数量{}", atUser.getPage(), currentPageData.size());
-            if (hasNextPage) {
-                atUser.setPage(atUser.getPage() + 1);
-            }
-
-            List<AtUserEntity> updateAtUserList = new ArrayList<>();
-            for (AtUserEntity atUserEntity : currentPageData) {
-                //更新次数
-                Integer registerCount = cdGetPhoneService.getPhoneRegisterCount(atUserEntity.getTelephone());
-
-
+//        AtUserDTO atUser = new AtUserDTO();
+//        atUser.setPage(1);
+//        atUser.setLimit(500);
+//        boolean hasNextPage = true;
+//
+//        while (hasNextPage) {
+//            IPage<AtUserEntity> page = baseMapper.selectPage(new Query<AtUserEntity>(atUser).getPage(),
+//                    new QueryWrapper<AtUserEntity>().lambda()
+//                            .eq(StringUtils.isNotEmpty(phone), AtUserEntity::getTelephone, phone)
+//                            .eq(AtUserEntity::getNation, "JP")
+//                            .orderByAsc(AtUserEntity::getCreateTime)
+//            );
+//            List<AtUserEntity> currentPageData = page.getRecords();
+//            hasNextPage = currentPageData.size() >= atUser.getLimit();
+//            log.info("同步注册次数，第{}页，数量{}", atUser.getPage(), currentPageData.size());
+//            if (hasNextPage) {
+//                atUser.setPage(atUser.getPage() + 1);
+//            }
+//
+//            List<AtUserEntity> updateAtUserList = new ArrayList<>();
+//            for (AtUserEntity atUserEntity : currentPageData) {
+//                //更新次数
+//                Integer registerCount = cdGetPhoneService.getPhoneRegisterCount(atUserEntity.getTelephone());
+//
+//
 //                AtUserEntity updateAtUserEntity = new AtUserEntity();
 //                updateAtUserEntity.setId(atUserEntity.getId());
 //                updateAtUserEntity.setRegisterCount(registerCount);
 //                updateAtUserList.add(updateAtUserEntity);
 //                redisTemplate.opsForHash().put(RedisKeys.RedisKeys10.getValue(), atUserEntity.getTelephone(), registerCount.toString());
-                if (registerCount >= 3) {
-                    redisTemplate.opsForValue().set(RedisKeys.RedisKeys12.getValue(phone), String.valueOf(registerCount), (24 * 60) + 30, TimeUnit.MINUTES);
-                }
-            }
-//            this.updateBatchById(updateAtUserList);
-        }
-        log.info("同步注册次数结束，总页码:{}", atUser.getPage());
+//            }
+//        }
+//        log.info("同步注册次数结束，总页码:{}", atUser.getPage());
 
     }
 
-    @Override
-    public void syncPhoneRegisterTest() {
-        AtUserDTO atUser = new AtUserDTO();
-        atUser.setPage(1);
-        atUser.setLimit(500);
-        boolean hasNextPage = true;
-        while (hasNextPage) {
-            IPage<AtUserEntity> page = baseMapper.selectPage(new Query<AtUserEntity>(atUser).getPage(),
-                    new QueryWrapper<AtUserEntity>().lambda()
-                            .eq(AtUserEntity::getNation, "JP")
-                            .orderByDesc(AtUserEntity::getCreateTime)
-            );
-            List<AtUserEntity> currentPageData = page.getRecords();
-            hasNextPage = currentPageData.size() >= atUser.getLimit();
-            if (hasNextPage) {
-                atUser.setPage(atUser.getPage() + 1);
-            }
-
-            List<AtUserEntity> updateAtUserList = new ArrayList<>();
-            for (AtUserEntity atUserEntity : currentPageData) {
-                threadPoolTaskExecutor.execute(() -> {
-                    AtUserEntity updateUser = new AtUserEntity();
-                    CdLineRegisterEntity cdLineRegisterEntity = cdLineRegisterService.queryLineRegisterByPhone(atUserEntity.getTelephone());
-                    if (ObjectUtil.isNotNull(cdLineRegisterEntity)) {
-                        log.info(atUserEntity.getCreateTime()  + "---" + cdLineRegisterEntity.getCreateTime());
-                        if ( atUserEntity.getCreateTime().after(cdLineRegisterEntity.getCreateTime())) {
-                            updateUser.setId(atUserEntity.getId());
-                            updateUser.setRegisterTime(cdLineRegisterEntity.getCreateTime());
-                            updateAtUserList.add(updateUser);
-                            baseMapper.updateById(updateUser);
-                        }
-                    }
-                });
-            }
-        }
-
-    }
+//    @Override
+//    public void syncPhoneRegisterTest() {
+//        AtUserDTO atUser = new AtUserDTO();
+//        atUser.setPage(1);
+//        atUser.setLimit(500);
+//        boolean hasNextPage = true;
+//        while (hasNextPage) {
+//            IPage<AtUserEntity> page = baseMapper.selectPage(new Query<AtUserEntity>(atUser).getPage(),
+//                    new QueryWrapper<AtUserEntity>().lambda()
+//                            .eq(AtUserEntity::getNation, "JP")
+//                            .orderByDesc(AtUserEntity::getCreateTime)
+//            );
+//            List<AtUserEntity> currentPageData = page.getRecords();
+//            hasNextPage = currentPageData.size() >= atUser.getLimit();
+//            if (hasNextPage) {
+//                atUser.setPage(atUser.getPage() + 1);
+//            }
+//
+//            List<AtUserEntity> updateAtUserList = new ArrayList<>();
+//            for (AtUserEntity atUserEntity : currentPageData) {
+//                threadPoolTaskExecutor.execute(() -> {
+//                    AtUserEntity updateUser = new AtUserEntity();
+//                    CdLineRegisterEntity cdLineRegisterEntity = cdLineRegisterService.queryLineRegisterByPhone(atUserEntity.getTelephone());
+//                    if (ObjectUtil.isNotNull(cdLineRegisterEntity)) {
+//                        log.info(atUserEntity.getCreateTime()  + "---" + cdLineRegisterEntity.getCreateTime());
+//                        if ( atUserEntity.getCreateTime().after(cdLineRegisterEntity.getCreateTime())) {
+//                            updateUser.setId(atUserEntity.getId());
+//                            updateUser.setRegisterTime(cdLineRegisterEntity.getCreateTime());
+//                            updateAtUserList.add(updateUser);
+//                            baseMapper.updateById(updateUser);
+//                        }
+//                    }
+//                });
+//            }
+//        }
+//
+//    }
 
     public static void main(String[] args) {
 

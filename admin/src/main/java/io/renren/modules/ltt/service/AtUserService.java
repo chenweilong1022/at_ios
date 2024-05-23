@@ -159,7 +159,7 @@ public interface AtUserService extends IService<AtUserEntity> {
     /**
      * 内部使用接口，同步注册时间
      */
-    void syncPhoneRegisterTest();
+//    void syncPhoneRegisterTest();
 
     /**
      * 内部使用接口，通过红灯时间
