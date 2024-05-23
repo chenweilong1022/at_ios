@@ -146,6 +146,9 @@
               </el-option>
             </el-select>
           </el-form-item>
+          <el-form-item>
+            <el-checkbox v-model="dataForm.autoFill">账号填充</el-checkbox>
+          </el-form-item>
 
           <el-form-item v-if="groupType === 6" label="合群号国家">
             <el-select v-model="dataForm.countryCodeH" placeholder="合群号国家" clearable>
@@ -546,6 +549,7 @@ import ErrLogs from "./atdatatask-err-logs.vue";
         dataForm: {
           id: null,
           userGroupId: null,
+          autoFill: false,
           userGroupIdH: null,
           changeGroupCountryCode: null,
           changeGroupId: null,
@@ -1041,6 +1045,7 @@ import ErrLogs from "./atdatatask-err-logs.vue";
       },
       startGroupHandler () {
         this.isLoading = true
+        console.log(this.dataForm.autoFill)
         this.$http({
           url: this.$http.adornUrl('/ltt/atgrouptask/onGroupStart'),
           method: 'POST',
@@ -1048,6 +1053,7 @@ import ErrLogs from "./atdatatask-err-logs.vue";
             'id': this.dataForm.id,
             'groupName': this.dataForm.groupName,
             'countryCode': this.dataForm.countryCode,
+            'autoFill': this.dataForm.autoFill,
             'countryCodeH': this.dataForm.countryCodeH,
             'intervalSecond': this.dataForm.intervalSecond,
             'searchIntervalSecond': this.dataForm.searchIntervalSecond,

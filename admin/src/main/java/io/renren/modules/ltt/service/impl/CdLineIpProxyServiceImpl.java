@@ -1,6 +1,7 @@
 package io.renren.modules.ltt.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.*;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
@@ -10,6 +11,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.benmanes.caffeine.cache.Cache;
+import com.sun.xml.internal.ws.api.pipe.Fiber;
 import io.renren.common.utils.*;
 import io.renren.common.utils.EnumUtil;
 import io.renren.common.utils.vo.PhoneCountryVO;
@@ -383,67 +385,48 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 //    }
 
 
-//    public static void main(String[] args) throws InterruptedException {
-//        ExecutorService executorService = Executors.newFixedThreadPool(100);
-//        Set<String> ips = ConcurrentHashMap.newKeySet();
-//        for (int i = 0; i < 5000; i++) {
-//            CdLineIpProxyServiceImpl cdLineIpProxyService = new CdLineIpProxyServiceImpl();
-//            int finalI = i;
-//
+    public static void main(String[] args) throws InterruptedException {
+        ExecutorService executorService = Executors.newFixedThreadPool(200);
+        List<String> strings = FileUtil.readLines("/Users/chenweilong/Downloads/chenweilong1022@gmail.com-100010627711-日本 (2).txt", "UTF-8");
+        ArrayList<String> objects = CollUtil.newArrayList();
+        for (String string : strings) {
+            String[] split = string.split(":");
+            String format = String.format("%s:%s@%s", split[2], split[3], split[0]+":"+split[1]);
+            objects.add(format);
+        }
+        Set<String> ips = ConcurrentHashMap.newKeySet();
+        for (int i = 0; i < 5000; i++) {
+            CdLineIpProxyServiceImpl cdLineIpProxyService = new CdLineIpProxyServiceImpl();
+            int finalI = i;
+            String jp = objects.get(finalI);
+            CurlVO jp1 = cdLineIpProxyService.isProxyUseIp2World(jp, "jp");
+            if (jp1.isProxyUse()) {
+                ips.add(jp1.getIp());
+                log.info("i = {} set size = {}",finalI,ips.size());
+            }
 //            executorService.submit(() -> {
-//                String jp = cdLineIpProxyService.getIpmarsIp("jp");
-//                CurlVO jp1 = cdLineIpProxyService.isProxyUseIpmarsIp(jp, "jp");
-//                if (jp1.isProxyUse()) {
-//                    ips.add(jp1.getIp());
-//                    log.info("i = {} set size = {}",finalI,ips.size());
-//                }
-//            });
-//            executorService.submit(() -> {
-//                String jp = cdLineIpProxyService.getLunaIp("jp");
-//                CurlVO jp1 = cdLineIpProxyService.isProxyUse(jp, "jp");
-//                if (jp1.isProxyUse()) {
-//                    ips.add(jp1.getIp());
-//                    log.info("i = {} set size = {}",finalI,ips.size());
-//                }
-//            });
-//            executorService.submit(() -> {
-//                String jp = cdLineIpProxyService.getIp2WorldIp("jp");
+////                String jp = cdLineIpProxyService.getIpwebIp("jp");
+//                String jp = objects.get(finalI);
 //                CurlVO jp1 = cdLineIpProxyService.isProxyUseIp2World(jp, "jp");
 //                if (jp1.isProxyUse()) {
 //                    ips.add(jp1.getIp());
 //                    log.info("i = {} set size = {}",finalI,ips.size());
 //                }
 //            });
-//            executorService.submit(() -> {
-//                String jp = cdLineIpProxyService.getRolaIp("jp");
-//                CurlVO jp1 = cdLineIpProxyService.isProxyUseRolaIp(jp, "jp");
-//                if (jp1.isProxyUse()) {
-//                    ips.add(jp1.getIp());
-//                    log.info("i = {} set size = {}",finalI,ips.size());
-//                }
-//            });
-//            executorService.submit(() -> {
-//                String jp = cdLineIpProxyService.getProxyUpIp("jp");
-//                CurlVO jp1 = cdLineIpProxyService.isProxyUseProxyUp(jp, "jp");
-//                if (jp1.isProxyUse()) {
-//                    ips.add(jp1.getIp());
-//                    log.info("i = {} set size = {}",finalI,ips.size());
-//                }
-//            });
-//        }
-//
-//        // 关闭线程池
-//        executorService.shutdown();
-//
-//        // 等待所有任务完成
-//        if (!executorService.awaitTermination(1, TimeUnit.HOURS)) {
-//            // 如果超时，则强制关闭尚未完成的任务
-//            executorService.shutdownNow();
-//        }
-//        System.out.println(ips);
-//        System.out.println(ips.size());
-//        System.out.println("All tasks are finished.");
-//    }
+        }
+
+        // 关闭线程池
+        executorService.shutdown();
+
+        // 等待所有任务完成
+        if (!executorService.awaitTermination(1, TimeUnit.HOURS)) {
+            // 如果超时，则强制关闭尚未完成的任务
+            executorService.shutdownNow();
+        }
+        System.out.println(ips);
+        System.out.println(ips.size());
+        System.out.println("All tasks are finished.");
+    }
 
 
 
@@ -537,8 +520,42 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         }
         return proxyUse;
     }
-//curl -x brd-customer-hl_7d808016-zone-residential_proxy1-country-jp:2a1ffaiiww1h@brd.superproxy.io:22225 http://lumtest.com/myip.json
-// "http://lumtest.com/myip.json"
+
+
+
+    private String getIpwebIp(String regions) {
+        //curl -x  ipinfo.io
+        String format = String.format("B_36811_%s___10_%s:ch1433@gate2.ipweb.cc:7778",regions.toUpperCase(),RandomStr.randomString(8));
+        System.out.println(format);
+        return format;
+    }
+
+
+    private CurlVO isProxyUseIpwebIp(String ip,String country) {
+        CurlVO falseCurlVO = new CurlVO().setProxyUse(false);
+        try {
+            String format1 = String.format("curl -x %s http://www.ip234.in/ip.json",ip);
+            List<String> strings = RuntimeUtil.execForLines(format1);
+            boolean flag = false;
+
+            List<String> newStr = new ArrayList<>();
+            for (String string : strings) {
+                if (string.contains("{") || flag) {
+                    flag = true;
+                    newStr.add(string);
+                }
+            }
+            String resp = CollUtil.join(newStr, "");
+            IPWorldRespCurl curlVO = JSONUtil.toBean(resp, IPWorldRespCurl.class);
+            if (curlVO.getCountry_code().toLowerCase().equals(country.toLowerCase())) {
+                return falseCurlVO.setProxyUse(true).setIp(curlVO.getIp()).setCountry(curlVO.getCountry_code());
+            }
+        }catch (Exception e) {
+
+        }
+        return falseCurlVO;
+    }
+
 
     private String getSuperProxyIp(String regions) {
         //curl -x  ipinfo.io
@@ -638,6 +655,8 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
         }
         return falseCurlVO;
     }
+
+
 
 
     private String getHyIp(String regions) {
@@ -775,7 +794,7 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
             String format1 = String.format("curl -x %s ipinfo.io",ip);
             System.out.println(format1);
             List<String> strings = RuntimeUtil.execForLines(format1);
-
+            System.out.println(strings);
             boolean flag = false;
 
             List<String> newStr = new ArrayList<>();

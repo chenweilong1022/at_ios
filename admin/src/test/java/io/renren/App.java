@@ -13,7 +13,7 @@ import java.util.List;
 public class App {
     public static void main(String[] args) {
         List<String> strings1 = FileUtil.readLines("/Users/chenweilong/Desktop/java代码/at_ios/file/0514/泰国/2.txt", "");
-        List<String> strings2 = FileUtil.readLines("/Users/chenweilong/Desktop/java代码/at_ios/file/0514/泰国/4.txt", "");
+        List<String> strings2 = FileUtil.readLines("/Users/chenweilong/Desktop/java代码/at_ios/file/0514/泰国/6.txt", "");
         strings1.addAll(strings2);
         long count = strings1.stream().distinct().count();
         System.out.println(count);

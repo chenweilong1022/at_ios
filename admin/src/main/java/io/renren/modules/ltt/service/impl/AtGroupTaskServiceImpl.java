@@ -647,9 +647,25 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
         List<AtUserVO> atUserVOS = pageUtils.getList();
         //如果是泰国号拉群模式
         if (GroupType.GroupType6.getKey().equals(atGroupTask.getGroupType())) {
-            Assert.isTrue(onGroupPreVOS.size()>atUserVOS.size(),"拉群号不足，请增加拉群号");
+            if (atGroupTask.getAutoFill()) {
+                int groupSize = onGroupPreVOS.size();
+                int userSize = atUserVOS.size();
+                for (int i = 0; i <groupSize - userSize; i++) {
+                    atUserVOS.add(new AtUserVO().setId(-1));
+                }
+            }else {
+                Assert.isTrue(onGroupPreVOS.size()>atUserVOS.size(),"拉群号不足，请增加拉群号");
+            }
         }else {
-            Assert.isTrue(onGroupPreVOS.size()* atGroupTask.getPullGroupNumber()>atUserVOS.size(),"拉群号不足，请增加拉群号");
+            if (atGroupTask.getAutoFill()) {
+                int groupSize = onGroupPreVOS.size()* atGroupTask.getPullGroupNumber();
+                int userSize = atUserVOS.size();
+                for (int i = 0; i <groupSize - userSize; i++) {
+                    atUserVOS.add(new AtUserVO().setId(-1));
+                }
+            }else {
+                Assert.isTrue(onGroupPreVOS.size()* atGroupTask.getPullGroupNumber()>atUserVOS.size(),"拉群号不足，请增加拉群号");
+            }
         }
         return atUserVOS;
     }
