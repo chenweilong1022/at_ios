@@ -323,12 +323,12 @@
             align="center"
             width="50">
           </el-table-column>
-          <el-table-column
-            prop="id"
-            header-align="center"
-            align="center" width="50"
-            label="id">
-          </el-table-column>
+<!--          <el-table-column-->
+<!--            prop="id"-->
+<!--            header-align="center"-->
+<!--            align="center" width="50"-->
+<!--            label="id">-->
+<!--          </el-table-column>-->
           <el-table-column
             prop="groupName"
             header-align="center"
@@ -353,11 +353,11 @@
             align="center"
             label="群人数">
           </el-table-column>
-          <el-table-column
-            prop="userId"
-            header-align="center"
-            align="center" width="50"
-            label="拉群userId">
+<!--          <el-table-column-->
+<!--            prop="userId"-->
+<!--            header-align="center"-->
+<!--            align="center" width="50"-->
+<!--            label="拉群userId">-->
           </el-table-column>
           <el-table-column
             prop="userTelephone"
