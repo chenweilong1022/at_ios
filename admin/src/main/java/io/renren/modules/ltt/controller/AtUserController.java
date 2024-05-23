@@ -201,5 +201,15 @@ public class AtUserController extends AbstractController {
 
         return R.ok();
     }
+    /**
+     * 改名号重新注册
+     * @param ids
+     * @return
+     */
+    @RequestMapping("/changeNameRegisterAgains")
+    public R changeNameRegisterAgains(@RequestBody Integer[] ids) {
+        atUserService.changeNameRegisterAgains(Arrays.asList(ids));
+        return R.ok();
+    }
 
 }

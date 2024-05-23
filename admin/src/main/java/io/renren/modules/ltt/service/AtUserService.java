@@ -168,5 +168,12 @@ public interface AtUserService extends IService<AtUserEntity> {
     void syncPhoneInvalidTest(String phoneParam);
 
     void setProxy(AtUserDTO atUser);
+
+    /**
+     * 改名号重新注册
+     * @param ids
+     * @return
+     */
+    Boolean changeNameRegisterAgains(List<Integer> ids);
 }
 

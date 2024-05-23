@@ -25,11 +25,7 @@ import io.renren.modules.ltt.dto.AtUserDTO;
 import io.renren.modules.ltt.dto.UserSummaryResultDto;
 import io.renren.modules.ltt.entity.AtUserEntity;
 import io.renren.modules.ltt.entity.AtUserTokenEntity;
-import io.renren.modules.ltt.entity.CdLineRegisterEntity;
-import io.renren.modules.ltt.enums.CountryCode;
-import io.renren.modules.ltt.enums.DeleteFlag;
-import io.renren.modules.ltt.enums.RedisKeys;
-import io.renren.modules.ltt.enums.UserStatus;
+import io.renren.modules.ltt.enums.*;
 import io.renren.modules.ltt.service.*;
 import io.renren.modules.ltt.vo.AtUserVO;
 import lombok.extern.slf4j.Slf4j;
@@ -90,6 +86,9 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
 
     @Resource
     private CdGetPhoneService cdGetPhoneService;
+
+    @Resource
+    private CdLineRegisterService cdLineRegisterService;
 
 
     @Override
@@ -736,5 +735,18 @@ public class AtUserServiceImpl extends ServiceImpl<AtUserDao, AtUserEntity> impl
         for (AtUserEntity atUserEntity : atUserEntities) {
             redisTemplate.opsForHash().put(RedisKeys.RedisKeys5.getValue(), String.valueOf(atUserEntity.getTelephone()), String.valueOf(atUser.getProxyIp()));
         }
+    }
+
+    @Override
+    public Boolean changeNameRegisterAgains(List<Integer> ids) {
+        Assert.isTrue(CollectionUtils.isEmpty(ids), "选择的数据不能为空");
+        Assert.isTrue(ids.size() > 100, "选择数据不能大于100");
+
+        List<AtUserEntity> userList = baseMapper.selectBatchIds(ids);
+        Assert.isTrue(CollectionUtils.isEmpty(userList), "数据为空，请刷新重试");
+
+        //重新发起注册
+        List<String> telphoneList = userList.stream().map(AtUserEntity::getTelephone).distinct().collect(Collectors.toList());
+        return cdLineRegisterService.registerAgains(telphoneList);
     }
 }
