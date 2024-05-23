@@ -39,6 +39,7 @@ public class AtUserGroupServiceImpl extends ServiceImpl<AtUserGroupDao, AtUserGr
                 new Query<AtUserGroupEntity>(atUserGroup).getPage(),
                 new QueryWrapper<AtUserGroupEntity>().lambda()
                         .eq(ObjectUtil.isNotNull(atUserGroup.getSysUserId()), AtUserGroupEntity::getSysUserId, atUserGroup.getSysUserId())
+                        .like(ObjectUtil.isNotNull(atUserGroup.getName()), AtUserGroupEntity::getName, atUserGroup.getName())
                         .orderByDesc(AtUserGroupEntity::getId)
         );
 
