@@ -169,8 +169,8 @@ public class GroupTask {
                             if (ObjectUtil.isNotNull(getPhoneEntity)
                                     && getPhoneEntity.getCreateTime().after(cdGroupTasksEntity.getCreateTime())) {
                                 if (PhoneStatus.PhoneStatus8.getKey().equals(getPhoneEntity.getPhoneStatus())
-                                        || PhoneStatus.PhoneStatus9.getKey().equals(getPhoneEntity.getPhoneStatus())) {
-                                    //注册成功、已购买
+                                        || PhoneStatus.PhoneStatus9.getKey().equals(getPhoneEntity.getPhoneStatus())|| PhoneStatus.PhoneStatus7.getKey().equals(getPhoneEntity.getPhoneStatus())) {
+                                    //注册成功、已购买/ 作废
                                     atGroupService.updateGroupName(new AtGroupDTO().setIds(Arrays.asList(cdGroupTasksEntity.getId())));
                                 } else if (PhoneStatus.PhoneStatus6.getKey().equals(getPhoneEntity.getPhoneStatus())) {
                                     //注册出现问题，判断为封号，则直接注册
