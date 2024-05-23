@@ -1,41 +1,9 @@
 <template>
   <el-dialog
-    :title="!dataForm.id ? '新增' : '修改'"
+    :title="!dataForm.id ? '修改注册代理ip' : '修改注册代理ip'"
     :close-on-click-modal="false"
     :visible.sync="visible">
     <el-form :model="dataForm" :rules="dataRule" ref="dataForm" @keyup.enter.native="dataFormSubmit()" label-width="140px">
-      <el-form-item label="任务名称" prop="taskName">
-        <el-input v-model="dataForm.taskName" placeholder="任务名称"></el-input>
-      </el-form-item>
-      <el-form-item label="注册数量（成功）" prop="totalAmount">
-        <el-input v-model="dataForm.totalAmount" placeholder="注册数量（成功）"></el-input>
-      </el-form-item>
-      <el-form-item label="线程数" prop="numberThreads">
-        <el-input v-model="dataForm.numberThreads" placeholder="线程数"></el-input>
-      </el-form-item>
-      <el-form-item label="是否真机">
-        <el-radio-group v-model="dataForm.realMachine">
-          <el-radio :label="1">否</el-radio>
-          <el-radio :label="2">是</el-radio>
-        </el-radio-group>
-      </el-form-item>
-      <el-form-item label="是否自动补充">
-        <el-radio-group v-model="dataForm.fillUp">
-          <el-radio :label="0">补充</el-radio>
-          <el-radio :label="1">不补充</el-radio>
-        </el-radio-group>
-      </el-form-item>
-      <el-form-item label="注册国家">
-        <el-select v-model="dataForm.countryCode" placeholder="注册国家" clearable>
-          <el-option
-            v-for="item in countryCodes"
-            :key="item.key"
-            :label="item.value2"
-            :value="item.key">
-          </el-option>
-        </el-select>
-      </el-form-item>
-
       <el-form-item label="注册代理ip">
         <el-select v-model="dataForm.proxyIp" placeholder="注册代理ip" clearable>
           <el-option
@@ -45,10 +13,6 @@
             :value="item.key">
           </el-option>
         </el-select>
-      </el-form-item>
-
-      <el-form-item v-if="8101 === dataForm.countryCode" label="卡数据" prop="sfData">
-        <el-input   :autosize="{ minRows: 20, maxRows: 20}" type="textarea" v-model="dataForm.sfData" placeholder="卡数据"></el-input>
       </el-form-item>
     </el-form>
     <span slot="footer" class="dialog-footer">
@@ -96,8 +60,7 @@ export default {
       },
       countryCodes: [],
       dataForm: {
-        id: 0,
-        taskName: null,
+        ids: [],
         totalAmount: '',
         numberThreads: '50',
         numberRegistered: '',
@@ -108,7 +71,7 @@ export default {
         deleteFlag: '',
         sfData: '',
         countryCode: 66,
-        proxyIp: 1,
+        proxyIp: null,
         fillUp: 1,
         createTime: ''
       },
@@ -170,29 +133,9 @@ export default {
     init (id) {
       this.dataForm.id = id || 0
       this.visible = true
-      this.getCountryCodeEnums()
       this.getProxyEnums()
       this.$nextTick(() => {
         this.$refs['dataForm'].resetFields()
-        if (this.dataForm.id) {
-          this.$http({
-            url: this.$http.adornUrl(`/ltt/cdregistertask/info/${this.dataForm.id}`),
-            method: 'get',
-            params: this.$http.adornParams()
-          }).then(({data}) => {
-            if (data && data.code === 0) {
-              this.dataForm.taskName = data.cdregistertask.taskName
-              this.dataForm.totalAmount = data.cdregistertask.totalAmount
-              this.dataForm.numberThreads = data.cdregistertask.numberThreads
-              this.dataForm.numberRegistered = data.cdregistertask.numberRegistered
-              this.dataForm.numberSuccesses = data.cdregistertask.numberSuccesses
-              this.dataForm.numberFailures = data.cdregistertask.numberFailures
-              this.dataForm.registrationStatus = data.cdregistertask.registrationStatus
-              this.dataForm.deleteFlag = data.cdregistertask.deleteFlag
-              this.dataForm.createTime = data.cdregistertask.createTime
-            }
-          })
-        }
       })
     },
     // 表单提交
@@ -200,24 +143,11 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           this.$http({
-            url: this.$http.adornUrl(`/ltt/cdregistertask/${!this.dataForm.id ? 'save' : 'update'}`),
+            url: this.$http.adornUrl(`/ltt/cdregistertask/update`),
             method: 'post',
             data: this.$http.adornData({
               'id': this.dataForm.id || undefined,
-              'taskName': this.dataForm.taskName,
-              'totalAmount': this.dataForm.totalAmount,
-              'numberThreads': this.dataForm.numberThreads,
-              'numberRegistered': this.dataForm.numberRegistered,
-              'numberSuccesses': this.dataForm.numberSuccesses,
-              'numberFailures': this.dataForm.numberFailures,
-              'registrationStatus': this.dataForm.registrationStatus,
-              'fillUp': this.dataForm.fillUp,
-              'realMachine': this.dataForm.realMachine,
-              'countryCode': this.dataForm.countryCode,
-              'proxyIp': this.dataForm.proxyIp,
-              'sfData': this.dataForm.sfData,
-              'deleteFlag': this.dataForm.deleteFlag,
-              'createTime': this.dataForm.createTime
+              'proxyIp': this.dataForm.proxyIp
             })
           }).then(({data}) => {
             if (data && data.code === 0) {

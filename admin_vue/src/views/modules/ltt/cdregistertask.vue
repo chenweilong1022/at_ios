@@ -157,7 +157,7 @@
 
 <script>
 import AddOrUpdate from './cdregistertask-add-or-update'
-import SetProxy from './cdregistertask-set-proxy'
+import SetProxy from './cdregistertask-set-proxy2'
 import CleanIp from './cdregister-ip'
 import AddUsername from './cdregistertask-username'
 import CdregistertaskAccountList from './cdregistertask-account-list'

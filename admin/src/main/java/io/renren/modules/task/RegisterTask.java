@@ -611,11 +611,22 @@ public class RegisterTask {
                             CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
                             cdLineIpProxyDTO.setTokenPhone(cdGetPhoneEntity.getPhone());
                             cdLineIpProxyDTO.setLzPhone(cdGetPhoneEntity.getPhone());
+                            //注册任务设置代理
+                            CdRegisterSubtasksVO registerSubtasksVO = cdRegisterSubtasksService.getById(cdGetPhoneEntity.getSubtasksId());
+                            if (ObjectUtil.isNotNull(registerSubtasksVO)) {
+                                String proxyId = (String) redisTemplate.opsForHash().get(RedisKeys.RedisKeys5.getValue(), String.valueOf(registerSubtasksVO.getTaskId()));
+                                if (StrUtil.isNotEmpty(proxyId)) {
+                                    Integer i = Integer.valueOf(proxyId);
+                                    cdLineIpProxyDTO.setSelectProxyStatus(i);
+                                }
+                            }
                             String proxyId = (String) redisTemplate.opsForHash().get(RedisKeys.RedisKeys5.getValue(), String.valueOf(cdGetPhoneEntity.getPhone()));
                             if (StrUtil.isNotEmpty(proxyId)) {
                                 Integer i = Integer.valueOf(proxyId);
                                 cdLineIpProxyDTO.setSelectProxyStatus(i);
                             }
+
+
                             String proxyIp = cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO);
                             if (StrUtil.isEmpty(proxyIp)) {
                                 //设置保存队列

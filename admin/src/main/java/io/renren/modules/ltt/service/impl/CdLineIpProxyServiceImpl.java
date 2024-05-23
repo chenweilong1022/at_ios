@@ -190,11 +190,16 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
                 if (ProxyStatus.ProxyStatus3.getKey().equals(proxy)) {
                     String s = redisTemplate.opsForList().rightPop(RedisKeys.RedisKeys9.getValue(regions));
                     if (s == null) {
-                        return null;
+                        //如果没有静态 去取动态
+                        String ipOld = getDyIp(regions,phoneNumberInfo);
+                        CurlVO proxyUseOld = getProxyUse(ipOld, regions);
+                        proxyUseOld.setS5Ip(ipOld);
+                        ips.add(proxyUseOld);
+                    }else {
+                        CurlVO proxyUseOld = getProxyUse(s, regions);
+                        proxyUseOld.setS5Ip(s);
+                        ips.add(proxyUseOld);
                     }
-                    CurlVO proxyUseOld = getProxyUse(s, regions);
-                    proxyUseOld.setS5Ip(s);
-                    ips.add(proxyUseOld);
                 }else {
                     String ipOld = getDyIp(regions,phoneNumberInfo);
                     CurlVO proxyUseOld = getProxyUse(ipOld, regions);
