@@ -53,5 +53,6 @@ public interface AtUserDao extends BaseMapper<AtUserEntity> {
 
     List<AtUserVO> queryMaxRegisterCount(@Param("nation") String nation);
 
-
+    List<String> queryByGroupType(@Param("telephoneList") List<String> telephoneList,
+                                  @Param("userGroupType") Integer userGroupType);
 }

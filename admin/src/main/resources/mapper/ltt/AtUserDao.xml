@@ -174,4 +174,19 @@
         GROUP BY
             telephone;
     </select>
+
+    <select id="queryByGroupType" resultType="java.lang.String">
+        SELECT
+            u.telephone
+        FROM
+            at_user u
+                INNER JOIN at_user_group g ON u.user_group_id = g.id
+        WHERE
+        u.telephone IN (
+        <foreach collection="telephoneList" item="item" index="index" separator=",">
+            #{item}
+        </foreach>
+        )
+          AND g.user_group_type = #{userGroupType}
+    </select>
 </mapper>
