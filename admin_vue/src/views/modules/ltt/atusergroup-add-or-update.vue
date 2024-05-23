@@ -71,6 +71,7 @@
             }).then(({data}) => {
               if (data && data.code === 0) {
                 this.dataForm.name = data.atUserGroup.name
+                this.dataForm.userGroupType = data.atUserGroup.userGroupType
                 this.dataForm.deleteFlag = data.atUserGroup.deleteFlag
                 this.dataForm.createTime = data.atUserGroup.createTime
               }
