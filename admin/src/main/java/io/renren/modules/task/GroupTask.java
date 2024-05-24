@@ -430,8 +430,16 @@ public class GroupTask {
                             return;
                             //这里如果群同步成功删除任务队列
                         }else {
-                            Long add = stringRedisTemplate.opsForSet().remove(RedisKeys.USER_TASKS_POOL.getValue(String.valueOf(systemConstant.getSERVERS_MOD())), String.valueOf(cdGroupTasksEntity.getUserId()));
-                            log.info("GroupTask add opsForSet remove = {}",add);
+                            //任务完成，去
+                            AtDataTaskEntity dataTaskVO = atDataTaskService.getOne(new QueryWrapper<AtDataTaskEntity>().lambda()
+                                    .eq(AtDataTaskEntity::getGroupId,cdGroupTasksEntity.getId())
+                                    .last("limit 1")
+                            );
+                            if (ObjectUtil.isNotNull(dataTaskVO)) {
+                                int serverMod = dataTaskVO.getId() % systemConstant.getSERVERS_TOTAL_MOD();
+                                Long add = stringRedisTemplate.opsForSet().remove(RedisKeys.USER_TASKS_POOL.getValue(String.valueOf(serverMod)), String.valueOf(cdGroupTasksEntity.getUserId()));
+                                log.info("GroupTask add opsForSet remove = {}",add);
+                            }
                         }
 
                         List<AtDataSubtaskEntity> atDataSubtaskEntities = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
