@@ -39,10 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.io.Serializable;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.locks.Lock;
 
 import static cn.hutool.core.lang.PatternPool.IPV4;
@@ -383,45 +380,32 @@ public class CdLineIpProxyServiceImpl extends ServiceImpl<CdLineIpProxyDao, CdLi
 
     public static void main(String[] args) throws InterruptedException {
         ExecutorService executorService = Executors.newFixedThreadPool(200);
-        List<String> strings = FileUtil.readLines("/Users/chenweilong/Downloads/chenweilong1022@gmail.com-100010627711-日本 (2).txt", "UTF-8");
-        ArrayList<String> objects = CollUtil.newArrayList();
-        for (String string : strings) {
-            String[] split = string.split(":");
-            String format = String.format("%s:%s@%s", split[2], split[3], split[0]+":"+split[1]);
-            objects.add(format);
-        }
         Set<String> ips = ConcurrentHashMap.newKeySet();
-        for (int i = 0; i < 5000; i++) {
-            CdLineIpProxyServiceImpl cdLineIpProxyService = new CdLineIpProxyServiceImpl();
+        CountDownLatch latch = new CountDownLatch(20000);
+        CdLineIpProxyServiceImpl cdLineIpProxyService = new CdLineIpProxyServiceImpl();
+        for (int i = 0; i < 20000; i++) {
             int finalI = i;
-            String jp = objects.get(finalI);
-            CurlVO jp1 = cdLineIpProxyService.isProxyUseIp2World(jp, "jp");
-            if (jp1.isProxyUse()) {
-                ips.add(jp1.getIp());
-                log.info("i = {} set size = {}",finalI,ips.size());
-            }
-//            executorService.submit(() -> {
-////                String jp = cdLineIpProxyService.getIpwebIp("jp");
-//                String jp = objects.get(finalI);
-//                CurlVO jp1 = cdLineIpProxyService.isProxyUseIp2World(jp, "jp");
-//                if (jp1.isProxyUse()) {
-//                    ips.add(jp1.getIp());
-//                    log.info("i = {} set size = {}",finalI,ips.size());
-//                }
-//            });
+            executorService.execute(() -> {
+                try{
+                    String jp = cdLineIpProxyService.getRolaIp("jp");
+                    CurlVO jp1 = cdLineIpProxyService.isProxyUseRolaIp(jp, "jp");
+                    if (jp1.isProxyUse()) {
+                        ips.add(jp1.getIp());
+                        log.info("i = {} set getRolaIp outIp = {} size = {}",finalI,jp1.getIp(),ips.size());
+                    }
+                }catch (Exception e) {
+                    log.error("e = {}",e);
+                }finally {
+                    latch.countDown();
+                }
+            });
         }
-
-        // 关闭线程池
-        executorService.shutdown();
-
-        // 等待所有任务完成
-        if (!executorService.awaitTermination(1, TimeUnit.HOURS)) {
-            // 如果超时，则强制关闭尚未完成的任务
-            executorService.shutdownNow();
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
-        System.out.println(ips);
-        System.out.println(ips.size());
-        System.out.println("All tasks are finished.");
+        System.out.println("All threads have finished");
     }
 
 
