@@ -285,7 +285,11 @@ public class AtGroupVO implements Serializable {
 		list.add("服务器3:*219");
 		list.add("服务器4:*22");
 		list.add("服务器5:*18");
-		list.add("核武器:*160");
+		list.add("核武器01:*160");
+		list.add("核武器03:*219");
+		list.add("核武器03:*219");
+		list.add("核武器04:*12");
+		list.add("核武器04:*12");
 		int len = tId % totalMod;
 
 		log.info("len = {}",len);
