@@ -146,7 +146,7 @@ public class AtGroupEntity implements Serializable {
 	/**
 	 * 修改群信息，水军号信息
 	 */
-	private String changUserIds;
+	private String changeUserIds;
 	/**
 	 * 修改群信息，水军号信息
 	 */

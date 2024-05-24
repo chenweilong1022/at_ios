@@ -547,7 +547,7 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
                         } else {
                             atGroupTaskEntity.setChangUserIdListTemp(Arrays.asList(atDataSubtaskEntity.getChangeUserId()));
                         }
-                        atGroupTaskEntity.setChangUserIds(JSON.toJSONString(atGroupTaskEntity.getChangUserIdListTemp()));
+                        atGroupTaskEntity.setChangeUserIds(JSON.toJSONString(atGroupTaskEntity.getChangUserIdListTemp()));
                     }
 
                 }

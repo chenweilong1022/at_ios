@@ -184,7 +184,7 @@ public class AtGroupDTO extends PageParam implements Serializable {
 	/**
 	 * 修改群信息，水军号信息
 	 */
-	private String changUserIds;
+	private String changeUserIds;
 
 	/**
 	 * 间隔秒数

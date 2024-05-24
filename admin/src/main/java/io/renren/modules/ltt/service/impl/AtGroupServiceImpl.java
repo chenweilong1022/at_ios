@@ -122,8 +122,8 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
                 if (ObjectUtil.isNotNull(atGroupVO.getUserId())) {
                     userIdList.add(atGroupVO.getUserId());
                 }
-                if (StringUtils.isNotEmpty(atGroupVO.getChangUserIds())) {
-                    List<Integer> list = JSON.parseArray(atGroupVO.getChangUserIds(), Integer.class);
+                if (StringUtils.isNotEmpty(atGroupVO.getChangeUserIds())) {
+                    List<Integer> list = JSON.parseArray(atGroupVO.getChangeUserIds(), Integer.class);
                     userIdList.addAll(list);
                     atGroupVO.setChangUserIdListTemp(list);
                 }

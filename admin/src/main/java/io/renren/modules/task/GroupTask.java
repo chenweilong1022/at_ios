@@ -156,7 +156,7 @@ public class GroupTask {
         Map<String, CdGetPhoneEntity> phoneEntityMap = phoneEntity;
 
         for (AtGroupEntity cdGroupTasksEntity : cdGroupTasksEntities) {
-            cdGroupTasksEntity.setChangUserIdListTemp(JSON.parseArray(cdGroupTasksEntity.getChangUserIds(), Integer.class));
+            cdGroupTasksEntity.setChangUserIdListTemp(JSON.parseArray(cdGroupTasksEntity.getChangeUserIds(), Integer.class));
             threadPoolTaskExecutor.execute(() -> {
                 String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource13,
                         ObjectUtil.isNotNull(cdGroupTasksEntity.getChangUserIdListTemp())
