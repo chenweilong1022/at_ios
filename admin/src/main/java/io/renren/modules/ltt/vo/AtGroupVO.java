@@ -256,7 +256,7 @@ public class AtGroupVO implements Serializable {
 	private Integer changeGroupCountryCode;
 
 	/**
-	 * 修改群名称账号对应的分组
+	 * 修改群名称账号对应的分组111
 	 */
 	@ApiModelProperty(required=false,value="修改群名称账号对应的分组")
 	private Integer changeGroupId;
