@@ -1,15 +1,18 @@
 package io.renren.modules.ltt.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import jdk.nashorn.internal.ir.annotations.Ignore;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  *
@@ -140,23 +143,16 @@ public class AtGroupEntity implements Serializable {
 
 	@ApiModelProperty(required=false,value="群名是否随机")
 	private Integer randomGroupName;
+	/**
+	 * 修改群信息，水军号信息
+	 */
+	private String changeUserIds;
+	/**
+	 * 修改群信息，水军号信息
+	 */
+	@TableField(exist = false)
+	private List<Integer> changUserIdListTemp;
 
-	/**
-	 * 修改群名称账号对应的国家
-	 */
-	@ApiModelProperty(required=false,value="修改群名称账号对应的国家")
-	private Integer changeGroupCountryCode;
-
-	/**
-	 * 修改群名称账号对应的分组
-	 */
-	@ApiModelProperty(required=false,value="修改群名称账号对应的分组")
-	private Integer changeGroupId;
-	/**
-	 * 修改群名称账号对应的分组
-	 */
-	@ApiModelProperty(required=false,value="修改群信息水军id")
-	private Integer changeUserId;
 	/**
 	 * 代理ip
 	 */

@@ -101,7 +101,7 @@ public class GroupTask {
     @Transactional(rollbackFor = Exception.class)
     @Async
     public void task5() {
-        String format = String.format("and MOD(change_user_id, %s) = %s limit 50", systemConstant.getSERVERS_TOTAL_MOD(), systemConstant.getSERVERS_MOD());
+        String format = String.format("and MOD(change_user_ids, %s) = %s limit 50", systemConstant.getSERVERS_TOTAL_MOD(), systemConstant.getSERVERS_MOD());
         //获取群名和真实名称不一样的列表，同步服务器真实群名
         List<AtGroupEntity> cdGroupTasksEntities = atGroupService.list(new QueryWrapper<AtGroupEntity>().lambda()
                 .last(format)
@@ -123,7 +123,7 @@ public class GroupTask {
     @Async
     public void task4() {
 
-        String format = String.format("and MOD(change_user_id, %s) = %s limit 50", systemConstant.getSERVERS_TOTAL_MOD(), systemConstant.getSERVERS_MOD());
+        String format = String.format("and MOD(change_user_ids, %s) = %s limit 50", systemConstant.getSERVERS_TOTAL_MOD(), systemConstant.getSERVERS_MOD());
         //获取群人数同步,且需要更改群名的任务
         List<AtGroupEntity> cdGroupTasksEntities = atGroupService.list(new QueryWrapper<AtGroupEntity>().lambda()
                 .last(format)
@@ -136,6 +136,7 @@ public class GroupTask {
         }
         Integer mod = systemConstant.getSERVERS_MOD();
         String key = String.valueOf(mod);
+
 
         //获取用户MAP
         List<Integer> userIds = cdGroupTasksEntities.stream().map(AtGroupEntity::getUserId).collect(Collectors.toList());
@@ -155,9 +156,12 @@ public class GroupTask {
         Map<String, CdGetPhoneEntity> phoneEntityMap = phoneEntity;
 
         for (AtGroupEntity cdGroupTasksEntity : cdGroupTasksEntities) {
+            cdGroupTasksEntity.setChangUserIdListTemp(JSON.parseArray(cdGroupTasksEntity.getChangeUserIds(), Integer.class));
             threadPoolTaskExecutor.execute(() -> {
                 String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource13,
-                         ObjectUtil.isNotNull(cdGroupTasksEntity.getChangeUserId()) ? cdGroupTasksEntity.getId() : cdGroupTasksEntity.getId());
+                        ObjectUtil.isNotNull(cdGroupTasksEntity.getChangUserIdListTemp())
+                                && ObjectUtil.isNotNull(cdGroupTasksEntity.getChangUserIdListTemp().get(0)) ?
+                                cdGroupTasksEntity.getChangUserIdListTemp().get(0) : cdGroupTasksEntity.getId());
                 Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
                 boolean triedLock = lock.tryLock();
                 log.info("keyByResource = {} 获取的锁为 = {}", keyByResource, triedLock);

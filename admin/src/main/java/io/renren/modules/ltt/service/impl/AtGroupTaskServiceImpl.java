@@ -16,6 +16,7 @@ import io.renren.datasources.annotation.Game;
 import io.renren.modules.client.dto.LineTokenJson;
 import io.renren.modules.ltt.conver.AtDataTaskConver;
 import io.renren.modules.ltt.dto.AtDataTaskDTO;
+import io.renren.modules.ltt.dto.AtGroupChangeUserDTO;
 import io.renren.modules.ltt.dto.AtUserDTO;
 import io.renren.modules.ltt.entity.*;
 import io.renren.modules.ltt.enums.*;
@@ -25,6 +26,7 @@ import io.renren.modules.sys.service.SysUserService;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.api.WxConsts;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -39,6 +41,9 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.io.Serializable;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -262,29 +267,16 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
             atGroupTask.setPullGroupNumber(2);
         }
 
-        //如果需要改群名，校验分组
-        if (OpenApp.OpenApp2.getKey().equals(atGroupTask.getRandomGroupName())) {
-            Assert.isNull(atGroupTask.getChangeGroupId(),"改名号分组不能为空");
-            Assert.isTrue(atGroupTask.getChangeGroupId().equals(atGroupTask.getUserGroupId()),"改名号分组不能和拉群号分组一样");
-        }
-
         //获取所有群信息
         List<OnGroupPreVO> onGroupPreVOS = onGroupPre(atGroupTask);
         //校验拉群号国家
         List<AtUserVO> atUserVOS = getAtUserVOS(atGroupTask, onGroupPreVOS);
-        //校验改群名号国家
-        List<AtUserVO> atUserChangeGroupVOS = getChangeGroupAtUserVOS(atGroupTask, onGroupPreVOS);
-        //拉群号国家
-        List<Integer> atUserIds = atUserVOS.stream().map(AtUserVO::getId).collect(Collectors.toList());
-        //拉群号手机号
-        List<String> atUserPhones = atUserVOS.stream().map(AtUserVO::getTelephone).collect(Collectors.toList());
-        //改群号国家
-        List<Integer> atUserChangeIds = atUserChangeGroupVOS.stream().map(AtUserVO::getId).collect(Collectors.toList());
-        //改群号手机号
-        List<String> atUserChangePhones = atUserChangeGroupVOS.stream().map(AtUserVO::getTelephone).collect(Collectors.toList());
-        // 判断是否有交集
-        Assert.isTrue(atUserIds.stream().anyMatch(atUserChangeIds::contains),"拉群号不能和改群号重复");
-        Assert.isTrue(atUserPhones.stream().anyMatch(atUserChangePhones::contains),"拉群号不能和改群号重复");
+
+        //查询改群名号国家
+        Map<Integer, List<AtUserVO>> changeUserMap = getChangeGroupAtUserVOS(atGroupTask, onGroupPreVOS.size());
+
+        // 判断是否有交集(拉群号和改名号)
+        this.checkChangeUser(atUserVOS, changeUserMap);
 
         List<AtUserVO> atUserVOSH = CollUtil.newArrayList();
         if (GroupType.GroupType6.getKey().equals(atGroupTask.getGroupType())) {
@@ -295,7 +287,10 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
         Queue<AtUserVO> atUserVOQueue = new LinkedList<>(atUserVOS);
 
         //改群名号队列
-        Queue<AtUserVO> atUserChangeGroupVOQueue = new LinkedList<>(atUserChangeGroupVOS);
+        Map<Integer, Queue<AtUserVO>> atUserChangeGroupVOQueueMap = new HashMap<>();
+        for (Map.Entry<Integer, List<AtUserVO>> entry : changeUserMap.entrySet()) {
+            atUserChangeGroupVOQueueMap.put(entry.getKey(), new LinkedList<>(entry.getValue()));
+        }
 
         List<AtUserEntity> atUserEntityUpdates = new ArrayList<>();
         List<AtDataSubtaskEntity> atDataSubtaskEntityListNew = new ArrayList<>();
@@ -325,8 +320,6 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
             atGroupTaskEntity.setIntervalSecond(atGroupTask.getIntervalSecond());
             atGroupTaskEntity.setAutoPullGroup(atGroupTask.getAutoPullGroup());
             atGroupTaskEntity.setRandomGroupName(atGroupTask.getRandomGroupName());
-            atGroupTaskEntity.setChangeGroupId(atGroupTask.getChangeGroupId());
-            atGroupTaskEntity.setChangeGroupCountryCode(atGroupTask.getChangeGroupCountryCode());
             atGroupTaskEntity.setSearchIntervalSecond(atGroupTask.getSearchIntervalSecond());
             onGroupPreVO.setAtGroupTaskEntity(atGroupTaskEntity);
             atGroupEntitiesSave.add(atGroupTaskEntity);
@@ -387,34 +380,39 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
             //该群名称对应的账号
             if (atGroupTask.getRandomGroupName() != null
                     && OpenApp.OpenApp2.getKey().equals(atGroupTask.getRandomGroupName())) {
-                Assert.isNull(atUserChangeGroupVOQueue, "改群名账号不足，请检查");
-                AtUserVO changeGroupAtUser = atUserChangeGroupVOQueue.poll();
-                AtUserTokenVO atUserTokenVO = atUserTokenService.getById(changeGroupAtUser.getUserTokenId());
-                String token = atUserTokenVO.getToken();
-                LineTokenJson lineTokenJson = JSON.parseObject(token, LineTokenJson.class);
+                for (Map.Entry<Integer, Queue<AtUserVO>> changeUser : atUserChangeGroupVOQueueMap.entrySet()) {
+                    //改群名号队列
+                    Integer country = changeUser.getKey();
+                    Assert.isNull(CollectionUtils.isEmpty(changeUser.getValue()), "改群名账号不足，请检查");
+                    AtUserVO changeGroupAtUser = changeUser.getValue().poll();
+                    AtUserTokenVO atUserTokenVO = atUserTokenService.getById(changeGroupAtUser.getUserTokenId());
+                    String token = atUserTokenVO.getToken();
+                    LineTokenJson lineTokenJson = JSON.parseObject(token, LineTokenJson.class);
 
-                //存子表
-                AtDataSubtaskEntity save = new AtDataSubtaskEntity();
-                save.setGroupId(atGroupTaskEntity.getId());
-                save.setGroupType(groupType4.getKey());
-                save.setOpenApp(atGroupTask.getOpenApp());
-                save.setTaskStatus(TaskStatus.TaskStatus1.getKey());
-                save.setDataTaskId(atDataTask.getId());
-                save.setSysUserId(atGroupTask.getSysUserId());
-                save.setDataType(DataType.DataType5.getKey());
-                save.setContactKey(lineTokenJson.getPhone());
-                save.setMid(lineTokenJson.getMid());
-                save.setChangeUserId(changeGroupAtUser.getId());
-                save.setDisplayName(lineTokenJson.getNickName());
-                save.setDeleteFlag(DeleteFlag.NO.getKey());
-                save.setCreateTime(DateUtil.date());
-                atDataSubtaskEntities.add(save);
+                    //存子表
+                    AtDataSubtaskEntity save = new AtDataSubtaskEntity();
+                    save.setGroupId(atGroupTaskEntity.getId());
+                    save.setGroupType(groupType4.getKey());
+                    save.setOpenApp(atGroupTask.getOpenApp());
+                    save.setTaskStatus(TaskStatus.TaskStatus1.getKey());
+                    save.setDataTaskId(atDataTask.getId());
+                    save.setSysUserId(atGroupTask.getSysUserId());
+                    save.setDataType("jp".equals(CountryCode.getValueByKey(changeUser.getKey())) ?
+                            DataType.DataType5.getKey() : DataType.DataType6.getKey());
+                    save.setContactKey(lineTokenJson.getPhone());
+                    save.setMid(lineTokenJson.getMid());
+                    save.setChangeUserId(changeGroupAtUser.getId());
+                    save.setDisplayName(lineTokenJson.getNickName());
+                    save.setDeleteFlag(DeleteFlag.NO.getKey());
+                    save.setCreateTime(DateUtil.date());
+                    atDataSubtaskEntities.add(save);
 
-                //修改账号使用状态
-                AtUserEntity atUserEntity = new AtUserEntity();
-                atUserEntity.setId(changeGroupAtUser.getId());
-                atUserEntity.setStatus(UserStatus.UserStatus6.getKey());
-                atUserEntityUpdates.add(atUserEntity);
+                    //修改账号使用状态
+                    AtUserEntity atUserEntity = new AtUserEntity();
+                    atUserEntity.setId(changeGroupAtUser.getId());
+                    atUserEntity.setStatus(UserStatus.UserStatus6.getKey());
+                    atUserEntityUpdates.add(atUserEntity);
+                }
             }
 
             //水军
@@ -544,7 +542,12 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
                         atDataSubtaskEntityListNew.add(atDataSubtaskEntity);
                     }
                     if (atDataSubtaskEntity.getChangeUserId() != null){
-                        atGroupTaskEntity.setChangeUserId(atDataSubtaskEntity.getChangeUserId());
+                        if (CollUtil.isNotEmpty(atGroupTaskEntity.getChangUserIdListTemp())) {
+                            atGroupTaskEntity.getChangUserIdListTemp().add(atDataSubtaskEntity.getChangeUserId());
+                        } else {
+                            atGroupTaskEntity.setChangUserIdListTemp(Arrays.asList(atDataSubtaskEntity.getChangeUserId()));
+                        }
+                        atGroupTaskEntity.setChangeUserIds(JSON.toJSONString(atGroupTaskEntity.getChangUserIdListTemp()));
                     }
 
                 }
@@ -572,6 +575,30 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
         atGroupTask.setTaskStatus(TaskStatus.TaskStatus12.getKey());
         AtGroupTaskEntity atGroupTaskEntity = AtGroupTaskConver.MAPPER.converDTO(atGroupTask);
         this.updateById(atGroupTaskEntity);
+    }
+
+    /**
+     *
+     * @param atUserVOS 拉群号
+     * @param changeUserMap 改群名
+     */
+    private void checkChangeUser(List<AtUserVO> atUserVOS, Map<Integer, List<AtUserVO>> changeUserMap) {
+        //拉群号国家
+        List<Integer> atUserIds = atUserVOS.stream().map(AtUserVO::getId).collect(Collectors.toList());
+        //拉群号手机号
+        List<String> atUserPhones = atUserVOS.stream().map(AtUserVO::getTelephone).collect(Collectors.toList());
+
+        //改群号
+        List<AtUserVO> atUserChangeGroupList = new ArrayList<>();
+        changeUserMap.values().forEach(atUserChangeGroupList::addAll);
+
+        //改群号国家
+        List<Integer> atUserChangeIds = atUserChangeGroupList.stream().map(AtUserVO::getId).collect(Collectors.toList());
+        //改群号手机号
+        List<String> atUserChangePhones = atUserChangeGroupList.stream().map(AtUserVO::getTelephone).collect(Collectors.toList());
+        // 判断是否有交集
+        Assert.isTrue(atUserIds.stream().anyMatch(atUserChangeIds::contains),"拉群号不能和改群号重复");
+        Assert.isTrue(atUserPhones.stream().anyMatch(atUserChangePhones::contains),"拉群号不能和改群号重复");
     }
 
     private static void resetGroupType(AtGroupTaskDTO atGroupTask, AtDataSubtaskEntity save) {
@@ -670,39 +697,55 @@ public class AtGroupTaskServiceImpl extends ServiceImpl<AtGroupTaskDao, AtGroupT
         return atUserVOS;
     }
 
-    private List<AtUserVO> getChangeGroupAtUserVOS(AtGroupTaskDTO atGroupTask, List<OnGroupPreVO> onGroupPreVOS) {
-        if (atGroupTask.getRandomGroupName() != null
-                && OpenApp.OpenApp2.getKey().equals(atGroupTask.getRandomGroupName())) {
-            Assert.isNull(atGroupTask.getChangeGroupCountryCode(), "随机群名时，改群名国家不能为空");
-            Assert.isNull(atGroupTask.getChangeGroupId(), "随机群名时，改群名分组不能为空");
+    private Map<Integer, List<AtUserVO>> getChangeGroupAtUserVOS(AtGroupTaskDTO atGroupTask,
+                                                                 Integer groupCount) {
+        if (atGroupTask.getRandomGroupName() == null
+                || !OpenApp.OpenApp2.getKey().equals(atGroupTask.getRandomGroupName())) {
+            return Collections.emptyMap();
         }
-        if (atGroupTask.getRandomGroupName() != null
-                && OpenApp.OpenApp2.getKey().equals(atGroupTask.getRandomGroupName())) {
-            //改群号号国家
-            AtUserDTO atUserDTO = new AtUserDTO();
-            atUserDTO.setSysUserId(atGroupTask.getSysUserId());
-            String regions = EnumUtil.queryValueByKey(atGroupTask.getChangeGroupCountryCode(), CountryCode.values());
-            atUserDTO.setNation(regions.toUpperCase());
-            atUserDTO.setUserGroupId(atGroupTask.getChangeGroupId());
-            atUserDTO.setLimit(onGroupPreVOS.size() * atGroupTask.getPullGroupNumber());
-            atUserDTO.setStatus(UserStatus.UserStatus4.getKey());
-            atUserDTO.setUserSource(AtUserSourceEnum.AtUserSource1.getKey());
-            //获取符合账号的号码
-            PageUtils pageUtils = atUserService.queryPageOld(atUserDTO);
-            List<AtUserVO> atUserVOS = pageUtils.getList();
+        Assert.isNull(CollectionUtils.isEmpty(atGroupTask.getChangUserList()), "改名号不能为空");
 
-            Integer accountGroupDistributed = atGroupTask.getAccountGroupDistributed();
-            List<AtUserVO> newAtUserVOS = new ArrayList<>();
-            for (AtUserVO atUserVO : atUserVOS) {
-                for (Integer i = 0; i < accountGroupDistributed; i++) {
-                    newAtUserVOS.add(atUserVO);
-                }
-            }
-            Assert.isTrue(onGroupPreVOS.size() > newAtUserVOS.size(), "改群名号不足，请增加改群名");
-            return newAtUserVOS;
-        } else {
-            return Collections.emptyList();
+        //改群名，不能选同一分组
+        boolean hasDuplicates = atGroupTask.getChangUserList().stream().map(AtGroupChangeUserDTO::getChangeGroupId)
+                .distinct().count() < atGroupTask.getChangUserList().size();
+        Assert.isNull(hasDuplicates, "改群名号，不能选择同一分组");
+
+        List<AtGroupChangeUserDTO> changUserList = atGroupTask.getChangUserList();
+        Map<Integer, List<AtUserVO>> changeUserMap = new HashMap<>(changUserList.size());
+        for (AtGroupChangeUserDTO changUser : atGroupTask.getChangUserList()) {
+            Assert.isNull(changUser.getChangeGroupCountryCode(), "随机群名时，改群名国家不能为空");
+            Assert.isNull(changUser.getChangeGroupId(), "随机群名时，改群名分组不能为空");
+            List<AtUserVO> atUserVOS = this.queryAtUser(atGroupTask, changUser, groupCount);
+            changeUserMap.put(changUser.getChangeGroupCountryCode(), atUserVOS);
         }
+        return changeUserMap;
+    }
+
+    private List<AtUserVO> queryAtUser(AtGroupTaskDTO atGroupTask,
+                                       AtGroupChangeUserDTO changUser,
+                                       Integer groupCount) {
+        //改群号号国家
+        AtUserDTO atUserDTO = new AtUserDTO();
+        atUserDTO.setSysUserId(atGroupTask.getSysUserId());
+        String regions = EnumUtil.queryValueByKey(changUser.getChangeGroupCountryCode(), CountryCode.values());
+        atUserDTO.setNation(regions.toUpperCase());
+        atUserDTO.setUserGroupId(changUser.getChangeGroupId());
+        atUserDTO.setLimit(groupCount * atGroupTask.getPullGroupNumber());
+        atUserDTO.setStatus(UserStatus.UserStatus4.getKey());
+        atUserDTO.setUserSource(AtUserSourceEnum.AtUserSource1.getKey());
+        //获取符合账号的号码
+        PageUtils pageUtils = atUserService.queryPageOld(atUserDTO);
+        List<AtUserVO> atUserVOS = pageUtils.getList();
+
+        Integer accountGroupDistributed = changUser.getAccountGroupDistributed();
+        List<AtUserVO> newAtUserVOS = new ArrayList<>();
+        for (AtUserVO atUserVO : atUserVOS) {
+            for (Integer i = 0; i < accountGroupDistributed; i++) {
+                newAtUserVOS.add(atUserVO);
+            }
+        }
+        Assert.isTrue(groupCount > newAtUserVOS.size(), regions + "改群名号不足，请增加改群名");
+        return newAtUserVOS;
     }
 
     @Override

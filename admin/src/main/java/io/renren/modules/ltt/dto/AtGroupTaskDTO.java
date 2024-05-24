@@ -182,21 +182,10 @@ public class AtGroupTaskDTO extends PageParam implements Serializable {
 	private Integer randomGroupName;
 
 	/**
-	 * 国家
+	 * 修改群信息，水军号信息
 	 */
-	@ApiModelProperty(required=false,value="修改群名称账号对应的国家")
-	private Integer changeGroupCountryCode;
-	/**
-	 * 一号几群
-	 */
-	@ApiModelProperty(required=false,value="一号几群")
-	private Integer accountGroupDistributed;
+	private List<AtGroupChangeUserDTO> changUserList;
 
-	/**
-	 * 国家
-	 */
-	@ApiModelProperty(required=false,value="修改群名称账号对应的分组")
-	private Integer changeGroupId;
 
 	/**
 	 * 代理ip
