@@ -137,6 +137,7 @@ public class GroupTask {
         Integer mod = systemConstant.getSERVERS_MOD();
         String key = String.valueOf(mod);
 
+
         //获取用户MAP
         List<Integer> userIds = cdGroupTasksEntities.stream().map(AtGroupEntity::getUserId).collect(Collectors.toList());
         List<AtUserEntity> atUserEntities = atUserService.listByIds(userIds);
@@ -155,9 +156,12 @@ public class GroupTask {
         Map<String, CdGetPhoneEntity> phoneEntityMap = phoneEntity;
 
         for (AtGroupEntity cdGroupTasksEntity : cdGroupTasksEntities) {
+            cdGroupTasksEntity.setChangUserIdListTemp(JSON.parseArray(cdGroupTasksEntity.getChangUserIds(), Integer.class));
             threadPoolTaskExecutor.execute(() -> {
                 String keyByResource = LockMapKeyResource.getKeyByResource(LockMapKeyResource.LockMapKeyResource13,
-                         ObjectUtil.isNotNull(cdGroupTasksEntity.getChangeUserId()) ? cdGroupTasksEntity.getId() : cdGroupTasksEntity.getId());
+                        ObjectUtil.isNotNull(cdGroupTasksEntity.getChangUserIdListTemp())
+                                && ObjectUtil.isNotNull(cdGroupTasksEntity.getChangUserIdListTemp().get(0)) ?
+                                cdGroupTasksEntity.getChangUserIdListTemp().get(0) : cdGroupTasksEntity.getId());
                 Lock lock = lockMap.computeIfAbsent(keyByResource, k -> new ReentrantLock());
                 boolean triedLock = lock.tryLock();
                 log.info("keyByResource = {} 获取的锁为 = {}", keyByResource, triedLock);

@@ -122,8 +122,10 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
                 if (ObjectUtil.isNotNull(atGroupVO.getUserId())) {
                     userIdList.add(atGroupVO.getUserId());
                 }
-                if (ObjectUtil.isNotNull(atGroupVO.getChangeUserId())) {
-                    userIdList.add(atGroupVO.getChangeUserId());
+                if (StringUtils.isNotEmpty(atGroupVO.getChangUserIds())) {
+                    List<Integer> list = JSON.parseArray(atGroupVO.getChangUserIds(), Integer.class);
+                    userIdList.addAll(list);
+                    atGroupVO.setChangUserIdListTemp(list);
                 }
             }
             Map<Integer, String> phoneMap = atUserService.queryTelephoneByIds(userIdList.stream().collect(Collectors.toList()));
@@ -137,8 +139,14 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
                 }
 
                 //修改群信息水军号
-                if (ObjectUtil.isNotNull(atGroupVO.getChangeUserId())) {
-                    atGroupVO.setChangeUserPhone(phoneMap.get(atGroupVO.getChangeUserId()));
+                if (CollUtil.isNotEmpty(atGroupVO.getChangUserIdListTemp())) {
+                    List<String> phoneList = new ArrayList<>();
+                    for (Integer userId : atGroupVO.getChangUserIdListTemp()) {
+                        if (phoneMap.get(userId) != null) {
+                            phoneList.add(phoneMap.get(userId));
+                        }
+                    }
+                    atGroupVO.setChangeUserPhones(phoneList.stream().collect(Collectors.joining(",")));
                 }
 
                 Boolean flag = this.showUserRegisterFlag(atGroupVO);
@@ -706,24 +714,34 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
                             return;
                         }
                         //查询对应的改群名账号
-                        AtDataSubtaskEntity dataSubtaskEntity = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
+                        List<AtDataSubtaskEntity> list = atDataSubtaskService.list(new QueryWrapper<AtDataSubtaskEntity>().lambda()
                                 .eq(AtDataSubtaskEntity::getGroupId, atGroupEntity.getId())
-                                .eq(AtDataSubtaskEntity::getDataType, DataType.DataType5.getKey())).stream().findFirst().orElse(null);
-                        if (dataSubtaskEntity != null) {
-                            CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
-                            cdLineIpProxyDTO.setTokenPhone(dataSubtaskEntity.getContactKey());
-                            cdLineIpProxyDTO.setLzPhone(dataSubtaskEntity.getContactKey());
-                            cdLineIpProxyDTO.setCountryCode(atGroupEntity.getChangeGroupCountryCode().longValue());
-                            String proxyIp = cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO);
-                            if (StrUtil.isEmpty(proxyIp)) {
-                                return;
-                            }
-                            //获取token
+                                .in(AtDataSubtaskEntity::getDataType, Arrays.asList(DataType.DataType5.getKey()))
+                                .orderByAsc(AtDataSubtaskEntity::getDataType));
+                        if (CollUtil.isEmpty(list)) {
+
+                        }
+                        //查询用户信息
+//                        atUserService.listByIds()
+
+
+                        for (AtDataSubtaskEntity dataSubtaskEntity : list) {
+                            //用户信息
                             AtUserVO atUserVO = atUserService.getById(dataSubtaskEntity.getChangeUserId());
                             if (ObjectUtil.isNull(atUserVO)) {
                                 log.error("updateGroupName_error atUserIsNull {}", dataSubtaskEntity);
                                 return;
                             }
+                            CdLineIpProxyDTO cdLineIpProxyDTO = new CdLineIpProxyDTO();
+                            cdLineIpProxyDTO.setTokenPhone(dataSubtaskEntity.getContactKey());
+                            cdLineIpProxyDTO.setLzPhone(dataSubtaskEntity.getContactKey());
+                            cdLineIpProxyDTO.setCountryCode(Long.valueOf(CountryCode.getKeyByValue(atUserVO.getNation())));
+                            String proxyIp = cdLineIpProxyService.getProxyIp(cdLineIpProxyDTO);
+                            if (StrUtil.isEmpty(proxyIp)) {
+                                return;
+                            }
+
+                            //获取token
                             AtUserTokenVO atUserTokenVO = atUserTokenService.getById(atUserVO.getUserTokenId());
                             if (ObjectUtil.isNull(atUserTokenVO)) {
                                 log.error("updateGroupName_error atUserTokenIsNull {}", atUserVO);
@@ -745,6 +763,8 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
                                 if (StrUtil.isNotEmpty(chatName)) {
                                     if (chatName.equals(atGroupEntity.getGroupName())) {
                                         atGroupEntity.setGroupStatus(GroupStatus15.getKey());
+                                        //改名成功，未使用账号，改成在线
+
                                     }
                                     atGroupEntity.setRealGroupName(chatName);
                                     this.updateById(atGroupEntity);
@@ -829,8 +849,8 @@ public class AtGroupServiceImpl extends ServiceImpl<AtGroupDao, AtGroupEntity> i
                 log.info("keyByResource = {} 获取的锁为 = {}",keyByResource,triedLock);
                 if(triedLock) {
                     try{
-                        //获取用户token
-                        AtUserTokenEntity atUserTokenEntity = atUserTokenService.getByUserIdCache(cdGroupTasksEntity.getChangeUserId());
+                        //todo 获取用户token
+                        AtUserTokenEntity atUserTokenEntity = atUserTokenService.getByUserIdCache(123);
                         if (ObjectUtil.isNull(atUserTokenEntity)) {
                             return;
                         }

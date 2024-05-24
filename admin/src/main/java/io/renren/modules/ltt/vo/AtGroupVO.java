@@ -256,16 +256,17 @@ public class AtGroupVO implements Serializable {
 	private Integer changeGroupCountryCode;
 
 	/**
-	 * 修改群名称账号对应的分组
+	 * 修改群信息，水军号信息
 	 */
-	@ApiModelProperty(required=false,value="修改群名称账号对应的分组")
-	private Integer changeGroupId;
+	private String changUserIds;
 
+	/**
+	 * 修改群信息，水军号信息
+	 */
+	private List<Integer> changUserIdListTemp;
+//
 	@ApiModelProperty(required=false,value="修改群名称账号对应的水军id")
-	private Integer changeUserId;
-
-	@ApiModelProperty(required=false,value="修改群名称账号对应的水军id")
-	private String changeUserPhone;
+	private String changeUserPhones;
 
 	@ApiModelProperty(required=false,value="是否显示重新注册按钮 true：未点击，且满足拉群失败条件")
 	private Boolean showUserRegisterFlag;
