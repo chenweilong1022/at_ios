@@ -182,7 +182,7 @@ public class AtGroupDTO extends PageParam implements Serializable {
 	private Integer ipCountryCode;
 
 	/**
-	 * 修改群信息，水军号信息
+	 * 修改群信息，水军号信息aabbcc
 	 */
 	private String changeUserIds;
 
